@@ -21,6 +21,20 @@ const saveCourse = onCall(async (request) => {
 });
 
 /**
+ * Gets a list of all the courses, with their
+ * -name
+ * -description
+ * -enrolled status for the requesting user
+ * -completion status for the requesting user
+ */
+const getAllCourses = onCall((request) => {
+
+    verifyIsAuthenticated(request);
+
+    // TODO: Get all courses and check them in relation to the requesting user for enrollment & completion
+});
+
+/**
  * Gets the given information for the specified quiz:
  * -courseId
  * -name
@@ -57,4 +71,4 @@ const startCourse = onCall((request) => {
     // TODO: Create the CourseAttempt database object
 });
 
-export { saveCourse, getCourseInfo, courseEnroll, startCourse };
+export { saveCourse, getAllCourses, getCourseInfo, courseEnroll, startCourse };

@@ -10,12 +10,12 @@
 
 import { createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete, getUserProfile } from "./auth";
 import { purgeUnverifiedUsers, purgeExpiredEmails } from "./cron";
-import { saveCourse, getCourseInfo, courseEnroll, startCourse } from "./courses";
+import { saveCourse, getAllCourses, getCourseInfo, courseEnroll, startCourse } from "./courses";
 import { getCourseReports, getUserReports } from "./reports";
 
 export {
     createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete, getUserProfile,
     purgeUnverifiedUsers, purgeExpiredEmails,
-    saveCourse, getCourseInfo, courseEnroll, startCourse,
+    saveCourse, getAllCourses, getCourseInfo, courseEnroll, startCourse,
     getCourseReports, getUserReports
 };
