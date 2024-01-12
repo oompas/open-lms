@@ -1,7 +1,6 @@
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
-import { db } from "./setup";
+import { auth, db } from "./setup";
 import { logger } from "firebase-functions";
-import { auth } from "./setup";
 
 // Helpers for getting a doc/collection
 const getCollection = (path: string) => {
@@ -51,7 +50,7 @@ const sendEmail = (emailAddress: string, subject: string, html: string, context:
 };
 
 // Verify the requesting user is authenticated and an administrator
-const verifyIsAdmin = async (request : CallableRequest) => {
+const verifyIsAdmin = async (request: CallableRequest) => {
     verifyIsAuthenticated(request);
 
     // @ts-ignore

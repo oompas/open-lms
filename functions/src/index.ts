@@ -2,12 +2,12 @@
  * Write functions in their respective files, then the must be exported here to be deployed to Firebase
  */
 
-import { createAccount, resetPassword, getUserProfile } from "./callable/auth";
-import { beforeCreate, onUserSignup, beforeSignIn, onUserDelete } from "./triggers/auth";
-import { saveCourse, getAllCourses, getCourseInfo, courseEnroll, startCourse } from "./callable/courses";
-import { saveQuiz, getQuizResponses, startQuiz, submitQuiz } from "./callable/quizzes";
+import { createAccount, getUserProfile, resetPassword } from "./callable/auth";
+import { beforeCreate, beforeSignIn, onUserDelete, onUserSignup } from "./triggers/auth";
+import { courseEnroll, getAllCourses, getCourseInfo, saveCourse, startCourse } from "./callable/courses";
+import { getQuizResponses, saveQuiz, startQuiz, submitQuiz } from "./callable/quizzes";
 import { getCourseReports, getUserReports } from "./callable/reports";
-import { purgeUnverifiedUsers, purgeExpiredEmails } from "./triggers/cron";
+import { purgeExpiredEmails, purgeUnverifiedUsers } from "./triggers/cron";
 
 export {
     createAccount, resetPassword, getUserProfile,

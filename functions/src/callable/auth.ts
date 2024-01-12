@@ -112,7 +112,7 @@ const getUserProfile = onCall(async (request) => {
         .where('userId', "==", user.uid)
         .where("pass", "==", true)
         .get()
-        .then((result) => result.docs.map((doc) => ({ id: doc.id, date: doc.data().endTime })))
+        .then((result) => result.docs.map((doc) => ({id: doc.id, date: doc.data().endTime})))
         .catch((error) => {
             logger.error(`Error querying completed course attempts: ${error}`);
             throw new HttpsError("internal", "Error getting user data, try again later");
@@ -122,7 +122,7 @@ const getUserProfile = onCall(async (request) => {
         getDoc(`/Course/${data.id}/`)
             .get()
             // @ts-ignore
-            .then((course) => ({ name: course.data().name, link: course.data().link, date: data.date }))
+            .then((course) => ({name: course.data().name, link: course.data().link, date: data.date}))
             .catch((error) => {
                 logger.error(`Error querying completed course data: ${error}`);
                 throw new HttpsError("internal", "Error getting user data, try again later");

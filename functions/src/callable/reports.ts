@@ -15,7 +15,11 @@ const getUserReports = onCall(async (request) => {
     return getCollection("/User/")
         .where("position", "==", "learner")
         .get()
-        .then((users) => users.docs.map((user) => ({ uid: user.id, name: user.data().name, coursesComplete: user.data().coursesComplete })))
+        .then((users) => users.docs.map((user) => ({
+            uid: user.id,
+            name: user.data().name,
+            coursesComplete: user.data().coursesComplete
+        })))
         .catch((error) => {
             logger.error(`Error querying users: ${error}`);
             throw new HttpsError('internal', "Error getting uer reports, please try again later");

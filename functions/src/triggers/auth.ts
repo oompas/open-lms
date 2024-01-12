@@ -1,7 +1,7 @@
 import { HttpsError } from "firebase-functions/v2/https";
 import * as functions from "firebase-functions";
-import { auth } from "../helpers/setup";
 import { logger } from "firebase-functions";
+import { auth } from "../helpers/setup";
 import { getDoc, sendEmail } from "../helpers/helpers";
 
 /**
