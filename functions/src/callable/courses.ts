@@ -1,5 +1,5 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { getDoc, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
+import { getCollection, getDoc, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 import { logger } from "firebase-functions";
 
 /**
@@ -82,11 +82,33 @@ const getCourseInfo = onCall((request) => {
 /**
  * Enrolls the requesting user in the specified course
  */
-const courseEnroll = onCall((request) => {
+const courseEnroll = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
-    // TODO: Create an EnrolledCourse object in the database with the given info
+    if (!request.data.courseId) {
+        throw new HttpsError('invalid-argument', "Must provide a course ID to enroll in");
+    }
+    await getDoc(`/Course/${request.data.courseId}/`).get()
+        .then((doc) => {
+            if (!doc.exists) {
+                logger.error(`Course with ID '${request.data.courseId}' does not exist`);
+                throw new HttpsError('invalid-argument', `Course with ID '${request.data.courseId}' does not exist`);
+            }
+        })
+        .catch((error) => {
+            logger.error(`Error checking if course exists: ${error}`);
+            throw new HttpsError('internal', "Error enrolling in course, please try again later");
+        });
+
+    return getCollection(`/EnrolledCourse/`)
+        // @ts-ignore
+        .add({ userId: request.auth.uid, courseId: request.data.courseId })
+        .then(() => "Successfully enrolled in course")
+        .catch((error) => {
+            logger.error(`Error enrolling in course ${request.data.courseId}: ${error}`);
+            throw new HttpsError("internal", "Error enrolling in course, please try again later");
+        });
 });
 
 /**
