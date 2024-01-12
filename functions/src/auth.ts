@@ -3,7 +3,6 @@ import * as functions from "firebase-functions";
 import { auth } from "./setup";
 import { logger } from "firebase-functions";
 import { getCollection, getDoc, sendEmail, verifyIsAuthenticated } from "./helpers";
-import firebase from "firebase/compat";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
@@ -156,47 +155,38 @@ const onUserDelete = functions.auth.user().onDelete(async (user) => {
 const getUserProfile = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
-    const currentUser = firebase.auth().currentUser;
-    if (!currentUser) {
-        logger.error(`firebase.auth().currentUser is not defined (value: ${firebase.auth().currentUser})`);
-        throw new HttpsError("internal", "Error getting user data, try again later")
-    }
-    let targetEmail = currentUser.email;
+
+    // @ts-ignore
+    const currentUser = await auth.getUser(request.auth.uid)
+        .then((userRecord) => userRecord)
+        .catch((error) => {
+            logger.error(`Can't get UserRecord object for requesting object: ${error}`);
+            throw new HttpsError('internal', "Error getting user data, try again later")
+        });
+    let targetUser = currentUser;
 
     // Only administrators can view other's profiles
     if (!!request.data.email) {
-        currentUser.getIdTokenResult()
-            .then((idTokenResult) => {
-                if (!idTokenResult.claims.admin) {
-                    logger.error(`Non-admin user '${currentUser.email}' is trying to get another user's (${request.data.email}) profile`);
-                    throw new HttpsError('invalid-argument', "Only administrators can view other's profiles")
-                }
-            })
-            .catch((error) => {
-                logger.error(`Error getting user token for ${currentUser.email}: ${error}`);
-            });
+        // @ts-ignore
+        if (!currentUser.customClaims['admin']) {
+            logger.error(`Non-admin user '${currentUser.email}' is trying to get another user's (${request.data.email}) profile`);
+            throw new HttpsError('invalid-argument', "Only administrators can view other's profiles");
+        }
 
-        targetEmail = request.data.email;
+        targetUser = await auth.getUserByEmail(request.data.email)
+            .then((user) => user)
+            .catch((error) => {
+                logger.error(`Error getting UserRecord object: ${error}`);
+                throw new HttpsError("internal", "Error getting user data, try again later");
+            });
     } else if (!!request.data) {
         throw new HttpsError("invalid-argument", "Invalid payload: must be empty (getting current user's profile)," +
             " or have an 'email' field to specify the user to get the profile for (administrators only)");
     }
 
-    // Get user's profile
-    if (!targetEmail) {
-        logger.error(`Target email is not defined: ${targetEmail}`);
-        throw new HttpsError("internal", "Error getting user data, try again later");
-    }
-    const profile = await auth.getUserByEmail(targetEmail)
-        .then((user) => user)
-        .catch((error) => {
-            logger.error(`Error getting UserRecord object: ${error}`);
-            throw new HttpsError("internal", "Error getting user data, try again later");
-        });
-
     // Query course & course attempt data
     const completedCourseIds = await getCollection("/CourseAttempt/")
-        .where('userId', "==", profile.uid)
+        .where('userId', "==", targetUser.uid)
         .where("pass", "==", true)
         .get()
         .then((result) => result.docs.map((doc) => ({ id: doc.id, date: doc.data().endTime })))
@@ -217,11 +207,13 @@ const getUserProfile = onCall(async (request) => {
     ));
 
     return {
-        name: profile.displayName,
-        email: profile.email,
-        signUpDate: profile.metadata.creationTime,
+        name: targetUser.displayName,
+        email: targetUser.email,
+        signUpDate: targetUser.metadata.creationTime,
         completedCourses: completedCourseData,
     };
 });
+
+// TODO: Add isAdmin (return true is user is an admin)
 
 export { createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete, getUserProfile };
