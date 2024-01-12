@@ -2,7 +2,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import * as functions from "firebase-functions";
 import { auth } from "./setup";
 import { logger } from "firebase-functions";
-import { getCollection, getDoc, sendEmail, verifyAdminUser, verifyIsAuthenticated } from "./helpers";
+import { getCollection, getDoc, sendEmail, verifyIsAuthenticated } from "./helpers";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
@@ -166,7 +166,11 @@ const getUserProfile = onCall(async (request) => {
 
     // Only administrators can view other's profiles
     if (!!request.data.email) {
-        verifyAdminUser(user);
+        // @ts-ignore
+        if (!user.customClaims['admin']) {
+            logger.error(`Non-admin user '${user.email}' is trying to request this endpoint`);
+            throw new HttpsError('permission-denied', "You must be an administrator to perform this action");
+        }
 
         user = await auth.getUserByEmail(request.data.email)
             .then((user) => user)
