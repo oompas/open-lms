@@ -1,8 +1,7 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { getCollection, getDoc, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import firebase from "firebase/compat";
-import Timestamp = firebase.firestore.Timestamp;
+import { Timestamp } from "firebase/firestore";
 
 /**
  * Adds or updates a course (if a course ID is passed in, it updates) with the given data:
@@ -20,7 +19,7 @@ const saveCourse = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
-    // TODO: Add/update logic
+    // TODO: Figure out an effective way to do both updates and adds
 });
 
 /**
