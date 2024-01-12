@@ -8,8 +8,8 @@ export default function AuthPage() {
           <div className="flex flex-col h-full w-3/5 space-y-4">
               <div className="border-2 p-6">login form</div>
               <div>or</div>
-              <Button text={"go to Learner View"} link="/learner"/>
-              <Button text={"go to Admin View"} link="/admin"/>
+              <Button text={"continue with Google"} link="/home"/>
+              <Button text={"continue with another SSO"} link="/home"/>
           </div>
           <div className="flex-col h-full w-2/5 ml-10 space-y-4">
             <div>Welcome to OpenLMS</div>
