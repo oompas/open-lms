@@ -1,8 +1,8 @@
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { db } from "./setup";
 import { logger } from "firebase-functions";
-import { auth } from "firebase-admin";
-import UserRecord = auth.UserRecord;
+import { auth } from "./setup";
+import { UserRecord } from "firebase-admin/auth";
 
 // Helpers for getting a doc/collection
 const getCollection = (path: string) => {
@@ -51,7 +51,7 @@ const sendEmail = (emailAddress: string, subject: string, html: string, context:
 };
 
 // Throws an error is the given user is not an administrator
-const verifyAdmin = (user : UserRecord) => {
+const verifyAdminUser = (user: UserRecord) => {
     // @ts-ignore
     if (!user.customClaims['admin']) {
         logger.error(`Non-admin user '${user.email}' is trying to request this endpoint`);
@@ -59,4 +59,27 @@ const verifyAdmin = (user : UserRecord) => {
     }
 };
 
-export { getDoc, getCollection, verifyIsAuthenticated, sendEmail, verifyAdmin };
+// Verify the requesting user is authenticated and an administrator
+const verifyIsAdmin = async (request : CallableRequest) => {
+    if (!request.auth || !request.auth.uid) {
+        throw new HttpsError(
+            'unauthenticated',
+            `You must be logged in to call the API`
+        );
+    }
+
+    let user = await auth.getUser(request.auth.uid)
+        .then((userRecord) => userRecord)
+        .catch((error) => {
+            logger.error(`Can't get UserRecord object for requesting object: ${error}`);
+            throw new HttpsError('internal', "Error getting user data, try again later")
+        });
+
+    // @ts-ignore
+    if (!user.customClaims['admin']) {
+        logger.error(`Non-admin user '${user.email}' is trying to request this endpoint`);
+        throw new HttpsError('permission-denied', "You must be an administrator to perform this action");
+    }
+};
+
+export { getDoc, getCollection, verifyIsAuthenticated, sendEmail, verifyAdminUser, verifyIsAdmin };
