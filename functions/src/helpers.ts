@@ -1,6 +1,8 @@
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { db } from "./setup";
 import { logger } from "firebase-functions";
+import { auth } from "firebase-admin";
+import UserRecord = auth.UserRecord;
 
 // Helpers for getting a doc/collection
 const getCollection = (path: string) => {
@@ -46,6 +48,15 @@ const sendEmail = (emailAddress: string, subject: string, html: string, context:
         .catch((err) => {
             throw new HttpsError('internal', `Error creating ${context} email for ${emailAddress}: ${err}`);
         });
-}
+};
 
-export { getDoc, getCollection, verifyIsAuthenticated, sendEmail };
+// Throws an error is the given user is not an administrator
+const verifyAdmin = (user : UserRecord) => {
+    // @ts-ignore
+    if (!user.customClaims['admin']) {
+        logger.error(`Non-admin user '${user.email}' is trying to request this endpoint`);
+        throw new HttpsError('permission-denied', "You must be an administrator to perform this action");
+    }
+};
+
+export { getDoc, getCollection, verifyIsAuthenticated, sendEmail, verifyAdmin };

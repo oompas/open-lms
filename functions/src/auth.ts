@@ -2,7 +2,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import * as functions from "firebase-functions";
 import { auth } from "./setup";
 import { logger } from "firebase-functions";
-import { getCollection, getDoc, sendEmail, verifyIsAuthenticated } from "./helpers";
+import { getCollection, getDoc, sendEmail, verifyAdmin, verifyIsAuthenticated } from "./helpers";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
@@ -157,23 +157,18 @@ const getUserProfile = onCall(async (request) => {
     verifyIsAuthenticated(request);
 
     // @ts-ignore
-    const currentUser = await auth.getUser(request.auth.uid)
+    let user = await auth.getUser(request.auth.uid)
         .then((userRecord) => userRecord)
         .catch((error) => {
             logger.error(`Can't get UserRecord object for requesting object: ${error}`);
             throw new HttpsError('internal', "Error getting user data, try again later")
         });
-    let targetUser = currentUser;
 
     // Only administrators can view other's profiles
     if (!!request.data.email) {
-        // @ts-ignore
-        if (!currentUser.customClaims['admin']) {
-            logger.error(`Non-admin user '${currentUser.email}' is trying to get another user's (${request.data.email}) profile`);
-            throw new HttpsError('invalid-argument', "Only administrators can view other's profiles");
-        }
+        verifyAdmin(user);
 
-        targetUser = await auth.getUserByEmail(request.data.email)
+        user = await auth.getUserByEmail(request.data.email)
             .then((user) => user)
             .catch((error) => {
                 logger.error(`Error getting UserRecord object: ${error}`);
@@ -186,7 +181,7 @@ const getUserProfile = onCall(async (request) => {
 
     // Query course & course attempt data
     const completedCourseIds = await getCollection("/CourseAttempt/")
-        .where('userId', "==", targetUser.uid)
+        .where('userId', "==", user.uid)
         .where("pass", "==", true)
         .get()
         .then((result) => result.docs.map((doc) => ({ id: doc.id, date: doc.data().endTime })))
@@ -207,13 +202,11 @@ const getUserProfile = onCall(async (request) => {
     ));
 
     return {
-        name: targetUser.displayName,
-        email: targetUser.email,
-        signUpDate: targetUser.metadata.creationTime,
+        name: user.displayName,
+        email: user.email,
+        signUpDate: user.metadata.creationTime,
         completedCourses: completedCourseData,
     };
 });
-
-// TODO: Add isAdmin (return true is user is an admin)
 
 export { createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete, getUserProfile };
