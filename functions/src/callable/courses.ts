@@ -22,17 +22,42 @@ const saveCourse = onCall(async (request) => {
 });
 
 /**
- * Gets a list of all the courses, with their
+ * Gets a list of all active courses the user hasn't completed, with their:
  * -name
  * -description
  * -enrolled status for the requesting user
- * -completion status for the requesting user
  */
-const getAllCourses = onCall((request) => {
+const getAvailableCourses = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
-    // TODO: Get all courses and check them in relation to the requesting user for enrollment & completion
+    // @ts-ignore
+    const uid = request.auth.uid;
+
+    // Get completed course IDs to exclude from the result
+    const completedCourses: string[] = await getCollection("/CourseAttempt/")
+        .where("userId", "==", uid)
+        .where("pass", "==", true)
+        .get()
+        .then((docs) => docs.docs.map((doc) => doc.data().courseId))
+        .catch((error) => {
+            logger.error(`Error getting course attempts: ${error}`);
+            throw new HttpsError("internal", `Error getting courses, please try again later`);
+        });
+
+    // Return all active & uncompleted courses
+    return getCollection('/Course/')
+        .where("active", "==", true)
+        .get()
+        .then((docs) => {
+            return docs.docs
+                .filter((doc) => !completedCourses.includes(doc.id))
+                .map((doc) => ({ id: doc.id, ...doc.data() }));
+        })
+        .catch((error) => {
+            logger.error(`Error getting active courses: ${error}`);
+            throw new HttpsError("internal", `Error getting courses, please try again later`);
+        });
 });
 
 /**
@@ -121,4 +146,4 @@ const startCourse = onCall((request) => {
     // TODO: Create the CourseAttempt database object
 });
 
-export { saveCourse, getAllCourses, getCourseInfo, courseEnroll, startCourse };
+export { saveCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse };
