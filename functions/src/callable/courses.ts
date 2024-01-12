@@ -1,6 +1,8 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { getCollection, getDoc, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 import { logger } from "firebase-functions";
+import firebase from "firebase/compat";
+import Timestamp = firebase.firestore.Timestamp;
 
 /**
  * Adds or updates a course (if a course ID is passed in, it updates) with the given data:
@@ -143,7 +145,26 @@ const startCourse = onCall((request) => {
 
     verifyIsAuthenticated(request);
 
-    // TODO: Create the CourseAttempt database object
+    if (!request.data.courseId) {
+        throw new HttpsError('invalid-argument', "Must provide a course ID to start");
+    }
+
+    const courseAttempt = {
+        // @ts-ignore
+        userId: request.auth.uid,
+        courseId: request.data.courseId,
+        startTime: Timestamp.now(),
+        endTime: null,
+        pass: null,
+    }
+
+    return getCollection("/CourseAttempt/")
+        .add(courseAttempt)
+        .then(() => "Successfully started course")
+        .catch((error) => {
+            logger.error(`Error starting course ${request.data.courseId}: ${error}`);
+            throw new HttpsError("internal", "Error enrolling in course, please try again later");
+        });
 });
 
 export { saveCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse };
