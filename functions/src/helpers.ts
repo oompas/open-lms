@@ -22,6 +22,7 @@ const getDoc = (path: string) => {
 
 // Check if the requesting user is authenticated
 const verifyIsAuthenticated = (request: CallableRequest) => {
+    // TODO: Make sure the user exists too
     if (!request.auth || !request.auth.uid) {
         throw new HttpsError(
             'unauthenticated',
@@ -61,13 +62,9 @@ const verifyAdminUser = (user: UserRecord) => {
 
 // Verify the requesting user is authenticated and an administrator
 const verifyIsAdmin = async (request : CallableRequest) => {
-    if (!request.auth || !request.auth.uid) {
-        throw new HttpsError(
-            'unauthenticated',
-            `You must be logged in to call the API`
-        );
-    }
+    verifyIsAuthenticated(request);
 
+    // @ts-ignore
     let user = await auth.getUser(request.auth.uid)
         .then((userRecord) => userRecord)
         .catch((error) => {

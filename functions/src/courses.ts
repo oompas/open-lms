@@ -1,1 +1,60 @@
-// Course: saveCourse, getCourseInfo, courseEnroll, startCourse
+import { onCall } from "firebase-functions/lib/v2/providers/https";
+import { verifyIsAdmin, verifyIsAuthenticated } from "./helpers";
+
+/**
+ * Adds or updates a course (if a course ID is passed in, it updates) with the given data:
+ * -name
+ * -description
+ * -link
+ * -minTime
+ * -quizAttempts
+ * -maxQuizTime
+ * -active
+ *
+ * If a course is added, the new ID is returned
+ */
+const saveCourse = onCall(async (request) => {
+
+    await verifyIsAdmin(request);
+
+    // TODO: Add/update logic
+});
+
+/**
+ * Gets the given information for the specified quiz:
+ * -courseId
+ * -name
+ * -description
+ * -link
+ * -minTime
+ * -quizAttempts
+ * -maxQuizTime
+ */
+const getCourseInfo = onCall((request) => {
+
+    verifyIsAuthenticated(request);
+
+    // TODO: Attempt to get the quiz, returning the info if it exists and is active
+});
+
+/**
+ * Enrolls the requesting user in the specified course
+ */
+const courseEnroll = onCall((request) => {
+
+    verifyIsAuthenticated(request);
+
+    // TODO: Create an EnrolledCourse object in the database with the given info
+});
+
+/**
+ * The requesting users starts a course attempt
+ */
+const startCourse = onCall((request) => {
+
+    verifyIsAuthenticated(request);
+
+    // TODO: Create the CourseAttempt database object
+});
+
+export { saveCourse, getCourseInfo, courseEnroll, startCourse };
