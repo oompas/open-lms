@@ -1,5 +1,5 @@
 import { onCall } from "firebase-functions/lib/v2/providers/https";
-import { verifyIsAdmin, verifyIsAuthenticated } from "./helpers";
+import { verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 
 /**
  * Adds or updates a course (if a course ID is passed in, it updates) with the given data:

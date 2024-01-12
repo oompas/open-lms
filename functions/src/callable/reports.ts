@@ -1,5 +1,5 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { getCollection, verifyIsAdmin } from "./helpers";
+import { getCollection, verifyIsAdmin } from "../helpers/helpers";
 import { logger } from "firebase-functions";
 
 /**

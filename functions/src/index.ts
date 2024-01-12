@@ -8,11 +8,11 @@
  */
 
 
-import { createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete, getUserProfile } from "./auth";
-import { purgeUnverifiedUsers, purgeExpiredEmails } from "./cron";
-import { saveCourse, getAllCourses, getCourseInfo, courseEnroll, startCourse } from "./courses";
-import { saveQuiz, getQuizResponses, startQuiz, submitQuiz } from "./quizzes";
-import { getCourseReports, getUserReports } from "./reports";
+import { createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete, getUserProfile } from "./triggers/auth";
+import { purgeUnverifiedUsers, purgeExpiredEmails } from "./triggers/cron";
+import { saveCourse, getAllCourses, getCourseInfo, courseEnroll, startCourse } from "./callable/courses";
+import { saveQuiz, getQuizResponses, startQuiz, submitQuiz } from "./callable/quizzes";
+import { getCourseReports, getUserReports } from "./callable/reports";
 
 export {
     createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete, getUserProfile,

@@ -1,5 +1,5 @@
 import { onCall } from "firebase-functions/v2/https";
-import { verifyIsAdmin, verifyIsAuthenticated } from "./helpers";
+import { verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 
 /**
  * Updates the quiz for a given course
