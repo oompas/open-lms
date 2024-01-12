@@ -2,7 +2,8 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import * as functions from "firebase-functions";
 import { auth } from "./setup";
 import { logger } from "firebase-functions";
-import { getCollection, getDoc, sendEmail } from "./helpers";
+import { getCollection, getDoc, sendEmail, verifyIsAuthenticated } from "./helpers";
+import firebase from "firebase/compat";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
@@ -149,4 +150,78 @@ const onUserDelete = functions.auth.user().onDelete(async (user) => {
         });
 });
 
-export { createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete };
+/**
+ * Gets the user profile of the requesting user (or an administrator can specify a user)
+ */
+const getUserProfile = onCall(async (request) => {
+
+    verifyIsAuthenticated(request);
+    const currentUser = firebase.auth().currentUser;
+    if (!currentUser) {
+        logger.error(`firebase.auth().currentUser is not defined (value: ${firebase.auth().currentUser})`);
+        throw new HttpsError("internal", "Error getting user data, try again later")
+    }
+    let targetEmail = currentUser.email;
+
+    // Only administrators can view other's profiles
+    if (!!request.data.email) {
+        currentUser.getIdTokenResult()
+            .then((idTokenResult) => {
+                if (!idTokenResult.claims.admin) {
+                    logger.error(`Non-admin user '${currentUser.email}' is trying to get another user's (${request.data.email}) profile`);
+                    throw new HttpsError('invalid-argument', "Only administrators can view other's profiles")
+                }
+            })
+            .catch((error) => {
+                logger.error(`Error getting user token for ${currentUser.email}: ${error}`);
+            });
+
+        targetEmail = request.data.email;
+    } else if (!!request.data) {
+        throw new HttpsError("invalid-argument", "Invalid payload: must be empty (getting current user's profile)," +
+            " or have an 'email' field to specify the user to get the profile for (administrators only)");
+    }
+
+    // Get user's profile
+    if (!targetEmail) {
+        logger.error(`Target email is not defined: ${targetEmail}`);
+        throw new HttpsError("internal", "Error getting user data, try again later");
+    }
+    const profile = await auth.getUserByEmail(targetEmail)
+        .then((user) => user)
+        .catch((error) => {
+            logger.error(`Error getting UserRecord object: ${error}`);
+            throw new HttpsError("internal", "Error getting user data, try again later");
+        });
+
+    // Query course & course attempt data
+    const completedCourseIds = await getCollection("/CourseAttempt/")
+        .where('userId', "==", profile.uid)
+        .where("pass", "==", true)
+        .get()
+        .then((result) => result.docs.map((doc) => ({ id: doc.id, date: doc.data().endTime })))
+        .catch((error) => {
+            logger.error(`Error querying completed course attempts: ${error}`);
+            throw new HttpsError("internal", "Error getting user data, try again later");
+        });
+
+    const completedCourseData = await Promise.all(completedCourseIds.map(async (data) =>
+        getDoc(`/Course/${data.id}/`)
+            .get()
+            // @ts-ignore
+            .then((course) => ({ name: course.data().name, link: course.data().link, date: data.date }))
+            .catch((error) => {
+                logger.error(`Error querying completed course data: ${error}`);
+                throw new HttpsError("internal", "Error getting user data, try again later");
+            })
+    ));
+
+    return {
+        name: profile.displayName,
+        email: profile.email,
+        signUpDate: profile.metadata.creationTime,
+        completedCourses: completedCourseData,
+    };
+});
+
+export { createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete, getUserProfile };
