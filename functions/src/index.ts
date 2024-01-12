@@ -8,7 +8,7 @@
  */
 
 
-import { createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete } from "./auth"
+import { createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete, getUserProfile } from "./auth"
 import { purgeUnverifiedUsers, purgeExpiredEmails } from "./cron"
 
-export { createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete, purgeUnverifiedUsers, purgeExpiredEmails }
+export { createAccount, resetPassword, beforeCreate, onUserSignup, beforeSignIn, onUserDelete, purgeUnverifiedUsers, purgeExpiredEmails, getUserProfile }
