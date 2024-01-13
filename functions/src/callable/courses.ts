@@ -112,6 +112,7 @@ const courseEnroll = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
+    // Ensure a valid course ID is passed in
     if (!request.data.courseId) {
         throw new HttpsError('invalid-argument', "Must provide a course ID to enroll in");
     }
@@ -140,13 +141,30 @@ const courseEnroll = onCall(async (request) => {
 /**
  * The requesting users starts a course attempt
  */
-const startCourse = onCall((request) => {
+const startCourse = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
+    // Verify the user in enrolled in the course
     if (!request.data.courseId) {
         throw new HttpsError('invalid-argument', "Must provide a course ID to start");
     }
+    await getCollection("/EnrolledCourse/")
+        // @ts-ignore
+        .where("userId", "==", request.auth.uid)
+        .where("courseId", "==", request.data.courseId)
+        .get()
+        .then((doc) => {
+            if (doc.empty) {
+                // @ts-ignore
+                logger.error(`No course enrollment with course ID '${request.data.courseId}' and user ID '${request.auth.uid}' exists`);
+                throw new HttpsError('invalid-argument', `You are not enrolled in this course`);
+            }
+        })
+        .catch((error) => {
+            logger.error(`Error checking if user is enrolled in course: ${error}`);
+            throw new HttpsError('internal', "Error starting course, please try again later");
+        });
 
     const courseAttempt = {
         // @ts-ignore
