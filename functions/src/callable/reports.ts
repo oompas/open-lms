@@ -1,5 +1,5 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { getCollection, verifyIsAdmin } from "../helpers/helpers";
+import { DatabaseCollections, getCollection, verifyIsAdmin } from "../helpers/helpers";
 import { logger } from "firebase-functions";
 
 /**
@@ -12,7 +12,7 @@ const getUserReports = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
-    return getCollection("/User/")
+    return getCollection(DatabaseCollections.User)
         .where("position", "==", "learner")
         .get()
         .then((users) => users.docs.map((user) => ({
@@ -39,7 +39,7 @@ const getCourseReports = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
-    const courses = await getCollection("/Course/")
+    const courses = await getCollection(DatabaseCollections.Course)
         .get()
         .then((result) => result.docs)
         .catch((error) => {
@@ -47,7 +47,7 @@ const getCourseReports = onCall(async (request) => {
             throw new HttpsError('internal', "Error getting course reports, please try again later");
         });
 
-    const enrollments = await getCollection("/EnrolledCourse/")
+    const enrollments = await getCollection(DatabaseCollections.EnrolledCourse)
         .get()
         .then((result) => result.docs)
         .catch((error) => {
@@ -55,7 +55,7 @@ const getCourseReports = onCall(async (request) => {
             throw new HttpsError('internal', "Error getting course reports, please try again later");
         });
 
-    const courseAttempts = await getCollection("/CourseAttempt/")
+    const courseAttempts = await getCollection(DatabaseCollections.CourseAttempt)
         .get()
         .then((result) => result.docs)
         .catch((error) => {

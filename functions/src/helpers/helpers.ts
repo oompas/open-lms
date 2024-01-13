@@ -2,21 +2,21 @@ import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { auth, db } from "./setup";
 import { logger } from "firebase-functions";
 
+// All database collections
+enum DatabaseCollections {
+    User = "User",
+    Course = "Course",
+    EnrolledCourse = "EnrolledCourse",
+    QuizQuestion = "QuizQuestion",
+    CourseAttempt = "CourseAttempt",
+    QuizAttempt = "QuizAttempt",
+    QuizQuestionAttempt = "QuizQuestionAttempt",
+    Emails = "Emails",
+}
+
 // Helpers for getting a doc/collection
-const getCollection = (path: string) => {
-    if (!/^\/[a-zA-Z0-9]+\/(([a-zA-Z0-9]+\/){2})*$/.test(path)) {
-        throw new HttpsError('internal', `Invalid collection path (${path}), see getCollection() regex`);
-    }
-
-    return db.collection(path);
-}
-const getDoc = (path: string) => {
-    if (!/^\/([a-zA-Z0-9]+\/){2}(([a-zA-Z0-9]+\/){2})*$/.test(path)) {
-        throw new HttpsError('internal', `Invalid document path (${path}), see getDoc() regex`);
-    }
-
-    return db.doc(path);
-}
+const getCollection = (collection: DatabaseCollections) => db.collection(`/${collection}/`);
+const getDoc = (collection: DatabaseCollections, docId: string) => db.doc(`/${collection}/${docId}/`);
 
 // Check if the requesting user is authenticated
 const verifyIsAuthenticated = (request: CallableRequest) => {
@@ -39,7 +39,7 @@ const sendEmail = (emailAddress: string, subject: string, html: string, context:
         }
     };
 
-    return getCollection('/emails/')
+    return getCollection(DatabaseCollections.Emails)
         .add(email)
         .then((doc) => {
             logger.log(`Email ${doc.id} created for ${emailAddress} (${context})`);
@@ -68,4 +68,4 @@ const verifyIsAdmin = async (request: CallableRequest) => {
     }
 };
 
-export { getDoc, getCollection, verifyIsAuthenticated, sendEmail, verifyIsAdmin };
+export { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated, sendEmail, verifyIsAdmin };

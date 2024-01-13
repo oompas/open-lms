@@ -1,5 +1,5 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { getCollection, getDoc, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
+import { DatabaseCollections, getCollection, getDoc, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 import { logger } from "firebase-functions";
 import { Timestamp } from "firebase/firestore";
 
@@ -36,7 +36,7 @@ const getAvailableCourses = onCall(async (request) => {
     const uid = request.auth.uid;
 
     // Get completed course IDs to exclude from the result
-    const completedCourses: string[] = await getCollection("/CourseAttempt/")
+    const completedCourses: string[] = await getCollection(DatabaseCollections.CourseAttempt)
         .where("userId", "==", uid)
         .where("pass", "==", true)
         .get()
@@ -47,7 +47,7 @@ const getAvailableCourses = onCall(async (request) => {
         });
 
     // Return all active & uncompleted courses
-    return getCollection('/Course/')
+    return getCollection(DatabaseCollections.Course)
         .where("active", "==", true)
         .get()
         .then((docs) => {
@@ -75,7 +75,7 @@ const getCourseInfo = onCall((request) => {
 
     verifyIsAuthenticated(request);
 
-    return getDoc(`/Course/${request.data.courseId}/`)
+    return getDoc(DatabaseCollections.Course, request.data.courseId)
         .get()
         .then((course) => {
             if (!course.exists) {
@@ -116,7 +116,7 @@ const courseEnroll = onCall(async (request) => {
     if (!request.data.courseId) {
         throw new HttpsError('invalid-argument', "Must provide a course ID to enroll in");
     }
-    await getDoc(`/Course/${request.data.courseId}/`).get()
+    await getDoc(DatabaseCollections.Course, request.data.courseId).get()
         .then((doc) => {
             if (!doc.exists) {
                 logger.error(`Course with ID '${request.data.courseId}' does not exist`);
@@ -128,7 +128,7 @@ const courseEnroll = onCall(async (request) => {
             throw new HttpsError('internal', "Error enrolling in course, please try again later");
         });
 
-    return getCollection(`/EnrolledCourse/`)
+    return getCollection(DatabaseCollections.EnrolledCourse)
         // @ts-ignore
         .add({ userId: request.auth.uid, courseId: request.data.courseId })
         .then(() => "Successfully enrolled in course")
@@ -149,7 +149,7 @@ const startCourse = onCall(async (request) => {
     if (!request.data.courseId) {
         throw new HttpsError('invalid-argument', "Must provide a course ID to start");
     }
-    await getCollection("/EnrolledCourse/")
+    await getCollection(DatabaseCollections.EnrolledCourse)
         // @ts-ignore
         .where("userId", "==", request.auth.uid)
         .where("courseId", "==", request.data.courseId)
@@ -175,7 +175,7 @@ const startCourse = onCall(async (request) => {
         pass: null,
     }
 
-    return getCollection("/CourseAttempt/")
+    return getCollection(DatabaseCollections.CourseAttempt)
         .add(courseAttempt)
         .then(() => "Successfully started course")
         .catch((error) => {

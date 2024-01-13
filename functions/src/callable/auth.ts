@@ -1,6 +1,6 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
-import { getCollection, getDoc, verifyIsAuthenticated } from "../helpers/helpers";
+import { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated } from "../helpers/helpers";
 import { auth } from "../helpers/setup";
 
 /**
@@ -61,7 +61,7 @@ const resetPassword = onCall(async (request) => {
         }
     };
 
-    return getCollection('/emails/')
+    return getCollection(DatabaseCollections.Emails)
         .add(email)
         .then(() => {
             logger.log(`Password reset email created for ${emailAddress}`);
@@ -108,7 +108,7 @@ const getUserProfile = onCall(async (request) => {
     }
 
     // Query course & course attempt data
-    const completedCourseIds = await getCollection("/CourseAttempt/")
+    const completedCourseIds = await getCollection(DatabaseCollections.CourseAttempt)
         .where('userId', "==", user.uid)
         .where("pass", "==", true)
         .get()
@@ -119,7 +119,7 @@ const getUserProfile = onCall(async (request) => {
         });
 
     const completedCourseData = await Promise.all(completedCourseIds.map(async (data) =>
-        getDoc(`/Course/${data.id}/`)
+        getDoc(DatabaseCollections.Course, data.id)
             .get()
             // @ts-ignore
             .then((course) => ({name: course.data().name, link: course.data().link, date: data.date}))

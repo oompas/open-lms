@@ -2,7 +2,7 @@ import { logger } from "firebase-functions";
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { HttpsError } from "firebase-functions/v2/https";
 import { auth } from "../helpers/setup";
-import { getCollection } from "../helpers/helpers";
+import { DatabaseCollections, getCollection } from "../helpers/helpers";
 
 /**
  * Removes users that have been unverified for at least 30 days
@@ -49,7 +49,7 @@ const purgeExpiredEmails = onSchedule('0 0 * * *', async () => {
     logger.log(`Getting all emails sent before ${thirtyDaysAgo} (30 days ago)...`);
 
     // Query expired emails
-    const expiredEmails = await getCollection('/emails/')
+    const expiredEmails = await getCollection(DatabaseCollections.Emails)
         .where('delivery.state', '==', 'SUCCESS')
         .where('delivery.endTime', '<=', thirtyDaysAgo)
         .get()
