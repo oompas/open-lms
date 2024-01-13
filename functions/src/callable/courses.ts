@@ -1,5 +1,12 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { DatabaseCollections, getCollection, getDoc, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
+import {
+    DatabaseCollections,
+    getCollection,
+    getDoc,
+    sendEmail,
+    verifyIsAdmin,
+    verifyIsAuthenticated
+} from "../helpers/helpers";
 import { logger } from "firebase-functions";
 import { Timestamp } from "firebase/firestore";
 
@@ -128,8 +135,7 @@ const courseEnroll = onCall(async (request) => {
             throw new HttpsError('internal', "Error enrolling in course, please try again later");
         });
 
-    return getCollection(DatabaseCollections.EnrolledCourse)
-        // @ts-ignore
+    return getCollection(DatabaseCollections.EnrolledCourse) // @ts-ignore
         .add({ userId: request.auth.uid, courseId: request.data.courseId })
         .then(() => "Successfully enrolled in course")
         .catch((error) => {
@@ -155,8 +161,7 @@ const startCourse = onCall(async (request) => {
         .where("courseId", "==", request.data.courseId)
         .get()
         .then((doc) => {
-            if (doc.empty) {
-                // @ts-ignore
+            if (doc.empty) { // @ts-ignore
                 logger.error(`No course enrollment with course ID '${request.data.courseId}' and user ID '${request.auth.uid}' exists`);
                 throw new HttpsError('invalid-argument', `You are not enrolled in this course`);
             }
@@ -184,4 +189,42 @@ const startCourse = onCall(async (request) => {
         });
 });
 
-export { saveCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse };
+/**
+ * Sends feedback for a course to the course creator
+ */
+const sendCourseFeedback = onCall(async (request) => {
+
+    verifyIsAuthenticated(request);
+
+    if (!request.data.courseId) {
+        throw new HttpsError('invalid-argument', "Must provide a courseId");
+    }
+    if (!request.data.feedback) {
+        throw new HttpsError('invalid-argument', "Must provide feedback");
+    }
+
+    // @ts-ignore
+    const userInfo: { name: string, email: string } = await getDoc(DatabaseCollections.User, request.auth.uid)
+        .get() // @ts-ignore
+        .then((user) => ({ name: user.data().name, email: user.data().email, uid: user.id }))
+        .catch((error) => { // @ts-ignore
+            logger.error(`Error getting user (${request.auth.uid}): ${error}`);
+            throw new HttpsError("internal", "Error sending course feedback, please try again later");
+        });
+
+    const courseInfo = await getDoc(DatabaseCollections.Course, request.data.courseId)
+        .get() // @ts-ignore
+        .then((course) => ({ name: course.data().name, creator: course.data().creator }))
+        .catch((error) => {
+            logger.error(`Error getting course info (${request.data.courseId}): ${error}`);
+            throw new HttpsError("internal", "Error sending course feedback, please try again later");
+        });
+
+    const subject = `Open LMS user feedback for course ${courseInfo.name}`;
+    const content = `User ${userInfo.name} (${userInfo.email}) has sent the following feedback for the course 
+                                ${courseInfo.name}:<br/> ${request.data.feedback}`;
+    return sendEmail(courseInfo.creator, subject, content, "sending course feedback")
+        .then(() => "Feedback sent successfully");
+});
+
+export { saveCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse, sendCourseFeedback };

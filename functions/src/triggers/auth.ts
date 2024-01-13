@@ -2,7 +2,7 @@ import { HttpsError } from "firebase-functions/v2/https";
 import * as functions from "firebase-functions";
 import { logger } from "firebase-functions";
 import { auth } from "../helpers/setup";
-import { getDoc, sendEmail } from "../helpers/helpers";
+import { DatabaseCollections, getDoc, sendEmail } from "../helpers/helpers";
 
 /**
  * Logic run before a user can be created (throw errors to block account creation):
@@ -28,7 +28,7 @@ const onUserSignup = functions.auth.user().onCreate(async (user) => {
     const defaultDoc = {
         email: user.email,
     };
-    await getDoc(`/users/${user.uid}/`)
+    await getDoc(DatabaseCollections.User, user.uid)
         .set(defaultDoc)
         .then(() => logger.log(`Default db data successfully created for user: ${user.uid}`))
         .catch((err) => {
@@ -71,7 +71,7 @@ const beforeSignIn = functions.auth.user().beforeSignIn((user) => {
  * -Delete user document from firestore
  */
 const onUserDelete = functions.auth.user().onDelete(async (user) => {
-    return getDoc(`/users/${user.uid}/`)
+    return getDoc(DatabaseCollections.User, user.uid)
         .delete()
         .then(() => logger.log(`Successfully deleted user database data for user '${user.uid}'`))
         .catch((err) => {

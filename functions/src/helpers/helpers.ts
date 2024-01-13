@@ -42,7 +42,7 @@ const sendEmail = (emailAddress: string, subject: string, html: string, context:
     return getCollection(DatabaseCollections.Emails)
         .add(email)
         .then((doc) => {
-            logger.log(`Email ${doc.id} created for ${emailAddress} (${context})`);
+            logger.info(`Email ${doc.id} created for ${emailAddress} (${context})`);
         })
         .catch((err) => {
             throw new HttpsError('internal', `Error creating ${context} email for ${emailAddress}: ${err}`);
