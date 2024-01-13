@@ -43,6 +43,7 @@ const sendEmail = (emailAddress: string, subject: string, html: string, context:
         .add(email)
         .then((doc) => {
             logger.info(`Email ${doc.id} created for ${emailAddress} (${context})`);
+            return "Email created successfully";
         })
         .catch((err) => {
             throw new HttpsError('internal', `Error creating ${context} email for ${emailAddress}: ${err}`);

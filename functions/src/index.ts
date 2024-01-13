@@ -7,6 +7,7 @@ import { beforeCreate, beforeSignIn, onUserDelete, onUserSignup } from "./trigge
 import { courseEnroll, getAvailableCourses, getCourseInfo, saveCourse, startCourse, sendCourseFeedback } from "./callable/courses";
 import { getQuizResponses, saveQuiz, startQuiz, submitQuiz } from "./callable/quizzes";
 import { getCourseReports, getUserReports } from "./callable/reports";
+import { sendPlatformFeedback } from "./callable/misc";
 import { purgeExpiredEmails, purgeUnverifiedUsers } from "./triggers/cron";
 
 export {
@@ -15,5 +16,6 @@ export {
     saveCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse, sendCourseFeedback,
     saveQuiz, getQuizResponses, startQuiz, submitQuiz,
     getCourseReports, getUserReports,
+    sendPlatformFeedback,
     purgeUnverifiedUsers, purgeExpiredEmails
 };

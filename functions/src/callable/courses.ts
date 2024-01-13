@@ -199,12 +199,12 @@ const sendCourseFeedback = onCall(async (request) => {
     if (!request.data.courseId) {
         throw new HttpsError('invalid-argument', "Must provide a courseId");
     }
-    if (!request.data.feedback) {
+    if (!request.data.feedback || typeof request.data.feedback !== 'string') {
         throw new HttpsError('invalid-argument', "Must provide feedback");
     }
 
     // @ts-ignore
-    const userInfo: { name: string, email: string } = await getDoc(DatabaseCollections.User, request.auth.uid)
+    const userInfo: { name: string, email: string, uid: string } = await getDoc(DatabaseCollections.User, request.auth.uid)
         .get() // @ts-ignore
         .then((user) => ({ name: user.data().name, email: user.data().email, uid: user.id }))
         .catch((error) => { // @ts-ignore
@@ -223,8 +223,7 @@ const sendCourseFeedback = onCall(async (request) => {
     const subject = `Open LMS user feedback for course ${courseInfo.name}`;
     const content = `User ${userInfo.name} (${userInfo.email}) has sent the following feedback for the course 
                                 ${courseInfo.name}:<br/> ${request.data.feedback}`;
-    return sendEmail(courseInfo.creator, subject, content, "sending course feedback")
-        .then(() => "Feedback sent successfully");
+    return sendEmail(courseInfo.creator, subject, content, "sending course feedback");
 });
 
 export { saveCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse, sendCourseFeedback };
