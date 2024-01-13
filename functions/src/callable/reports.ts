@@ -22,7 +22,7 @@ const getUserReports = onCall(async (request) => {
         })))
         .catch((error) => {
             logger.error(`Error querying users: ${error}`);
-            throw new HttpsError('internal', "Error getting uer reports, please try again later");
+            throw new HttpsError('internal', "Error getting user reports, please try again later");
         });
 });
 
@@ -30,16 +30,56 @@ const getUserReports = onCall(async (request) => {
  * Returns a list of all courses on the platform with their:
  * -course ID
  * -name
+ * -active status
  * -Number of enrolled learners
  * -Number of learners who completed the course
  * -Average course completion time (not including quiz attempt(s))
- * -Average number of quiz attempts
  */
 const getCourseReports = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
-    // TODO: Query all courses & get metrics
+    const courses = await getCollection("/Course/")
+        .get()
+        .then((result) => result.docs)
+        .catch((error) => {
+            logger.error(`Error querying courses: ${error}`);
+            throw new HttpsError('internal', "Error getting course reports, please try again later");
+        });
+
+    const enrollments = await getCollection("/EnrolledCourse/")
+        .get()
+        .then((result) => result.docs)
+        .catch((error) => {
+            logger.error(`Error querying enrollments: ${error}`);
+            throw new HttpsError('internal', "Error getting course reports, please try again later");
+        });
+
+    const courseAttempts = await getCollection("/CourseAttempt/")
+        .get()
+        .then((result) => result.docs)
+        .catch((error) => {
+            logger.error(`Error querying course attempts: ${error}`);
+            throw new HttpsError('internal', "Error getting course reports, please try again later");
+        });
+
+    courses.map((course) => {
+        const courseData = course.data();
+
+        const completedAttempts = courseAttempts.filter((attempt) => attempt.data().courseId === course.id && attempt.data().pass === true);
+
+        const completionTimes = completedAttempts.map((attempt) => attempt.data().endTime.toDate() - attempt.data().startTime.toDate());
+        const averageTime = (1 / completionTimes.length) * completionTimes.reduce((a, b) => a + b, 0);
+
+        return {
+            courseId: course.id,
+            name: courseData.name,
+            active: courseData.active,
+            numEnrolled: enrollments.filter((enrollment) => enrollment.data().courseId == course.id).length,
+            numComplete: completedAttempts.length,
+            avgTime: averageTime,
+        };
+    })
 });
 
 export { getUserReports, getCourseReports };
