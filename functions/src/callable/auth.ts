@@ -61,7 +61,7 @@ const resetPassword = onCall(async (request) => {
         }
     };
 
-    return getCollection(DatabaseCollections.Emails)
+    return getCollection(DatabaseCollections.Email)
         .add(email)
         .then(() => {
             logger.log(`Password reset email created for ${emailAddress}`);

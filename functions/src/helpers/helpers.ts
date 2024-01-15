@@ -11,7 +11,7 @@ enum DatabaseCollections {
     CourseAttempt = "CourseAttempt",
     QuizAttempt = "QuizAttempt",
     QuizQuestionAttempt = "QuizQuestionAttempt",
-    Emails = "Emails",
+    Email = "Email",
 }
 
 // Helpers for getting a doc/collection
@@ -39,7 +39,7 @@ const sendEmail = (emailAddress: string, subject: string, html: string, context:
         }
     };
 
-    return getCollection(DatabaseCollections.Emails)
+    return getCollection(DatabaseCollections.Email)
         .add(email)
         .then((doc) => {
             logger.info(`Email ${doc.id} created for ${emailAddress} (${context})`);

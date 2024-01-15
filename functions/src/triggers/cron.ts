@@ -49,7 +49,7 @@ const purgeExpiredEmails = onSchedule('0 0 * * *', async () => {
     logger.log(`Getting all emails sent before ${thirtyDaysAgo} (30 days ago)...`);
 
     // Query expired emails
-    const expiredEmails = await getCollection(DatabaseCollections.Emails)
+    const expiredEmails = await getCollection(DatabaseCollections.Email)
         .where('delivery.state', '==', 'SUCCESS')
         .where('delivery.endTime', '<=', thirtyDaysAgo)
         .get()
