@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Button from "@/components/Button";
+import '@/config/firebase';
 
 export default function AuthPage() {
   return (
