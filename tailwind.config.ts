@@ -21,7 +21,7 @@ const config: Config = {
         },
     },
     plugins: [
-        //ts-ignore
+        //@ts-ignore
         plugin(function({addUtilities}) {
             addUtilities({
                 '.no-scrollbar::-webkit-scrollbar': {
