@@ -7,3 +7,6 @@ typings/
 
 # Node.js dependency directory
 node_modules/
+
+# Service account info for tests (!!! DO NOT EVER EXPOSE THIS FILE !!!)
+test/serviceAccountKey.json
