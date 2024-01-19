@@ -1,4 +1,4 @@
-import xyx from "./serviceAccountKey.json" with { type: "json" };
+import { project_id } from "./serviceAccountKey.json" with { type: "json" };
 import functionsTest from "firebase-functions-test";
 
 //
@@ -9,17 +9,19 @@ import functionsTest from "firebase-functions-test";
 
 console.log("Initializing function tests data...");
 const test = functionsTest({
-    storageBucket: xyx.project_id + '.appspot.com',
-    projectId: xyx.project_id,
+    storageBucket: project_id + '.appspot.com',
+    projectId: project_id,
 }, './test/serviceAccountKey.json');
-console.log("Done");
+console.log("Done.");
 
 // If you need to mock config values with functions.config(), put them here
 
-console.log("Getting all firebase functions...");
 // Do not move to the top; this must be done AFTER initializing firebase-functions-test and mocking config values
 import * as functions from "../src";
-console.log("Done");
+
+console.log("\n==========================");
+console.log("Starting firebase tests...");
+console.log("==========================");
 
 it('Should complete', (done) => {
 
