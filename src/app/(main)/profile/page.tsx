@@ -1,5 +1,6 @@
 import CompletedCourse from "./CompletedCourse";
 import Button from "@/components/Button";
+import TextField from "@/components/TextField";
 
 export default function Profile() {
 
@@ -12,8 +13,16 @@ export default function Profile() {
         <main className="flex justify-center pt-14">
             <div className="flex flex-col h-[80vh] bg-white w-[60%] p-16 rounded-2xl shadow-custom">
                 <div className="text-2xl mb-8">Account Details</div>
-                <div className="flex flex-row flex-wrap justify-between overflow-y-scroll sm:no-scrollbar">
-                    <Button text={"Delete Account"} link="/home"/>
+                <div className="flex flex-col space-y-8">
+                    <div className="flex flex-col">
+                        <p className="mb-2">Email</p>
+                        <TextField text="email@gmail.com"/>
+                    </div>
+                    <div className="flex flex-col">
+                        <p className="mb-2">Password</p>
+                        <TextField text="12345"/>
+                    </div>
+                    <Button text="Delete Account" link="/home"/>
                 </div>
             </div>
             <div className="flex flex-col h-[80vh] bg-white w-[35%] ml-[5%] p-16 rounded-2xl shadow-custom">
