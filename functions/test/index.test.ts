@@ -7,31 +7,18 @@ import functionsTest from "firebase-functions-test";
 // See https://firebase.google.com/docs/functions/unit-testing for setup info
 //
 
-console.log("Initializing function tests data...");
-const test = functionsTest({
+console.log("Initializing function test environment...");
+const testEnv = functionsTest({
     storageBucket: project_id + '.appspot.com',
     projectId: project_id,
 }, './test/serviceAccountKey.json');
 console.log("Done.");
 
-// If you need to mock config values with functions.config(), put them here
-
-// Do not move to the top; this must be done AFTER initializing firebase-functions-test and mocking config values
-import * as functions from "../src";
-
 console.log("\n==========================");
 console.log("Starting firebase tests...");
 console.log("==========================");
 
-it('Should complete', (done) => {
-
-    const data2 = test.firestore.makeDocumentSnapshot({ email: "testEmail@gmail.com", password: "pass98765" }, 'document/path');
-
-    const wrapped = test.wrap(functions.createAccount);
-    wrapped(data2);
-
-    done();
-})
+export default testEnv;
 
 // Unsets envars & deletes temporary objects
-test.cleanup();
+testEnv.cleanup();
