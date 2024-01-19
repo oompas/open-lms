@@ -29,6 +29,17 @@ const verifyIsAuthenticated = (request: CallableRequest) => {
     }
 };
 
+// Gets a parameter from a request (_fieldsProto is used when unit testing)
+const getParameter: any = (request: CallableRequest, parameter: string) => {
+    // @ts-ignore
+    const value = request.data[parameter] ?? request._fieldsProto[parameter].stringValue;
+    if (!value) {
+        logger.error(`Parameter: ${parameter} Value: ${value} Request: ${JSON.stringify(request)}`);
+        throw new HttpsError('invalid-argument', `The parameter ${parameter} is required`);
+    }
+    return value;
+}
+
 // Adds email doc to db (which gets sent by the 'Trigger Email' extension)
 const sendEmail = (emailAddress: string, subject: string, html: string, context: string) => {
     const email = {
@@ -69,4 +80,4 @@ const verifyIsAdmin = async (request: CallableRequest) => {
     }
 };
 
-export { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated, sendEmail, verifyIsAdmin };
+export { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated, getParameter, sendEmail, verifyIsAdmin };
