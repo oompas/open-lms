@@ -7,6 +7,14 @@ import { auth } from "../helpers/setup";
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
  */
 const createAccount = onCall((request) => {
+
+    if (!request.data.email) {
+        throw new HttpsError('invalid-argument', "Must provide an email");
+    }
+    if (!request.data.password) {
+        throw new HttpsError('invalid-argument', "Must provide a password");
+    }
+
     // Create user (will throw an error if the email is already in use)
     return auth
         .createUser({
