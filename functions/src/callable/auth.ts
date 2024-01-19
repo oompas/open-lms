@@ -1,6 +1,6 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
-import { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated } from "../helpers/helpers";
+import { DatabaseCollections, getCollection, getDoc, getParameter, verifyIsAuthenticated } from "../helpers/helpers";
 import { auth } from "../helpers/setup";
 
 /**
@@ -8,37 +8,33 @@ import { auth } from "../helpers/setup";
  */
 const createAccount = onCall((request) => {
 
-    if (!request.data.email) {
-        throw new HttpsError('invalid-argument', "Must provide an email");
-    }
-    if (!request.data.password) {
-        throw new HttpsError('invalid-argument', "Must provide a password");
-    }
+    const email = getParameter(request, "email");
+    const password = getParameter(request, "password");
 
     // Create user (will throw an error if the email is already in use)
     return auth
         .createUser({
-            email: request.data.email,
+            email: email,
             emailVerified: false,
-            password: request.data.password,
+            password: password,
             disabled: false,
         })
         .then((user) => {
-            logger.log(`Successfully created new user ${user.uid} (${request.data.email})`);
-            return `Successfully created new user ${request.data.email}`;
+            logger.log(`Successfully created new user ${user.uid} (${email})`);
+            return `Successfully created new user ${email}`;
         })
         .catch((error) => {
             if (error.code === 'auth/invalid-email') {
-                logger.warn(`Email ${request.data.email} is invalid`);
-                throw new HttpsError('invalid-argument', `Email ${request.data.email} is invalid`);
+                logger.warn(`Email ${email} is invalid`);
+                throw new HttpsError('invalid-argument', `Email ${email} is invalid`);
             }
             if (error.code === 'auth/invalid-password') {
-                logger.warn(`Password ${request.data.password} is invalid`);
+                logger.warn(`Password ${password} is invalid`);
                 throw new HttpsError('invalid-argument', `Password is invalid. It must be a string with at least six characters.`);
             }
             if (error.code === 'auth/email-already-exists') {
-                logger.warn(`Email ${request.data.email} in use`);
-                throw new HttpsError('already-exists', `Email ${request.data.email} is already in use`);
+                logger.warn(`Email ${email} in use`);
+                throw new HttpsError('already-exists', `Email ${email} is already in use`);
             }
 
             logger.error(`Error creating new user (not including email in use): ${error.message} (${error.code})`);
