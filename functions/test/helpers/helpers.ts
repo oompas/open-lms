@@ -12,10 +12,4 @@ const randomString = (length: number): string => {
     return result;
 }
 
-// Same as above but the length is also random
-const randomLengthString = (min: number, max: number) => {
-    const length: number = Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + Math.ceil(min);
-    return randomString(length);
-}
-
-export { randomString, randomLengthString };
+export { randomString };
