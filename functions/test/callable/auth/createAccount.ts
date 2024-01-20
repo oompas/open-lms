@@ -12,19 +12,25 @@ interface TestInput {
 }
 let testNumber = 0; // Increment each time
 
-const testSuccess = (input: TestInput) => {
+const testCreateAccount = (input: TestInput, errorMessage: undefined | string) => {
     ++testNumber;
+    const message = errorMessage ? "fail to create account" : "create account successfully";
 
     return (
         describe(`#${testNumber}: ` + input.description, () => {
-            it("create account successfully", async () => {
+            it(message, async () => {
 
                 const data = testEnv.firestore.makeDocumentSnapshot({
                     email: input.testEmail,
                     password: input.testPassword
                 }, `TestInput/createAccount#${testNumber}`);
 
-                // @ts-ignore
+                // Check if the call passes or fails as desired
+                if (errorMessage) { // @ts-ignore
+                    return testEnv.wrap(createAccount)(data)
+                        .then(() => { throw new Error("API call should fail"); })
+                        .catch((err: any) => assert.equal(err.message, errorMessage));
+                } // @ts-ignore
                 return testEnv.wrap(createAccount)(data).then(async (result: string) => {
                     assert.equal(result, `Successfully created new user ${input.testEmail}`,
                         "Response message does not match expected");
@@ -39,7 +45,7 @@ describe('Success cases for createAccount endpoint...', () => {
     let testData: TestInput;
     const testAccounts: string[] = [];
     const test = () => {
-        testSuccess(testData);
+        testCreateAccount(testData, undefined);
         testAccounts.push(testData.testEmail);
     }
 
@@ -114,5 +120,51 @@ describe('Success cases for createAccount endpoint...', () => {
             testPassword: randomString(length),
         };
         test();
+    }
+});
+
+describe('Failure cases for createAccount endpoint...', () => {
+
+    let testData: TestInput;
+    const test = (errMsg: string) => {
+        testCreateAccount(testData, errMsg);
+    }
+
+    testData = {
+        description: `Invalid email #1`,
+        testEmail: `test.at.test.com`,
+        testPassword: "password12345",
+    };
+    test(`Email ${testData.testEmail} is invalid`);
+
+
+    testData = {
+        description: `Invalid email #2`,
+        testEmail: `test@test`,
+        testPassword: "password12345",
+    };
+    test(`Email ${testData.testEmail} is invalid`);
+
+    testData = {
+        description: `Invalid email #3`,
+        testEmail: `open LMS@gmail.com`,
+        testPassword: "password12345",
+    };
+    test(`Email ${testData.testEmail} is invalid`);
+
+    testData = {
+        description: `Invalid email #4`,
+        testEmail: `test@test@com`,
+        testPassword: "password12345",
+    };
+    test(`Email ${testData.testEmail} is invalid`);
+
+    for (let i = 0; i < 6; ++i) {
+        testData = {
+            description: `Invalid password #${i + 1}`,
+            testEmail: `test@test.com`,
+            testPassword: randomString(i)
+        };
+        test(`Email ${testData.testEmail} is invalid`);
     }
 });
