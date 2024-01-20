@@ -159,12 +159,26 @@ describe('Failure cases for createAccount endpoint...', () => {
     };
     test(`Email ${testData.testEmail} is invalid`);
 
-    for (let i = 0; i < 6; ++i) {
+    testData = {
+        description: `Invalid email #5`,
+        testEmail: "",
+        testPassword: "password12345",
+    };
+    test(`The parameter email is required`);
+
+    testData = {
+        description: `Invalid password #1`,
+        testEmail: `test@test.com`,
+        testPassword: ""
+    };
+    test(`The parameter password is required`);
+
+    for (let i = 1; i < 6; ++i) {
         testData = {
             description: `Invalid password #${i + 1}`,
             testEmail: `test@test.com`,
             testPassword: randomString(i)
         };
-        test(`Email ${testData.testEmail} is invalid`);
+        test(`Password is invalid. It must be a string with at least six characters.`);
     }
 });
