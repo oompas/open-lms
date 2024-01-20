@@ -15,12 +15,13 @@ export default function Profile() {
                 <div className="text-2xl mb-8">Account Details</div>
                 <div className="flex flex-col space-y-8">
                     <div className="flex flex-col">
-                        <p className="mb-2">Email</p>
+                        <p className="mb-2">Account Email</p>
                         <TextField text="email@gmail.com"/>
                     </div>
                     <div className="flex flex-col">
-                        <p className="mb-2">Password</p>
+                        <p className="mb-2">Account Password</p>
                         <TextField text="12345"/>
+                        <p>reset password</p>
                     </div>
                     <Button text="Delete Account" link="/home"/>
                 </div>
