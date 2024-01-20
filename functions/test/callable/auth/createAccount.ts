@@ -1,8 +1,9 @@
-import { createAccount } from "../../src";
+import { createAccount } from "../../../src";
 import { assert } from "chai";
-import testEnv from "../index.test";
-import { randomLengthString, randomString } from "../helpers/helpers";
+import testEnv from "../../index.test";
+import { randomString } from "../../helpers/helpers";
 import { getAuth } from "firebase-admin/auth";
+import { HttpsError } from "firebase-functions/v2/https";
 
 interface TestInput {
     description: string,
@@ -27,12 +28,6 @@ const testSuccess = (input: TestInput) => {
                 return testEnv.wrap(createAccount)(data).then(async (result: string) => {
                     assert.equal(result, `Successfully created new user ${input.testEmail}`,
                         "Response message does not match expected");
-
-                    const auth = getAuth();
-                    const uid = await auth.getUserByEmail(input.testEmail)
-                        .then((user) => { console.log(".then() worked"); return user.uid; })
-                        .catch((err) => console.log('Error uid catch: ' + err));
-                    await auth.deleteUser(uid);
                 });
             })
         })
@@ -41,18 +36,25 @@ const testSuccess = (input: TestInput) => {
 
 describe('Success cases for createAccount endpoint...', () => {
 
-    const auth = getAuth();
     let testData: TestInput;
-    const test = async () => {
+    const testAccounts: string[] = [];
+    const test = () => {
         testSuccess(testData);
-
-        //console.log("running cslg...");
-        //console.log(testData.testEmail);
-        //const uid = await auth.getUserByEmail(testData.testEmail).then((user) => { console.log(".then() worked");
-        // return user.uid; }).catch((err) => console.log('Error uid catch: ' + err));
-        //console.log(uid);
-        //await auth.deleteUser(uid);
+        testAccounts.push(testData.testEmail);
     }
+
+    // Clean up accounts after tests are done
+    const auth = getAuth();
+    after(async function done() {
+        this.timeout(30_000);
+        await new Promise(res => setTimeout(res, 10_000)); // Make sure the onUserSignup() triggers are all done
+
+        await Promise.all(testAccounts.map((email) => {
+            return auth.getUserByEmail(email)
+                .then((user) => auth.deleteUser(user.uid))
+                .catch((err) => { throw new HttpsError('internal', `Error getting uid for ${testData.testEmail}: ${err}`); });
+        }));
+    });
 
     testData = {
         description: "Gmail #1",
@@ -61,7 +63,6 @@ describe('Success cases for createAccount endpoint...', () => {
     };
     test();
 
-    /*
     testData = {
         description: "Gmail #2",
         testEmail: "firebase_unit_tests_create_account_2@gmail.com",
@@ -84,26 +85,34 @@ describe('Success cases for createAccount endpoint...', () => {
     test();
 
     testData = {
-        description: "Min password length",
-        testEmail: "firebase_unit_tests_create_account_5@gmail.com",
+        description: "yahoo",
+        testEmail: "firebase_unit_tests_create_account_5@yahoo.com",
+        testPassword: "password12345",
+    };
+    test();
+
+    testData = {
+        description: `Minimum password length `,
+        testEmail: `firebase_unit_tests_create_account_${6}@gmail.com`,
         testPassword: randomString(6),
     };
     test();
 
     testData = {
-        description: "Max password length",
-        testEmail: "firebase_unit_tests_create_account_6@gmail.com",
-        testPassword: randomString(30),
+        description: `Maximum password length`,
+        testEmail: `firebase_unit_tests_create_account_${7}@gmail.com`,
+        testPassword: randomString(100),
     };
     test();
 
-    for (let i = 1; i <= 10; ++i) {
+    // Test random password lengths 21 < length < 100
+    for (let i = 0; i < 20; ++i) {
+        const length = Math.floor(Math.random() * 79) + 21;
         testData = {
-            description: `Random password length #${i}`,
-            testEmail: `firebase_unit_tests_create_account_${6 + i}@gmail.com`,
-            testPassword: randomLengthString(6, 30),
+            description: `Password length ${length}`,
+            testEmail: `firebase_unit_tests_create_account_${8 + i}@gmail.com`,
+            testPassword: randomString(length),
         };
         test();
     }
-    */
 });
