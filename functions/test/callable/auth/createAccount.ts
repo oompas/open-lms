@@ -4,6 +4,7 @@ import testEnv from "../../index.test";
 import { randomString } from "../../helpers/helpers";
 import { getAuth } from "firebase-admin/auth";
 import { HttpsError } from "firebase-functions/v2/https";
+import { dummyAccount } from "../../helpers/setupDummyData";
 
 interface TestInput {
     description: string,
@@ -18,7 +19,7 @@ const testCreateAccount = (input: TestInput, errorMessage: undefined | string) =
 
     return (
         describe(`#${testNumber}: ` + input.description, () => {
-            it(message, async () => {
+            it(message, () => {
 
                 const data = testEnv.firestore.makeDocumentSnapshot({
                     email: input.testEmail,
@@ -144,7 +145,6 @@ describe('Failure cases for createAccount endpoint...', () => {
     };
     test(`Email ${testData.testEmail} is invalid`);
 
-
     testData = {
         description: `Invalid email #2`,
         testEmail: `test@test`,
@@ -186,6 +186,13 @@ describe('Failure cases for createAccount endpoint...', () => {
         testPassword: "password12345",
     };
     test(`The parameter email is required`);
+
+    testData = {
+        description: `Email in use`,
+        testEmail: dummyAccount.email,
+        testPassword: "password123456",
+    };
+    test(`Email ${testData.testEmail} is already in use`);
 
     testData = {
         description: `Invalid password #1`,
