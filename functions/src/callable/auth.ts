@@ -50,14 +50,12 @@ const createAccount = onCall((request) => {
  */
 const resetPassword = onCall(async (request) => {
 
-    if (!request.data.email || typeof request.data.email !== 'string') {
-        throw new HttpsError("invalid-argument", "Must provide an email address");
-    }
-    const emailAddress: string = request.data.email;
-    const link: string = await auth.generatePasswordResetLink(emailAddress);
+    const email = getParameter(request, "email");
+    const link: string = await auth.generatePasswordResetLink(email)
+        .catch(() => { throw new HttpsError('invalid-argument', "Email does not exist or an error occurred") });
 
-    const email = {
-        to: emailAddress,
+    const emailData = {
+        to: email,
         message: {
             subject: 'Reset your password for OpenLMS',
             html: `<p style="font-size: 16px;">A password reset request was made for your account</p>
@@ -69,14 +67,14 @@ const resetPassword = onCall(async (request) => {
     };
 
     return getCollection(DatabaseCollections.Email)
-        .add(email)
+        .add(emailData)
         .then(() => {
-            logger.log(`Password reset email created for ${emailAddress}`);
-            return `Password reset email created for ${emailAddress}`;
+            logger.log(`Password reset email created for ${email}`);
+            return `Password reset email created for ${email}`;
         })
         .catch((err) => {
-            logger.log(`Error creating password reset email for ${emailAddress}`);
-            return `Error creating password reset email for ${emailAddress}`;
+            logger.log(`Error creating password reset email for ${email}`);
+            return `Error creating password reset email for ${email}`;
         });
 });
 
