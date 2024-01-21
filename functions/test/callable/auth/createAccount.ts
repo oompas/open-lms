@@ -26,11 +26,18 @@ const testCreateAccount = (input: TestInput, errorMessage: undefined | string) =
                 }, `TestInput/createAccount#${testNumber}`);
 
                 // Check if the call passes or fails as desired
-                if (errorMessage) { // @ts-ignore
-                    return testEnv.wrap(createAccount)(data)
-                        .then(() => { throw new Error("API call should fail"); })
-                        .catch((err: any) => assert.equal(err.message, errorMessage));
-                } // @ts-ignore
+                if (errorMessage) {
+                    try { // @ts-ignore
+                        return testEnv.wrap(createAccount)(data)
+                            .then(() => { throw new Error("API call should fail"); })
+                            .catch((err: any) => assert.equal(err.message, errorMessage));
+                    } catch (err) { // @ts-ignore
+                        assert.equal(err.message, errorMessage);
+                        return;
+                    }
+                }
+
+                // @ts-ignore
                 return testEnv.wrap(createAccount)(data).then(async (result: string) => {
                     assert.equal(result, `Successfully created new user ${input.testEmail}`,
                         "Response message does not match expected");
