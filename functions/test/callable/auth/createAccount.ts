@@ -7,8 +7,8 @@ import { HttpsError } from "firebase-functions/v2/https";
 
 interface TestInput {
     description: string,
-    testEmail: string,
-    testPassword: string,
+    testEmail: any,
+    testPassword: any,
 }
 let testNumber = 0; // Increment each time
 
@@ -64,8 +64,8 @@ describe('Success cases for createAccount endpoint...', () => {
 
         await Promise.all(testAccounts.map((email) => {
             return auth.getUserByEmail(email)
-                .then((user) => auth.deleteUser(user.uid))
-                .catch((err) => { throw new HttpsError('internal', `Error getting uid for ${testData.testEmail}: ${err}`); });
+                .then((user: { uid: any; }) => auth.deleteUser(user.uid))
+                .catch((err: any) => { throw new HttpsError('internal', `Error getting uid for ${testData.testEmail}: ${err}`); });
         }));
     });
 
@@ -174,18 +174,60 @@ describe('Failure cases for createAccount endpoint...', () => {
     test(`The parameter email is required`);
 
     testData = {
+        description: `Invalid email #6`,
+        testEmail: null,
+        testPassword: "password12345",
+    };
+    test(`The parameter email is required`);
+
+    testData = {
+        description: `Invalid email #7`,
+        testEmail: 12345,
+        testPassword: "password12345",
+    };
+    test(`The parameter email is required`);
+
+    testData = {
         description: `Invalid password #1`,
         testEmail: `test@test.com`,
         testPassword: ""
     };
     test(`The parameter password is required`);
 
+    testData = {
+        description: `Invalid password #2`,
+        testEmail: `test@test.com`,
+        testPassword: null
+    };
+    test(`The parameter password is required`);
+
+    testData = {
+        description: `Invalid password #3`,
+        testEmail: `test@test.com`,
+        testPassword: 12345
+    };
+    test(`The parameter password is required`);
+
     for (let i = 1; i < 6; ++i) {
         testData = {
-            description: `Invalid password #${i + 1}`,
+            description: `Invalid password #${i + 3}`,
             testEmail: `test@test.com`,
             testPassword: randomString(i)
         };
         test(`Password is invalid. It must be a string with at least six characters.`);
     }
+
+    testData = {
+        description: `Invalid password #10`,
+        testEmail: `test@test.com`,
+        testPassword: randomString(101)
+    };
+    test(`Password can't be over 100 characters long`);
+
+    testData = {
+        description: `Invalid password #11`,
+        testEmail: `test@test.com`,
+        testPassword: randomString(1000)
+    };
+    test(`Password can't be over 100 characters long`);
 });

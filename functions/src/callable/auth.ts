@@ -11,7 +11,7 @@ const createAccount = onCall((request) => {
     const email = getParameter(request, "email");
     const password = getParameter(request, "password");
     if (password.length > 100) {
-        throw new HttpsError('invalid-argument', "Password can't be more than 100 characters");
+        throw new HttpsError('invalid-argument', "Password can't be over 100 characters long");
     }
 
     // Create user (will throw an error if the email is already in use)
