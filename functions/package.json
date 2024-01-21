@@ -1,6 +1,5 @@
 {
   "name": "functions",
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -9,7 +8,7 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "bash ./test/run.sh"
+    "test": "bash test/run.sh"
   },
   "engines": {
     "node": "20"
