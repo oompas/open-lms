@@ -20,5 +20,4 @@ console.log("==========================");
 
 export default testEnv;
 
-// Unsets envars & deletes temporary objects
-testEnv.cleanup();
+import "./helpers/setupDummyData";
