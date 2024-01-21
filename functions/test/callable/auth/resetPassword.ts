@@ -75,4 +75,33 @@ describe('Failure cases for resetPassword endpoint...', () => {
     };
     test("Email does not exist or an error occurred");
 
+    testData = {
+        description: "Invalid email #1",
+        email: null,
+    };
+    test("The parameter email is required");
+
+    testData = {
+        description: "Invalid email #2",
+        email: 12345,
+    };
+    test("The parameter email is required");
+
+    testData = {
+        description: "Invalid email #3",
+        email: "",
+    };
+    test("The parameter email is required");
+
+    testData = {
+        description: "Invalid email #4",
+        email: "test.at.test.com",
+    };
+    test("Email does not exist or an error occurred");
+
+    testData = {
+        description: "Invalid email #5",
+        email: "test@@test.com",
+    };
+    test("Email does not exist or an error occurred");
 });
