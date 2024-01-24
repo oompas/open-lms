@@ -51,12 +51,14 @@ export default function Tools() {
         <main className="flex-col justify-center items-center pt-14">
             {/* Manage courses section */}
             <div className="flex flex-col h-[60vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
-                <div className="text-2xl mb-2">Manage Courses</div>
-                <div className="flex flex-row justify-between items-start mb-2">
-                    <p className="mb-0 mr-2">Click on a course to navigate to course update screen.</p>
+                <div className="flex flex-row justify-between items-center mb-2">
+                    <div className="flex flex-col">
+                        <div className="text-2xl mb-2">Manage Courses</div>
+                        <p className="mb-0 mr-2">Click on a course to navigate to course update screen.</p>
+                    </div>
                     <div className="flex flex-row justify-end">
                         <Button text="Create a Course" link="/home"/>
-                        <SearchBar/>
+                        <SearchBar style="ml-4"/>
                     </div>
                 </div>
                 <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
@@ -70,12 +72,13 @@ export default function Tools() {
                     ))}
                 </div>
             </div>
+
             {/* Learner insights section */}
             <div className="flex flex-col h-[50vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
-                <div className="text-2xl mb-2">Learner Insights</div>
-                <div className="flex flex-row justify-end mb-2">
+                <div className="flex flex-row justify-end items-center mb-2">
+                    <div className="text-2xl mb-2 mr-auto">Learner Insights</div>
                     <Button text="Invite a Learner" link="/home"/>
-                    <Button text="Download User Reports" link="/home"/>
+                    <Button text="Download User Reports" link="/home" style="ml-4"/>
                 </div>
                 <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
                     <table className="border-collapse border w-full">
@@ -103,10 +106,11 @@ export default function Tools() {
                     </table>
                 </div>
             </div>
+
             {/* Course insights section */}
             <div className="flex flex-col h-[50vh] bg-white p-16 rounded-2xl shadow-custom">
-                <div className="text-2xl mb-2">Course Insights</div>
-                <div className="flex flex-row justify-end mb-2">
+                <div className="flex flex-row justify-end items-center mb-2">
+                    <div className="text-2xl mb-2 mr-auto">Course Insights</div>
                     <Button text="Download Course Reports" link="/home"/>
                 </div>
                 <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
