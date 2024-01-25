@@ -16,8 +16,8 @@ import { Timestamp } from "firebase/firestore";
  * -description
  * -link
  * -minTime
- * -quizAttempts
- * -maxQuizTime
+ * -maxQuizAttempts
+ * -quizTimeLimit
  * -active
  *
  * If a course is added, the new ID is returned
