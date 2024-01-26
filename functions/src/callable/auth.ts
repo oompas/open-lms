@@ -1,6 +1,13 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
-import { DatabaseCollections, getCollection, getDoc, getParameter, verifyIsAuthenticated } from "../helpers/helpers";
+import {
+    DatabaseCollections,
+    getCollection,
+    getDoc,
+    getOptionalParameter,
+    getParameter,
+    verifyIsAuthenticated
+} from "../helpers/helpers";
 import { auth } from "../helpers/setup";
 
 /**
@@ -85,6 +92,8 @@ const getUserProfile = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
+    const email = getOptionalParameter(request, "email");
+
     // @ts-ignore
     let user = await auth.getUser(request.auth.uid)
         .then((userRecord) => userRecord)
@@ -94,22 +103,19 @@ const getUserProfile = onCall(async (request) => {
         });
 
     // Only administrators can view other's profiles
-    if (!!request.data.email) {
+    if (email) {
         // @ts-ignore
         if (!user.customClaims['admin']) {
             logger.error(`Non-admin user '${user.email}' is trying to request this endpoint`);
             throw new HttpsError('permission-denied', "You must be an administrator to perform this action");
         }
 
-        user = await auth.getUserByEmail(request.data.email)
+        user = await auth.getUserByEmail(email)
             .then((user) => user)
             .catch((error) => {
                 logger.error(`Error getting UserRecord object: ${error}`);
                 throw new HttpsError("internal", "Error getting user data, try again later");
             });
-    } else if (!!request.data) {
-        throw new HttpsError("invalid-argument", "Invalid payload: must be empty (getting current user's profile)," +
-            " or have an 'email' field to specify the user to get the profile for (administrators only)");
     }
 
     // Query course & course attempt data
