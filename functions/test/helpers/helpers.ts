@@ -12,4 +12,7 @@ const randomString = (length: number): string => {
     return result;
 }
 
-export { randomString };
+const USER_ID_LENGTH: number = 28;
+const DOCUMENT_ID_LENGTH: number = 20;
+
+export { randomString, USER_ID_LENGTH, DOCUMENT_ID_LENGTH };
