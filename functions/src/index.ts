@@ -4,7 +4,7 @@
 
 import { createAccount, getUserProfile, resetPassword } from "./callable/auth";
 import { beforeCreate, beforeSignIn, onUserDelete, onUserSignup } from "./triggers/auth";
-import { courseEnroll, getAvailableCourses, getCourseInfo, saveCourse, startCourse, sendCourseFeedback } from "./callable/courses";
+import { courseEnroll, getAvailableCourses, getCourseInfo, addCourse, startCourse, sendCourseFeedback } from "./callable/courses";
 import { getQuizResponses, saveQuiz, startQuiz, submitQuiz } from "./callable/quizzes";
 import { getCourseReports, getUserReports } from "./callable/reports";
 import { sendPlatformFeedback } from "./callable/misc";
@@ -13,7 +13,7 @@ import { purgeExpiredEmails, purgeUnverifiedUsers } from "./triggers/cron";
 export {
     createAccount, resetPassword, getUserProfile,
     beforeCreate, onUserSignup, beforeSignIn, onUserDelete,
-    saveCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse, sendCourseFeedback,
+    addCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse, sendCourseFeedback,
     saveQuiz, getQuizResponses, startQuiz, submitQuiz,
     getCourseReports, getUserReports,
     sendPlatformFeedback,

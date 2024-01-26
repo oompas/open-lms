@@ -2,16 +2,17 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
     DatabaseCollections,
     getCollection,
-    getDoc,
+    getDoc, getParameter,
     sendEmail,
     verifyIsAdmin,
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
 import { Timestamp } from "firebase/firestore";
+import { boolean, number, object, string } from 'yup';
 
 /**
- * Adds or updates a course (if a course ID is passed in, it updates) with the given data:
+ * Adds a course with the given data:
  * -name
  * -description
  * -link
@@ -20,13 +21,38 @@ import { Timestamp } from "firebase/firestore";
  * -quizTimeLimit
  * -active
  *
- * If a course is added, the new ID is returned
+ * And a new course is returned
  */
-const saveCourse = onCall(async (request) => {
+const addCourse = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
-    // TODO: Figure out an effective way to do both updates and adds
+    const newCourse = {
+        name: getParameter(request, "name"),
+        description: getParameter(request, "description"),
+        link: getParameter(request, "link"),
+        minTime: getParameter(request, "minTime"),
+        maxQuizAttempts: getParameter(request, "maxQuizAttempts"),
+        quizTimeLimit: getParameter(request, "quizTimeLimit"),
+        active: getParameter(request, "active"),
+    };
+
+    const schema = object({
+        name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
+        description: string().required(),
+        link: string().required(),
+        minTime: number().required().integer().positive(),
+        maxQuizAttempts: number().required().integer().positive(),
+        quizTimeLimit: number().required().integer().positive(),
+        active: boolean().required()
+    });
+
+    await schema.validate(newCourse, { strict: true });
+
+    return getCollection(DatabaseCollections.Course)
+        .add(newCourse)
+        .then((doc) => doc.id)
+        .catch((err) => { throw new HttpsError("internal", `Error adding new course: ${err}`) });
 });
 
 /**
@@ -226,4 +252,4 @@ const sendCourseFeedback = onCall(async (request) => {
     return sendEmail(courseInfo.creator, subject, content, "sending course feedback");
 });
 
-export { saveCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse, sendCourseFeedback };
+export { addCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse, sendCourseFeedback };
