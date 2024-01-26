@@ -40,6 +40,13 @@ const getParameter: any = (request: CallableRequest, parameter: string) => {
     return value;
 }
 
+// Same as above, but the parameter can be undefined
+const getOptionalParameter: any = (request: CallableRequest, parameter: string) => {
+    // @ts-ignore
+    return request.data[parameter] ?? (request._fieldsProto && request._fieldsProto[parameter] // @ts-ignore
+        ? request._fieldsProto[parameter].stringValue : undefined);
+}
+
 // Adds email doc to db (which gets sent by the 'Trigger Email' extension)
 const sendEmail = (emailAddress: string, subject: string, html: string, context: string) => {
     const email = {
@@ -80,4 +87,4 @@ const verifyIsAdmin = async (request: CallableRequest) => {
     }
 };
 
-export { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated, getParameter, sendEmail, verifyIsAdmin };
+export { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated, getParameter, getOptionalParameter, sendEmail, verifyIsAdmin };
