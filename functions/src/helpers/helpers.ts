@@ -32,7 +32,7 @@ const verifyIsAuthenticated = (request: CallableRequest) => {
 // Gets a parameter from a request (_fieldsProto is used when unit testing)
 const getParameter: any = (request: CallableRequest, parameter: string) => {
     // @ts-ignore
-    const value = request.data[parameter] ?? request._fieldsProto[parameter].stringValue;
+    const value = request.data[parameter] ?? (request._fieldsProto[parameter] ? request._fieldsProto[parameter].stringValue : undefined);
     if (!value) {
         logger.error(`Parameter: ${parameter} Value: ${value} Request: ${JSON.stringify(request)}`);
         throw new HttpsError('invalid-argument', `The parameter ${parameter} is required`);
