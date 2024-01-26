@@ -14,8 +14,38 @@ interface course {
 const rawCourseData: { name: string, description: string, link: string }[] = [
     {
         name: "Dog walker Health & Safety training",
-        description: "Learn how to properly walk dogs in a safe and healthy way",
+        description: "Learn how to properly walk dogs in a safe and healthy manner",
         link: "https://www.vetvoice.com.au/ec/pet-ownership/the-dog-walkers-safety-guide/",
+    },
+    {
+        name: "Health & Safety Awareness Training",
+        description: "Understand workplace hazards present at Queen's",
+        link: "https://www.queensu.ca/risk/safety/training/health-safety-awareness"
+    },
+    {
+        name: "Queen's Ergonomics training",
+        description: "Learn how to create a comfortable and efficient work environment",
+        link: "https://www.queensu.ca/risk/safety/general/ergonomics"
+    },
+    {
+        name: "Queen's asbestos safety training",
+        description: "Understand the health risks of asbestos and effective safety measures",
+        link: "https://www.queensu.ca/risk/safety/general/asbestos"
+    },
+    {
+        name: "Work placement pre-departure training",
+        description: "Learn the risks associated with off-campus work",
+        link: "https://www.queensu.ca/risk/safety/general/student-placements"
+    },
+    {
+        name: "West Nile virus information",
+        description: "Learn the symptoms and treatments for the West Nile virus",
+        link: "https://www.queensu.ca/risk/safety/general/west-nile-virus"
+    },
+    {
+        name: "Dangerous substances",
+        description: "Learn Ontario's designated dangerous substances",
+        link: "https://www.queensu.ca/risk/designated-substances"
     }
 ];
 
