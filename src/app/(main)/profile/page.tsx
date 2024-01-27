@@ -1,8 +1,18 @@
+"use client"
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import AuthForm from "@/components/AuthForm";
 import CompletedCourse from "./CompletedCourse";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
 
 export default function Profile() {
+
+    const router = useRouter()
+
+    const [email, setEmail] = useState("")
+    const [password, setPass] = useState("")
 
     const TEMP_COMPLETED_COURSE_DATA = [
         { title: "Completed Course", description: "Completed December 25, 2023", id: 1 },
@@ -13,17 +23,14 @@ export default function Profile() {
         <main className="flex justify-center pt-14">
             <div className="flex flex-col h-[80vh] bg-white w-[60%] p-16 rounded-2xl shadow-custom">
                 <div className="text-2xl mb-8">Account Details</div>
-                <div className="flex flex-col space-y-8">
-                    <div className="flex flex-col">
-                        <p className="mb-2">Account Email</p>
-                        <TextField text="email@gmail.com"/>
-                    </div>
-                    <div className="flex flex-col">
-                        <p className="mb-2">Account Password</p>
-                        <TextField text="12345"/>
-                        <p>reset password</p>
-                    </div>
-                    <Button text="Delete Account" link="/home"/>
+                <div className="flex flex-col space-y-8 w-[30rem]">
+                    <AuthForm 
+                        email={email}
+                        setEmail={setEmail}
+                        password={password}
+                        setPass={setPass}
+                    />
+                    <Button text="Delete Account" onClick={() => router.push('/home')}/>
                 </div>
             </div>
             <div className="flex flex-col h-[80vh] bg-white w-[35%] ml-[5%] p-16 rounded-2xl shadow-custom">
