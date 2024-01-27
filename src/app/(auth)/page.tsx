@@ -19,6 +19,7 @@ export default function AuthPage() {
   // function called on "log in" button press
   const submitLogin = () => {
     // TODO - actually do auth
+    alert("EMAIL: " + email + "\nPASS: " + password);
     router.push('/home');
   }
 

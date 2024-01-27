@@ -1,7 +1,7 @@
 export default function TextField({
     placeholder,
     text,
-    onChange
+    onChange        // onChange function of the state object - pass in the form of: setValue   <- (no brackets)
 } : {
     placeholder?: string,
     text: string,
