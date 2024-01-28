@@ -1,3 +1,4 @@
+// @ts-ignore
 import * as firebaseConfig from "../config.json" with { type: "json" };
 import { initializeApp } from "firebase/app";
 import { getAuth } from "@firebase/auth";
