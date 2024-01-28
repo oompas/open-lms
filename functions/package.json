@@ -1,5 +1,6 @@
 {
   "name": "functions",
+  "private": true,
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -8,7 +9,7 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "bash test/run.sh"
+    "test": "bash ./test/run.sh"
   },
   "engines": {
     "node": "20"
@@ -28,6 +29,5 @@
     "mocha": "^10.2.0",
     "tsx": "^4.7.0",
     "typescript": "^4.9.0"
-  },
-  "private": true
+  }
 }
