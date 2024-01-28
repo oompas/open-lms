@@ -79,8 +79,7 @@ const verifyIsAdmin = async (request: CallableRequest) => {
             throw new HttpsError('internal', "Error getting user data, try again later")
         });
 
-    // @ts-ignore
-    if (!user.customClaims['admin']) {
+    if (!user.customClaims || !("admin" in user.customClaims) || user.customClaims["admin"] !== true) {
         logger.error(`Non-admin user '${user.email}' is trying to request this endpoint`);
         throw new HttpsError('permission-denied', "You must be an administrator to perform this action");
     }
