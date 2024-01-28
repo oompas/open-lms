@@ -2,7 +2,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
     DatabaseCollections,
     getCollection,
-    getDoc, getParameter,
+    getDoc,
     sendEmail,
     verifyIsAdmin,
     verifyIsAuthenticated
@@ -25,17 +25,11 @@ import { boolean, number, object, string } from 'yup';
  */
 const addCourse = onCall(async (request) => {
 
+    logger.info(`Entering addCourse for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
     await verifyIsAdmin(request);
 
-    const newCourse = {
-        name: getParameter(request, "name"),
-        description: getParameter(request, "description"),
-        link: getParameter(request, "link"),
-        minTime: getParameter(request, "minTime"),
-        maxQuizAttempts: getParameter(request, "maxQuizAttempts"),
-        quizTimeLimit: getParameter(request, "quizTimeLimit"),
-        active: getParameter(request, "active"),
-    };
+    logger.info("Administrative permission verification passed");
 
     const schema = object({
         name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
@@ -47,10 +41,16 @@ const addCourse = onCall(async (request) => {
         active: boolean().required()
     });
 
-    await schema.validate(newCourse, { strict: true });
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
 
     return getCollection(DatabaseCollections.Course)
-        .add(newCourse)
+        .add(request.data)
         .then((doc) => doc.id)
         .catch((err) => { throw new HttpsError("internal", `Error adding new course: ${err}`) });
 });
