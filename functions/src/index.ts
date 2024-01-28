@@ -9,6 +9,7 @@ import { getQuizResponses, saveQuiz, startQuiz, submitQuiz } from "./callable/qu
 import { getCourseReports, getUserReports } from "./callable/reports";
 import { sendPlatformFeedback } from "./callable/misc";
 import { purgeExpiredEmails, purgeUnverifiedUsers } from "./triggers/cron";
+import { updateAdminPermissions } from "./triggers/database";
 
 export {
     createAccount, resetPassword, getUserProfile,
@@ -17,5 +18,6 @@ export {
     saveQuiz, getQuizResponses, startQuiz, submitQuiz,
     getCourseReports, getUserReports,
     sendPlatformFeedback,
-    purgeUnverifiedUsers, purgeExpiredEmails
+    purgeUnverifiedUsers, purgeExpiredEmails,
+    updateAdminPermissions
 };

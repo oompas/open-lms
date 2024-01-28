@@ -20,7 +20,6 @@ const getDoc = (collection: DatabaseCollections, docId: string) => db.doc(`/${co
 
 // Check if the requesting user is authenticated
 const verifyIsAuthenticated = (request: CallableRequest) => {
-    // TODO: Make sure the user exists too
     if (!request.auth || !request.auth.uid) {
         throw new HttpsError(
             'unauthenticated',
