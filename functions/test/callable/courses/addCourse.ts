@@ -1,60 +1,35 @@
-import testEnv from "../../index.test";
-import { addCourse } from "../../../src";
 import { expect } from "chai";
-import { DOCUMENT_ID_LENGTH } from "../../helpers/helpers";
-
-interface TestInput {
-    testDescription: string,
-    name: any,
-    description: any,
-    link: any,
-    minTime: any,
-    maxQuizAttempts: any,
-    quizTimeLimit: any,
-    active: any,
-}
-let testNumber = 0; // Increment each time
-
-const testAddCourse = (input: TestInput, errorMessage: undefined | string) => {
-    ++testNumber;
-    const message = errorMessage ? "fail to add course" : "added course successfully";
-    const { testDescription: testDescription, ...course } = input;
-
-    return (
-        describe(`#${testNumber}: ${testDescription}`, () => {
-            it(message, () => {
-
-                const data = testEnv.firestore.makeDocumentSnapshot(course, `TestInput/addCourse#${testNumber}`);
-
-                // Check if the call passes or fails as desired
-                if (errorMessage) {
-                    try { // @ts-ignore
-                        return testEnv.wrap(addCourse)(data)
-                            .then(() => { throw new Error("API call should fail"); })
-                            .catch((err: any) => expect(err.message).to.equal(errorMessage));
-                    } catch (err) { // @ts-ignore
-                        expect(err.message).to.equal(errorMessage);
-                        return;
-                    }
-                }
-
-                // @ts-ignore
-                return testEnv.wrap(addCourse)(data).then(async (result: string) => {
-                    expect(typeof result).to.equal("string");
-                    expect(result).to.have.length(DOCUMENT_ID_LENGTH);
-                });
-            })
-        })
-    );
-}
+import { callFunctionWithAuth } from "../../helpers/helpers";
 
 describe('Success cases for addCourse endpoint...', () => {
 
-    let testData: TestInput;
-    const test = () => testAddCourse(testData, undefined);
+    interface TestInput {
+        name: any,
+        description: any,
+        link: any,
+        minTime: any,
+        maxQuizAttempts: any,
+        quizTimeLimit: any,
+        active: any,
+    }
 
-    testData = {
-        testDescription: "Simple active course",
+    let testNumber = 0;
+    let course: TestInput;
+    const test = (testDescription: string) => {
+        ++testNumber;
+        const inputCopy = course; // Original may be updated by later test case before running
+
+        return (
+            describe(`#${testNumber}: ${testDescription}`, () => {
+                it("added course successfully", () =>
+                    callFunctionWithAuth("addCourse", inputCopy, "18rem8@queensu.ca", "password12345")
+                        .then((id) => console.log(`Successfully added new course: ${id.data}`))
+                )
+            })
+        );
+    }
+
+    course = {
         name: "Unit test",
         description: "Unit test",
         link: "www.unittest.com",
@@ -63,10 +38,9 @@ describe('Success cases for addCourse endpoint...', () => {
         quizTimeLimit: 1,
         active: true,
     };
-    test();
+    test("Simple active course");
 
-    testData = {
-        testDescription: "Simple inactive course",
+    course = {
         name: "Unit test",
         description: "Unit test",
         link: "www.unittest.com",
@@ -75,23 +49,43 @@ describe('Success cases for addCourse endpoint...', () => {
         quizTimeLimit: 1,
         active: false,
     };
-    test();
-
-    /*
-    testData = {
-        testDescription: "",
-        name: "",
-        description: "",
-        link: "",
-        minTime: 1,
-        maxQuizAttempts: 1,
-        quizTimeLimit: 1,
-        active: true,
-    };
-    test();
-     */
+    test("Simple inactive course");
 });
 
 describe('Failure cases for addCourse endpoint...', () => {
 
+    let testNumber = 0;
+    let course: any;
+    const test = (testDescription: string, expectedError: string) => {
+        ++testNumber;
+        const inputCopy = course; // Original may be updated by later test case before running
+
+        return (
+            describe(`#${testNumber}: ${testDescription}`, () => {
+                it("added course successfully", () =>
+                    callFunctionWithAuth("addCourse", inputCopy, "18rem8@queensu.ca", "password12345")
+                        .then(() => { throw new Error("Test case should fail") })
+                        .catch((err) => { expect(err.message).to.equal(expectedError) })
+                )
+            })
+        );
+    }
+
+    course = null;
+    test("Null course input", "ValidationError: this cannot be null");
+
+    course = undefined;
+    test("Undefined course input", "ValidationError: this cannot be null");
+
+    course = "Unit test invalid value";
+    test("String course input", "ValidationError: this must be a `object` type, but the final value was: `\"Unit test invalid value\"`.");
+
+    course = 12345;
+    test("Number course input", "ValidationError: this must be a `object` type, but the final value was: `12345`.");
+
+    course = [];
+    test("Array course input", "ValidationError: this must be a `object` type, but the final value was: `[]`.");
+
+    course = {};
+    test("Empty object course input", "ValidationError: active is a required field");
 });
