@@ -10,6 +10,3 @@ node_modules/
 
 # Service account info for tests (!!! DO NOT EVER EXPOSE THIS FILE !!!)
 test/serviceAccountKey.json
-
-# Firebase config file (Do not expose either !!)
-test/config.json
