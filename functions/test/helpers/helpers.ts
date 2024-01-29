@@ -1,5 +1,5 @@
 import { signInWithEmailAndPassword, signOut } from "@firebase/auth";
-import { auth, functions } from "./clientSetup.test";
+import { auth, functions } from "./clientSetup";
 import { httpsCallable } from "firebase/functions";
 
 // Generates a string of the specified length of random characters
