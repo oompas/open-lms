@@ -34,7 +34,10 @@ const callOnCallFunctionWithAuth = async (functionName: string, data: any, email
     return httpsCallable(clientFunctions, functionName)(data);
 }
 
+// All test accounts must start with this for proper cleanup
+const TEST_EMAIL_PREFIX = "FIREBASE_UNIT_TESTS_";
+
 const USER_ID_LENGTH: number = 28;
 const DOCUMENT_ID_LENGTH: number = 20;
 
-export { randomString, callOnCallFunction, callOnCallFunctionWithAuth, USER_ID_LENGTH, DOCUMENT_ID_LENGTH };
+export { randomString, callOnCallFunction, callOnCallFunctionWithAuth, TEST_EMAIL_PREFIX, USER_ID_LENGTH, DOCUMENT_ID_LENGTH };
