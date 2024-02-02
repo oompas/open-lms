@@ -4,8 +4,6 @@ import {
     DatabaseCollections,
     getCollection,
     getDoc,
-    getOptionalParameter,
-    getParameter,
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { auth } from "../helpers/setup";
@@ -15,8 +13,8 @@ import { auth } from "../helpers/setup";
  */
 const createAccount = onCall((request) => {
 
-    const email = getParameter(request, "email");
-    const password = getParameter(request, "password");
+    const email = request.data.email;
+    const password = request.data.password;
     if (password.length > 100) {
         throw new HttpsError('invalid-argument', "Password can't be over 100 characters long");
     }
@@ -57,7 +55,7 @@ const createAccount = onCall((request) => {
  */
 const resetPassword = onCall(async (request) => {
 
-    const email = getParameter(request, "email");
+    const email = request.data.email;
     const link: string = await auth.generatePasswordResetLink(email)
         .catch(() => { throw new HttpsError('invalid-argument', "Email does not exist or an error occurred") });
 
@@ -92,7 +90,7 @@ const getUserProfile = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
-    const email = getOptionalParameter(request, "email");
+    const email = request.data.email;
 
     // @ts-ignore
     let user = await auth.getUser(request.auth.uid)
