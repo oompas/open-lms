@@ -1,74 +1,33 @@
-import { createAccount } from "../../../src";
-import { assert } from "chai";
-import testEnv from "../../index.test";
-import { randomString } from "../../helpers/helpers";
-import { getAuth } from "firebase-admin/auth";
+import {  expect } from "chai";
+import { callOnCallFunction, randomString } from "../../helpers/helpers";
 import { HttpsError } from "firebase-functions/v2/https";
 import { dummyAccount } from "../../helpers/setupDummyData";
 
-interface TestInput {
-    description: string,
-    email: any,
-    password: any,
-}
-let testNumber = 0; // Increment each time
-
-const testCreateAccount = (input: TestInput, errorMessage: undefined | string) => {
-    ++testNumber;
-    const message = errorMessage ? "fail to create account" : "create account successfully";
-
-    return (
-        describe(`#${testNumber}: ` + input.description, () => {
-            it(message, () => {
-
-                const data = testEnv.firestore.makeDocumentSnapshot({
-                    email: input.email,
-                    password: input.password
-                }, `TestInput/createAccount#${testNumber}`);
-
-                // Check if the call passes or fails as desired
-                if (errorMessage) {
-                    try { // @ts-ignore
-                        return testEnv.wrap(createAccount)(data)
-                            .then(() => { throw new Error("API call should fail"); })
-                            .catch((err: any) => assert.equal(err.message, errorMessage));
-                    } catch (err) { // @ts-ignore
-                        assert.equal(err.message, errorMessage);
-                        return;
-                    }
-                }
-
-                // @ts-ignore
-                return testEnv.wrap(createAccount)(data).then(async (result: string) => {
-                    assert.equal(result, `Successfully created new user ${input.email}`,
-                        "Response message does not match expected");
-                });
-            })
-        })
-    );
-}
-
 describe('Success cases for createAccount endpoint...', () => {
 
-    let testData: TestInput;
-    const testAccounts: string[] = [];
-    const test = () => {
-        testCreateAccount(testData, undefined);
-        testAccounts.push(testData.email);
+    interface TestInput {
+        description: string,
+        email: string,
+        password: string,
     }
 
-    // Clean up accounts after tests are done
-    const auth = getAuth();
-    after(async function done() {
-        this.timeout(30_000);
-        await new Promise(res => setTimeout(res, 10_000)); // Make sure the onUserSignup() triggers are all done
+    let testNumber = 0;
+    let testData: TestInput;
+    const test = () => {
+        ++testNumber;
+        const inputCopy = testData; // Original may be updated by later test case before running
 
-        await Promise.all(testAccounts.map((email) => {
-            return auth.getUserByEmail(email)
-                .then((user: { uid: any; }) => auth.deleteUser(user.uid))
-                .catch((err: any) => { throw new HttpsError('internal', `Error getting uid for ${testData.email}: ${err}`); });
-        }));
-    });
+        return (
+            describe(`#${testNumber}: ` + inputCopy.description, () => {
+                it("create account successfully", () =>
+                    callOnCallFunction("createAccount", inputCopy)
+                        .then((result) =>
+                            expect(result.data).to.equal(`Successfully created new user ${inputCopy.email}`)
+                        )
+                )
+            })
+        );
+    }
 
     testData = {
         description: "Gmail #1",
@@ -133,9 +92,31 @@ describe('Success cases for createAccount endpoint...', () => {
 
 describe('Failure cases for createAccount endpoint...', () => {
 
-    testNumber = 0;
+    interface TestInput {
+        description: string,
+        email: any,
+        password: any,
+    }
+
+    let testNumber = 0;
     let testData: TestInput;
-    const test = (errMsg: string) => testCreateAccount(testData, errMsg);
+    const test = (errMsg: string) => {
+        ++testNumber;
+        const inputCopy = testData; // Original may be updated by later test case before running
+
+        return (
+            describe(`#${testNumber}: ` + inputCopy.description, () => {
+                it("create account failed", () =>
+                    callOnCallFunction("createAccount", inputCopy)
+                        .then(() => { throw new Error("Expected createAccount to fail"); })
+                        .catch((err: HttpsError) => {
+                            expect(err.code).to.equal("invalid-argument");
+                            expect(err.message).to.equal(errMsg);
+                        })
+                )
+            })
+        );
+    }
 
     testData = {
         description: `Invalid email #1`,
