@@ -1,4 +1,4 @@
-import { dummyAccount } from "../../helpers/setupDummyData";
+import { dummyLearnerAccount, dummyAdminAccount } from "../../helpers/setupDummyData";
 import testEnv from "../../index.test";
 import { resetPassword } from "../../../src";
 import { assert } from "chai";
@@ -50,15 +50,15 @@ describe('Success cases for resetPassword endpoint...', () => {
     const test = () => testResetPassword(testData, undefined);
 
     testData = {
-        description: "Dummy email #1",
-        email: dummyAccount.email,
+        description: "Dummy learner email",
+        email: dummyLearnerAccount.email,
     };
     test();
 
     testData = {
-        description: "Dummy email #2",
-        email: dummyAccount.email,
-    };
+        description: "Dummy admin email",
+        email: dummyAdminAccount.email,
+    }
     test();
 });
 
