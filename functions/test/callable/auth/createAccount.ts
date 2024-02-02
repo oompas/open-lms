@@ -1,7 +1,7 @@
-import {  expect } from "chai";
-import { callOnCallFunction, randomString } from "../../helpers/helpers";
+import { expect } from "chai";
+import { callOnCallFunction, randomString, TEST_EMAIL_PREFIX } from "../../helpers/helpers";
 import { HttpsError } from "firebase-functions/v2/https";
-import { dummyAccount } from "../../helpers/setupDummyData";
+import { dummyLearnerAccount, dummyAdminAccount } from "../../helpers/setupDummyData";
 
 describe('Success cases for createAccount endpoint...', () => {
 
@@ -17,6 +17,10 @@ describe('Success cases for createAccount endpoint...', () => {
         ++testNumber;
         const inputCopy = testData; // Original may be updated by later test case before running
 
+        if (!inputCopy.email.startsWith(TEST_EMAIL_PREFIX)) {
+            throw new Error("All test accounts must start with the prefix " + TEST_EMAIL_PREFIX);
+        }
+
         return (
             describe(`#${testNumber}: ` + inputCopy.description, () => {
                 it("create account successfully", () =>
@@ -31,49 +35,49 @@ describe('Success cases for createAccount endpoint...', () => {
 
     testData = {
         description: "Gmail #1",
-        email: "firebase_unit_tests_create_account_1@gmail.com",
+        email: TEST_EMAIL_PREFIX + "create_account_1@gmail.com",
         password: "password12345",
     };
     test();
 
     testData = {
         description: "Gmail #2",
-        email: "firebase_unit_tests_create_account_2@gmail.com",
+        email: TEST_EMAIL_PREFIX + "create_account_2@gmail.com",
         password: "password12345",
     };
     test();
 
     testData = {
         description: "queensu",
-        email: "firebase_unit_tests_create_account_3@queensu.ca",
+        email: TEST_EMAIL_PREFIX + "create_account_3@queensu.ca",
         password: "password12345",
     };
     test();
 
     testData = {
         description: "outlook",
-        email: "firebase_unit_tests_create_account_4@outlook.com",
+        email: TEST_EMAIL_PREFIX + "create_account_4@outlook.com",
         password: "password12345",
     };
     test();
 
     testData = {
         description: "yahoo",
-        email: "firebase_unit_tests_create_account_5@yahoo.com",
+        email: TEST_EMAIL_PREFIX + "create_account_5@yahoo.com",
         password: "password12345",
     };
     test();
 
     testData = {
         description: `Minimum password length `,
-        email: `firebase_unit_tests_create_account_${6}@gmail.com`,
+        email: TEST_EMAIL_PREFIX + `create_account_6@gmail.com`,
         password: randomString(6),
     };
     test();
 
     testData = {
         description: `Maximum password length`,
-        email: `firebase_unit_tests_create_account_${7}@gmail.com`,
+        email: TEST_EMAIL_PREFIX + `create_account_7@gmail.com`,
         password: randomString(100),
     };
     test();
@@ -83,7 +87,7 @@ describe('Success cases for createAccount endpoint...', () => {
         const length = Math.floor(Math.random() * 79) + 21;
         testData = {
             description: `Password length ${length}`,
-            email: `firebase_unit_tests_create_account_${8 + i}@gmail.com`,
+            email: TEST_EMAIL_PREFIX + `create_account_${8 + i}@gmail.com`,
             password: randomString(length),
         };
         test();
@@ -168,8 +172,15 @@ describe('Failure cases for createAccount endpoint...', () => {
     test(`The parameter email is required`);
 
     testData = {
-        description: `Email in use`,
-        email: dummyAccount.email,
+        description: `Email in use #1`,
+        email: dummyLearnerAccount.email,
+        password: "password123456",
+    };
+    test(`Email ${testData.email} is already in use`);
+
+    testData = {
+        description: `Email in use #1`,
+        email: dummyAdminAccount.email,
         password: "password123456",
     };
     test(`Email ${testData.email} is already in use`);
