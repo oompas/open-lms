@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { callFunctionWithAuth } from "../../helpers/helpers";
+import { callOnCallFunctionWithAuth } from "../../helpers/helpers";
 
 describe('Success cases for addCourse endpoint...', () => {
 
@@ -22,7 +22,7 @@ describe('Success cases for addCourse endpoint...', () => {
         return (
             describe(`#${testNumber}: ${testDescription}`, () => {
                 it("added course successfully", () => {
-                    return callFunctionWithAuth("addCourse", inputCopy, "18rem8@queensu.ca", "password12345")
+                    return callOnCallFunctionWithAuth("addCourse", inputCopy, "18rem8@queensu.ca", "password12345")
                         .then((id) => console.log(`Successfully added new course: ${id.data}`))
                 })
             })
@@ -63,7 +63,7 @@ describe('Failure cases for addCourse endpoint...', () => {
         return (
             describe(`#${testNumber}: ${testDescription}`, () => {
                 it("added course successfully", () => {
-                    return callFunctionWithAuth("addCourse", inputCopy, "18rem8@queensu.ca", "password12345")
+                    return callOnCallFunctionWithAuth("addCourse", inputCopy, "18rem8@queensu.ca", "password12345")
                         .then(() => { throw new Error("Test case should fail") })
                         .catch((err) => { expect(err.message).to.equal(expectedError) });
                 })

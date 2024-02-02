@@ -16,8 +16,11 @@ const randomString = (length: number): string => {
     return result;
 }
 
+// Calls an onCall function unauthenticated
+const callOnCallFunction = async (functionName: string, data: any) => httpsCallable(functions, functionName)(data);
+
 // Calls an onCall function for a given user
-const callFunctionWithAuth = async (functionName: string, data: any, email: string, password: string) => {
+const callOnCallFunctionWithAuth = async (functionName: string, data: any, email: string, password: string) => {
     if (auth.currentUser) {
         await signOut(auth)
             .then(() => console.log(`Successfully signed out of account ${email}`))
@@ -34,4 +37,4 @@ const callFunctionWithAuth = async (functionName: string, data: any, email: stri
 const USER_ID_LENGTH: number = 28;
 const DOCUMENT_ID_LENGTH: number = 20;
 
-export { randomString, callFunctionWithAuth, USER_ID_LENGTH, DOCUMENT_ID_LENGTH };
+export { randomString, callOnCallFunction, callOnCallFunctionWithAuth, USER_ID_LENGTH, DOCUMENT_ID_LENGTH };
