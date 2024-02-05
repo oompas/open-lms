@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "cd functions && npm test && cd .."
   },
   "dependencies": {
     "firebase": "^10.7.1",
