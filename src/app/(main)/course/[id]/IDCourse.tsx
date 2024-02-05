@@ -1,6 +1,7 @@
 import Link from "next/link"
 import link from './link.png'
 import Image from 'next/image'
+import plus from './plus.png'
 
 
 export default function IDCourse({
@@ -37,7 +38,7 @@ export default function IDCourse({
                     </Link>
                     <Link href={"https://en.wikipedia.org/wiki/Enrollment"}>
                         <div className="mt-4 text-xl border-2 w-fit px-3 py-1 rounded-full mt-2 cursor-pointer hover:opacity-60 duration-100" style={{borderColor: "#000000"}}>
-                            <div style={{ display: 'flex', alignItems: 'center' }}> Enroll + </div>
+                            <div style={{ display: 'flex', alignItems: 'center' }}> Enroll <Image src={plus} alt="" width={20} height={20} /></div>
                         </div>
                     </Link>
                     
