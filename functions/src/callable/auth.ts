@@ -29,7 +29,7 @@ const createAccount = onCall((request) => {
         })
         .then((user) => {
             logger.log(`Successfully created new user ${user.uid} (${email})`);
-            return `Successfully created new user ${email}`;
+            return user.uid;
         })
         .catch((error) => {
             if (error.code === 'auth/invalid-email') {
