@@ -7,17 +7,30 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { auth } from "../helpers/setup";
+import { object, string } from "yup";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
  */
-const createAccount = onCall((request) => {
+const createAccount = onCall(async (request) => {
+
+    logger.info(`Entering createAccount with payload ${JSON.stringify(request.data)} (user: ${request.auth?.uid})`);
+
+    const schema = object({
+        email: string().required().email(),
+        password: string().required().min(6, "Password must be at least six characters long"),
+    });
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
 
     const email = request.data.email;
     const password = request.data.password;
-    if (password.length > 100) {
-        throw new HttpsError('invalid-argument', "Password can't be over 100 characters long");
-    }
 
     // Create user (will throw an error if the email is already in use)
     return auth
@@ -55,9 +68,24 @@ const createAccount = onCall((request) => {
  */
 const resetPassword = onCall(async (request) => {
 
+    logger.info(`Entering resetPassword with payload ${JSON.stringify(request.data)} (user: ${request.auth?.uid})`);
+
+    const schema = object({ email: string().required().email() });
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
+
     const email = request.data.email;
+
     const link: string = await auth.generatePasswordResetLink(email)
         .catch(() => { throw new HttpsError('invalid-argument', "Email does not exist or an error occurred") });
+
+    logger.info(`Generated password reset link for ${email}: ${link}`);
 
     const emailData = {
         to: email,
