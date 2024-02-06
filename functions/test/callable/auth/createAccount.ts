@@ -79,16 +79,9 @@ describe('Success cases for createAccount endpoint...', () => {
     };
     test();
 
-    testData = {
-        description: `Maximum password length`,
-        email: TEST_EMAIL_PREFIX + `create_account_7@gmail.com`,
-        password: randomString(100),
-    };
-    test();
-
-    // Test random password lengths 21 < length < 100
+    // Test random password lengths 6 - 200
     for (let i = 0; i < 20; ++i) {
-        const length = Math.floor(Math.random() * 79) + 21;
+        const length = Math.floor(Math.random() * 195) + 6;
         testData = {
             description: `Password length ${length}`,
             email: TEST_EMAIL_PREFIX + `create_account_${8 + i}@gmail.com`,
