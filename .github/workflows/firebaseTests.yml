@@ -16,4 +16,5 @@ jobs:
 
       - run: cd functions/
       - run: npm ci
+      - run: npm i -g mocha
       - run: npm test
