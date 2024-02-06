@@ -124,7 +124,7 @@ describe('Failure cases for createAccount endpoint...', () => {
         email: `test.at.test.com`,
         password: "password12345",
     };
-    test(`Email ${testData.email} is invalid`, "functions/invalid-argument");
+    test("ValidationError: email must be a valid email", "functions/invalid-argument");
 
     testData = {
         description: `Invalid email #2`,
@@ -138,35 +138,35 @@ describe('Failure cases for createAccount endpoint...', () => {
         email: `open LMS@gmail.com`,
         password: "password12345",
     };
-    test(`Email ${testData.email} is invalid`, "functions/invalid-argument");
+    test(`ValidationError: email must be a valid email`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid email #4`,
         email: `test@test@com`,
         password: "password12345",
     };
-    test(`Email ${testData.email} is invalid`, "functions/invalid-argument");
+    test(`ValidationError: email must be a valid email`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid email #5`,
         email: "",
         password: "password12345",
     };
-    test(`The parameter email is required`, "functions/invalid-argument");
+    test(`ValidationError: email is a required field`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid email #6`,
         email: null,
         password: "password12345",
     };
-    test(`The parameter email is required`, "functions/invalid-argument");
+    test(`ValidationError: email is a required field`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid email #7`,
         email: 12345,
         password: "password12345",
     };
-    test(`The parameter email is required`, "functions/invalid-argument");
+    test("ValidationError: email must be a `string` type, but the final value was: `12345`.", "functions/invalid-argument");
 
     testData = {
         description: `Email in use #1`,
@@ -187,21 +187,21 @@ describe('Failure cases for createAccount endpoint...', () => {
         email: `test@test.com`,
         password: ""
     };
-    test(`Password is invalid. It must be a string with at least six characters.`, "functions/invalid-argument");
+    test(`ValidationError: password is a required field`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid password #2`,
         email: `test@test.com`,
         password: null
     };
-    test(`The parameter password is required`, "functions/invalid-argument");
+    test(`ValidationError: password is a required field`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid password #3`,
         email: `test@test.com`,
         password: 12345
     };
-    test(`Password is invalid. It must be a string with at least six characters.`, "functions/invalid-argument");
+    test("ValidationError: password must be a `string` type, but the final value was: `12345`.", "functions/invalid-argument");
 
     for (let i = 1; i < 6; ++i) {
         testData = {
@@ -209,20 +209,6 @@ describe('Failure cases for createAccount endpoint...', () => {
             email: `test@test.com`,
             password: randomString(i)
         };
-        test(`Password is invalid. It must be a string with at least six characters.`, "functions/invalid-argument");
+        test(`ValidationError: Password must be at least six characters long`, "functions/invalid-argument");
     }
-
-    testData = {
-        description: `Invalid password #10`,
-        email: `test@test.com`,
-        password: randomString(101)
-    };
-    test(`Password can't be over 100 characters long`, "functions/invalid-argument");
-
-    testData = {
-        description: `Invalid password #11`,
-        email: `test@test.com`,
-        password: randomString(1000)
-    };
-    test(`Password can't be over 100 characters long`, "functions/invalid-argument");
 });

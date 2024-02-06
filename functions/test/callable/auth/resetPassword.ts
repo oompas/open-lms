@@ -98,29 +98,29 @@ describe('Failure cases for resetPassword endpoint...', () => {
         description: "Invalid email #1",
         email: null,
     };
-    test("Email is required", "functions/invalid-argument");
+    test("ValidationError: email is a required field", "functions/invalid-argument");
 
     testData = {
         description: "Invalid email #2",
         email: 12345,
     };
-    test("Email is required", "functions/invalid-argument");
+    test("ValidationError: email must be a `string` type, but the final value was: `12345`.", "functions/invalid-argument");
 
     testData = {
         description: "Invalid email #3",
         email: "",
     };
-    test("Email is required", "functions/invalid-argument");
+    test("ValidationError: email is a required field", "functions/invalid-argument");
 
     testData = {
         description: "Invalid email #4",
         email: "test.at.test.com",
     };
-    test("Email does not exist or an error occurred", "functions/invalid-argument");
+    test("ValidationError: email must be a valid email", "functions/invalid-argument");
 
     testData = {
         description: "Invalid email #5",
         email: "test@@test.com",
     };
-    test("Email does not exist or an error occurred", "functions/invalid-argument");
+    test("ValidationError: email must be a valid email", "functions/invalid-argument");
 });
