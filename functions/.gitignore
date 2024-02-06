@@ -13,3 +13,6 @@ test/serviceAccountKey.json
 
 # Firebase config file (Do not expose either !!)
 test/config.json
+
+# Temporary files for testing
+test/tmp/
