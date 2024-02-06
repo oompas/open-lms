@@ -1,6 +1,6 @@
 name: Firebase API Unit tests
 
-on: pull_request
+on: push
 
 jobs:
   run_tests:
