@@ -1,0 +1,19 @@
+name: Firebase API Unit tests
+
+on: pull_request
+
+jobs:
+  run_tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+
+      - run: cd functions/
+      - run: npm ci
+      - run: npm test
