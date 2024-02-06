@@ -62,7 +62,7 @@ describe('Failure cases for addCourse endpoint...', () => {
 
         return (
             describe(`#${testNumber}: ${testDescription}`, () => {
-                it("added course successfully", () =>
+                it("invalid addCourse input caught", () =>
                     callOnCallFunctionWithAuth("addCourse", inputCopy, "18rem8@queensu.ca", "password12345")
                         .then(() => { throw new Error("Test case should fail") })
                         .catch((err) => { expect(err.message).to.equal(expectedError) })
