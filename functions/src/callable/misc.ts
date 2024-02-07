@@ -5,7 +5,7 @@ import { logger } from "firebase-functions";
 /**
  * Sends an email to the developers with platform-specific feedback
  */
-const sendPlatformFeedback = onCall((request) => {
+const sendPlatformFeedback = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 

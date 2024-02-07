@@ -1,36 +1,43 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
-import { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated } from "../helpers/helpers";
+import { DatabaseCollections, getCollection, getDoc, getParameter, verifyIsAuthenticated } from "../helpers/helpers";
 import { auth } from "../helpers/setup";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
  */
 const createAccount = onCall((request) => {
+
+    const email = getParameter(request, "email");
+    const password = getParameter(request, "password");
+    if (password.length > 100) {
+        throw new HttpsError('invalid-argument', "Password can't be over 100 characters long");
+    }
+
     // Create user (will throw an error if the email is already in use)
     return auth
         .createUser({
-            email: request.data.email,
+            email: email,
             emailVerified: false,
-            password: request.data.password,
+            password: password,
             disabled: false,
         })
         .then((user) => {
-            logger.log(`Successfully created new user ${user.uid} (${request.data.email})`);
-            return `Successfully created new user ${request.data.email}`;
+            logger.log(`Successfully created new user ${user.uid} (${email})`);
+            return `Successfully created new user ${email}`;
         })
         .catch((error) => {
             if (error.code === 'auth/invalid-email') {
-                logger.warn(`Email ${request.data.email} is invalid`);
-                throw new HttpsError('invalid-argument', `Email ${request.data.email} is invalid`);
+                logger.warn(`Email ${email} is invalid`);
+                throw new HttpsError('invalid-argument', `Email ${email} is invalid`);
             }
             if (error.code === 'auth/invalid-password') {
-                logger.warn(`Password ${request.data.password} is invalid`);
+                logger.warn(`Password ${password} is invalid`);
                 throw new HttpsError('invalid-argument', `Password is invalid. It must be a string with at least six characters.`);
             }
             if (error.code === 'auth/email-already-exists') {
-                logger.warn(`Email ${request.data.email} in use`);
-                throw new HttpsError('already-exists', `Email ${request.data.email} is already in use`);
+                logger.warn(`Email ${email} in use`);
+                throw new HttpsError('already-exists', `Email ${email} is already in use`);
             }
 
             logger.error(`Error creating new user (not including email in use): ${error.message} (${error.code})`);
@@ -43,14 +50,12 @@ const createAccount = onCall((request) => {
  */
 const resetPassword = onCall(async (request) => {
 
-    if (!request.data.email || typeof request.data.email !== 'string') {
-        throw new HttpsError("invalid-argument", "Must provide an email address");
-    }
-    const emailAddress: string = request.data.email;
-    const link: string = await auth.generatePasswordResetLink(emailAddress);
+    const email = getParameter(request, "email");
+    const link: string = await auth.generatePasswordResetLink(email)
+        .catch(() => { throw new HttpsError('invalid-argument', "Email does not exist or an error occurred") });
 
-    const email = {
-        to: emailAddress,
+    const emailData = {
+        to: email,
         message: {
             subject: 'Reset your password for OpenLMS',
             html: `<p style="font-size: 16px;">A password reset request was made for your account</p>
@@ -62,14 +67,14 @@ const resetPassword = onCall(async (request) => {
     };
 
     return getCollection(DatabaseCollections.Email)
-        .add(email)
+        .add(emailData)
         .then(() => {
-            logger.log(`Password reset email created for ${emailAddress}`);
-            return `Password reset email created for ${emailAddress}`;
+            logger.log(`Password reset email created for ${email}`);
+            return `Password reset email created for ${email}`;
         })
         .catch((err) => {
-            logger.log(`Error creating password reset email for ${emailAddress}`);
-            return `Error creating password reset email for ${emailAddress}`;
+            logger.log(`Error creating password reset email for ${email}`);
+            return `Error creating password reset email for ${email}`;
         });
 });
 
