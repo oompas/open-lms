@@ -1,9 +1,5 @@
 "use client"
 
-import Link from "next/link"
-import link from './link.png'
-import Image from 'next/image'
-import plus from './plus.png'
 import Button from "@/components/Button"
 
 
