@@ -1,64 +1,42 @@
+"use client"
+
 import Link from "next/link"
 import link from './link.png'
 import Image from 'next/image'
 import plus from './plus.png'
+import Button from "@/components/Button"
 
 
 export default function IDCourse({
-    title,
-    status,
-    description,
-    time,
-    color,
+    title,          // string
+    status,         // string
+    description,    // string
+    time,           // string - elapsed time?
     id
 } : {
     title: string,
     status: string,
     description: string,
     time: string,
-    color: string,
     id: number
 }) {
 
-    const timeChecked = true
-    const quizChecked = false
-    const elapsedTime = "Not Started"
-
     return (
         <main>
-            <main className="border-4 w-[100%] mb-8 p-10 rounded-2xl"             style={{borderColor: color}}>
-                <div className="text-6xl">{title}
-                    <div className="mt-4 text-xl text-white w-fit px-3 py-1 rounded-full mt-2" style={{backgroundColor: color}}>{status} </div>
-                    <div className="mt-4 text-xl">{description}</div>
-                    <div style={{ display: 'flex', alignItems: 'left'}}>
-                    <Link href={"https://en.wikipedia.org/wiki/Course_(education)"}>
-                        <div className="mt-4 text-xl text-white w-fit px-3 py-1 rounded-full mt-2 cursor-pointer hover:opacity-60 duration-100" style={{backgroundColor: "#000000", marginRight: '20px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center' }}> Go to course <Image src={link} alt="" width={20} height={20} /> </div> 
-                        </div>
-                    </Link>
-                    <Link href={"https://en.wikipedia.org/wiki/Enrollment"}>
-                        <div className="mt-4 text-xl border-2 w-fit px-3 py-1 rounded-full mt-2 cursor-pointer hover:opacity-60 duration-100" style={{borderColor: "#000000"}}>
-                            <div style={{ display: 'flex', alignItems: 'center' }}> Enroll <Image src={plus} alt="" width={20} height={20} /></div>
-                        </div>
-                    </Link>
-                    
+            <div className="flex flex-row border-4 rounded-2xl p-8">
+                <div className="flex flex-col">
+                    <div className="text-2xl font-bold">{title}</div>
+                    <div className="mt-2 text-2xl">{description}</div>
+                    <div className="flex flex-row space-x-4 mt-4">
+                        <Button text="Go to course" onClick={() => alert("go to course")} filled icon="link" />
+                        <Button text="Enroll" onClick={() => alert("enroll")} icon="plus" />
                     </div>
-                            <div className="mt-4" style={{ display: 'flex', alignItems: 'center', fontSize: '20px' }}> elapsed time:</div>
-                            <div style={{ display: 'flex', alignItems: 'center', fontSize: '30px'  }}> {elapsedTime}</div>
-
-
                 </div>
-            </main>
-            <div className="mt-5 text-xl">
-                <b>Required completion verification:</b>
-                <div className="mt-2"> 
-                <input type="checkbox" id="myCheckbox" checked={timeChecked}/>
-                <label htmlFor="myCheckbox"> Spend at Least 15 mins on the course.</label></div>
-                
-                
-                <div className="mt-2"> 
-                <input type="checkbox" id="myCheckbox" checked={quizChecked}/>
-                <label htmlFor="myCheckbox"> Complete available Quizzes.</label>
+                <div className="flex flex-col justify-center items-center ml-auto border-2 rounded-xl px-10 py-4 shadow-lg">
+                    <div className="text-sm -mb-1"> elapsed time:</div>
+                    <div className="text-3xl">{time}</div>
+                    <div className="text-sm mt-2 -mb-1">status:</div>
+                    <div className="text-2xl"> {status}</div>
                 </div>
             </div>
         </main>

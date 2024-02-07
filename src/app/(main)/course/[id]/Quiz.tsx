@@ -1,4 +1,7 @@
-import Link from "next/link"
+"use client"
+
+import Button from "@/components/Button"
+import { useRouter } from 'next/navigation'
 
 export default function Quiz({
     title,
@@ -11,13 +14,20 @@ export default function Quiz({
     attempts: number
     id: number
 }) {
+
+    const router = useRouter()
+
     return (
-                    <Link className="mt-4 border-4 w-[75vh] mb-8 p-6 rounded-2xl cursor-pointer hover:opacity-60 duration-100" href={"/quiz/"+id}>
-                        <div className="text-3xl">{title}</div>
-                        <div className="mt-4"> <b>Quiz Length: {length}</b> </div>
-                        <div className="mt-2"> <b># of attempts allowed: {attempts}</b> </div>
-                        <div className="mt-4 text-2x1"> click to start </div>
-                    </Link>
+        <div className="border-4 mb-8 p-6 rounded-2xl">
+            <div className="text-2xl mb-2">{title}</div>
+            <div className="flex flex-row items-end">
+                <div className="flex flex-col mr-auto text-lg">
+                    <div>Quiz Length: {length}</div>
+                    <div># of attempts allowed: {attempts}</div>
+                </div>
+                <Button text="Click to start" onClick={() => router.push("/quiz/" + id)} style="mt-2"/>
+            </div>
+        </div>
     )
 }
 

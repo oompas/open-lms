@@ -1,5 +1,5 @@
 import { ReactElement } from "react";
-import { MdArrowForward } from "react-icons/md";
+import { MdAddCircleOutline, MdArrowForward, MdOpenInNew } from "react-icons/md";
 
 export default function Button({
     text,
@@ -16,15 +16,21 @@ export default function Button({
 }) {
 
     const background: any = " bg-red-800 text-white"
-    const border: any = " border-[3px] border-red-800"
-    const iconElem: ReactElement | null = icon === "arrow" ? 
-        <MdArrowForward size={24}/>
-        : null
+    const border: any = " text-red-800"
+    const iconElem: ReactElement | null = <div>
+        { icon === "arrow" ? 
+        <MdArrowForward size={24} />
+        : icon === "link" ? 
+        <MdOpenInNew size={20} />
+        : icon === "plus" ?
+        <MdAddCircleOutline size={20} />
+        : null }
+    </div>
 
     return (
         <div
             onClick={onClick}
-            className={ "flex items-center px-5 py-2 w-fit rounded-xl duration-75 ease-out hover:px-4 cursor-pointer " + style + (filled ? background : border) }
+            className={ "flex h-fit items-center px-5 py-2 w-fit rounded-xl text-lg font-bold border-[3px] border-red-800 duration-75 ease-out hover:opacity-60 cursor-pointer " + style + (filled ? background : border) }
         >
             <div>{text}</div>
             { icon ? <div className="ml-2">{iconElem}</div> : null }
