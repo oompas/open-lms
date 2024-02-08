@@ -1,8 +1,11 @@
+"use client"
+
 import ManageCourse from "@/app/(main)/admin/tools/ManageCourse";
 import LearnerInsight from "@/app/(main)/admin/tools/LearnerInsight";
 import CourseInsight from "@/app/(main)/admin/tools/CourseInsight";
 import Button from "@/components/Button";
 import SearchBar from "@/components/SearchBar";
+import {useRouter} from "next/navigation";
 
 // Temporary data for courses that an administrator can edit
 const TEMP_MANAGE_COURSE_DATA = [
@@ -47,6 +50,9 @@ const TEMP_COURSE_INSIGHT_DATA = [
 ]
 
 export default function Tools() {
+
+    const router = useRouter()
+
     return (
         <main className="flex-col justify-center items-center pt-14">
             {/* Manage courses section */}
@@ -57,7 +63,7 @@ export default function Tools() {
                         <p className="mb-0 mr-2">Click on a course to navigate to course update screen.</p>
                     </div>
                     <div className="flex flex-row justify-end">
-                        <Button text="Create a Course" link="/home"/>
+                        <Button text="Create a Course" onClick={() => router.push('/home')}/>
                         <SearchBar style="ml-4"/>
                     </div>
                 </div>
@@ -77,8 +83,8 @@ export default function Tools() {
             <div className="flex flex-col h-[50vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-end items-center mb-2">
                     <div className="text-2xl mb-2 mr-auto">Learner Insights</div>
-                    <Button text="Invite a Learner" link="/home"/>
-                    <Button text="Download User Reports" link="/home" style="ml-4"/>
+                    <Button text="Invite a Learner" onClick={() => router.push('/home')}/>
+                    <Button text="Download User Reports" onClick={() => router.push('/home')} style="ml-4"/>
                 </div>
                 <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
                     <table className="border-collapse border w-full">
@@ -111,7 +117,7 @@ export default function Tools() {
             <div className="flex flex-col h-[50vh] bg-white p-16 rounded-2xl shadow-custom">
                 <div className="flex flex-row justify-end items-center mb-2">
                     <div className="text-2xl mb-2 mr-auto">Course Insights</div>
-                    <Button text="Download Course Reports" link="/home"/>
+                    <Button text="Download Course Reports" onClick={() => router.push('/home')}/>
                 </div>
                 <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
                     <table className="border-collapse border w-full">
