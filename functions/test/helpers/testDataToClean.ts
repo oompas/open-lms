@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 
 const tmpDirPath = "./test/tmp";
-const testUserFilePath = tmpDirPath + `/testUsers-${new Date().getTime()}.json`;
+const testUserFilePath = tmpDirPath + `/testUsers.json`;
 
 /**
  * Add a test user (email + uid) to a temporary JSON file so it can be deleted up later

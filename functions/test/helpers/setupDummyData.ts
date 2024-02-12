@@ -1,9 +1,33 @@
 import { expect } from "chai";
-import { callOnCallFunction, randomString, TEST_EMAIL_PREFIX } from "./helpers";
+import { callOnCallFunction, randomString } from "./helpers";
 import { adminAuth, adminDb } from "./adminSetup";
-import { addTestUser } from "./testDataToClean";
+import { addTestUser, testUserFilePath, tmpDirPath } from "./testDataToClean";
+import { existsSync, readFileSync } from "fs";
+import { HttpsError } from "firebase-functions/v2/https";
 
-const dummyLearnerAccount = { email: TEST_EMAIL_PREFIX + "dummy_learner_account@gmail.com", password: randomString(20) };
+describe("Cleaning up any old data from previous runs", () => {
+    it("Delete test user accounts", async function() {
+        this.timeout(30_000);
+
+        if (!existsSync(tmpDirPath) || !existsSync(testUserFilePath)) {
+            console.log("No test users to delete");
+            return;
+        }
+
+        const usersToClean: { email: string, uid: string }[] = JSON.parse(readFileSync(testUserFilePath, "utf-8"));
+        const numTestUsers: number = usersToClean.length;
+
+        console.log(`Deleting ${numTestUsers} test users...`);
+        await Promise.all(usersToClean.map((user) =>
+            adminAuth.deleteUser(user.uid)
+                .catch((err) => { throw new HttpsError('internal', `Error deleting user ${user.email} (${user.uid}): ${err}`); })
+        ))
+            .then(() => console.log(`Successfully deleted ${numTestUsers} test users`))
+            .catch((err) => { throw new HttpsError('internal', `Error deleting test users: ${err}`); });
+    });
+});
+
+const dummyLearnerAccount = { email: "firebase_unit_tests_dummy_learner_account@gmail.com", password: randomString(20) };
 
 describe("Create dummy learner account", () => {
     it("Create dummy account", () => {
@@ -16,7 +40,7 @@ describe("Create dummy learner account", () => {
     });
 });
 
-const dummyAdminAccount = { email: TEST_EMAIL_PREFIX + "dummy_admin_account@gmail.com", password: randomString(20) };
+const dummyAdminAccount = { email: "firebase_unit_tests_dummy_admin_account@gmail.com", password: randomString(20) };
 
 describe("Create dummy admin account", () => {
     it("Create dummy account", async function() {
@@ -29,11 +53,6 @@ describe("Create dummy admin account", () => {
             addTestUser(dummyAdminAccount.email, <string> result.data);
             return <string> result.data;
         });
-
-        // console.log(`Getting uid for ${dummyAdminAccount.email}`);
-        // const uid = await adminAuth.getUserByEmail(dummyAdminAccount.email)
-        //     .then((user) => user.uid)
-        //     .catch((err) => { throw new Error(`Error getting admin user's uid: ${err}`); });
 
         await new Promise(res => setTimeout(res, 10_000)); // Make sure the User document was created
 

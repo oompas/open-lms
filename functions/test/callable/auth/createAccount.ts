@@ -1,8 +1,11 @@
 import { expect } from "chai";
-import { callOnCallFunction, randomString, TEST_EMAIL_PREFIX } from "../../helpers/helpers";
+import { callOnCallFunction, randomString, randomInt } from "../../helpers/helpers";
 import { HttpsError } from "firebase-functions/v2/https";
 import { dummyLearnerAccount, dummyAdminAccount } from "../../helpers/setupDummyData";
 import { addTestUser } from "../../helpers/testDataToClean";
+import { faker } from "@faker-js/faker";
+
+const randomPassword = () => faker.internet.password({ length: randomInt(6, 200), memorable: Math.random() < 0.3 });
 
 describe('Success cases for createAccount endpoint...', () => {
 
@@ -18,12 +21,8 @@ describe('Success cases for createAccount endpoint...', () => {
         ++testNumber;
         const inputCopy = testData; // Original may be updated by later test case before running
 
-        if (!inputCopy.email.startsWith(TEST_EMAIL_PREFIX)) {
-            throw new Error("All test accounts must start with the prefix " + TEST_EMAIL_PREFIX);
-        }
-
         return (
-            describe(`#${testNumber}: ` + inputCopy.description, () => {
+            describe(`#${testNumber}: ${inputCopy.description} ('${inputCopy.email}' '${inputCopy.password}')`, () => {
                 it("create account successfully", () =>
                     callOnCallFunction("createAccount", inputCopy)
                         .then((result) => {
@@ -37,58 +36,32 @@ describe('Success cases for createAccount endpoint...', () => {
         );
     }
 
-    testData = {
-        description: "Gmail #1",
-        email: TEST_EMAIL_PREFIX + "create_account_1@gmail.com",
-        password: "password12345",
-    };
-    test();
-
-    testData = {
-        description: "Gmail #2",
-        email: TEST_EMAIL_PREFIX + "create_account_2@gmail.com",
-        password: "password12345",
-    };
-    test();
-
-    testData = {
-        description: "queensu",
-        email: TEST_EMAIL_PREFIX + "create_account_3@queensu.ca",
-        password: "password12345",
-    };
-    test();
-
-    testData = {
-        description: "outlook",
-        email: TEST_EMAIL_PREFIX + "create_account_4@outlook.com",
-        password: "password12345",
-    };
-    test();
-
-    testData = {
-        description: "yahoo",
-        email: TEST_EMAIL_PREFIX + "create_account_5@yahoo.com",
-        password: "password12345",
-    };
-    test();
-
-    testData = {
-        description: `Minimum password length `,
-        email: TEST_EMAIL_PREFIX + `create_account_6@gmail.com`,
-        password: randomString(6),
-    };
-    test();
-
-    // Test random password lengths 6 - 200
-    for (let i = 0; i < 20; ++i) {
-        const length = Math.floor(Math.random() * 195) + 6;
+    // 10 randomly generated email/password combinations
+    for (let i = 1; i <= 10; ++i) {
         testData = {
-            description: `Password length ${length}`,
-            email: TEST_EMAIL_PREFIX + `create_account_${8 + i}@gmail.com`,
-            password: randomString(length),
+            description: `Random #${i}`,
+            email: faker.internet.email({ allowSpecialCharacters: Math.random() < 0.3 }),
+            password: randomPassword()
         };
         test();
     }
+
+    const emailProviders = ["gmail.com", "yahoo.com", "outlook.com", "queensu.ca", "mail.utoronto.ca"];
+    for (const provider of emailProviders) {
+        testData = {
+            description: `${provider} provider`,
+            email: faker.internet.email({ provider: provider }),
+            password: randomPassword(),
+        };
+        test();
+    }
+
+    testData = {
+        description: `Minimum password length (6)`,
+        email: faker.internet.email(),
+        password: faker.internet.password({ length: 6 }),
+    };
+    test();
 });
 
 describe('Failure cases for createAccount endpoint...', () => {
@@ -106,7 +79,7 @@ describe('Failure cases for createAccount endpoint...', () => {
         const inputCopy = testData; // Original may be updated by later test case before running
 
         return (
-            describe(`#${testNumber}: ` + inputCopy.description, () => {
+            describe(`#${testNumber}: ${inputCopy.description} ('${inputCopy.email}' '${inputCopy.password}')`, () => {
                 it("create account failed", () =>
                     callOnCallFunction("createAccount", inputCopy)
                         .then(() => { throw new Error("Expected createAccount to fail"); })
@@ -122,83 +95,83 @@ describe('Failure cases for createAccount endpoint...', () => {
     testData = {
         description: `Invalid email #1`,
         email: `test.at.test.com`,
-        password: "password12345",
+        password: randomPassword(),
     };
     test("ValidationError: email must be a valid email", "functions/invalid-argument");
 
     testData = {
         description: `Invalid email #2`,
         email: `test@test`,
-        password: "password12345",
+        password: randomPassword(),
     };
     test(`Email ${testData.email} is invalid`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid email #3`,
         email: `open LMS@gmail.com`,
-        password: "password12345",
+        password: randomPassword(),
     };
     test(`ValidationError: email must be a valid email`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid email #4`,
         email: `test@test@com`,
-        password: "password12345",
+        password: randomPassword(),
     };
     test(`ValidationError: email must be a valid email`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid email #5`,
         email: "",
-        password: "password12345",
+        password: randomPassword(),
     };
     test(`ValidationError: email is a required field`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid email #6`,
         email: null,
-        password: "password12345",
+        password: randomPassword(),
     };
     test(`ValidationError: email is a required field`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid email #7`,
         email: 12345,
-        password: "password12345",
+        password: randomPassword(),
     };
     test("ValidationError: email must be a `string` type, but the final value was: `12345`.", "functions/invalid-argument");
 
     testData = {
         description: `Email in use #1`,
         email: dummyLearnerAccount.email,
-        password: "password123456",
+        password: randomPassword(),
     };
     test(`Email ${testData.email} is already in use`, "functions/already-exists");
 
     testData = {
         description: `Email in use #2`,
         email: dummyAdminAccount.email,
-        password: "password123456",
+        password: randomPassword(),
     };
     test(`Email ${testData.email} is already in use`, "functions/already-exists");
 
     testData = {
         description: `Invalid password #1`,
-        email: `test@test.com`,
+        email: faker.internet.email(),
         password: ""
     };
     test(`ValidationError: password is a required field`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid password #2`,
-        email: `test@test.com`,
+        email: faker.internet.email(),
         password: null
     };
     test(`ValidationError: password is a required field`, "functions/invalid-argument");
 
     testData = {
         description: `Invalid password #3`,
-        email: `test@test.com`,
+        email: faker.internet.email(),
         password: 12345
     };
     test("ValidationError: password must be a `string` type, but the final value was: `12345`.", "functions/invalid-argument");
@@ -206,7 +179,7 @@ describe('Failure cases for createAccount endpoint...', () => {
     for (let i = 1; i < 6; ++i) {
         testData = {
             description: `Invalid password #${i + 3}`,
-            email: `test@test.com`,
+            email: faker.internet.email(),
             password: randomString(i)
         };
         test(`ValidationError: Password must be at least six characters long`, "functions/invalid-argument");
