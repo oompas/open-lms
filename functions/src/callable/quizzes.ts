@@ -8,7 +8,7 @@ const addQuiz = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
-    // TODO: Update the quiz by adding the new questions (don't delete the old questions!)
+    // Check out addCourse endpoint - basically same logic, just different values
 });
 
 /**
@@ -19,6 +19,12 @@ const addQuiz = onCall(async (request) => {
 const updateQuiz = onCall(async (request) => {
 
     await verifyIsAdmin(request);
+
+    // There are 3 cases to consider:
+    // 1. New question: pass in new question object. A new question is created
+    // 2. Updated question: pass in new question object plus the id of the old object. A new question is created and
+    // the old one is deactivated
+    // 3. Deleted question: pass in the id of the old question. The old question is deactivated
 });
 
 /**
