@@ -9,24 +9,51 @@ import {
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
 import { Timestamp } from "firebase/firestore";
+import { boolean, number, object, string } from 'yup';
 
 /**
- * Adds or updates a course (if a course ID is passed in, it updates) with the given data:
+ * Adds a course with the given data:
  * -name
  * -description
  * -link
  * -minTime
- * -quizAttempts
- * -maxQuizTime
+ * -maxQuizAttempts
+ * -quizTimeLimit
  * -active
  *
- * If a course is added, the new ID is returned
+ * And a new course is returned
  */
-const saveCourse = onCall(async (request) => {
+const addCourse = onCall(async (request) => {
+
+    logger.info(`Entering addCourse for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
     await verifyIsAdmin(request);
 
-    // TODO: Figure out an effective way to do both updates and adds
+    logger.info("Administrative permission verification passed");
+
+    const schema = object({
+        name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
+        description: string().required(),
+        link: string().required(),
+        minTime: number().required().integer().positive(),
+        maxQuizAttempts: number().required().integer().positive(),
+        quizTimeLimit: number().required().integer().positive(),
+        active: boolean().required()
+    });
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
+
+    return getCollection(DatabaseCollections.Course)
+        // @ts-ignore
+        .add({ userID: request.auth.uid, ...request.data })
+        .then((doc) => doc.id)
+        .catch((err) => { throw new HttpsError("internal", `Error adding new course: ${err}`) });
 });
 
 /**
@@ -43,11 +70,11 @@ const getAvailableCourses = onCall(async (request) => {
     const uid = request.auth.uid;
 
     // Get completed course IDs to exclude from the result
-    const completedCourses: string[] = await getCollection(DatabaseCollections.CourseAttempt)
+    // @ts-ignore
+    const userCourses: { courseId: string, pass: boolean }[] = await getCollection(DatabaseCollections.CourseAttempt)
         .where("userId", "==", uid)
-        .where("pass", "==", true)
         .get()
-        .then((docs) => docs.docs.map((doc) => doc.data().courseId))
+        .then((docs) => docs.docs.map((doc) => doc.data()))
         .catch((error) => {
             logger.error(`Error getting course attempts: ${error}`);
             throw new HttpsError("internal", `Error getting courses, please try again later`);
@@ -55,12 +82,18 @@ const getAvailableCourses = onCall(async (request) => {
 
     // Return all active & uncompleted courses
     return getCollection(DatabaseCollections.Course)
-        .where("active", "==", true)
         .get()
-        .then((docs) => {
-            return docs.docs
-                .filter((doc) => !completedCourses.includes(doc.id))
-                .map((doc) => ({ id: doc.id, ...doc.data() }));
+        .then((courses) => {
+            return courses.docs
+                .map((doc) => {
+                    const courseEnrolled = userCourses.filter((course) => course.courseId === doc.id);
+                    return {
+                        id: doc.id,
+                        enrolled: courseEnrolled.length > 0,
+                        pass: courseEnrolled.length === 0 ? null : courseEnrolled[0].pass,
+                        ...doc.data()
+                    }
+                });
         })
         .catch((error) => {
             logger.error(`Error getting active courses: ${error}`);
@@ -226,4 +259,4 @@ const sendCourseFeedback = onCall(async (request) => {
     return sendEmail(courseInfo.creator, subject, content, "sending course feedback");
 });
 
-export { saveCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse, sendCourseFeedback };
+export { addCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse, sendCourseFeedback };

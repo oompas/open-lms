@@ -5,7 +5,7 @@ import "../callable/auth/getUserProfile";
 import "../callable/courses/courseEnroll";
 import "../callable/courses/getAvailableCourses";
 import "../callable/courses/getCourseInfo";
-import "../callable/courses/saveCourse";
+import "../callable/courses/addCourse";
 import "../callable/courses/sendCourseFeedback";
 import "../callable/courses/startCourse";
 

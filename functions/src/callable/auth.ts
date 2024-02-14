@@ -1,18 +1,36 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
-import { DatabaseCollections, getCollection, getDoc, getParameter, verifyIsAuthenticated } from "../helpers/helpers";
+import {
+    DatabaseCollections,
+    getCollection,
+    getDoc,
+    verifyIsAuthenticated
+} from "../helpers/helpers";
 import { auth } from "../helpers/setup";
+import { object, string } from "yup";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
  */
-const createAccount = onCall((request) => {
+const createAccount = onCall(async (request) => {
 
-    const email = getParameter(request, "email");
-    const password = getParameter(request, "password");
-    if (password.length > 100) {
-        throw new HttpsError('invalid-argument', "Password can't be over 100 characters long");
-    }
+    logger.info(`Entering createAccount with payload ${JSON.stringify(request.data)} (user: ${request.auth?.uid})`);
+
+    const schema = object({
+        email: string().required().email(),
+        password: string().required().min(6, "Password must be at least six characters long"),
+    });
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
+
+    const email = request.data.email;
+    const password = request.data.password;
 
     // Create user (will throw an error if the email is already in use)
     return auth
@@ -24,7 +42,7 @@ const createAccount = onCall((request) => {
         })
         .then((user) => {
             logger.log(`Successfully created new user ${user.uid} (${email})`);
-            return `Successfully created new user ${email}`;
+            return user.uid;
         })
         .catch((error) => {
             if (error.code === 'auth/invalid-email') {
@@ -50,9 +68,24 @@ const createAccount = onCall((request) => {
  */
 const resetPassword = onCall(async (request) => {
 
-    const email = getParameter(request, "email");
+    logger.info(`Entering resetPassword with payload ${JSON.stringify(request.data)} (user: ${request.auth?.uid})`);
+
+    const schema = object({ email: string().required().email() });
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
+
+    const email = request.data.email;
+
     const link: string = await auth.generatePasswordResetLink(email)
         .catch(() => { throw new HttpsError('invalid-argument', "Email does not exist or an error occurred") });
+
+    logger.info(`Generated password reset link for ${email}: ${link}`);
 
     const emailData = {
         to: email,
@@ -85,6 +118,8 @@ const getUserProfile = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
+    const email = request.data.email;
+
     // @ts-ignore
     let user = await auth.getUser(request.auth.uid)
         .then((userRecord) => userRecord)
@@ -94,22 +129,19 @@ const getUserProfile = onCall(async (request) => {
         });
 
     // Only administrators can view other's profiles
-    if (!!request.data.email) {
+    if (email) {
         // @ts-ignore
         if (!user.customClaims['admin']) {
             logger.error(`Non-admin user '${user.email}' is trying to request this endpoint`);
             throw new HttpsError('permission-denied', "You must be an administrator to perform this action");
         }
 
-        user = await auth.getUserByEmail(request.data.email)
+        user = await auth.getUserByEmail(email)
             .then((user) => user)
             .catch((error) => {
                 logger.error(`Error getting UserRecord object: ${error}`);
                 throw new HttpsError("internal", "Error getting user data, try again later");
             });
-    } else if (!!request.data) {
-        throw new HttpsError("invalid-argument", "Invalid payload: must be empty (getting current user's profile)," +
-            " or have an 'email' field to specify the user to get the profile for (administrators only)");
     }
 
     // Query course & course attempt data

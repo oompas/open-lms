@@ -20,7 +20,6 @@ const getDoc = (collection: DatabaseCollections, docId: string) => db.doc(`/${co
 
 // Check if the requesting user is authenticated
 const verifyIsAuthenticated = (request: CallableRequest) => {
-    // TODO: Make sure the user exists too
     if (!request.auth || !request.auth.uid) {
         throw new HttpsError(
             'unauthenticated',
@@ -28,17 +27,6 @@ const verifyIsAuthenticated = (request: CallableRequest) => {
         );
     }
 };
-
-// Gets a parameter from a request (_fieldsProto is used when unit testing)
-const getParameter: any = (request: CallableRequest, parameter: string) => {
-    // @ts-ignore
-    const value = request.data[parameter] ?? request._fieldsProto[parameter].stringValue;
-    if (!value) {
-        logger.error(`Parameter: ${parameter} Value: ${value} Request: ${JSON.stringify(request)}`);
-        throw new HttpsError('invalid-argument', `The parameter ${parameter} is required`);
-    }
-    return value;
-}
 
 // Adds email doc to db (which gets sent by the 'Trigger Email' extension)
 const sendEmail = (emailAddress: string, subject: string, html: string, context: string) => {
@@ -73,11 +61,10 @@ const verifyIsAdmin = async (request: CallableRequest) => {
             throw new HttpsError('internal', "Error getting user data, try again later")
         });
 
-    // @ts-ignore
-    if (!user.customClaims['admin']) {
+    if (!user.customClaims || !("admin" in user.customClaims) || user.customClaims["admin"] !== true) {
         logger.error(`Non-admin user '${user.email}' is trying to request this endpoint`);
         throw new HttpsError('permission-denied', "You must be an administrator to perform this action");
     }
 };
 
-export { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated, getParameter, sendEmail, verifyIsAdmin };
+export { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated, sendEmail, verifyIsAdmin };
