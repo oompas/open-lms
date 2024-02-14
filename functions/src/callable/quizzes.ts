@@ -2,15 +2,23 @@ import { onCall } from "firebase-functions/v2/https";
 import { verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 
 /**
- * Updates the quiz for a given course
- *
- * Note: Deleted questions will not be deleted from the database (so quiz responses still have the original question)
+ * Adds a quiz for a given course
  */
-const saveQuiz = onCall(async (request) => {
+const addQuiz = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
     // TODO: Update the quiz by adding the new questions (don't delete the old questions!)
+});
+
+/**
+ * Updates the quiz for a given course
+ *
+ * Note: old questions (deleted/updated) are kept in the database
+ */
+const updateQuiz = onCall(async (request) => {
+
+    await verifyIsAdmin(request);
 });
 
 /**
@@ -43,4 +51,4 @@ const submitQuiz = onCall((request) => {
     // TODO: Verify the timer is ok (allow a few extra seconds for response time), mark the quiz and return pass/fail
 });
 
-export { saveQuiz, getQuizResponses, startQuiz, submitQuiz };
+export { addQuiz, updateQuiz, getQuizResponses, startQuiz, submitQuiz };
