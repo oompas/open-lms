@@ -54,8 +54,17 @@ export default function IDCourse({
         if (status === 1) {
             return <Button text="Enroll" onClick={enroll} icon="plus" />;
         } else if (status === 2) {
-            return <Button text="Start course" onClick={start} icon="play" />;
+            return (
+                <a href={link} target={"_blank"}>
+                    <Button text="Go to course" onClick={start} filled icon="link"/>
+                </a>
+            );
         }
+        return (
+            <a href={link} target={"_blank"}>
+                <Button text="Go to course" onClick={() => {}} filled icon="link"/>
+            </a>
+        );
     }
 
     const statusNames = {
@@ -83,9 +92,6 @@ export default function IDCourse({
                     <div className="text-2xl font-bold">{title}</div>
                     <div className="mt-2 text-2xl">{description}</div>
                     <div className="flex flex-row space-x-4 mt-4">
-                        <a href={link} target={"_blank"}>
-                            <Button text="Go to course" onClick={() => {}} filled icon="link" />
-                        </a>
                         {renderButton()}
                     </div>
                 </div>
