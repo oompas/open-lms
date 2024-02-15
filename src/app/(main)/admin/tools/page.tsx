@@ -1,11 +1,10 @@
 "use client"
-
 import ManageCourse from "@/app/(main)/admin/tools/ManageCourse";
 import LearnerInsight from "@/app/(main)/admin/tools/LearnerInsight";
 import CourseInsight from "@/app/(main)/admin/tools/CourseInsight";
 import Button from "@/components/Button";
-import SearchBar from "@/components/SearchBar";
 import {useRouter} from "next/navigation";
+import { useState } from "react";
 
 // Temporary data for courses that an administrator can edit
 const TEMP_MANAGE_COURSE_DATA = [
@@ -51,7 +50,8 @@ const TEMP_COURSE_INSIGHT_DATA = [
 
 export default function Tools() {
 
-    const router = useRouter()
+    const router = useRouter();
+    const [search, setSearch] = useState("");
 
     return (
         <main className="flex-col justify-center items-center pt-14">
@@ -64,7 +64,12 @@ export default function Tools() {
                     </div>
                     <div className="flex flex-row justify-end">
                         <Button text="Create a Course" onClick={() => router.push('/home')}/>
-                        <SearchBar style="ml-4"/>
+                        <input
+                            className={"border-4 border-[#9D1939] w-[55%] px-4 py-2 -mt-2 text-xl rounded-2xl ml-4"}
+                            type="text"
+                            placeholder="Search for a course..."
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
                     </div>
                 </div>
                 <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
