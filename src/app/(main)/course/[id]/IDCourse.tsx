@@ -14,7 +14,7 @@ export default function IDCourse({
     title: string,
     completed: boolean | null, // null = not started, false = in progress, true = completed
     description: string,
-    time: string,
+    time: number,
     link: string,
     id: number
 }) {
@@ -33,8 +33,10 @@ export default function IDCourse({
                     </div>
                 </div>
                 <div className="flex flex-col justify-center items-center ml-auto border-2 rounded-xl px-10 py-4 shadow-lg">
-                    <div className="text-sm -mb-1"> elapsed time:</div>
-                    <div className="text-3xl">{time}</div>
+                    <div className="text-sm -mb-1">Minimum time:</div>
+                    <div className="text-3xl">
+                        {(Math.floor(time / 3600) + "").padStart(2, '0') + ":" + (Math.floor(time / 60) % 60 + "").padStart(2, '0') + ":" + (time % 60 + "").padStart(2, '0')}
+                    </div>
                     <div className="text-sm mt-2 -mb-1">status:</div>
                     <div className="text-2xl"> {completed === null ? "Todo" : completed ? "Complete" : "In progress"}</div>
                 </div>

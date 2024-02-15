@@ -41,9 +41,9 @@ export default function Course({ params }: { params: { id: string } }) {
                     title={course.name}
                     completed={course.completed}
                     description={course.description}
-                    time={TEMP_COURSE.time}
+                    time={course.minTime}
                     link={course.link}
-                    id={TEMP_COURSE.id}
+                    id={course.courseId}
                 />
 
                 <div className="mt-8 text-2xl">
