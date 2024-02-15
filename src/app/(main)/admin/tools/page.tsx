@@ -7,21 +7,7 @@ import {useRouter} from "next/navigation";
 import { useState } from "react";
 import { useAsync } from "react-async-hook";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import "../../../../config/firebase";
-
-// Temporary data for courses that an administrator can edit
-const TEMP_MANAGE_COURSE_DATA = [
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 10 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 11 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 12 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 13 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 14 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 15 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 16 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 17 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 18 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 19 }
-]
+import "@/config/firebase";
 
 // Temporary data representing all learners
 const TEMP_LEARNER_INSIGHT_DATA = [
