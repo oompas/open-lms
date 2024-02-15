@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import '@/config/firebase';
 import Button from "@/components/Button";
 import AuthForm from '@/components/AuthForm';
 import AuthButton from './AuthButton';
-import "../../config/firebase";
+import { auth } from "@/config/firebase";
+import { signInWithEmailAndPassword } from "@firebase/auth";
 
 
 export default function AuthPage() {
@@ -19,8 +19,10 @@ export default function AuthPage() {
 
   // function called on "log in" button press
   const submitLogin = () => {
-    // TODO - actually do auth
-    alert("EMAIL: " + email + "\nPASS: " + password);
+      signInWithEmailAndPassword(auth, email, password)
+          .then(() => console.log("Signed in!"))
+          .catch((err) => console.log(`Error signing in: ${err}`));
+
     router.push('/home');
   }
 
