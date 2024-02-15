@@ -1,6 +1,6 @@
 "use client"
-
 import Button from "@/components/Button"
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 
 export default function IDCourse({
@@ -19,6 +19,12 @@ export default function IDCourse({
     id: number
 }) {
 
+    const enroll = () => {
+        return httpsCallable(getFunctions(), "courseEnroll")({ courseId: id })
+            .then((result) => console.log(result))
+            .catch((err) => { throw new Error(`Error enrolling in course: ${err}`) });
+    };
+
     return (
         <main>
             <div className="flex flex-row border-4 rounded-2xl p-8">
@@ -29,7 +35,7 @@ export default function IDCourse({
                         <a href={link} target={"_blank"}>
                             <Button text="Go to course" onClick={() => {}} filled icon="link" />
                         </a>
-                        <Button text="Enroll" onClick={() => alert("enroll")} icon="plus" />
+                        <Button text="Enroll" onClick={enroll} icon="plus" />
                     </div>
                 </div>
                 <div className="flex flex-col justify-center items-center ml-auto border-2 rounded-xl px-10 py-4 shadow-lg">

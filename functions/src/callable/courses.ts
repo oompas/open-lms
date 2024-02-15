@@ -112,7 +112,7 @@ const getAvailableCourses = onCall(async (request) => {
  * -maxQuizAttempts
  * -quizTimeLimit
  */
-const getCourseInfo = onCall(async (request) => {
+const getCourseInfo = onCall((request) => {
 
     verifyIsAuthenticated(request);
 
@@ -120,19 +120,9 @@ const getCourseInfo = onCall(async (request) => {
         throw new HttpsError('invalid-argument', "Must provide a course ID to get course info");
     }
 
-    const courseCompleted: boolean | null = await getCollection(DatabaseCollections.CourseAttempt)
-        .where("userId", "==", request.auth?.uid)
-        .where("courseId", "==", request.data.courseId)
-        .get()
-        .then((docs) => docs.empty ? null : !!docs.docs[0].data().pass)
-        .catch((error) => {
-            logger.error(`Error getting course attempts: ${error}`);
-            throw new HttpsError("internal", `Error getting courses, please try again later`);
-        });
-
     return getDoc(DatabaseCollections.Course, request.data.courseId)
         .get()
-        .then((course) => {
+        .then(async (course) => {
             if (!course.exists) {
                 logger.error(`Error: document '/Course/${request.data.courseId}/' does not exist`);
                 throw new HttpsError("invalid-argument", `Course with ID '${request.data.courseId}' does not exist`);
@@ -144,6 +134,21 @@ const getCourseInfo = onCall(async (request) => {
                 throw new HttpsError("internal", "Error: document data corrupted");
             }
 
+            const courseCompleted: boolean | null = await getCollection(DatabaseCollections.CourseAttempt)
+                .where("userId", "==", request.auth?.uid)
+                .where("courseId", "==", request.data.courseId)
+                .get()
+                .then((docs) => docs.empty ? null : !!docs.docs[0].data().pass)
+                .catch((error) => {
+                    logger.error(`Error getting course attempts: ${error}`);
+                    throw new HttpsError("internal", `Error getting courses, please try again later`);
+                });
+
+            const courseEnrolled = getDoc(DatabaseCollections.EnrolledCourse, request.auth?.uid + "|" + request.data.courseId)
+                .get()
+                .then((doc) => doc.exists)
+                .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
+
             return {
                 courseId: course.id,
                 name: docData.name,
@@ -153,6 +158,7 @@ const getCourseInfo = onCall(async (request) => {
                 maxQuizAttempts: docData.maxQuizAttempts,
                 quizTimeLimit: docData.quizTimeLimit,
                 completed: courseCompleted,
+                enrolled: courseEnrolled,
             };
         })
         .catch((error) => {
@@ -184,8 +190,8 @@ const courseEnroll = onCall(async (request) => {
             throw new HttpsError('internal', "Error enrolling in course, please try again later");
         });
 
-    return getCollection(DatabaseCollections.EnrolledCourse) // @ts-ignore
-        .add({ userId: request.auth.uid, courseId: request.data.courseId })
+    return getDoc(DatabaseCollections.EnrolledCourse, request.auth?.uid + "|" + request.data.courseId)
+        .set({})
         .then(() => "Successfully enrolled in course")
         .catch((error) => {
             logger.error(`Error enrolling in course ${request.data.courseId}: ${error}`);
