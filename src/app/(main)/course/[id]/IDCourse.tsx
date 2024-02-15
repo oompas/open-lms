@@ -1,7 +1,7 @@
 "use client"
 import Button from "@/components/Button"
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function IDCourse({
     title,
@@ -22,6 +22,13 @@ export default function IDCourse({
 }) {
 
     const [status, setStatus] = useState(courseStatus);
+
+    const endTime = startTime + minTime;
+    const [countdown, setCountDown] = useState(endTime - Math.floor(Date.now() / 1000));
+    useEffect(() => {
+        const interval = setInterval(() => { setCountDown(endTime - Math.floor(Date.now() / 1000)) }, 1000);
+        return () => clearInterval(interval);
+    }, [countdown]);
 
     const enroll = () => {
         return httpsCallable(getFunctions(), "courseEnroll")({ courseId: id })
@@ -57,6 +64,16 @@ export default function IDCourse({
         5: "Completed"
     }
 
+    const getTime = () => {
+        const format = (time: number) => (Math.floor(time / 3600) + "").padStart(2, '0') + ":"
+            + (Math.floor(time / 60) % 60 + "").padStart(2, '0') + ":" + (time % 60 + "").padStart(2, '0');
+
+        if (status === 1 || status === 2) {
+            return format(minTime);
+        }
+        return format(countdown);
+    }
+
     return (
         <main>
             <div className="flex flex-row border-4 rounded-2xl p-8">
@@ -73,7 +90,7 @@ export default function IDCourse({
                 <div className="flex flex-col justify-center items-center ml-auto border-2 rounded-xl px-10 py-4 shadow-lg">
                     <div className="text-sm -mb-1">{courseStatus === 1 ? "Minimum" : "Remaining"} time:</div>
                     <div className="text-3xl">
-                        {(Math.floor(minTime / 3600) + "").padStart(2, '0') + ":" + (Math.floor(minTime / 60) % 60 + "").padStart(2, '0') + ":" + (minTime % 60 + "").padStart(2, '0')}
+                        {getTime()}
                     </div>
                     <div className="text-sm mt-2 -mb-1">status:</div>
                     <div className="text-2xl">{statusNames[status]}</div>
