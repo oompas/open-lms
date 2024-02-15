@@ -257,6 +257,30 @@ const courseEnroll = onCall(async (request) => {
 });
 
 /**
+ * Unenrolls the requesting user from the specified course
+ */
+const courseUnenroll = onCall(async (request) => {
+
+    verifyIsAuthenticated(request);
+
+    // @ts-ignore
+    const uid: string = request.auth?.uid;
+
+    // Ensure a valid course ID is passed in
+    if (!request.data.courseId) {
+        throw new HttpsError('invalid-argument', "Must provide a course ID to unenroll from");
+    }
+
+    return getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
+        .delete()
+        .then(() => "Successfully unenrolled from course")
+        .catch((error) => {
+            logger.error(`Error unenrolling from course ${request.data.courseId}: ${error}`);
+            throw new HttpsError("internal", "Error unenrolling from course, please try again later");
+        });
+});
+
+/**
  * The requesting users starts a course attempt
  */
 const startCourse = onCall(async (request) => {
@@ -337,4 +361,4 @@ const sendCourseFeedback = onCall(async (request) => {
     return sendEmail(courseInfo.creator, subject, content, "sending course feedback");
 });
 
-export { addCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse, sendCourseFeedback };
+export { addCourse, getAvailableCourses, getCourseInfo, courseEnroll, courseUnenroll, startCourse, sendCourseFeedback };
