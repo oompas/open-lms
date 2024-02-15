@@ -26,8 +26,6 @@ export default function Home() {
             return <div>Error loading courses</div>;
         }
 
-        console.log(JSON.stringify(courses, null, 4));
-
         // @ts-ignore
         return courses.result.data
             .filter((course: any) => !course.enrolled)

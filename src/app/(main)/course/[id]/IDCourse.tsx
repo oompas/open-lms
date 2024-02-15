@@ -8,12 +8,14 @@ export default function IDCourse({
     status,         // string
     description,    // string
     time,           // string - elapsed time?
+    link,
     id
 } : {
     title: string,
     status: string,
     description: string,
     time: string,
+    link: string,
     id: number
 }) {
 
@@ -24,7 +26,9 @@ export default function IDCourse({
                     <div className="text-2xl font-bold">{title}</div>
                     <div className="mt-2 text-2xl">{description}</div>
                     <div className="flex flex-row space-x-4 mt-4">
-                        <Button text="Go to course" onClick={() => alert("go to course")} filled icon="link" />
+                        <a href={link} target={"_blank"}>
+                            <Button text="Go to course" onClick={() => {}} filled icon="link" />
+                        </a>
                         <Button text="Enroll" onClick={() => alert("enroll")} icon="plus" />
                     </div>
                 </div>
