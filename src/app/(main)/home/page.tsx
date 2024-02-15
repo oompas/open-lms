@@ -1,14 +1,15 @@
 "use client";
-import SearchBar from "@/components/SearchBar";
 import AvailableCourse from "./AvailableCourse";
 import EnrolledCourse from "./EnrolledCourse";
 import { useAsync } from 'react-async-hook';
 import { getFunctions, httpsCallable } from "firebase/functions";
 import "../../../config/firebase";
+import { useState } from "react";
 
 export default function Home() {
 
     const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
+    const [search, setSearch] = useState("");
 
     const enrolledCourses = () => {
         if (courses.loading) {
@@ -44,7 +45,8 @@ export default function Home() {
 
         // @ts-ignore
         return courses.result.data
-            .filter((course: any) => course.status === 1)
+            .filter((course: any) => course.status === 1 && (course.name.toLowerCase().includes(search.toLowerCase())
+                    || course.description.toLowerCase().includes(search.toLowerCase())))
             .map((course: any, key: number) => (
                 <AvailableCourse
                     key={key}
@@ -66,7 +68,12 @@ export default function Home() {
             <div className="flex flex-col h-[80vh] bg-white w-[35%] ml-[5%] p-16 rounded-2xl shadow-custom">
                 <div className="flex flex-row mb-8">
                     <div className="text-2xl mr-auto">Available Courses</div>
-                    <SearchBar />
+                    <input
+                        className={"border-4 border-[#9D1939] w-[55%] px-4 py-2 -mt-2 text-xl rounded-2xl"}
+                        type="text"
+                        placeholder="Search for a course..."
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
                 <div className="flex flex-col justify-between overflow-y-scroll sm:no-scrollbar">
                     {availableCourses()}
