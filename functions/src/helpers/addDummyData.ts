@@ -11,11 +11,21 @@ const cleanDatabase = onCall(async (request) => {
 
     const collectionsToClean = [];
 
-    const coursesToClean = await getCollection(DatabaseCollections.Course)
-        .listDocuments()
-        .then((docs) => docs.map((doc) => doc.delete()))
-        .catch((err) => { throw new HttpsError('internal', `Error cleaning all courses: ${err}`); });
-    collectionsToClean.push(coursesToClean);
+    const collections = [
+        DatabaseCollections.Course,
+        DatabaseCollections.EnrolledCourse,
+        DatabaseCollections.CourseAttempt,
+        DatabaseCollections.QuizQuestion,
+        DatabaseCollections.QuizAttempt,
+    ];
+
+    for (let collection of collections) {
+        const docToClean = await getCollection(collection)
+            .listDocuments()
+            .then((docs) => docs.map((doc) => doc.delete()))
+            .catch((err) => { throw new HttpsError('internal', `Error getting all documents in collection '${collection}': ${err}`); });
+        collectionsToClean.push(docToClean);
+    }
 
     await Promise.all(collectionsToClean)
         .then(() => logger.info("Database successfully cleaned"))
