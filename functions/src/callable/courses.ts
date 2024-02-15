@@ -174,6 +174,21 @@ const getCourseInfo = onCall((request) => {
                 .then((doc) => doc.exists)
                 .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
 
+            let status;
+            if (!courseEnrolled) {
+                status = 1;
+            } else if (courseAttempt === null ) {
+                status = 2;
+            } else if (courseAttempt?.pass === null) {
+                status = 3;
+            } else if (courseAttempt?.pass === false) {
+                status = 4;
+            } else if (courseAttempt?.pass === true) {
+                status = 5;
+            } else {
+                throw new HttpsError("internal", "Course is in an invalid state - can't get status");
+            }
+
             return {
                 courseId: course.id,
                 name: docData.name,
@@ -182,9 +197,8 @@ const getCourseInfo = onCall((request) => {
                 minTime: docData.minTime,
                 maxQuizAttempts: docData.maxQuizAttempts,
                 quizTimeLimit: docData.quizTimeLimit,
-                completed: courseAttempt?.pass ?? null,
-                enrolled: courseEnrolled,
-                startTime: courseAttempt?.startTime ?? null,
+                status: status,
+                startTime: courseAttempt?.startTime._seconds ?? null,
             };
         })
         .catch((error) => {

@@ -15,15 +15,16 @@ export default function Course({ params }: { params: { id: string } }) {
     const renderCourse = () => {
         // @ts-ignore
         const course: any = getCourse.result.data;
-
+        console.log(JSON.stringify(course, null, 4));
 
         return (
             <>
                 <IDCourse
                     title={course.name}
-                    courseStatus={!course.enrolled ? "Not enrolled" : (course.completed === null ? "Todo" : (course.completed === false ? "In progress" : "Completed"))}
+                    courseStatus={course.status}
                     description={course.description}
-                    time={course.minTime}
+                    minTime={course.minTime}
+                    startTime={course.startTime}
                     link={course.link}
                     id={course.courseId}
                 />

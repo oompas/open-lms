@@ -7,14 +7,16 @@ export default function IDCourse({
     title,
     courseStatus,
     description,
-    time,
+    minTime,
+    startTime,
     link,
     id
 } : {
     title: string,
-    courseStatus: string,
+    courseStatus: 1 | 2 | 3 | 4 | 5,
     description: string,
-    time: number,
+    minTime: number,
+    startTime: number,
     link: string,
     id: number
 }) {
@@ -25,7 +27,7 @@ export default function IDCourse({
         return httpsCallable(getFunctions(), "courseEnroll")({ courseId: id })
             .then((result) => {
                 console.log(result);
-                setStatus("Todo");
+                setStatus(2);
             })
             .catch((err) => { throw new Error(`Error enrolling in course: ${err}`) });
     };
@@ -34,17 +36,25 @@ export default function IDCourse({
         return httpsCallable(getFunctions(), "startCourse")({ courseId: id })
             .then((result) => {
                 console.log(result);
-                setStatus("In progress");
+                setStatus(3);
             })
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });
     }
 
     const renderButton = () => {
-        if (status === "Not enrolled") {
+        if (status === 1) {
             return <Button text="Enroll" onClick={enroll} icon="plus" />;
-        } else if (status === "Todo") {
+        } else if (status === 2) {
             return <Button text="Start course" onClick={start} icon="play" />;
         }
+    }
+
+    const statusNames = {
+        1: "Not enrolled",
+        2: "Enrolled",
+        3: "In progress",
+        4: "In progress",
+        5: "Completed"
     }
 
     return (
@@ -61,12 +71,12 @@ export default function IDCourse({
                     </div>
                 </div>
                 <div className="flex flex-col justify-center items-center ml-auto border-2 rounded-xl px-10 py-4 shadow-lg">
-                    <div className="text-sm -mb-1">Minimum time:</div>
+                    <div className="text-sm -mb-1">{courseStatus === 1 ? "Minimum" : "Remaining"} time:</div>
                     <div className="text-3xl">
-                        {(Math.floor(time / 3600) + "").padStart(2, '0') + ":" + (Math.floor(time / 60) % 60 + "").padStart(2, '0') + ":" + (time % 60 + "").padStart(2, '0')}
+                        {(Math.floor(minTime / 3600) + "").padStart(2, '0') + ":" + (Math.floor(minTime / 60) % 60 + "").padStart(2, '0') + ":" + (minTime % 60 + "").padStart(2, '0')}
                     </div>
                     <div className="text-sm mt-2 -mb-1">status:</div>
-                    <div className="text-2xl">{status}</div>
+                    <div className="text-2xl">{statusNames[status]}</div>
                 </div>
             </div>
         </main>
