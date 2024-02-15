@@ -273,7 +273,7 @@ const startCourse = onCall(async (request) => {
 
     return getCollection(DatabaseCollections.CourseAttempt)
         .add(courseAttempt)
-        .then(() => "Successfully started course")
+        .then((result) => result.get().then((doc) => doc?.data()?.startTime._seconds ))
         .catch((error) => {
             logger.error(`Error starting course ${request.data.courseId}: ${error}`);
             throw new HttpsError("internal", "Error enrolling in course, please try again later");
