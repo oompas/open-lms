@@ -135,11 +135,11 @@ const getCourseInfo = onCall((request) => {
                 throw new HttpsError("internal", "Error: document data corrupted");
             }
 
-            const courseCompleted: boolean | null = await getCollection(DatabaseCollections.CourseAttempt)
+            const courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
                 .where("userId", "==", request.auth?.uid)
                 .where("courseId", "==", request.data.courseId)
                 .get()
-                .then((docs) => docs.empty ? null : !!docs.docs[0].data().pass)
+                .then((docs) => docs.empty ? null : docs.docs[0].data())
                 .catch((error) => {
                     logger.error(`Error getting course attempts: ${error}`);
                     throw new HttpsError("internal", `Error getting courses, please try again later`);
@@ -158,8 +158,9 @@ const getCourseInfo = onCall((request) => {
                 minTime: docData.minTime,
                 maxQuizAttempts: docData.maxQuizAttempts,
                 quizTimeLimit: docData.quizTimeLimit,
-                completed: courseCompleted,
+                completed: courseAttempt?.pass ?? null,
                 enrolled: courseEnrolled,
+                startTime: courseAttempt?.startTime ?? null,
             };
         })
         .catch((error) => {
