@@ -1,4 +1,5 @@
 import { getFunctions, httpsCallable } from "firebase/functions";
+import { addCourse } from "../../../../../functions/src";
 
 interface course {
     name: string,
@@ -61,7 +62,7 @@ const courses: course[] = rawCourseData.map((course) => {
     };
 });
 
-const generateCourses = async () => {
+const generateDummyData = async () => {
 
     // First, clean the database data (leaves users & emails) so the new data can be added without conflicts
     const functions = getFunctions();
@@ -71,7 +72,7 @@ const generateCourses = async () => {
 
     // Add all the courses
     return Promise.all(courses.map((course) =>
-        httpsCallable(functions, 'saveCourse')(course)
+        httpsCallable(functions, 'addCourse')(course)
             .then((id) => {
                 if (typeof id.data !== 'string') {
                     throw new Error(`Error: saveCourse should return a course ID string. Returned value: ${id}`);
@@ -81,4 +82,4 @@ const generateCourses = async () => {
     ));
 }
 
-export { generateCourses };
+export { generateDummyData };
