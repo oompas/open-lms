@@ -7,23 +7,23 @@ export default function IDCourse({
     title,
     courseStatus,
     description,
-    minTime,
     startTime,
+    minTime,
     link,
     id
 } : {
     title: string,
     courseStatus: 1 | 2 | 3 | 4 | 5,
     description: string,
-    minTime: number,
     startTime: number,
+    minTime: number,
     link: string,
     id: number
 }) {
 
     const [status, setStatus] = useState(courseStatus);
 
-    const endTime = startTime + minTime;
+    const [endTime, setEndTime] = useState(Math.floor(startTime + minTime));
     const [countdown, setCountDown] = useState(endTime - Math.floor(Date.now() / 1000));
     useEffect(() => {
         const interval = setInterval(() => { setCountDown(endTime - Math.floor(Date.now() / 1000)) }, 1000);
@@ -42,7 +42,9 @@ export default function IDCourse({
     const start = () => {
         return httpsCallable(getFunctions(), "startCourse")({ courseId: id })
             .then((result) => {
-                console.log(result);
+                // @ts-ignore
+                setEndTime(result.data + minTime);
+
                 setStatus(3);
             })
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });
