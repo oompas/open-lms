@@ -25,6 +25,7 @@ export default function Course({ params }: { params: { id: string } }) {
                     description={course.description}
                     time={course.minTime}
                     link={course.link}
+                    enrolled={course.enrolled}
                     id={course.courseId}
                 />
 

@@ -144,7 +144,7 @@ const getCourseInfo = onCall((request) => {
                     throw new HttpsError("internal", `Error getting courses, please try again later`);
                 });
 
-            const courseEnrolled = getDoc(DatabaseCollections.EnrolledCourse, request.auth?.uid + "|" + request.data.courseId)
+            const courseEnrolled = await getDoc(DatabaseCollections.EnrolledCourse, request.auth?.uid + "|" + request.data.courseId)
                 .get()
                 .then((doc) => doc.exists)
                 .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
