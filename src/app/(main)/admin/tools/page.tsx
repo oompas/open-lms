@@ -5,6 +5,9 @@ import CourseInsight from "@/app/(main)/admin/tools/CourseInsight";
 import Button from "@/components/Button";
 import {useRouter} from "next/navigation";
 import { useState } from "react";
+import { useAsync } from "react-async-hook";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import "../../../../config/firebase";
 
 // Temporary data for courses that an administrator can edit
 const TEMP_MANAGE_COURSE_DATA = [
@@ -50,8 +53,32 @@ const TEMP_COURSE_INSIGHT_DATA = [
 
 export default function Tools() {
 
+    const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
+
     const router = useRouter();
     const [search, setSearch] = useState("");
+
+    const getCourses = () => {
+        if (courses.loading) {
+            return <div>Loading...</div>;
+        }
+        if (courses.error) {
+            return <div>Error loading courses</div>;
+        }
+
+        // @ts-ignore
+        return courses.result.data
+            .filter((course: any) => course.name.toLowerCase().includes(search.toLowerCase())
+                || course.description.toLowerCase().includes(search.toLowerCase()))
+            .map((course: any, key: number) => (
+                <ManageCourse
+                    key={key}
+                    title={course.name}
+                    description={course.description}
+                    id={course.id}
+                />
+            ));
+    }
 
     return (
         <main className="flex-col justify-center items-center pt-14">
@@ -73,14 +100,7 @@ export default function Tools() {
                     </div>
                 </div>
                 <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                    {TEMP_MANAGE_COURSE_DATA.map((course, key) => (
-                        <ManageCourse
-                            key={key}
-                            title={course.title}
-                            description={course.description}
-                            id={course.id}
-                        />
-                    ))}
+                    {getCourses()}
                 </div>
             </div>
 
