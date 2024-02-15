@@ -112,9 +112,23 @@ const getAvailableCourses = onCall(async (request) => {
  * -maxQuizAttempts
  * -quizTimeLimit
  */
-const getCourseInfo = onCall((request) => {
+const getCourseInfo = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
+
+    if (typeof request.data.courseId !== 'string' || request.data.courseId.length !== 20) {
+        throw new HttpsError('invalid-argument', "Must provide a course ID to get course info");
+    }
+
+    const courseCompleted: boolean | null = await getCollection(DatabaseCollections.CourseAttempt)
+        .where("userId", "==", request.auth?.uid)
+        .where("courseId", "==", request.data.courseId)
+        .get()
+        .then((docs) => docs.empty ? null : !!docs.docs[0].data().pass)
+        .catch((error) => {
+            logger.error(`Error getting course attempts: ${error}`);
+            throw new HttpsError("internal", `Error getting courses, please try again later`);
+        });
 
     return getDoc(DatabaseCollections.Course, request.data.courseId)
         .get()
@@ -137,7 +151,8 @@ const getCourseInfo = onCall((request) => {
                 link: docData.link,
                 minTime: docData.minTime,
                 maxQuizAttempts: docData.maxQuizAttempts,
-                quizTimeLimit: docData.quizTimeLimit
+                quizTimeLimit: docData.quizTimeLimit,
+                completed: courseCompleted,
             };
         })
         .catch((error) => {
