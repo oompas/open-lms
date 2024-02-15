@@ -10,13 +10,31 @@ export default function Home() {
 
     const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
 
-    const TEMP_ENROLLED_COURSE_DATA = [
-        { title: "Dog-Walker Health & Safety Training", status: "Todo", description: "Example course description briefly describing the course contents.", time: "1h 25m", color: "#468DF0", id: 1 },
-        { title: "Toddler Potty Training Intensive", status: "In Progress", description: "Example course description briefly describing the course contents.", time: "8h", color: "#EEBD31", id: 2 },
-        { title: "Astronaut WHIMIS Certification ", status: "In Progress", description: "Example course description briefly describing the course contents.", time: "15m", color: "#EEBD31", id: 3 },
-        { title: "The Dictionary 101 ", status: "Complete", description: "Example course description briefly describing the course contents.", time: "15m", color: "#47AD63", id: 4 },
-        { title: "ABCs for Beginners ", status: "Complete", description: "Example course description briefly describing the course contents.", time: "15m", color: "#47AD63", id: 5 }
-    ]
+    const enrolledCourses = () => {
+        if (courses.loading) {
+            return <div>Loading...</div>;
+        }
+        if (courses.error) {
+            return <div>Error loading courses</div>;
+        }
+
+        // @ts-ignore
+        console.log(JSON.stringify(courses.result.data, null, 4));
+        // @ts-ignore
+        return courses.result.data
+            .filter((course: any) => course.enrolled)
+            .map((course: any, key: number) => (
+                <EnrolledCourse
+                    key={key}
+                    title={course.name}
+                    status={(!course.enrolled ? "Not enrolled" : (course.completed === null ? "Todo" : (course.completed === false ? "In progress" : "Completed")))}
+                    description={course.description}
+                    time={(course.minQuizTime >= 3600 ? Math.floor(course.minQuizTime / 3600) + "h " : "") + Math.floor(course.minQuizTime / 60) % 60 + "m"}
+                    color={(course.completed === null ? "#468DF0" : (course.completed === false ? "#EEBD31" : "#47AD63"))}
+                    id={course.id}
+                />
+            ));
+    }
 
     const availableCourses = () => {
         if (courses.loading) {
@@ -44,17 +62,7 @@ export default function Home() {
             <div className="flex flex-col h-[80vh] bg-white w-[60%] p-16 rounded-2xl shadow-custom">
                 <div className="text-2xl mb-8">My Enrolled Courses</div>
                 <div className="flex flex-row flex-wrap justify-between overflow-y-scroll sm:no-scrollbar">
-                    { TEMP_ENROLLED_COURSE_DATA.map((course, key) => (
-                        <EnrolledCourse 
-                            key={key}
-                            title={course.title}
-                            status={course.status}
-                            description={course.description}
-                            time={course.time}
-                            color={course.color}
-                            id={course.id}
-                        />
-                    ))}
+                    {enrolledCourses()}
                 </div>
             </div>
             <div className="flex flex-col h-[80vh] bg-white w-[35%] ml-[5%] p-16 rounded-2xl shadow-custom">
