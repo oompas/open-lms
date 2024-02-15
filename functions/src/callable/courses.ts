@@ -89,9 +89,10 @@ const getAvailableCourses = onCall(async (request) => {
                     const courseEnrolled = userCourses.filter((course) => course.courseId === doc.id);
                     return {
                         id: doc.id,
+                        name: doc.data().name,
+                        description: doc.data().description,
                         enrolled: courseEnrolled.length > 0,
                         pass: courseEnrolled.length === 0 ? null : courseEnrolled[0].pass,
-                        ...doc.data()
                     }
                 });
         })

@@ -9,13 +9,6 @@ import "../../../config/firebase";
 export default function Home() {
 
     const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
-    if (courses.loading) {
-        return <div>Loading...</div>;
-    }
-    if (courses.error) {
-        return <div>Error: {courses.error.message}</div>;
-    }
-    console.log(JSON.stringify(courses.result, null, 4));
 
     const TEMP_ENROLLED_COURSE_DATA = [
         { title: "Dog-Walker Health & Safety Training", status: "Todo", description: "Example course description briefly describing the course contents.", time: "1h 25m", color: "#468DF0", id: 1 },
@@ -25,18 +18,28 @@ export default function Home() {
         { title: "ABCs for Beginners ", status: "Complete", description: "Example course description briefly describing the course contents.", time: "15m", color: "#47AD63", id: 5 }
     ]
 
-    const TEMP_AVAIL_COURSE_DATA = [
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 10 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 11 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 12 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 13 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 14 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 15 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 16 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 17 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 18 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 19 }
-    ]
+    const availableCourses = () => {
+        if (courses.loading) {
+            return <div>Loading...</div>;
+        }
+        if (courses.error) {
+            return <div>Error loading courses</div>;
+        }
+
+        console.log(JSON.stringify(courses, null, 4));
+
+        // @ts-ignore
+        return courses.result.data
+            .filter((course: any) => !course.enrolled)
+            .map((course: any, key: number) => (
+                <AvailableCourse
+                    key={key}
+                    title={course.name}
+                    description={course.description}
+                    id={course.id}
+                />
+            ));
+    }
 
     return (
         <main className="flex justify-center pt-14">
@@ -62,14 +65,7 @@ export default function Home() {
                     <SearchBar />
                 </div>
                 <div className="flex flex-col justify-between overflow-y-scroll sm:no-scrollbar">
-                    { TEMP_AVAIL_COURSE_DATA.map((course, key) => (
-                        <AvailableCourse 
-                            key={key}
-                            title={course.title}
-                            description={course.description}
-                            id={course.id}
-                        />
-                    ))}
+                    {availableCourses()}
                 </div>
             </div>
         </main>
