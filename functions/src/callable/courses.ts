@@ -67,35 +67,45 @@ const getAvailableCourses = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
-    // @ts-ignore
-    const uid = request.auth.uid;
-
-    // Get completed course IDs to exclude from the result
-    // @ts-ignore
-    const userCourses: { courseId: string, pass: boolean }[] = await getCollection(DatabaseCollections.CourseAttempt)
-        .where("userId", "==", uid)
-        .get()
-        .then((docs) => docs.docs.map((doc) => doc.data()))
-        .catch((error) => {
-            logger.error(`Error getting course attempts: ${error}`);
-            throw new HttpsError("internal", `Error getting courses, please try again later`);
-        });
-
-    // Return all active & uncompleted courses
     return getCollection(DatabaseCollections.Course)
         .get()
-        .then((courses) => {
-            return courses.docs
-                .map((doc) => {
-                    const courseEnrolled = userCourses.filter((course) => course.courseId === doc.id);
-                    return {
-                        id: doc.id,
-                        name: doc.data().name,
-                        description: doc.data().description,
-                        enrolled: courseEnrolled.length > 0,
-                        pass: courseEnrolled.length === 0 ? null : courseEnrolled[0].pass,
-                    }
-                });
+        .then(async (courses) => {
+
+            const allCourses = [];
+
+            for (let course of courses.docs) {
+
+                const courseEnrolled = await getDoc(DatabaseCollections.EnrolledCourse, request.auth?.uid + "|" + course.id)
+                    .get()
+                    .then((doc) => doc.exists)
+                    .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
+
+                let courseAttempt = undefined;
+                if (courseEnrolled) {
+                    courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
+                        .where("userId", "==", request.auth?.uid)
+                        .where("courseId", "==", course.id)
+                        .get()
+                        .then((docs) => docs.empty ? null : docs.docs[0].data())
+                        .catch((error) => {
+                            logger.error(`Error getting course attempts: ${error}`);
+                            throw new HttpsError("internal", `Error getting courses, please try again later`);
+                        });
+                }
+
+                const courseData = {
+                    id: course.id,
+                    name: course.data().name,
+                    description: course.data().description,
+                    minQuizTime: course.data().minTime,
+                    completed: courseAttempt?.pass ?? null,
+                    enrolled: courseEnrolled,
+                };
+
+                allCourses.push(courseData);
+            }
+
+            return allCourses;
         })
         .catch((error) => {
             logger.error(`Error getting active courses: ${error}`);
