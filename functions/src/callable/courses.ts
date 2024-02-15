@@ -13,6 +13,14 @@ import { firestore } from "firebase-admin";
 import FieldValue = firestore.FieldValue;
 
 /**
+ * The ID for an enrolled course is the user & course ID concatenated so:
+ * -No query is needed to check it, can just get the document through an ID
+ * -No duplicate enrollments are possible
+ * The enrollment document will also have these IDs in the document if individual queries are needed
+ */
+const enrolledCourseId = (userId: string, courseId: string) => `${userId}|${courseId}`;
+
+/**
  * Adds a course with the given data:
  * -name
  * -description
@@ -67,6 +75,9 @@ const getAvailableCourses = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
+    // @ts-ignore
+    const uid: string = request.auth.uid;
+
     return getCollection(DatabaseCollections.Course)
         .get()
         .then(async (courses) => {
@@ -75,7 +86,7 @@ const getAvailableCourses = onCall(async (request) => {
 
             for (let course of courses.docs) {
 
-                const courseEnrolled = await getDoc(DatabaseCollections.EnrolledCourse, request.auth?.uid + "|" + course.id)
+                const courseEnrolled = await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, course.id))
                     .get()
                     .then((doc) => doc.exists)
                     .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
@@ -141,6 +152,9 @@ const getCourseInfo = onCall((request) => {
 
     verifyIsAuthenticated(request);
 
+    // @ts-ignore
+    const uid: string = request.auth?.uid;
+
     if (typeof request.data.courseId !== 'string' || request.data.courseId.length !== 20) {
         throw new HttpsError('invalid-argument', "Must provide a course ID to get course info");
     }
@@ -169,7 +183,7 @@ const getCourseInfo = onCall((request) => {
                     throw new HttpsError("internal", `Error getting courses, please try again later`);
                 });
 
-            const courseEnrolled = await getDoc(DatabaseCollections.EnrolledCourse, request.auth?.uid + "|" + request.data.courseId)
+            const courseEnrolled = await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
                 .get()
                 .then((doc) => doc.exists)
                 .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
@@ -214,6 +228,9 @@ const courseEnroll = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
+    // @ts-ignore
+    const uid: string = request.auth?.uid;
+
     // Ensure a valid course ID is passed in
     if (!request.data.courseId) {
         throw new HttpsError('invalid-argument', "Must provide a course ID to enroll in");
@@ -230,8 +247,8 @@ const courseEnroll = onCall(async (request) => {
             throw new HttpsError('internal', "Error enrolling in course, please try again later");
         });
 
-    return getDoc(DatabaseCollections.EnrolledCourse, request.auth?.uid + "|" + request.data.courseId)
-        .set({})
+    return getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
+        .set({ userId: uid, courseId: request.data.courseId })
         .then(() => "Successfully enrolled in course")
         .catch((error) => {
             logger.error(`Error enrolling in course ${request.data.courseId}: ${error}`);
@@ -246,11 +263,14 @@ const startCourse = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
+    // @ts-ignore
+    const uid: string = request.auth?.uid;
+
     // Verify the user in enrolled in the course
     if (!request.data.courseId) {
         throw new HttpsError('invalid-argument', "Must provide a course ID to start");
     }
-    await getDoc(DatabaseCollections.EnrolledCourse, request.auth?.uid + "|" + request.data.courseId)
+    await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
         .get()
         .then((doc) => {
             if (!doc.exists) { // @ts-ignore
