@@ -1,5 +1,4 @@
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { addCourse } from "../../../../../functions/src";
 
 interface course {
     name: string,
