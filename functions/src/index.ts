@@ -8,6 +8,7 @@ import { courseEnroll, getAvailableCourses, getCourseInfo, addCourse, startCours
 import { getQuizResponses, addQuiz, updateQuiz, startQuiz, submitQuiz } from "./callable/quizzes";
 import { getCourseReports, getUserReports } from "./callable/reports";
 import { sendPlatformFeedback } from "./callable/misc";
+import { cleanDatabase } from "./helpers/addDummyData";
 import { purgeExpiredEmails, purgeUnverifiedUsers } from "./triggers/cron";
 import { updateAdminPermissions } from "./triggers/database";
 
@@ -18,6 +19,7 @@ export {
     addQuiz, updateQuiz, getQuizResponses, startQuiz, submitQuiz,
     getCourseReports, getUserReports,
     sendPlatformFeedback,
+    cleanDatabase,
     purgeUnverifiedUsers, purgeExpiredEmails,
     updateAdminPermissions
 };
