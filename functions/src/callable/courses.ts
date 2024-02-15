@@ -93,13 +93,27 @@ const getAvailableCourses = onCall(async (request) => {
                         });
                 }
 
+                let status;
+                if (!courseEnrolled) {
+                    status = 1;
+                } else if (courseAttempt === null ) {
+                    status = 2;
+                } else if (courseAttempt?.pass === null) {
+                    status = 3;
+                } else if (courseAttempt?.pass === false) {
+                    status = 4;
+                } else if (courseAttempt?.pass === true) {
+                    status = 5;
+                } else {
+                    throw new HttpsError("internal", "Course is in an invalid state - can't get status");
+                }
+
                 const courseData = {
                     id: course.id,
                     name: course.data().name,
                     description: course.data().description,
                     minQuizTime: course.data().minTime,
-                    completed: courseAttempt?.pass ?? null,
-                    enrolled: courseEnrolled,
+                    status: status,
                 };
 
                 allCourses.push(courseData);

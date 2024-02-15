@@ -19,18 +19,16 @@ export default function Home() {
         }
 
         // @ts-ignore
-        console.log(JSON.stringify(courses.result.data, null, 4));
-        // @ts-ignore
         return courses.result.data
-            .filter((course: any) => course.enrolled)
+            .filter((course: any) => course.status !== 1)
             .map((course: any, key: number) => (
                 <EnrolledCourse
                     key={key}
                     title={course.name}
-                    status={(!course.enrolled ? "Not enrolled" : (course.completed === null ? "Todo" : (course.completed === false ? "In progress" : "Completed")))}
+                    status={course.status}
                     description={course.description}
                     time={(course.minQuizTime >= 3600 ? Math.floor(course.minQuizTime / 3600) + "h " : "") + Math.floor(course.minQuizTime / 60) % 60 + "m"}
-                    color={(course.completed === null ? "#468DF0" : (course.completed === false ? "#EEBD31" : "#47AD63"))}
+                    color={(course.status === 2 ? "#468DF0" : (course.status === 3 || course.status === 4 ? "#EEBD31" : "#47AD63"))}
                     id={course.id}
                 />
             ));
@@ -46,7 +44,7 @@ export default function Home() {
 
         // @ts-ignore
         return courses.result.data
-            .filter((course: any) => !course.enrolled)
+            .filter((course: any) => course.status === 1)
             .map((course: any, key: number) => (
                 <AvailableCourse
                     key={key}
