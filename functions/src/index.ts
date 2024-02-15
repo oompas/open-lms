@@ -10,7 +10,7 @@ import { getCourseReports, getUserReports } from "./callable/reports";
 import { sendPlatformFeedback } from "./callable/misc";
 import { cleanDatabase } from "./helpers/addDummyData";
 import { purgeExpiredEmails, purgeUnverifiedUsers } from "./triggers/cron";
-import { updateAdminPermissions } from "./triggers/database";
+import { updateAdminPermissions, onCourseDeleted } from "./triggers/database";
 
 export {
     createAccount, resetPassword, getUserProfile,
@@ -21,5 +21,5 @@ export {
     sendPlatformFeedback,
     cleanDatabase,
     purgeUnverifiedUsers, purgeExpiredEmails,
-    updateAdminPermissions
+    updateAdminPermissions, onCourseDeleted
 };
