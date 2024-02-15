@@ -4,15 +4,15 @@ import Button from "@/components/Button"
 
 
 export default function IDCourse({
-    title,          // string
-    status,         // string
-    description,    // string
-    time,           // string - elapsed time?
+    title,
+    completed,
+    description,
+    time,
     link,
     id
 } : {
     title: string,
-    status: string,
+    completed: boolean | null, // null = not started, false = in progress, true = completed
     description: string,
     time: string,
     link: string,
@@ -36,7 +36,7 @@ export default function IDCourse({
                     <div className="text-sm -mb-1"> elapsed time:</div>
                     <div className="text-3xl">{time}</div>
                     <div className="text-sm mt-2 -mb-1">status:</div>
-                    <div className="text-2xl"> {status}</div>
+                    <div className="text-2xl"> {completed === null ? "Todo" : completed ? "Complete" : "In progress"}</div>
                 </div>
             </div>
         </main>

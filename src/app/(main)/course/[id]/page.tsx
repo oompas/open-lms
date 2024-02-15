@@ -39,7 +39,7 @@ export default function Course({ params }: { params: { id: string } }) {
             <>
                 <IDCourse
                     title={course.name}
-                    status={TEMP_COURSE.status}
+                    completed={course.completed}
                     description={course.description}
                     time={TEMP_COURSE.time}
                     link={course.link}
