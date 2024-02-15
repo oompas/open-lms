@@ -1,8 +1,21 @@
+"use client";
 import SearchBar from "@/components/SearchBar";
 import AvailableCourse from "./AvailableCourse";
 import EnrolledCourse from "./EnrolledCourse";
+import { useAsync } from 'react-async-hook';
+import { getFunctions, httpsCallable } from "firebase/functions";
+import "../../../config/firebase";
 
 export default function Home() {
+
+    const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
+    if (courses.loading) {
+        return <div>Loading...</div>;
+    }
+    if (courses.error) {
+        return <div>Error: {courses.error.message}</div>;
+    }
+    console.log(JSON.stringify(courses.result, null, 4));
 
     const TEMP_ENROLLED_COURSE_DATA = [
         { title: "Dog-Walker Health & Safety Training", status: "Todo", description: "Example course description briefly describing the course contents.", time: "1h 25m", color: "#468DF0", id: 1 },

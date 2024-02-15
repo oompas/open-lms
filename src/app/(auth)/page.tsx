@@ -7,6 +7,7 @@ import '@/config/firebase';
 import Button from "@/components/Button";
 import AuthForm from '@/components/AuthForm';
 import AuthButton from './AuthButton';
+import "../../config/firebase";
 
 
 export default function AuthPage() {
