@@ -39,6 +39,15 @@ export default function IDCourse({
             .catch((err) => { throw new Error(`Error enrolling in course: ${err}`) });
     };
 
+    const unEnroll = () => {
+        return httpsCallable(getFunctions(), "courseUnenroll")({ courseId: id })
+            .then((result) => {
+                console.log(result);
+                setStatus(1);
+            })
+            .catch((err) => { throw new Error(`Error unenrolling in course: ${err}`) });
+    };
+
     const start = () => {
         return httpsCallable(getFunctions(), "startCourse")({ courseId: id })
             .then((result) => {
@@ -55,9 +64,12 @@ export default function IDCourse({
             return <Button text="Enroll" onClick={enroll} icon="plus" />;
         } else if (status === 2) {
             return (
-                <a href={link} target={"_blank"}>
-                    <Button text="Go to course" onClick={start} filled icon="link"/>
-                </a>
+                <>
+                    <a href={link} target={"_blank"}>
+                        <Button text="Go to course" onClick={start} filled icon="link"/>
+                    </a>
+                    <Button text="Unenroll" onClick={unEnroll} icon="minus"/>
+                </>
             );
         }
         return (
