@@ -1,31 +1,51 @@
 "use client"
 import Button from "@/components/Button"
 import { getFunctions, httpsCallable } from "firebase/functions";
-
+import { useState } from "react";
 
 export default function IDCourse({
     title,
-    completed,
+    courseStatus,
     description,
     time,
     link,
-    enrolled,
     id
 } : {
     title: string,
-    completed: boolean | null, // null = not started, false = in progress, true = completed
+    courseStatus: string,
     description: string,
     time: number,
     link: string,
-    enrolled: boolean,
     id: number
 }) {
 
+    const [status, setStatus] = useState(courseStatus);
+
     const enroll = () => {
         return httpsCallable(getFunctions(), "courseEnroll")({ courseId: id })
-            .then((result) => console.log(result))
+            .then((result) => {
+                console.log(result);
+                setStatus("Todo");
+            })
             .catch((err) => { throw new Error(`Error enrolling in course: ${err}`) });
     };
+
+    const start = () => {
+        return httpsCallable(getFunctions(), "startCourse")({ courseId: id })
+            .then((result) => {
+                console.log(result);
+                setStatus("In progress");
+            })
+            .catch((err) => { throw new Error(`Error starting course: ${err}`) });
+    }
+
+    const renderButton = () => {
+        if (status === "Not enrolled") {
+            return <Button text="Enroll" onClick={enroll} icon="plus" />;
+        } else if (status === "Todo") {
+            return <Button text="Start course" onClick={start} icon="play" />;
+        }
+    }
 
     return (
         <main>
@@ -37,7 +57,7 @@ export default function IDCourse({
                         <a href={link} target={"_blank"}>
                             <Button text="Go to course" onClick={() => {}} filled icon="link" />
                         </a>
-                        { !enrolled && <Button text="Enroll" onClick={enroll} icon="plus" /> }
+                        {renderButton()}
                     </div>
                 </div>
                 <div className="flex flex-col justify-center items-center ml-auto border-2 rounded-xl px-10 py-4 shadow-lg">
@@ -46,7 +66,7 @@ export default function IDCourse({
                         {(Math.floor(time / 3600) + "").padStart(2, '0') + ":" + (Math.floor(time / 60) % 60 + "").padStart(2, '0') + ":" + (time % 60 + "").padStart(2, '0')}
                     </div>
                     <div className="text-sm mt-2 -mb-1">status:</div>
-                    <div className="text-2xl"> {completed === null ? "Todo" : completed ? "Complete" : "In progress"}</div>
+                    <div className="text-2xl">{status}</div>
                 </div>
             </div>
         </main>

@@ -21,11 +21,10 @@ export default function Course({ params }: { params: { id: string } }) {
             <>
                 <IDCourse
                     title={course.name}
-                    completed={course.completed}
+                    courseStatus={!course.enrolled ? "Not enrolled" : (course.completed === null ? "Todo" : (course.completed === false ? "In progress" : "Completed"))}
                     description={course.description}
                     time={course.minTime}
                     link={course.link}
-                    enrolled={course.enrolled}
                     id={course.courseId}
                 />
 

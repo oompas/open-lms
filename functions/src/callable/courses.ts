@@ -8,8 +8,9 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { Timestamp } from "firebase/firestore";
 import { boolean, number, object, string } from 'yup';
+import { firestore } from "firebase-admin";
+import FieldValue = firestore.FieldValue;
 
 /**
  * Adds a course with the given data:
@@ -210,13 +211,10 @@ const startCourse = onCall(async (request) => {
     if (!request.data.courseId) {
         throw new HttpsError('invalid-argument', "Must provide a course ID to start");
     }
-    await getCollection(DatabaseCollections.EnrolledCourse)
-        // @ts-ignore
-        .where("userId", "==", request.auth.uid)
-        .where("courseId", "==", request.data.courseId)
+    await getDoc(DatabaseCollections.EnrolledCourse, request.auth?.uid + "|" + request.data.courseId)
         .get()
         .then((doc) => {
-            if (doc.empty) { // @ts-ignore
+            if (!doc.exists) { // @ts-ignore
                 logger.error(`No course enrollment with course ID '${request.data.courseId}' and user ID '${request.auth.uid}' exists`);
                 throw new HttpsError('invalid-argument', `You are not enrolled in this course`);
             }
@@ -227,10 +225,9 @@ const startCourse = onCall(async (request) => {
         });
 
     const courseAttempt = {
-        // @ts-ignore
-        userId: request.auth.uid,
+        userId: request.auth?.uid,
         courseId: request.data.courseId,
-        startTime: Timestamp.now(),
+        startTime: FieldValue.serverTimestamp(),
         endTime: null,
         pass: null,
     }
