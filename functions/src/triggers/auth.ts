@@ -2,7 +2,7 @@ import { HttpsError } from "firebase-functions/v2/https";
 import * as functions from "firebase-functions";
 import { logger } from "firebase-functions";
 import { auth } from "../helpers/setup";
-import { DatabaseCollections, getDoc, sendEmail } from "../helpers/helpers";
+import { DatabaseCollections, getCollection, getDoc, sendEmail } from "../helpers/helpers";
 
 /**
  * Logic run before a user can be created (throw errors to block account creation):
@@ -71,12 +71,30 @@ const beforeSignIn = functions.auth.user().beforeSignIn((user) => {
  * -Delete user document from firestore
  */
 const onUserDelete = functions.auth.user().onDelete(async (user) => {
-    return getDoc(DatabaseCollections.User, user.uid)
-        .delete()
-        .then(() => logger.log(`Successfully deleted user database data for user '${user.uid}'`))
-        .catch((err) => {
-            throw new HttpsError('internal', `Error deleting user database data for user '${user.uid}': ${err}`);
-        });
+
+    logger.info(`Getting documents for ${user.uid}...`);
+
+    const promises = [];
+
+    const userDoc = getDoc(DatabaseCollections.User, user.uid);
+    promises.push(userDoc.delete());
+
+    if (user.customClaims && user.customClaims["admin"] === true) {
+        const userCourses = await getCollection(DatabaseCollections.Course)
+            .where('userID', '==', user.uid)
+            .get()
+            .then((result) => result.docs)
+            .catch((err) => { throw new HttpsError('internal', `Error getting user courses: ${err}`) });
+
+        logger.info(`Queried ${userCourses.length} courses created by the user '${user.uid}'`);
+        promises.concat(userCourses.map((course) => course.ref.delete()));
+    }
+
+    const numDocs = promises.length;
+
+    return Promise.all(promises)
+        .then(() => logger.log(`Successfully deleted ${numDocs} user docs (user profile, courses, course attempts, etc) for user '${user.uid}'`))
+        .catch((err) => { throw new HttpsError('internal', `Error deleting user data for user '${user.uid}': ${err}`) });
 });
 
 export { beforeCreate, onUserSignup, beforeSignIn, onUserDelete };

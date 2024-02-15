@@ -31,10 +31,16 @@ const dummyLearnerAccount = { email: "firebase_unit_tests_dummy_learner_account@
 
 describe("Create dummy learner account", () => {
     it("Create dummy account", () => {
-        return callOnCallFunction("createAccount", dummyLearnerAccount).then((result) => {
+        return callOnCallFunction("createAccount", dummyLearnerAccount).then(async (result) => {
             expect(result.data).to.be.a('string');
             expect(result.data).to.match(new RegExp("^[a-zA-Z0-9]{28}$"));
-            addTestUser(dummyLearnerAccount.email, <string> result.data);
+            const uid: string = <string> result.data;
+            addTestUser(dummyLearnerAccount.email, uid);
+
+            console.log(`Manually verifying email for ${dummyLearnerAccount.email}`);
+            await adminAuth.updateUser(uid, { emailVerified: true })
+                .catch((err) => { throw new Error(`Error manually verifying email for ${dummyLearnerAccount.email}: ${err}`); });
+
             return <string>result.data;
         })
     });
@@ -53,6 +59,10 @@ describe("Create dummy admin account", () => {
             addTestUser(dummyAdminAccount.email, <string> result.data);
             return <string> result.data;
         });
+
+        console.log(`Manually verifying email for ${dummyAdminAccount.email}`);
+        await adminAuth.updateUser(uid, { emailVerified: true })
+            .catch((err) => { throw new Error(`Error manually verifying email for ${dummyAdminAccount.email}: ${err}`); });
 
         await new Promise(res => setTimeout(res, 10_000)); // Make sure the User document was created
 

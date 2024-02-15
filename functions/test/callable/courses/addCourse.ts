@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { callOnCallFunctionWithAuth } from "../../helpers/helpers";
+import { dummyAdminAccount } from "../../helpers/setupDummyData";
 
 describe('Success cases for addCourse endpoint...', () => {
 
@@ -22,7 +23,7 @@ describe('Success cases for addCourse endpoint...', () => {
         return (
             describe(`#${testNumber}: ${testDescription}`, () => {
                 it("added course successfully", () =>
-                    callOnCallFunctionWithAuth("addCourse", inputCopy, "18rem8@queensu.ca", "password12345")
+                    callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
                         .then((id) => console.log(`Successfully added new course: ${id.data}`))
                 )
             })
@@ -63,7 +64,7 @@ describe('Failure cases for addCourse endpoint...', () => {
         return (
             describe(`#${testNumber}: ${testDescription}`, () => {
                 it("invalid addCourse input caught", () =>
-                    callOnCallFunctionWithAuth("addCourse", inputCopy, "18rem8@queensu.ca", "password12345")
+                    callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
                         .then(() => { throw new Error("Test case should fail") })
                         .catch((err) => { expect(err.message).to.equal(expectedError) })
                 )

@@ -54,7 +54,7 @@ const verifyIsAdmin = async (request: CallableRequest) => {
     verifyIsAuthenticated(request);
 
     // @ts-ignore
-    let user = await auth.getUser(request.auth.uid)
+    const user = await auth.getUser(request.auth.uid)
         .then((userRecord) => userRecord)
         .catch((error) => {
             logger.error(`Can't get UserRecord object for requesting object: ${error}`);
