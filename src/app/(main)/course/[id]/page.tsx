@@ -7,7 +7,7 @@ import { MdArrowBack } from "react-icons/md";
 import { useAsync } from "react-async-hook";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
-export default function Course({ params }: { params: { id: string } }) {
+export default function Course({params}: { params: { id: string } }) {
 
     const getCourseInfo = (id: string) => httpsCallable(getFunctions(),"getCourseInfo")({ courseId: id });
     const getCourse = useAsync(getCourseInfo, [params.id]);
@@ -17,6 +17,22 @@ export default function Course({ params }: { params: { id: string } }) {
         const course: any = getCourse.result.data;
         console.log(JSON.stringify(course, null, 4));
 
+        /*
+            <div className="mt-4">
+                <h2 className="text-lg mb-4">Available Quizzes:</h2>
+                <div className="flex flex-col w-1/2">
+                    {TEMP_QUIZ_DATA.map((quiz, key) => (
+                        <Quiz
+                            key={key}
+                            title={quiz.title}
+                            length={quiz.length}
+                            attempts={quiz.attempts}
+                            id={quiz.id}
+                        />
+                    ))}
+                </div>
+            </div>
+         */
         return (
             <>
                 <IDCourse
@@ -52,7 +68,8 @@ export default function Course({ params }: { params: { id: string } }) {
     return (
         <main className="mt-14 flex flex-col h-fit bg-white w-[100%] p-16 rounded-2xl shadow-custom">
 
-            <Link href="/home" className="flex flex-row space-x-2 items-center mb-6 -mt-8 text-lg hover:opacity-60 duration-150">
+            <Link href="/home"
+                  className="flex flex-row space-x-2 items-center mb-6 -mt-8 text-lg hover:opacity-60 duration-150">
                 <MdArrowBack size="28" className="text-red-800"/>
                 <div>return to my courses</div>
             </Link>
