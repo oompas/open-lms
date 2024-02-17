@@ -1,25 +1,13 @@
 "use client"
-
 import ManageCourse from "@/app/(main)/admin/tools/ManageCourse";
 import LearnerInsight from "@/app/(main)/admin/tools/LearnerInsight";
 import CourseInsight from "@/app/(main)/admin/tools/CourseInsight";
 import Button from "@/components/Button";
-import SearchBar from "@/components/SearchBar";
 import {useRouter} from "next/navigation";
-
-// Temporary data for courses that an administrator can edit
-const TEMP_MANAGE_COURSE_DATA = [
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 10 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 11 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 12 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 13 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 14 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 15 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 16 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 17 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 18 },
-    { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 19 }
-]
+import { useState } from "react";
+import { useAsync } from "react-async-hook";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import "@/config/firebase";
 
 // Temporary data representing all learners
 const TEMP_LEARNER_INSIGHT_DATA = [
@@ -51,7 +39,32 @@ const TEMP_COURSE_INSIGHT_DATA = [
 
 export default function Tools() {
 
-    const router = useRouter()
+    const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
+
+    const router = useRouter();
+    const [search, setSearch] = useState("");
+
+    const getCourses = () => {
+        if (courses.loading) {
+            return <div>Loading...</div>;
+        }
+        if (courses.error) {
+            return <div>Error loading courses</div>;
+        }
+
+        // @ts-ignore
+        return courses.result.data
+            .filter((course: any) => course.name.toLowerCase().includes(search.toLowerCase())
+                || course.description.toLowerCase().includes(search.toLowerCase()))
+            .map((course: any, key: number) => (
+                <ManageCourse
+                    key={key}
+                    title={course.name}
+                    description={course.description}
+                    id={course.id}
+                />
+            ));
+    }
 
     return (
         <main className="flex-col justify-center items-center pt-14">
@@ -64,18 +77,16 @@ export default function Tools() {
                     </div>
                     <div className="flex flex-row justify-end">
                         <Button text="Create a Course" onClick={() => router.push('/home')}/>
-                        <SearchBar style="ml-4"/>
+                        <input
+                            className={"border-4 border-[#9D1939] w-[55%] px-4 py-2 -mt-2 text-xl rounded-2xl ml-4"}
+                            type="text"
+                            placeholder="Search for a course..."
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
                     </div>
                 </div>
                 <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                    {TEMP_MANAGE_COURSE_DATA.map((course, key) => (
-                        <ManageCourse
-                            key={key}
-                            title={course.title}
-                            description={course.description}
-                            id={course.id}
-                        />
-                    ))}
+                    {getCourses()}
                 </div>
             </div>
 

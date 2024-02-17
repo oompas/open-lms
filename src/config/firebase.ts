@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+import { getAuth } from "@firebase/auth";
 
 // Firebase configuration
 // To switch between dev & prod, swap your .env.local file
@@ -13,3 +14,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 initializeApp(firebaseConfig);
+
+const auth = getAuth();
+
+export { auth };

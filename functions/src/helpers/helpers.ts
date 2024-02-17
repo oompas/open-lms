@@ -10,7 +10,6 @@ enum DatabaseCollections {
     QuizQuestion = "QuizQuestion",
     CourseAttempt = "CourseAttempt",
     QuizAttempt = "QuizAttempt",
-    QuizQuestionAttempt = "QuizQuestionAttempt",
     Email = "Email",
 }
 
