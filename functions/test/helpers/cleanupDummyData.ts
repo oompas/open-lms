@@ -1,9 +1,9 @@
 import "./runOrder";
 import { HttpsError } from "firebase-functions/v2/https";
 import testEnv from "../index.test";
-import { adminAuth } from "./adminSetup";
+import { adminAuth } from "./config/adminSetup";
 import { readFileSync, rm } from "fs";
-import { testUserFilePath, tmpDirPath } from "./testDataToClean";
+import { testUserFilePath, tmpDirPath } from "./testData";
 
 describe("Clean up dummy account", () => {
     after(() => {

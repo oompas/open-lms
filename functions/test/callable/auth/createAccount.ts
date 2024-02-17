@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { callOnCallFunction, randomString, randomInt } from "../../helpers/helpers";
 import { HttpsError } from "firebase-functions/v2/https";
 import { dummyLearnerAccount, dummyAdminAccount } from "../../helpers/setupDummyData";
-import { addTestUser } from "../../helpers/testDataToClean";
+import { addTestUser } from "../../helpers/testData";
 import { faker } from "@faker-js/faker";
 
 const randomPassword = () => faker.internet.password({ length: randomInt(6, 200), memorable: Math.random() < 0.3 });
