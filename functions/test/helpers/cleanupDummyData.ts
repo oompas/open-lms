@@ -2,8 +2,7 @@ import "./runOrder";
 import { HttpsError } from "firebase-functions/v2/https";
 import testEnv from "../index.test";
 import { adminAuth } from "./config/adminSetup";
-import { readFileSync, rm } from "fs";
-import { testUserFilePath, tmpDirPath } from "./testData";
+import { cleanTempFiles, getTestUsers } from "./testData";
 
 describe("Clean up dummy account", () => {
     after(() => {
@@ -18,7 +17,7 @@ describe("Clean up dummy account", () => {
     it("Delete test user accounts", async function() {
         this.timeout(30_000);
 
-        const usersToClean: { email: string, uid: string }[] = JSON.parse(readFileSync(testUserFilePath, "utf-8"));
+        const usersToClean: { email: string, uid: string }[] = getTestUsers();
         const numTestUsers: number = usersToClean.length;
 
         console.log(`Deleting ${numTestUsers} test users...`);
@@ -31,11 +30,6 @@ describe("Clean up dummy account", () => {
     });
 
     it("Remove temporary files", () => {
-        rm(tmpDirPath, { recursive: true }, (err) => {
-            if (err) {
-                throw new Error(`Error removing tmp directory: ${err}`);
-            }
-            console.log("Successfully deleted temporary test files");
-        });
+        cleanTempFiles();
     });
 });

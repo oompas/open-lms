@@ -1,21 +1,20 @@
 import { expect } from "chai";
 import { callOnCallFunction, randomString } from "./helpers";
-import { adminAuth, adminDb } from "./adminSetup";
-import { addTestUser, testUserFilePath, tmpDirPath } from "./testDataToClean";
-import { existsSync, readFileSync } from "fs";
+import { adminAuth, adminDb } from "./config/adminSetup";
+import { addTestUser, getTestUsers } from "./testData";
 import { HttpsError } from "firebase-functions/v2/https";
 
 describe("Cleaning up any old data from previous runs", () => {
     it("Delete test user accounts", async function() {
         this.timeout(30_000);
 
-        if (!existsSync(tmpDirPath) || !existsSync(testUserFilePath)) {
+        const usersToClean: { email: string, uid: string }[] = getTestUsers();
+        const numTestUsers: number = usersToClean.length;
+
+        if (numTestUsers === 0) {
             console.log("No test users to delete");
             return;
         }
-
-        const usersToClean: { email: string, uid: string }[] = JSON.parse(readFileSync(testUserFilePath, "utf-8"));
-        const numTestUsers: number = usersToClean.length;
 
         console.log(`Deleting ${numTestUsers} test users...`);
         await Promise.all(usersToClean.map((user) =>
