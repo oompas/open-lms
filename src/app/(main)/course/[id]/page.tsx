@@ -15,24 +15,7 @@ export default function Course({params}: { params: { id: string } }) {
     const renderCourse = () => {
         // @ts-ignore
         const course: any = getCourse.result.data;
-        console.log(JSON.stringify(course, null, 4));
 
-        /*
-            <div className="mt-4">
-                <h2 className="text-lg mb-4">Available Quizzes:</h2>
-                <div className="flex flex-col w-1/2">
-                    {TEMP_QUIZ_DATA.map((quiz, key) => (
-                        <Quiz
-                            key={key}
-                            title={quiz.title}
-                            length={quiz.length}
-                            attempts={quiz.attempts}
-                            id={quiz.id}
-                        />
-                    ))}
-                </div>
-            </div>
-         */
         return (
             <>
                 <IDCourse
