@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { callOnCallFunctionWithAuth } from "../../helpers/helpers";
 import { dummyAdminAccount } from "../../helpers/setupDummyData";
 
-describe('Success cases for addCourse endpoint...', () => {
+suite('Success cases for addCourse endpoint...', () => {
 
     interface TestInput {
         name: any,
@@ -16,17 +16,15 @@ describe('Success cases for addCourse endpoint...', () => {
 
     let testNumber = 0;
     let course: TestInput;
-    const test = (testDescription: string) => {
+    const runTest = (testDescription: string) => {
         ++testNumber;
         const inputCopy = course; // Original may be updated by later test case before running
 
         return (
-            describe(`#${testNumber}: ${testDescription}`, () => {
-                it("added course successfully", () =>
-                    callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
-                        .then((id) => console.log(`Successfully added new course: ${id.data}`))
-                )
-            })
+            test(`#${testNumber}: ${testDescription}`, () =>
+                callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
+                    .then((id) => console.log(`Successfully added new course: ${id.data}`))
+            )
         );
     }
 
@@ -39,7 +37,7 @@ describe('Success cases for addCourse endpoint...', () => {
         quizTimeLimit: 1,
         active: true,
     };
-    test("Simple active course");
+    runTest("Simple active course");
 
     course = {
         name: "Unit test",
@@ -50,43 +48,41 @@ describe('Success cases for addCourse endpoint...', () => {
         quizTimeLimit: 1,
         active: false,
     };
-    test("Simple inactive course");
+    runTest("Simple inactive course");
 });
 
-describe('Failure cases for addCourse endpoint...', () => {
+suite('Failure cases for addCourse endpoint...', () => {
 
     let testNumber = 0;
     let course: any;
-    const test = (testDescription: string, expectedError: string) => {
+    const runTest = (testDescription: string, expectedError: string) => {
         ++testNumber;
         const inputCopy = course; // Original may be updated by later test case before running
 
         return (
-            describe(`#${testNumber}: ${testDescription}`, () => {
-                it("invalid addCourse input caught", () =>
-                    callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
-                        .then(() => { throw new Error("Test case should fail") })
-                        .catch((err) => { expect(err.message).to.equal(expectedError) })
-                )
-            })
+            test(`#${testNumber}: ${testDescription}`, () =>
+                callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
+                    .then(() => { throw new Error("Test case should fail") })
+                    .catch((err) => { expect(err.message).to.equal(expectedError) })
+            )
         );
     }
 
     course = null;
-    test("Null course input", "ValidationError: this cannot be null");
+    runTest("Null course input", "ValidationError: this cannot be null");
 
     course = undefined;
-    test("Undefined course input", "ValidationError: this cannot be null");
+    runTest("Undefined course input", "ValidationError: this cannot be null");
 
     course = "Unit test invalid value";
-    test("String course input", "ValidationError: this must be a `object` type, but the final value was: `\"Unit test invalid value\"`.");
+    runTest("String course input", "ValidationError: this must be a `object` type, but the final value was: `\"Unit test invalid value\"`.");
 
     course = 12345;
-    test("Number course input", "ValidationError: this must be a `object` type, but the final value was: `12345`.");
+    runTest("Number course input", "ValidationError: this must be a `object` type, but the final value was: `12345`.");
 
     course = [];
-    test("Array course input", "ValidationError: this must be a `object` type, but the final value was: `[]`.");
+    runTest("Array course input", "ValidationError: this must be a `object` type, but the final value was: `[]`.");
 
     course = {};
-    test("Empty object course input", "ValidationError: active is a required field");
+    runTest("Empty object course input", "ValidationError: active is a required field");
 });

@@ -4,8 +4,8 @@ import { adminAuth, adminDb } from "./config/adminSetup";
 import { addTestUser, getTestUsers } from "./testData";
 import { HttpsError } from "firebase-functions/v2/https";
 
-describe("Cleaning up any old data from previous runs", () => {
-    it("Delete test user accounts", async function() {
+suite("Cleaning up any old data from previous runs", () => {
+    test("Delete test user accounts", async function() {
         this.timeout(30_000);
 
         const usersToClean: { email: string, uid: string }[] = getTestUsers();
@@ -28,8 +28,8 @@ describe("Cleaning up any old data from previous runs", () => {
 
 const dummyLearnerAccount = { email: "firebase_unit_tests_dummy_learner_account@gmail.com", password: randomString(20) };
 
-describe("Create dummy learner account", () => {
-    it("Create dummy account", () => {
+suite("Create dummy learner account", () => {
+    test("Create dummy account", () => {
         return callOnCallFunction("createAccount", dummyLearnerAccount).then(async (result) => {
             expect(result.data).to.be.a('string');
             expect(result.data).to.match(new RegExp("^[a-zA-Z0-9]{28}$"));
@@ -47,8 +47,8 @@ describe("Create dummy learner account", () => {
 
 const dummyAdminAccount = { email: "firebase_unit_tests_dummy_admin_account@gmail.com", password: randomString(20) };
 
-describe("Create dummy admin account", () => {
-    it("Create dummy account", async function() {
+suite("Create dummy admin account", () => {
+    test("Create dummy account", async function() {
         this.timeout(40_000);
 
         console.log(`Creating dummy admin account ${dummyAdminAccount.email}`);
