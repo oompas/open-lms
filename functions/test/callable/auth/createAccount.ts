@@ -11,18 +11,11 @@ suite("Create account", () => {
 
     suite('Success cases', () => {
 
-        interface TestInput {
-            description: string,
-            email: string,
-            password: string,
-        }
-
-        let testData: TestInput;
-        const runTest = () => {
+        let testData: { email: string, password: string };
+        const runTest = (description: string) => {
             const inputCopy = testData; // Original may be updated by later test case before running
-
             return (
-                test(inputCopy.description, () => {
+                test(description, () => {
                     console.log(`Creating account for ${inputCopy.email} with password ${inputCopy.password}`);
                     return callOnCallFunction("createAccount", inputCopy)
                         .then((result) => {
@@ -41,11 +34,10 @@ suite("Create account", () => {
         suite("Random inputs", () => {
             for (let i = 1; i <= 10; ++i) {
                 testData = {
-                    description: `#${i}`,
                     email: faker.internet.email({ allowSpecialCharacters: Math.random() < 0.3 }),
                     password: randomPassword()
                 };
-                runTest();
+                runTest(`#${i}`);
             }
         });
 
@@ -54,20 +46,18 @@ suite("Create account", () => {
                 "rogers.com", "hotmail.com", "aol.com", "icloud.com", "protonmail.com", "temp-mail.org"];
             for (const provider of emailProviders) {
                 testData = {
-                    description: provider,
                     email: faker.internet.email({ provider: provider }),
                     password: randomPassword(),
                 };
-                runTest();
+                runTest(provider);
             }
         });
 
         testData = {
-            description: `Minimum password length (6)`,
             email: faker.internet.email(),
             password: faker.internet.password({ length: 6 }),
         };
-        runTest();
+        runTest(`Minimum password length (6)`);
     });
 
     suite('Failure cases', () => {
@@ -75,7 +65,6 @@ suite("Create account", () => {
         let testData: any;
         const runTest = (description: string, errMsg: string) => {
             const inputCopy = testData; // Original may be updated by later test case before running
-
             return (
                 test(description, () => {
                     if (inputCopy) {
@@ -92,7 +81,7 @@ suite("Create account", () => {
         }
 
         suite("Invalid email", () => {
-            const emails: any[] = [undefined, null, "", 12345, "test.at.test.com", "open LMS@gmail.com", "test@test@com"];
+            const emails: any[] = [undefined, null, "", 12345, 10.5, "test.at.test.com", "open LMS@gmail.com", "test@test@com"];
             for (const email of emails) {
                 testData = {
                     email: email,
@@ -109,7 +98,7 @@ suite("Create account", () => {
         });
 
         suite("Invalid password", () => {
-            const passwords: any[] = [undefined, null, "", 12345, "1", "12", "123", "1234", "12345"];
+            const passwords: any[] = [undefined, null, "", 12345, 10.5, "1", "12", "123", "1234", "12345"];
             for (const password of passwords) {
                 testData = {
                     email: faker.internet.email(),
