@@ -9,9 +9,12 @@ suite("Clean up test data", () => {
         testEnv.cleanup;
     });
 
-    test("Delay cleanup so all triggers can finish...", async function() {
+    test("Wait for triggers to finish...", async function() {
         this.timeout(21_000);
+
+        console.log("Waiting 20 seconds for triggers to finish...");
         await new Promise(res => setTimeout(res, 20_000)); // Make sure the onUserSignup() triggers are all done
+        console.log("Done");
     });
 
     test("Delete test user accounts", async function() {
@@ -23,13 +26,14 @@ suite("Clean up test data", () => {
         console.log(`Deleting ${numTestUsers} test users...`);
         await Promise.all(usersToClean.map((user) =>
             adminAuth.deleteUser(user.uid)
+                .then(() => console.log(`Successfully deleted user ${user.email} (${user.uid})`))
                 .catch((err) => { throw new HttpsError('internal', `Error deleting user ${user.email} (${user.uid}): ${err}`); })
         ))
             .then(() => console.log(`Successfully deleted ${numTestUsers} test users`))
             .catch((err) => { throw new HttpsError('internal', `Error deleting test users: ${err}`); });
     });
 
-    test("Remove temporary test files", () => {
+    test("Delete temporary test files", () => {
         cleanTempFiles();
     });
 });

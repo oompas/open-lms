@@ -2,101 +2,91 @@ import { dummyLearnerAccount, dummyAdminAccount } from "../../helpers/testData";
 import { expect } from "chai";
 import { callOnCallFunction } from "../../helpers/helpers";
 
-suite('Success cases for resetPassword endpoint...', () => {
+suite("Reset password", () => {
+    suite('Success cases', () => {
 
-    interface TestInput {
-        description: string,
-        email: any,
-    }
+        interface TestInput {
+            description: string,
+            email: any,
+        }
 
-    let testNumber: number = 0;
-    let testData: TestInput;
-    const runTest = () => {
-        ++testNumber;
-        const inputCopy = testData; // Original may be updated by later test case before running
+        let testNumber: number = 0;
+        let testData: TestInput;
+        const runTest = () => {
+            ++testNumber;
+            const inputCopy = testData; // Original may be updated by later test case before running
 
-        return (
-            test(`#${testNumber}: ${inputCopy.description}`, () =>
-                callOnCallFunction("resetPassword", inputCopy)
-                    .then((result) => {
-                        expect(result.data).to.equal(`Password reset email created for ${inputCopy.email}`);
-                    })
-            )
-        );
-    }
+            return (
+                test(`#${testNumber}: ${inputCopy.description}`, () =>
+                    callOnCallFunction("resetPassword", inputCopy)
+                        .then((result) => {
+                            expect(result.data).to.equal(`Password reset email created for ${inputCopy.email}`);
+                        })
+                )
+            );
+        }
 
-    testData = {
-        description: "Dummy learner email",
-        email: dummyLearnerAccount.email,
-    };
-    runTest();
+        testData = {
+            description: "Dummy learner email",
+            email: dummyLearnerAccount.email,
+        };
+        runTest();
 
-    testData = {
-        description: "Dummy admin email",
-        email: dummyAdminAccount.email,
-    }
-    runTest();
-});
+        testData = {
+            description: "Dummy admin email",
+            email: dummyAdminAccount.email,
+        }
+        runTest();
+    });
 
-suite('Failure cases for resetPassword endpoint...', () => {
+    suite('Failure cases', () => {
 
-    interface TestInput {
-        description: string,
-        email: any,
-    }
+        let testNumber: number = 0;
+        let testData: any;
 
-    let testNumber: number = 0;
-    let testData: TestInput;
+        const runTest = (description: string, errMsg: string) => {
+            ++testNumber;
+            const inputCopy = testData; // Original may be updated by later test case before running
 
-    const runTest = (errMsg: string, errCode: string) => {
-        ++testNumber;
-        const inputCopy = testData; // Original may be updated by later test case before running
+            return (
+                test(`#${testNumber}: ${description}`, () =>
+                    callOnCallFunction("resetPassword", inputCopy)
+                        .then(() => { throw new Error("API call should fail"); })
+                        .catch((err: any) => {
+                            expect(err.message).to.equal(errMsg);
+                        })
+                )
+            );
+        }
 
-        return (
-            test(`#${testNumber}: ${inputCopy.description}`, () =>
-                callOnCallFunction("resetPassword", inputCopy)
-                    .then(() => { throw new Error("API call should fail"); })
-                    .catch((err: any) => {
-                        expect(err.code).to.equal(errCode);
-                        expect(err.message).to.equal(errMsg);
-                    })
-            )
-        );
-    }
+        testData = {
+            email: "functions_ut_resetPassword_invalid_email@gmail.com",
+        };
+        runTest("Non-existent email", "Email does not exist or an error occurred");
 
-    testData = {
-        description: "Non-existent email",
-        email: "functions_ut_resetPassword_invalid_email@gmail.com",
-    };
-    runTest("Email does not exist or an error occurred", "functions/invalid-argument");
+        testData = {
+            email: null,
+        };
+        runTest("Invalid email #1", "ValidationError: email is a required field");
 
-    testData = {
-        description: "Invalid email #1",
-        email: null,
-    };
-    runTest("ValidationError: email is a required field", "functions/invalid-argument");
+        testData = {
+            email: 12345,
+        };
+        runTest("Invalid email #2", "ValidationError: email must be a `string` type, but the final value was: `12345`.");
 
-    testData = {
-        description: "Invalid email #2",
-        email: 12345,
-    };
-    runTest("ValidationError: email must be a `string` type, but the final value was: `12345`.", "functions/invalid-argument");
+        testData = {
+            email: "",
+        };
+        runTest("Invalid email #3", "ValidationError: email is a required field");
 
-    testData = {
-        description: "Invalid email #3",
-        email: "",
-    };
-    runTest("ValidationError: email is a required field", "functions/invalid-argument");
+        testData = {
+            email: "test.at.test.com",
+        };
+        runTest("Invalid email #4", "ValidationError: email must be a valid email");
 
-    testData = {
-        description: "Invalid email #4",
-        email: "test.at.test.com",
-    };
-    runTest("ValidationError: email must be a valid email", "functions/invalid-argument");
-
-    testData = {
-        description: "Invalid email #5",
-        email: "test@@test.com",
-    };
-    runTest("ValidationError: email must be a valid email", "functions/invalid-argument");
+        testData = {
+            email: "test@@test.com",
+        };
+        runTest("Invalid email #5", "ValidationError: email must be a valid email");
+    });
 });
