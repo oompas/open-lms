@@ -1,11 +1,11 @@
-import "./runOrder";
 import { HttpsError } from "firebase-functions/v2/https";
 import testEnv from "../index.test";
 import { adminAuth } from "./config/adminSetup";
 import { cleanTempFiles, getTestUsers } from "./testData";
+import "./runOrder"; // Force cleanupDummyData to run last
 
-suite("Clean up dummy account", () => {
-    teardown(() => {
+suite("Clean up test data", () => {
+    suiteTeardown(() => {
         testEnv.cleanup;
     });
 

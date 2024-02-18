@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { callOnCallFunction, randomString, randomInt } from "../../helpers/helpers";
 import { HttpsError } from "firebase-functions/v2/https";
-import { dummyLearnerAccount, dummyAdminAccount } from "../../helpers/setupDummyData";
+import { dummyLearnerAccount, dummyAdminAccount } from "../../helpers/testData";
 import { addTestUser } from "../../helpers/testData";
 import { faker } from "@faker-js/faker";
 
@@ -22,15 +22,18 @@ suite('Success cases for createAccount endpoint...', () => {
         const inputCopy = testData; // Original may be updated by later test case before running
 
         return (
-            test(`#${testNumber}: ${inputCopy.description} ('${inputCopy.email}' '${inputCopy.password}')`, () =>
-                callOnCallFunction("createAccount", inputCopy)
+            test(`#${testNumber}: ${inputCopy.description}`, () => {
+                console.log(`Creating account for ${inputCopy.email} with password ${inputCopy.password}`);
+                return callOnCallFunction("createAccount", inputCopy)
                     .then((result) => {
                             expect(result.data).to.be.a('string');
                             expect(result.data).to.match(new RegExp("^[a-zA-Z0-9]{28}$"));
-                            addTestUser(inputCopy.email, <string> result.data);
+
+                            console.log("\nAccount created successfully, adding to test data file...");
+                            addTestUser(inputCopy.email, inputCopy.password, <string> result.data);
                         }
-                    )
-            )
+                    );
+            })
         );
     }
 

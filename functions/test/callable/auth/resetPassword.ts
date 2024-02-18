@@ -1,4 +1,4 @@
-import { dummyLearnerAccount, dummyAdminAccount } from "../../helpers/setupDummyData";
+import { dummyLearnerAccount, dummyAdminAccount } from "../../helpers/testData";
 import { expect } from "chai";
 import { callOnCallFunction } from "../../helpers/helpers";
 

@@ -1,40 +1,39 @@
 import { expect } from "chai";
-import { callOnCallFunction, randomString } from "./helpers";
+import { callOnCallFunction } from "./helpers";
 import { adminAuth, adminDb } from "./config/adminSetup";
-import { addTestUser, getTestUsers } from "./testData";
+import { dummyLearnerAccount, dummyAdminAccount, addTestUser, cleanTempFiles, getTestUsers } from "./testData";
 import { HttpsError } from "firebase-functions/v2/https";
 
-suite("Cleaning up any old data from previous runs", () => {
-    test("Delete test user accounts", async function() {
+suite("Set up test data", () => {
+    test("Clean data from previous runs", async function() {
         this.timeout(30_000);
 
         const usersToClean: { email: string, uid: string }[] = getTestUsers();
         const numTestUsers: number = usersToClean.length;
 
-        if (numTestUsers === 0) {
+        if (numTestUsers !== 0) {
+            console.log(`Deleting ${numTestUsers} test users...`);
+            await Promise.all(usersToClean.map((user) =>
+                adminAuth.deleteUser(user.uid)
+                    .catch((err) => { throw new HttpsError('internal', `Error deleting user ${user.email} (${user.uid}): ${err}`); })
+            ))
+                .then(() => console.log(`Successfully deleted ${numTestUsers} test users`))
+                .catch((err) => { throw new HttpsError('internal', `Error deleting test users: ${err}`); });
+        } else {
             console.log("No test users to delete");
-            return;
         }
 
-        console.log(`Deleting ${numTestUsers} test users...`);
-        await Promise.all(usersToClean.map((user) =>
-            adminAuth.deleteUser(user.uid)
-                .catch((err) => { throw new HttpsError('internal', `Error deleting user ${user.email} (${user.uid}): ${err}`); })
-        ))
-            .then(() => console.log(`Successfully deleted ${numTestUsers} test users`))
-            .catch((err) => { throw new HttpsError('internal', `Error deleting test users: ${err}`); });
+        console.log("\nCleaning temporary test files...");
+        cleanTempFiles();
+        console.log("Successfully cleaned temporary test files");
     });
-});
 
-const dummyLearnerAccount = { email: "firebase_unit_tests_dummy_learner_account@gmail.com", password: randomString(20) };
-
-suite("Create dummy learner account", () => {
     test("Create dummy account", () => {
         return callOnCallFunction("createAccount", dummyLearnerAccount).then(async (result) => {
             expect(result.data).to.be.a('string');
             expect(result.data).to.match(new RegExp("^[a-zA-Z0-9]{28}$"));
             const uid: string = <string> result.data;
-            addTestUser(dummyLearnerAccount.email, uid);
+            addTestUser(dummyLearnerAccount.email, dummyLearnerAccount.password, uid);
 
             console.log(`Manually verifying email for ${dummyLearnerAccount.email}`);
             await adminAuth.updateUser(uid, { emailVerified: true })
@@ -43,11 +42,6 @@ suite("Create dummy learner account", () => {
             return <string>result.data;
         })
     });
-});
-
-const dummyAdminAccount = { email: "firebase_unit_tests_dummy_admin_account@gmail.com", password: randomString(20) };
-
-suite("Create dummy admin account", () => {
     test("Create dummy account", async function() {
         this.timeout(40_000);
 
@@ -55,7 +49,7 @@ suite("Create dummy admin account", () => {
         const uid: string = await callOnCallFunction("createAccount", dummyAdminAccount).then((result) => {
             expect(result.data).to.be.a('string');
             expect(result.data).to.match(new RegExp("^[a-zA-Z0-9]{28}$"));
-            addTestUser(dummyAdminAccount.email, <string> result.data);
+            addTestUser(dummyAdminAccount.email, dummyAdminAccount.password, <string> result.data);
             return <string> result.data;
         });
 
@@ -77,6 +71,5 @@ suite("Create dummy admin account", () => {
             .then((user) => expect(user.customClaims).to.deep.equal({ admin: true }))
             .catch((err) => { throw new Error(`Error getting admin user's custom claims: ${err}`); })
     });
-});
 
-export { dummyLearnerAccount, dummyAdminAccount };
+});

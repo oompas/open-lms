@@ -1,4 +1,6 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rm } from "fs";
+import { randomString } from "./helpers";
+import "./setupDummyData"; // Force setupDummyData to run first
 
 /**
  * This file handles storing info about objects (users, courses, quizzes, etc) created during tests
@@ -19,18 +21,30 @@ const paths = {
 const encoding = "utf-8";
 
 /**
+ * Dummy accounts for testing
+ */
+const dummyLearnerAccount = {
+    email: "firebase_unit_tests_dummy_learner_account@gmail.com",
+    password: randomString(20)
+};
+const dummyAdminAccount = {
+    email: "firebase_unit_tests_dummy_admin_account@gmail.com",
+    password: randomString(20)
+};
+
+/**
  * Add a test user (email + uid) to a temporary JSON file so it can be deleted up later
  */
-const addTestUser = (email: string, uid: string) => {
+const addTestUser = (email: string, password: string, uid: string) => {
     if (!existsSync(tmpDir)) {
         mkdirSync(tmpDir, { recursive: true });
     }
 
-    const usersJson: { email: string, uid: string }[] = existsSync(paths.users)
+    const usersJson: { email: string, password: string, uid: string }[] = existsSync(paths.users)
         ? JSON.parse(readFileSync(paths.users, encoding))
         : [];
 
-    usersJson.push({email, uid});
+    usersJson.push({email, password, uid});
 
     writeFileSync(paths.users, JSON.stringify(usersJson, null, 4), encoding);
 }
@@ -56,4 +70,4 @@ const cleanTempFiles = () => {
     });
 }
 
-export { addTestUser, getTestUsers, cleanTempFiles};
+export { dummyLearnerAccount, dummyAdminAccount, addTestUser, getTestUsers, cleanTempFiles };
