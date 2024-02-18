@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import { callOnCallFunctionWithAuth } from "../../helpers/helpers";
-import { dummyAdminAccount } from "../../helpers/testData";
+import { callOnCallFunctionWithAuth } from "../helpers/helpers";
+import { dummyAdminAccount } from "../helpers/testData";
 
 suite("Add course", () => {
     suite('Success cases', () => {
@@ -20,7 +20,7 @@ suite("Add course", () => {
             const inputCopy = course; // Original may be updated by later test case before running
             return (
                 test(description, () => {
-                    console.log(`Adding course: ${JSON.stringify(inputCopy, null, 4)}`);
+                    console.log(`Adding course: ${JSON.stringify(inputCopy, null, 4)}\n`);
                     return callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
                         .then((id) => console.log(`Successfully added new course: ${id.data}`));
                 })
@@ -57,7 +57,7 @@ suite("Add course", () => {
             const inputCopy = course; // Original may be updated by later test case before running
             return (
                 test(description, () => {
-                    console.log(`Adding course: ${JSON.stringify(inputCopy, null, 4)}`);
+                    console.log(`Adding course: ${JSON.stringify(inputCopy, null, 4)}\n`);
                     return callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
                         .then(() => { throw new Error("Test case should fail") })
                         .catch((err) => { expect(err.message).to.equal(expectedError) });

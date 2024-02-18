@@ -1,8 +1,8 @@
 import { expect } from "chai";
-import { callOnCallFunction, randomInt } from "../../helpers/helpers";
+import { callOnCallFunction, randomInt, USER_ID_LENGTH } from "../helpers/helpers";
 import { HttpsError } from "firebase-functions/v2/https";
-import { dummyLearnerAccount, dummyAdminAccount } from "../../helpers/testData";
-import { addTestUser } from "../../helpers/testData";
+import { dummyLearnerAccount, dummyAdminAccount } from "../helpers/testData";
+import { addTestUser } from "../helpers/testData";
 import { faker } from "@faker-js/faker";
 
 suite("Create account", () => {
@@ -20,7 +20,7 @@ suite("Create account", () => {
                     return callOnCallFunction("createAccount", inputCopy)
                         .then((result) => {
                                 expect(result.data).to.be.a('string');
-                                expect(result.data).to.match(new RegExp("^[a-zA-Z0-9]{28}$"));
+                                expect(result.data).to.match(new RegExp(`^[a-zA-Z0-9]{${USER_ID_LENGTH}}$`));
 
                                 console.log("\nAccount created successfully, adding to test data file...");
                                 addTestUser(inputCopy.email, inputCopy.password, <string> result.data);
@@ -90,8 +90,8 @@ suite("Create account", () => {
                 const errMsg = !email
                     ? "ValidationError: email is a required field"
                     : typeof email !== "string"
-                    ? "ValidationError: email must be a `string` type, but the final value was: `" + email + "`."
-                    : "ValidationError: email must be a valid email";
+                        ? "ValidationError: email must be a `string` type, but the final value was: `" + email + "`."
+                        : "ValidationError: email must be a valid email";
 
                 runTest(String(email), errMsg);
             }
@@ -107,8 +107,8 @@ suite("Create account", () => {
                 const errMsg = !password
                     ? "ValidationError: password is a required field"
                     : typeof password !== "string"
-                    ? "ValidationError: password must be a `string` type, but the final value was: `" + password + "`."
-                    : "ValidationError: Password must be at least six characters long";
+                        ? "ValidationError: password must be a `string` type, but the final value was: `" + password + "`."
+                        : "ValidationError: Password must be at least six characters long";
 
                 runTest(String(password), errMsg);
             }
@@ -128,5 +128,82 @@ suite("Create account", () => {
             password: randomPassword(),
         };
         runTest("Email in use #2", `Email ${testData.email} is already in use`);
+    });
+});
+
+suite("Reset password", () => {
+    suite('Success cases', () => {
+
+        let testData: { email: string };
+        const runTest = (description: string) => {
+            const inputCopy = testData; // Original may be updated by later test case before running
+            return (
+                test(description, () => {
+                    console.log(`Resetting password for ${inputCopy.email}`);
+                    return callOnCallFunction("resetPassword", inputCopy)
+                        .then((result) => {
+                            expect(result.data).to.equal(`Password reset email created for ${inputCopy.email}`);
+                        });
+                })
+            );
+        }
+
+        testData = { email: dummyLearnerAccount.email };
+        runTest("Dummy learner email");
+
+        testData = { email: dummyAdminAccount.email };
+        runTest("Dummy admin email");
+    });
+
+    suite('Failure cases', () => {
+
+        let testData: any;
+        const runTest = (description: string, errMsg: string) => {
+            const inputCopy = testData; // Original may be updated by later test case before running
+            return (
+                test(description, () => {
+                    if (inputCopy.email) {
+                        console.log(`Resetting password for ${inputCopy.email}`);
+                    } else {
+                        console.log(`Resetting password for invalid input format`);
+                    }
+
+                    return callOnCallFunction("resetPassword", inputCopy)
+                        .then(() => { throw new Error("API call should fail"); })
+                        .catch((err: any) => {
+                            expect(err.message).to.equal(errMsg);
+                        });
+                })
+            );
+        }
+
+        suite("Invalid email format", () => {
+            const emails: any[] = [undefined, null, "", 12345, 10.5];
+            for (const email of emails) {
+                testData = {
+                    email: email,
+                };
+                const errMsg = !email
+                    ? "ValidationError: email is a required field"
+                    : "ValidationError: email must be a `string` type, but the final value was: `" + email + "`.";
+
+                runTest(String(email), errMsg);
+            }
+        });
+
+        suite("Invalid emails", () => {
+            const emails: string[] = ["test.at.test.com", "test@@test.com", "open LMS@gmail.com"];
+            for (const email of emails) {
+                testData = {
+                    email: email,
+                };
+                runTest(email, "ValidationError: email must be a valid email");
+            }
+        });
+
+        testData = {
+            email: "functions_ut_resetPassword_invalid_email@gmail.com",
+        };
+        runTest("Non-existent email", "Email does not exist or an error occurred");
     });
 });

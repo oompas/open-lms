@@ -13,7 +13,7 @@ import "./setupDummyData"; // Force setupDummyData to run first
  * Paths to the temporary data files
  */
 const tmpDir = "./test/tmp";
-const paths = {
+const tmpFiles = {
     users: `${tmpDir}/users.json`,
     courses: `${tmpDir}/courses.json`,
 };
@@ -40,21 +40,21 @@ const addTestUser = (email: string, password: string, uid: string) => {
         mkdirSync(tmpDir, { recursive: true });
     }
 
-    const usersJson: { email: string, password: string, uid: string }[] = existsSync(paths.users)
-        ? JSON.parse(readFileSync(paths.users, encoding))
+    const usersJson: { email: string, password: string, uid: string }[] = existsSync(tmpFiles.users)
+        ? JSON.parse(readFileSync(tmpFiles.users, encoding))
         : [];
 
     usersJson.push({email, password, uid});
 
-    writeFileSync(paths.users, JSON.stringify(usersJson, null, 4), encoding);
+    writeFileSync(tmpFiles.users, JSON.stringify(usersJson, null, 4), encoding);
 }
 
 /**
  * Get all test users
  */
 const getTestUsers = () => {
-    return existsSync(paths.users)
-        ? JSON.parse(readFileSync(paths.users, encoding))
+    return existsSync(tmpFiles.users)
+        ? JSON.parse(readFileSync(tmpFiles.users, encoding))
         : [];
 }
 
