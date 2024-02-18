@@ -6,26 +6,24 @@ suite("Add course", () => {
     suite('Success cases', () => {
 
         interface TestInput {
-            name: any,
-            description: any,
-            link: any,
-            minTime: any,
-            maxQuizAttempts: any,
-            quizTimeLimit: any,
-            active: any,
+            name: string,
+            description: string,
+            link: string,
+            minTime: number,
+            maxQuizAttempts: number,
+            quizTimeLimit: number,
+            active: boolean,
         }
 
-        let testNumber = 0;
         let course: TestInput;
-        const runTest = (testDescription: string) => {
-            ++testNumber;
+        const runTest = (description: string) => {
             const inputCopy = course; // Original may be updated by later test case before running
-
             return (
-                test(`#${testNumber}: ${testDescription}`, () =>
-                    callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
-                        .then((id) => console.log(`Successfully added new course: ${id.data}`))
-                )
+                test(description, () => {
+                    console.log(`Adding course: ${JSON.stringify(inputCopy, null, 4)}`);
+                    return callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
+                        .then((id) => console.log(`Successfully added new course: ${id.data}`));
+                })
             );
         }
 
@@ -54,35 +52,25 @@ suite("Add course", () => {
 
     suite('Failure cases', () => {
 
-        let testNumber = 0;
         let course: any;
-        const runTest = (testDescription: string, expectedError: string) => {
-            ++testNumber;
+        const runTest = (description: string, expectedError: string) => {
             const inputCopy = course; // Original may be updated by later test case before running
-
             return (
-                test(`#${testNumber}: ${testDescription}`, () =>
-                    callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
+                test(description, () => {
+                    console.log(`Adding course: ${JSON.stringify(inputCopy, null, 4)}`);
+                    return callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
                         .then(() => { throw new Error("Test case should fail") })
-                        .catch((err) => { expect(err.message).to.equal(expectedError) })
-                )
+                        .catch((err) => { expect(err.message).to.equal(expectedError) });
+                })
             );
         }
 
-        course = null;
-        runTest("Null course input", "ValidationError: this cannot be null");
-
-        course = undefined;
-        runTest("Undefined course input", "ValidationError: this cannot be null");
-
-        course = "Unit test invalid value";
-        runTest("String course input", "ValidationError: this must be a `object` type, but the final value was: `\"Unit test invalid value\"`.");
-
-        course = 12345;
-        runTest("Number course input", "ValidationError: this must be a `object` type, but the final value was: `12345`.");
-
-        course = [];
-        runTest("Array course input", "ValidationError: this must be a `object` type, but the final value was: `[]`.");
+        suite("Invalid course structure", () => {
+            const courses = [undefined, null, "", 12345, 10.5, "unit test", []];
+            for (const course of courses) {
+                runTest(String(course), "ValidationError: this cannot be null");
+            }
+        });
 
         course = {};
         runTest("Empty object course input", "ValidationError: active is a required field");

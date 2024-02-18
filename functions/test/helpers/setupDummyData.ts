@@ -41,8 +41,6 @@ suite("Set up test data", () => {
             await adminAuth.updateUser(uid, { emailVerified: true })
                 .catch((err) => { throw new Error(`Error manually verifying email for ${dummyLearnerAccount.email}: ${err}`); });
             console.log(`Successfully verified email for ${dummyLearnerAccount.email}`);
-
-            return <string>result.data;
         })
     });
     test("Create dummy admin account", async function() {

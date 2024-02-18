@@ -62,6 +62,10 @@ const getTestUsers = () => {
  * Remove all temporary test data
  */
 const cleanTempFiles = () => {
+    if (!existsSync(tmpDir)) {
+        return;
+    }
+
     rm(tmpDir, { recursive: true }, (err) => {
         if (err) {
             throw new Error(`Error removing tmp directory: ${err}`);
