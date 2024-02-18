@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { callOnCallFunctionWithAuth } from "../helpers/helpers";
-import { dummyAdminAccount } from "../helpers/testData";
+import { dummyAdminAccount, dummyLearnerAccount } from "../helpers/testData";
 
 suite("Add course", () => {
     suite('Success cases', () => {
@@ -19,7 +19,9 @@ suite("Add course", () => {
         const runTest = (description: string) => {
             const inputCopy = course; // Original may be updated by later test case before running
             return (
-                test(description, () => {
+                test(description, function() {
+                    this.timeout(7_000);
+
                     console.log(`Adding course: ${JSON.stringify(inputCopy, null, 4)}\n`);
                     return callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
                         .then((id) => console.log(`Successfully added new course: ${id.data}`));
@@ -75,4 +77,45 @@ suite("Add course", () => {
         course = {};
         runTest("Empty object course input", "ValidationError: active is a required field");
     });
+});
+
+suite("Get courses", () => {
+    suite('Success cases', () => {
+
+        const runTest = (description: string, admin: boolean) => {
+            const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
+            const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
+
+            return (
+                test(description, () => {
+                    console.log(`Getting courses...\n`);
+                    return callOnCallFunctionWithAuth("getCourses", {}, email, password)
+                        .then((courses) => {
+                            console.log(`Courses: ${JSON.stringify(courses.data, null, 4)}`);
+                        });
+                })
+            );
+        }
+    });
+
+    suite('Failure cases', () => {
+
+
+    });
+});
+
+suite("Get course info", () => {
+
+});
+
+suite("Update course", () => {
+
+});
+
+suite("Enroll in course", () => {
+
+});
+
+suite("Unenroll from course", () => {
+
 });

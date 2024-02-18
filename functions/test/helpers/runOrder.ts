@@ -1,6 +1,6 @@
 import "../callable/auth";
 import "../callable/courses";
-import "../callable/misc/sendPlatformFeedback";
+import "../callable/misc";
 import "../callable/quizzes";
 import "../callable/reports";
 
