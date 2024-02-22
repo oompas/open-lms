@@ -1,4 +1,5 @@
 "use client"
+import QuizToMark from "@/app/(main)/admin/tools/QuizToMark";
 import ManageCourse from "@/app/(main)/admin/tools/ManageCourse";
 import LearnerInsight from "@/app/(main)/admin/tools/LearnerInsight";
 import CourseInsight from "@/app/(main)/admin/tools/CourseInsight";
@@ -8,6 +9,15 @@ import { useState } from "react";
 import { useAsync } from "react-async-hook";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import "@/config/firebase";
+
+// Temporary data representing all quizzes that need to be marked
+const TEMP_COURSES_TO_MARK_DATA = [
+    { title: "Quiz on OpenLMS Platform", course: "Course on OpenLMS Platform", learner: "John Doe", id: 1 },
+    { title: "Quiz on OpenLMS Platform", course: "Course on OpenLMS Platform", learner: "Jane Doe", id: 2 },
+    { title: "Quiz on OpenLMS Platform", course: "Course on OpenLMS Platform", learner: "Jack Doe", id: 3 },
+    { title: "Quiz on OpenLMS Platform", course: "Course on OpenLMS Platform", learner: "Jackie Doe", id: 4 },
+    { title: "Quiz on OpenLMS Platform", course: "Course on OpenLMS Platform", learner: "Jim Doe", id: 5 }
+]
 
 // Temporary data representing all learners
 const TEMP_LEARNER_INSIGHT_DATA = [
@@ -68,6 +78,26 @@ export default function Tools() {
 
     return (
         <main className="flex-col justify-center items-center pt-14">
+            {/* Quizzes to mark section */}
+            <div className="flex flex-col h-[60vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
+                <div className="flex flex-row justify-between items-center mb-2">
+                    <div className="flex flex-col">
+                        <div className="text-2xl mb-2">Quizzes To Mark</div>
+                    </div>
+                </div>
+                <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
+                    {TEMP_COURSES_TO_MARK_DATA.map((quiz, key) => (
+                        <QuizToMark
+                            key={key}
+                            title={quiz.title}
+                            course={quiz.course}
+                            learner={quiz.learner}
+                            id={quiz.id}
+                        />
+                    ))}
+                </div>
+            </div>
+
             {/* Manage courses section */}
             <div className="flex flex-col h-[60vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-between items-center mb-2">
