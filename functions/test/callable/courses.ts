@@ -85,6 +85,14 @@ suite("Add course", () => {
 suite("Get courses", () => {
     suite('Success cases', () => {
 
+        let expected: {
+            id: string,
+            name: string,
+            description: string,
+            minQuizTime: number,
+            status: number,
+        }[];
+
         const runTest = (description: string, admin: boolean) => {
             const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
             const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
@@ -92,19 +100,35 @@ suite("Get courses", () => {
             return (
                 test(description, () => {
                     console.log(`Getting courses...\n`);
-                    return callOnCallFunctionWithAuth("getCourses", {}, email, password)
+                    return callOnCallFunctionWithAuth("getAvailableCourses", {}, email, password)
                         .then((courses) => {
                             console.log(`Courses: ${JSON.stringify(courses.data, null, 4)}`);
+                            expect(courses.data).to.deep.equal(expected);
                         });
                 })
             );
         }
 
-
+        // set expected & run test
     });
 
     suite('Failure cases', () => {
 
+        let tetData: any;
+
+        const runTest = (description: string, admin: boolean, expectedError: string) => {
+            const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
+            const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
+
+            return (
+                test(description, () => {
+                    console.log(`Getting courses...\n`);
+                    return callOnCallFunctionWithAuth("getCourses", {}, email, password)
+                        .then(() => { throw new Error("Test case should fail") })
+                        .catch((err) => { expect(err.message).to.equal(expectedError) });
+                })
+            );
+        }
 
     });
 });
