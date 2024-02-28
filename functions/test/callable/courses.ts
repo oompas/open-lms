@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { callOnCallFunctionWithAuth } from "../helpers/helpers";
-import { dummyAdminAccount, dummyLearnerAccount, addCourse } from "../helpers/testData";
+import { dummyAdminAccount, dummyLearnerAccount, addCourse, getCourses } from "../helpers/testData";
 
 suite("Add course", () => {
     suite('Success cases', () => {
@@ -99,6 +99,8 @@ suite("Get courses", () => {
                 })
             );
         }
+
+
     });
 
     suite('Failure cases', () => {
@@ -118,6 +120,8 @@ suite("Update course", () => {
 suite("Enroll in course", () => {
     suite('Success cases', () => {
 
+        const courses = getCourses();
+
         const runTest = (description: string, admin: boolean, courseId: string) => {
             const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
             const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
@@ -125,7 +129,7 @@ suite("Enroll in course", () => {
             return (
                 test(description, () => {
                     console.log(`Enrolling in course...\n`);
-                    return callOnCallFunctionWithAuth("enrollInCourse", { courseId: "60c9c5c2d4e5b0001f000001" }, email, password)
+                    return callOnCallFunctionWithAuth("enrollInCourse", { courseId }, email, password)
                         .then((result) => {
                             console.log(`Enrolled in course: ${result.data}`);
                         });
@@ -133,12 +137,32 @@ suite("Enroll in course", () => {
             );
         }
 
-
-
+        for (let i = 0; i < courses.length; i++) {
+            runTest(`Course #${i+1} as non-admin`, false, courses[i].courseId);
+            runTest(`Course #${i+1} as admin`, true, courses[i].courseId);
+        }
     });
 
     suite('Failure cases', () => {
 
+        let testData: any;
+
+        const runTest = (description: string, admin: boolean, expectedError: string) => {
+            const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
+            const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
+
+            return (
+                test(description, () => {
+                    console.log(`Enrolling in course...\n`);
+                    return callOnCallFunctionWithAuth("enrollInCourse", testData, email, password)
+                        .then(() => { throw new Error("Test case should fail") })
+                        .catch((err) => { expect(err.message).to.equal(expectedError) });
+                })
+            );
+        }
+
+        testData = undefined;
+        runTest("Invalid course ID", false, "ValidationError: courseId is a required field");
     });
 });
 
