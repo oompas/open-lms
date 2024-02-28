@@ -207,3 +207,39 @@ suite("Reset password", () => {
         runTest("Non-existent email", "Email does not exist or an error occurred");
     });
 });
+
+suite("Get profile", () => {
+    suite('Success cases', () => {
+
+        let testData: { uid: string };
+        let expected: {
+            name: string,
+            email: string,
+            signUpDate: number,
+            completedCourses: string[],
+        };
+
+        const runTest = (description: string) => {
+            const inputCopy = testData; // Original may be updated by later test case before running
+            return (
+                test(description, () => {
+                    console.log(`Getting profile for ${inputCopy.uid}`);
+                    return callOnCallFunction("getProfile", inputCopy)
+                        .then((result) => {
+                            expect(result.data).to.be.an('object');
+                            expect(result.data).to.have.property('email');
+                            expect(result.data).to.have.property('uid');
+                            expect(result.data).to.have.property('role');
+                            expect(result.data).to.have.property('courses');
+                            expect(result.data).to.have.property('quizAttempts');
+                        });
+                })
+            );
+        }
+
+    });
+
+    suite('Failure cases', () => {
+
+    });
+});
