@@ -59,6 +59,32 @@ const getTestUsers = () => {
 }
 
 /**
+ * Adds a course to the list of courses that can be used for testing
+ */
+const addCourse = (courseId: string, userId: string) => {
+    if (!existsSync(tmpDir)) {
+        mkdirSync(tmpDir, { recursive: true });
+    }
+
+    const coursesJson: { courseId: string, userId: string }[] = existsSync(tmpFiles.courses)
+        ? JSON.parse(readFileSync(tmpFiles.courses, encoding))
+        : [];
+
+    coursesJson.push({courseId, userId});
+
+    writeFileSync(tmpFiles.courses, JSON.stringify(coursesJson, null, 4), encoding);
+}
+
+/**
+ * Get all test courses
+ */
+const getCourses = () => {
+    return existsSync(tmpFiles.courses)
+        ? JSON.parse(readFileSync(tmpFiles.courses, encoding))
+        : [];
+}
+
+/**
  * Remove all temporary test data
  */
 const cleanTempFiles = () => {
