@@ -167,5 +167,50 @@ suite("Enroll in course", () => {
 });
 
 suite("Unenroll from course", () => {
+    suite('Success cases', () => {
 
+            const courses = getCourses();
+
+            const runTest = (description: string, admin: boolean, courseId: string) => {
+                const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
+                const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
+
+                return (
+                    test(description, () => {
+                        console.log(`Unenrolling from course...\n`);
+                        return callOnCallFunctionWithAuth("unenrollFromCourse", { courseId }, email, password)
+                            .then((result) => {
+                                console.log(`Unenrolled from course: ${result.data}`);
+                            });
+                    })
+                );
+            }
+
+            for (let i = 0; i < courses.length; i++) {
+                runTest(`Course #${i+1} as non-admin`, false, courses[i].courseId);
+                runTest(`Course #${i+1} as admin`, true, courses[i].courseId);
+            }
+    });
+
+    suite('Failure cases', () => {
+
+            let testData: any;
+
+            const runTest = (description: string, admin: boolean, expectedError: string) => {
+                const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
+                const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
+
+                return (
+                    test(description, () => {
+                        console.log(`Unenrolling from course...\n`);
+                        return callOnCallFunctionWithAuth("unenrollFromCourse", testData, email, password)
+                            .then(() => { throw new Error("Test case should fail") })
+                            .catch((err) => { expect(err.message).to.equal(expectedError) });
+                    })
+                );
+            }
+
+            testData = undefined;
+            runTest("Invalid course ID", false, "ValidationError: courseId is a required field");
+    });
 });
