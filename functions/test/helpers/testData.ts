@@ -61,16 +61,16 @@ const getTestUsers = () => {
 /**
  * Adds a course to the list of courses that can be used for testing
  */
-const addCourse = (courseId: string, userId: string) => {
+const addCourse = (courseId: string, owner: string) => {
     if (!existsSync(tmpDir)) {
         mkdirSync(tmpDir, { recursive: true });
     }
 
-    const coursesJson: { courseId: string, userId: string }[] = existsSync(tmpFiles.courses)
+    const coursesJson: { courseId: string, owner: string }[] = existsSync(tmpFiles.courses)
         ? JSON.parse(readFileSync(tmpFiles.courses, encoding))
         : [];
 
-    coursesJson.push({courseId, userId});
+    coursesJson.push({courseId, owner});
 
     writeFileSync(tmpFiles.courses, JSON.stringify(coursesJson, null, 4), encoding);
 }
@@ -100,4 +100,4 @@ const cleanTempFiles = () => {
     });
 }
 
-export { dummyLearnerAccount, dummyAdminAccount, addTestUser, getTestUsers, cleanTempFiles };
+export { dummyLearnerAccount, dummyAdminAccount, addTestUser, getTestUsers, addCourse, getCourses, cleanTempFiles };

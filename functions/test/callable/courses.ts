@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { callOnCallFunctionWithAuth } from "../helpers/helpers";
-import { dummyAdminAccount, dummyLearnerAccount } from "../helpers/testData";
+import { dummyAdminAccount, dummyLearnerAccount, addCourse } from "../helpers/testData";
 
 suite("Add course", () => {
     suite('Success cases', () => {
@@ -24,7 +24,10 @@ suite("Add course", () => {
 
                     console.log(`Adding course: ${JSON.stringify(inputCopy, null, 4)}\n`);
                     return callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
-                        .then((id) => console.log(`Successfully added new course: ${id.data}`));
+                        .then((id) => {
+                            console.log(`Successfully added new course: ${id.data}`);
+                            addCourse(<string>id.data, dummyAdminAccount.email);
+                        });
                 })
             );
         }
@@ -113,7 +116,30 @@ suite("Update course", () => {
 });
 
 suite("Enroll in course", () => {
+    suite('Success cases', () => {
 
+        const runTest = (description: string, admin: boolean, courseId: string) => {
+            const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
+            const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
+
+            return (
+                test(description, () => {
+                    console.log(`Enrolling in course...\n`);
+                    return callOnCallFunctionWithAuth("enrollInCourse", { courseId: "60c9c5c2d4e5b0001f000001" }, email, password)
+                        .then((result) => {
+                            console.log(`Enrolled in course: ${result.data}`);
+                        });
+                })
+            );
+        }
+
+
+
+    });
+
+    suite('Failure cases', () => {
+
+    });
 });
 
 suite("Unenroll from course", () => {
