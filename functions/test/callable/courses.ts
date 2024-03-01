@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { callOnCallFunctionWithAuth } from "../helpers/helpers";
+import { callOnCallFunction, callOnCallFunctionWithAuth } from "../helpers/helpers";
 import { dummyAdminAccount, dummyLearnerAccount, addCourse, getCourses } from "../helpers/testData";
 
 suite("Add course", () => {
@@ -86,10 +86,12 @@ suite("Get courses", () => {
     suite('Success cases', () => {
 
         let expected: {
-            id: string,
             name: string,
             description: string,
-            minQuizTime: number,
+            link: string,
+            minTime: number,
+            maxQuizAttempts: number,
+            quizTimeLimit: number,
             status: number,
         }[];
 
@@ -101,34 +103,51 @@ suite("Get courses", () => {
                 test(description, () => {
                     console.log(`Getting courses...\n`);
                     return callOnCallFunctionWithAuth("getAvailableCourses", {}, email, password)
-                        .then((courses) => {
-                            console.log(`Courses: ${JSON.stringify(courses.data, null, 4)}`);
-                            expect(courses.data).to.deep.equal(expected);
+                        .then((result) => {
+                            const courses: { id: string }[] = result.data as { id: string  }[];
+                            console.log(`Courses: ${JSON.stringify(courses, null, 4)}`);
+
+                            // @ts-ignore Remove ID field for comparison
+                            courses.forEach((c) => delete c.id);
+                            expect(courses).to.deep.equal(expected);
                         });
                 })
             );
         }
 
-        // set expected & run test
+        expected = [
+            {
+                name: "Unit test",
+                description: "Unit test",
+                link: "www.unittest.com",
+                minTime: 1,
+                maxQuizAttempts: 1,
+                quizTimeLimit: 1,
+                status: 1,
+            },
+            {
+                name: "Unit test",
+                description: "Unit test",
+                link: "www.unittest.com",
+                minTime: 1,
+                maxQuizAttempts: 1,
+                quizTimeLimit: 1,
+                status: 1,
+            }
+        ];
+        runTest("As a learner", false);
+
+        runTest("As an admin", false);
     });
 
     suite('Failure cases', () => {
 
-        let tetData: any;
-
-        const runTest = (description: string, admin: boolean, expectedError: string) => {
-            const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
-            const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
-
-            return (
-                test(description, () => {
-                    console.log(`Getting courses...\n`);
-                    return callOnCallFunctionWithAuth("getCourses", {}, email, password)
-                        .then(() => { throw new Error("Test case should fail") })
-                        .catch((err) => { expect(err.message).to.equal(expectedError) });
-                })
-            );
-        }
+        test("Unauthenticated", () => {
+            console.log(`Getting courses...\n`);
+            return callOnCallFunction("getCourses", {})
+                .then(() => { throw new Error("Test case should fail") })
+                .catch((err) => { expect(err.message).to.equal("You must be logged in to call the API") });
+        });
 
     });
 });
@@ -142,9 +161,11 @@ suite("Update course", () => {
 });
 
 suite("Enroll in course", () => {
+
     suite('Success cases', () => {
 
         const courses = getCourses();
+        console.log(JSON.stringify(courses, null, 4));
 
         const runTest = (description: string, admin: boolean, courseId: string) => {
             const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
@@ -153,7 +174,7 @@ suite("Enroll in course", () => {
             return (
                 test(description, () => {
                     console.log(`Enrolling in course...\n`);
-                    return callOnCallFunctionWithAuth("enrollInCourse", { courseId }, email, password)
+                    return callOnCallFunctionWithAuth("courseEnroll", { courseId }, email, password)
                         .then((result) => {
                             console.log(`Enrolled in course: ${result.data}`);
                         });
@@ -161,7 +182,9 @@ suite("Enroll in course", () => {
             );
         }
 
+        console.log("Outside");
         for (let i = 0; i < courses.length; i++) {
+            console.log(`Inside. i: ${i}`);
             runTest(`Course #${i+1} as non-admin`, false, courses[i].courseId);
             runTest(`Course #${i+1} as admin`, true, courses[i].courseId);
         }
@@ -170,6 +193,8 @@ suite("Enroll in course", () => {
     suite('Failure cases', () => {
 
         let testData: any;
+        const courses = getCourses();
+        console.log("Courses: " + JSON.stringify(courses, null, 4));
 
         const runTest = (description: string, admin: boolean, expectedError: string) => {
             const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
@@ -178,7 +203,7 @@ suite("Enroll in course", () => {
             return (
                 test(description, () => {
                     console.log(`Enrolling in course...\n`);
-                    return callOnCallFunctionWithAuth("enrollInCourse", testData, email, password)
+                    return callOnCallFunctionWithAuth("courseEnroll", testData, email, password)
                         .then(() => { throw new Error("Test case should fail") })
                         .catch((err) => { expect(err.message).to.equal(expectedError) });
                 })
@@ -202,7 +227,7 @@ suite("Unenroll from course", () => {
                 return (
                     test(description, () => {
                         console.log(`Unenrolling from course...\n`);
-                        return callOnCallFunctionWithAuth("unenrollFromCourse", { courseId }, email, password)
+                        return callOnCallFunctionWithAuth("courseUnenroll", { courseId }, email, password)
                             .then((result) => {
                                 console.log(`Unenrolled from course: ${result.data}`);
                             });
