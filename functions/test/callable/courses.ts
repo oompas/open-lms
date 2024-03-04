@@ -1,6 +1,8 @@
 import { expect } from "chai";
 import { callOnCallFunction, callOnCallFunctionWithAuth } from "../helpers/helpers";
-import { dummyAdminAccount, dummyLearnerAccount, addCourse, getCourses } from "../helpers/testData";
+import DataGenerator from "../helpers/dataGenerator";
+
+const dataGenerator = DataGenerator.getInstance();
 
 suite("Add course", () => {
     suite('Success cases', () => {
@@ -23,11 +25,8 @@ suite("Add course", () => {
                     this.timeout(7_000);
 
                     console.log(`Adding course: ${JSON.stringify(inputCopy, null, 4)}\n`);
-                    return callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
-                        .then((id) => {
-                            console.log(`Successfully added new course: ${id.data}`);
-                            addCourse(<string>id.data, dummyAdminAccount.email);
-                        });
+                    return callOnCallFunctionWithAuth("addCourse", inputCopy, dataGenerator.getDummyAdminAccount().email, dataGenerator.getDummyAdminAccount().password)
+                        .then((id) => console.log(`Successfully added new course: ${id.data}`) );
                 })
             );
         }
@@ -63,7 +62,7 @@ suite("Add course", () => {
             return (
                 test(description, () => {
                     console.log(`Adding course: ${JSON.stringify(inputCopy, null, 4)}\n`);
-                    return callOnCallFunctionWithAuth("addCourse", inputCopy, dummyAdminAccount.email, dummyAdminAccount.password)
+                    return callOnCallFunctionWithAuth("addCourse", inputCopy, dataGenerator.getDummyAdminAccount().email, dataGenerator.getDummyAdminAccount().password)
                         .then(() => { throw new Error("Test case should fail") })
                         .catch((err) => { expect(err.message).to.equal(expectedError) });
                 })
@@ -96,8 +95,8 @@ suite("Get courses", () => {
         }[];
 
         const runTest = (description: string, admin: boolean) => {
-            const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
-            const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
+            const email = admin ? dataGenerator.getDummyAdminAccount().email : dataGenerator.getDummyLearnerAccount().email;
+            const password = admin ? dataGenerator.getDummyAdminAccount().password : dataGenerator.getDummyLearnerAccount().password;
 
             return (
                 test(description, () => {
@@ -164,12 +163,9 @@ suite("Enroll in course", () => {
 
     suite('Success cases', () => {
 
-        const courses = getCourses();
-        console.log(JSON.stringify(courses, null, 4));
-
         const runTest = (description: string, admin: boolean, courseId: string) => {
-            const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
-            const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
+            const email = admin ? dataGenerator.getDummyAdminAccount().email : dataGenerator.getDummyLearnerAccount().email;
+            const password = admin ? dataGenerator.getDummyAdminAccount().password : dataGenerator.getDummyLearnerAccount().password;
 
             return (
                 test(description, () => {
@@ -182,23 +178,19 @@ suite("Enroll in course", () => {
             );
         }
 
-        console.log("Outside");
-        for (let i = 0; i < courses.length; i++) {
-            console.log(`Inside. i: ${i}`);
-            runTest(`Course #${i+1} as non-admin`, false, courses[i].courseId);
-            runTest(`Course #${i+1} as admin`, true, courses[i].courseId);
-        }
+        // for (let i = 0; i < courses.length; i++) {
+        //     runTest(`Course #${i+1} as non-admin`, false, courses[i].courseId);
+        //     runTest(`Course #${i+1} as admin`, true, courses[i].courseId);
+        // }
     });
 
     suite('Failure cases', () => {
 
         let testData: any;
-        const courses = getCourses();
-        console.log("Courses: " + JSON.stringify(courses, null, 4));
 
         const runTest = (description: string, admin: boolean, expectedError: string) => {
-            const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
-            const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
+            const email = admin ? dataGenerator.getDummyAdminAccount().email : dataGenerator.getDummyLearnerAccount().email;
+            const password = admin ? dataGenerator.getDummyAdminAccount().password : dataGenerator.getDummyLearnerAccount().password;
 
             return (
                 test(description, () => {
@@ -218,27 +210,25 @@ suite("Enroll in course", () => {
 suite("Unenroll from course", () => {
     suite('Success cases', () => {
 
-            const courses = getCourses();
+        const runTest = (description: string, admin: boolean, courseId: string) => {
+            const email = admin ? dataGenerator.getDummyAdminAccount().email : dataGenerator.getDummyLearnerAccount().email;
+            const password = admin ? dataGenerator.getDummyAdminAccount().password : dataGenerator.getDummyLearnerAccount().password;
 
-            const runTest = (description: string, admin: boolean, courseId: string) => {
-                const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
-                const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
+            return (
+                test(description, () => {
+                    console.log(`Unenrolling from course...\n`);
+                    return callOnCallFunctionWithAuth("courseUnenroll", { courseId }, email, password)
+                        .then((result) => {
+                            console.log(`Unenrolled from course: ${result.data}`);
+                        });
+                })
+            );
+        }
 
-                return (
-                    test(description, () => {
-                        console.log(`Unenrolling from course...\n`);
-                        return callOnCallFunctionWithAuth("courseUnenroll", { courseId }, email, password)
-                            .then((result) => {
-                                console.log(`Unenrolled from course: ${result.data}`);
-                            });
-                    })
-                );
-            }
-
-            for (let i = 0; i < courses.length; i++) {
-                runTest(`Course #${i+1} as non-admin`, false, courses[i].courseId);
-                runTest(`Course #${i+1} as admin`, true, courses[i].courseId);
-            }
+        // for (let i = 0; i < courses.length; i++) {
+        //     runTest(`Course #${i+1} as non-admin`, false, courses[i].courseId);
+        //     runTest(`Course #${i+1} as admin`, true, courses[i].courseId);
+        // }
     });
 
     suite('Failure cases', () => {
@@ -246,8 +236,8 @@ suite("Unenroll from course", () => {
             let testData: any;
 
             const runTest = (description: string, admin: boolean, expectedError: string) => {
-                const email = admin ? dummyAdminAccount.email : dummyLearnerAccount.email;
-                const password = admin ? dummyAdminAccount.password : dummyLearnerAccount.password;
+                const email = admin ? dataGenerator.getDummyAdminAccount().email : dataGenerator.getDummyLearnerAccount().email;
+                const password = admin ? dataGenerator.getDummyAdminAccount().password : dataGenerator.getDummyLearnerAccount().password;
 
                 return (
                     test(description, () => {

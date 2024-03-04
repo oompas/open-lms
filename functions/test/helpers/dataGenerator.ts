@@ -24,7 +24,7 @@ class DataGenerator {
     /**
      * Gets an instance of this singleton
      */
-    public static getInstance() {
+    public static getInstance(): DataGenerator {
         if (this.#instance === null) {
             this.#instance = new DataGenerator();
         }
@@ -105,6 +105,21 @@ class DataGenerator {
             throw new Error("Dummy accounts have not been created, please run 'generateDummyAccounts' first");
         }
         return DataGenerator.#dummyAdminAccount;
+    }
+
+    /**
+     * Cleans all test data (whole database + all accounts); must be run after every a test suite
+     */
+    public async cleanTestData() {
+
+        console.log("\nCleaning test accounts...");
+
+        const users = await adminAuth.listUsers().then((listUsersResult) => listUsersResult.users);
+        await Promise.all([...users.map((user) => adminAuth.deleteUser(user.uid))]);
+
+        DataGenerator.#dummyAccountsCreated = false;
+
+        console.log("Successfully cleaned test accounts (triggers will remove database data)");
     }
 }
 

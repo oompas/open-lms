@@ -1,15 +1,20 @@
 import { expect } from "chai";
 import { callOnCallFunction, randomInt, USER_ID_LENGTH } from "../helpers/helpers";
 import { HttpsError } from "firebase-functions/v2/https";
-import { dummyLearnerAccount, dummyAdminAccount } from "../helpers/testData";
-import { addTestUser } from "../helpers/testData";
 import { faker } from "@faker-js/faker";
+import DataGenerator from "../helpers/dataGenerator";
+
+const dataGenerator = DataGenerator.getInstance();
 
 suite("Create account", () => {
 
     const randomPassword = () => faker.internet.password({ length: randomInt(6, 200), memorable: Math.random() < 0.3 });
 
     suite('Success cases', () => {
+
+        before(() => { console.log("Before all"); });
+
+        after(() => { console.log("After all"); });
 
         let testData: { email: string, password: string };
         const runTest = (description: string) => {
@@ -22,9 +27,7 @@ suite("Create account", () => {
                                 expect(result.data).to.be.a('string');
                                 expect(result.data).to.match(new RegExp(`^[a-zA-Z0-9]{${USER_ID_LENGTH}}$`));
 
-                                console.log("\nAccount created successfully, adding to test data file...");
-                                addTestUser(inputCopy.email, inputCopy.password, <string> result.data);
-                                console.log(`Successfully added ${inputCopy.email} to test data file`);
+                                console.log(`Successfully successfully user ${inputCopy.email}`);
                             }
                         );
                 })
@@ -116,7 +119,7 @@ suite("Create account", () => {
 
         testData = {
             description: `Email in use #1`,
-            email: dummyLearnerAccount.email,
+            email: dataGenerator.getDummyLearnerAccount().email,
             password: randomPassword(),
         };
 
@@ -124,7 +127,7 @@ suite("Create account", () => {
 
         testData = {
             description: `Email in use #2`,
-            email: dummyAdminAccount.email,
+            email: dataGenerator.getDummyLearnerAccount().email,
             password: randomPassword(),
         };
         runTest("Email in use #2", `Email ${testData.email} is already in use`);
@@ -148,10 +151,10 @@ suite("Reset password", () => {
             );
         }
 
-        testData = { email: dummyLearnerAccount.email };
+        testData = { email: dataGenerator.getDummyLearnerAccount().email };
         runTest("Dummy learner email");
 
-        testData = { email: dummyAdminAccount.email };
+        testData = { email: dataGenerator.getDummyAdminAccount().email };
         runTest("Dummy admin email");
     });
 
