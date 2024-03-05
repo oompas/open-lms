@@ -8,7 +8,21 @@ suite("Course endpoints", () => {
      * Tests for addCourse endpoint
      */
     suite("Add course", () => {
+
         suite('Success cases', () => {
+
+            suiteSetup(() => {
+                console.log("===============================");
+                console.log("Test case: Add course (success)");
+                console.log("===============================");
+
+                return DataGenerator.generateDummyAccounts();
+            });
+
+            suiteTeardown(function() {
+                this.timeout(20_000);
+                return DataGenerator.cleanTestData();
+            });
 
             interface TestInput {
                 name: string,
@@ -59,6 +73,19 @@ suite("Course endpoints", () => {
 
         suite('Failure cases', () => {
 
+            suiteSetup(() => {
+                console.log("===============================");
+                console.log("Test case: Add course (failure)");
+                console.log("===============================");
+
+                console.log("No setup required for this suite");
+            });
+
+            suiteTeardown(function() {
+                this.timeout(20_000);
+                return DataGenerator.cleanTestData();
+            });
+
             let course: any;
             const runTest = (description: string, expectedError: string) => {
                 const inputCopy = course; // Original may be updated by later test case before running
@@ -88,7 +115,21 @@ suite("Course endpoints", () => {
      * Tests for getAvailableCourses endpoint
      */
     suite("Get courses", () => {
+
         suite('Success cases', () => {
+
+            suiteSetup(() => {
+                console.log("===============================");
+                console.log("Test case: Get course (success)");
+                console.log("===============================");
+
+                return DataGenerator.generateDummyAccounts();
+            });
+
+            suiteTeardown(function() {
+                this.timeout(20_000);
+                return DataGenerator.cleanTestData();
+            });
 
             let expected: {
                 name: string,
@@ -147,6 +188,19 @@ suite("Course endpoints", () => {
 
         suite('Failure cases', () => {
 
+            suiteSetup(() => {
+                console.log("===============================");
+                console.log("Test case: Get course (failure)");
+                console.log("===============================");
+
+                return DataGenerator.generateDummyAccounts();
+            });
+
+            suiteTeardown(function() {
+                this.timeout(20_000);
+                return DataGenerator.cleanTestData();
+            });
+
             test("Unauthenticated", () => {
                 console.log(`Getting courses...\n`);
                 return callOnCallFunction("getCourses", {})
@@ -178,6 +232,19 @@ suite("Course endpoints", () => {
 
         suite('Success cases', () => {
 
+            suiteSetup(() => {
+                console.log("==================================");
+                console.log("Test case: Course enroll (success)");
+                console.log("==================================");
+
+                return DataGenerator.generateDummyAccounts();
+            });
+
+            suiteTeardown(function() {
+                this.timeout(20_000);
+                return DataGenerator.cleanTestData();
+            });
+
             const runTest = (description: string, admin: boolean, courseId: string) => {
                 const email = admin ? DataGenerator.getDummyAdminAccount().email : DataGenerator.getDummyLearnerAccount().email;
                 const password = admin ? DataGenerator.getDummyAdminAccount().password : DataGenerator.getDummyLearnerAccount().password;
@@ -200,6 +267,19 @@ suite("Course endpoints", () => {
         });
 
         suite('Failure cases', () => {
+
+            suiteSetup(() => {
+                console.log("==================================");
+                console.log("Test case: Course enroll (failure)");
+                console.log("==================================");
+
+                return DataGenerator.generateDummyAccounts();
+            });
+
+            suiteTeardown(function() {
+                this.timeout(20_000);
+                return DataGenerator.cleanTestData();
+            });
 
             let testData: any;
 
@@ -226,7 +306,21 @@ suite("Course endpoints", () => {
      * Tests for courseUnenroll endpoint
      */
     suite("Unenroll from course", () => {
+
         suite('Success cases', () => {
+
+            suiteSetup(() => {
+                console.log("====================================");
+                console.log("Test case: Course unenroll (success)");
+                console.log("====================================");
+
+                return DataGenerator.generateDummyAccounts();
+            });
+
+            suiteTeardown(function() {
+                this.timeout(20_000);
+                return DataGenerator.cleanTestData();
+            });
 
             const runTest = (description: string, admin: boolean, courseId: string) => {
                 const email = admin ? DataGenerator.getDummyAdminAccount().email : DataGenerator.getDummyLearnerAccount().email;
@@ -250,6 +344,19 @@ suite("Course endpoints", () => {
         });
 
         suite('Failure cases', () => {
+
+            suiteSetup(() => {
+                console.log("====================================");
+                console.log("Test case: Course unenroll (failure)");
+                console.log("====================================");
+
+                return DataGenerator.generateDummyAccounts();
+            });
+
+            suiteTeardown(function() {
+                this.timeout(20_000);
+                return DataGenerator.cleanTestData();
+            });
 
             let testData: any;
 

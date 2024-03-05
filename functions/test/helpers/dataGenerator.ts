@@ -90,6 +90,8 @@ class DataGenerator {
         const users = await adminAuth.listUsers().then((listUsersResult) => listUsersResult.users);
         await Promise.all([...users.map((user) => adminAuth.deleteUser(user.uid))]);
 
+        await new Promise(res => setTimeout(res, 10_000)); // Wait for triggers to finish
+
         DataGenerator.#dummyAccountsCreated = false;
 
         console.log("Successfully cleaned test accounts (triggers will remove database data)\n\n");
