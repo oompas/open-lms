@@ -20,10 +20,7 @@ suite("Course endpoints", () => {
                 return DataGenerator.generateDummyAccounts();
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             interface TestInput {
                 name: string,
@@ -82,10 +79,7 @@ suite("Course endpoints", () => {
                 return DataGenerator.generateDummyAccounts();
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let course: any;
             const runTest = (description: string, expectedError: string) => {
@@ -129,10 +123,7 @@ suite("Course endpoints", () => {
                 return DataGenerator.generateDummyCourses();
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let expected: {
                 name: string,
@@ -188,10 +179,7 @@ suite("Course endpoints", () => {
                 return DataGenerator.generateDummyAccounts();
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             test("Unauthenticated", () => {
                 console.log(`Getting courses...\n`);
@@ -232,10 +220,7 @@ suite("Course endpoints", () => {
                 return DataGenerator.generateDummyAccounts();
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             const runTest = (description: string, admin: boolean, courseId: string) => {
                 const user = admin ? DataGenerator.getDummyAdminAccount() : DataGenerator.getDummyLearnerAccount();
@@ -267,10 +252,7 @@ suite("Course endpoints", () => {
                 return DataGenerator.generateDummyAccounts();
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let testData: any;
 
@@ -307,10 +289,7 @@ suite("Course endpoints", () => {
                 return DataGenerator.generateDummyAccounts();
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             const runTest = (description: string, admin: boolean, courseId: string) => {
                 const user = admin ? DataGenerator.getDummyAdminAccount() : DataGenerator.getDummyLearnerAccount();
@@ -342,10 +321,7 @@ suite("Course endpoints", () => {
                 return DataGenerator.generateDummyAccounts();
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let testData: any;
 

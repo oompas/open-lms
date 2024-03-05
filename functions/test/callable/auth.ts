@@ -23,10 +23,7 @@ suite("Auth endpoints", () => {
                 console.log("No setup required for this suite");
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let testData: { email: string, password: string };
             const runTest = (description: string) => {
@@ -85,10 +82,7 @@ suite("Auth endpoints", () => {
                 return DataGenerator.generateDummyAccounts();
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let testData: any;
             const runTest = (description: string, errMsg: string) => {
@@ -174,10 +168,7 @@ suite("Auth endpoints", () => {
                 return DataGenerator.generateDummyAccounts();
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let testData: { email: string };
             const runTest = (description: string) => {
@@ -210,10 +201,7 @@ suite("Auth endpoints", () => {
                 console.log("No setup required for this suite");
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let testData: any;
             const runTest = (description: string, errMsg: string) => {
@@ -282,10 +270,7 @@ suite("Auth endpoints", () => {
                 return DataGenerator.generateDummyAccounts();
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let testData: { uid: string };
             let expected: {
@@ -325,10 +310,7 @@ suite("Auth endpoints", () => {
                 console.log("No setup required for this suite");
             });
 
-            suiteTeardown(function() {
-                this.timeout(20_000);
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
         });
     });
