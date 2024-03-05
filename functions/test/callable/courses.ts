@@ -78,7 +78,7 @@ suite("Course endpoints", () => {
                 console.log("Test case: Add course (failure)");
                 console.log("===============================");
 
-                console.log("No setup required for this suite");
+                return DataGenerator.generateDummyAccounts();
             });
 
             suiteTeardown(function() {

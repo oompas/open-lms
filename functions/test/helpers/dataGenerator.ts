@@ -57,6 +57,8 @@ class DataGenerator {
             return <string> result.data;
         });
 
+        await delay(2_000); // Ensure the user document is created
+
         console.log(`Automatically verifying email and giving admin permissions to ${adminEmail}`);
         await adminDb.doc(`/User/${uid}`)
             .update({ admin: true })
