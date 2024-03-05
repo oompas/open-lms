@@ -1,7 +1,7 @@
 {
   "name": "functions",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
