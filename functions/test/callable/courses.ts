@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { callOnCallFunction, callOnCallFunctionWithAuth } from "../helpers/helpers";
 import DataGenerator from "../helpers/dataGenerator";
+import DummyCourses from "../helpers/dummyData/courses.json";
 
 suite("Course endpoints", () => {
 
@@ -118,12 +119,14 @@ suite("Course endpoints", () => {
 
         suite('Success cases', () => {
 
-            suiteSetup(() => {
+            suiteSetup(async () => {
                 console.log("===============================");
                 console.log("Test case: Get course (success)");
                 console.log("===============================");
 
-                return DataGenerator.generateDummyAccounts();
+                await DataGenerator.generateDummyAccounts();
+
+                return DataGenerator.generateDummyCourses();
             });
 
             suiteTeardown(function() {
@@ -148,38 +151,28 @@ suite("Course endpoints", () => {
                     test(description, () => {
                         console.log(`Getting courses...\n`);
                         return callOnCallFunctionWithAuth("getAvailableCourses", {}, user)
-                            .then((result) => {
-                                const courses: { id: string }[] = result.data as { id: string  }[];
+                            .then((res) => {
+                                const courses: { id: string }[] = res.data as { id: string  }[];
                                 console.log(`Courses: ${JSON.stringify(courses, null, 4)}`);
 
                                 // @ts-ignore Remove ID field for comparison
                                 courses.forEach((c) => delete c.id);
-                                expect(courses).to.deep.equal(expected);
+                                // @ts-ignore
+                                const result = courses.sort((c1, c2) => ('' + c1.name).localeCompare(c2.name));
+                                const expectedResult = expected.sort((c1, c2) => ('' + c1.name).localeCompare(c2.name));
+
+                                expect(result).to.deep.equal(expectedResult);
                             });
                     })
                 );
             }
 
-            expected = [
-                {
-                    name: "Unit test",
-                    description: "Unit test",
-                    link: "www.unittest.com",
-                    minTime: 1,
-                    maxQuizAttempts: 1,
-                    quizTimeLimit: 1,
-                    status: 1,
-                },
-                {
-                    name: "Unit test",
-                    description: "Unit test",
-                    link: "www.unittest.com",
-                    minTime: 1,
-                    maxQuizAttempts: 1,
-                    quizTimeLimit: 1,
-                    status: 1,
-                }
-            ];
+            expected = DummyCourses
+                .filter(c => c.active)
+                .map((course) => {
+                    const { active, ...data } = course;
+                    return { ...data, status: 1 };
+                });
             runTest("As a learner", false);
 
             runTest("As an admin", false);
