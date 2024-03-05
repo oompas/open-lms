@@ -5,9 +5,6 @@ import { adminAuth, adminDb } from "./config/adminSetup";
 class DataGenerator {
 
     // @ts-ignore
-    static #instance: null | DataGenerator = null; // Singleton
-
-    // @ts-ignore
     static #dummyLearnerAccount = {
         email: "firebase_unit_tests_dummy_learner_account@gmail.com",
         password: randomString(20)
@@ -22,19 +19,9 @@ class DataGenerator {
     static #dummyAccountsCreated = false;
 
     /**
-     * Gets an instance of this singleton
-     */
-    public static getInstance(): DataGenerator {
-        if (this.#instance === null) {
-            this.#instance = new DataGenerator();
-        }
-        return this.#instance;
-    }
-
-    /**
      * Creates a dummy learner and admin account
      */
-    public async generateDummyAccounts(): Promise<void> {
+    public static async generateDummyAccounts(): Promise<void> {
 
         if (DataGenerator.#dummyAccountsCreated) {
             console.log("Dummy accounts already created, skipping...");
@@ -90,7 +77,7 @@ class DataGenerator {
     /**
      * Gets the dummy learner account
      */
-    public getDummyLearnerAccount() {
+    public static getDummyLearnerAccount() {
         if (!DataGenerator.#dummyAccountsCreated) {
             throw new Error("Dummy accounts have not been created, please run 'generateDummyAccounts' first");
         }
@@ -100,7 +87,7 @@ class DataGenerator {
     /**
      * Gets the dummy admin account
      */
-    public getDummyAdminAccount() {
+    public static getDummyAdminAccount() {
         if (!DataGenerator.#dummyAccountsCreated) {
             throw new Error("Dummy accounts have not been created, please run 'generateDummyAccounts' first");
         }
@@ -110,7 +97,7 @@ class DataGenerator {
     /**
      * Cleans all test data (whole database + all accounts); must be run after every a test suite
      */
-    public async cleanTestData() {
+    public static async cleanTestData() {
 
         console.log("\nCleaning test accounts...");
 
