@@ -28,9 +28,7 @@ class DataGenerator {
             return;
         }
 
-        console.log("============================");
         console.log("Generating dummy accounts...");
-        console.log("============================");
 
 
 
@@ -77,36 +75,26 @@ class DataGenerator {
     /**
      * Gets the dummy learner account
      */
-    public static getDummyLearnerAccount() {
-        if (!DataGenerator.#dummyAccountsCreated) {
-            throw new Error("Dummy accounts have not been created, please run 'generateDummyAccounts' first");
-        }
-        return DataGenerator.#dummyLearnerAccount;
-    }
+    public static getDummyLearnerAccount = () => DataGenerator.#dummyLearnerAccount;
 
     /**
      * Gets the dummy admin account
      */
-    public static getDummyAdminAccount() {
-        if (!DataGenerator.#dummyAccountsCreated) {
-            throw new Error("Dummy accounts have not been created, please run 'generateDummyAccounts' first");
-        }
-        return DataGenerator.#dummyAdminAccount;
-    }
+    public static getDummyAdminAccount = () => DataGenerator.#dummyAdminAccount;
 
     /**
      * Cleans all test data (whole database + all accounts); must be run after every a test suite
      */
     public static async cleanTestData() {
 
-        console.log("\nCleaning test accounts...");
+        console.log("\nCleaning all test data...");
 
         const users = await adminAuth.listUsers().then((listUsersResult) => listUsersResult.users);
         await Promise.all([...users.map((user) => adminAuth.deleteUser(user.uid))]);
 
         DataGenerator.#dummyAccountsCreated = false;
 
-        console.log("Successfully cleaned test accounts (triggers will remove database data)");
+        console.log("Successfully cleaned test accounts (triggers will remove database data)\n\n");
     }
 }
 

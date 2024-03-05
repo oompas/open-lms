@@ -15,14 +15,15 @@ suite("Auth endpoints", () => {
 
         suite('Success cases', () => {
 
-            before(() => {
+            suiteSetup(() => {
+                console.log("===================================");
+                console.log("Test case: Create account (success)");
+                console.log("===================================");
+
                 console.log("No setup required for this suite");
             });
 
-            after(() => {
-                console.log("Cleaning all test data...");
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let testData: { email: string, password: string };
             const runTest = (description: string) => {
@@ -73,15 +74,15 @@ suite("Auth endpoints", () => {
 
         suite('Failure cases', () => {
 
-            before(() => {
-                console.log("Creating dummy user accounts...");
+            suiteSetup(() => {
+                console.log("===================================");
+                console.log("Test case: Create account (failure)");
+                console.log("===================================");
+
                 return DataGenerator.generateDummyAccounts();
             });
 
-            after(() => {
-                console.log("Cleaning all test data...");
-                return DataGenerator.cleanTestData();
-            });
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let testData: any;
             const runTest = (description: string, errMsg: string) => {
@@ -156,7 +157,18 @@ suite("Auth endpoints", () => {
      * Tests for resetPassword endpoint
      */
     suite("Reset password", () => {
+
         suite('Success cases', () => {
+
+            suiteSetup(() => {
+                console.log("===================================");
+                console.log("Test case: Reset password (success)");
+                console.log("===================================");
+
+                return DataGenerator.generateDummyAccounts();
+            });
+
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let testData: { email: string };
             const runTest = (description: string) => {
@@ -180,6 +192,16 @@ suite("Auth endpoints", () => {
         });
 
         suite('Failure cases', () => {
+
+            suiteSetup(() => {
+                console.log("===================================");
+                console.log("Test case: Reset password (failure)");
+                console.log("===================================");
+
+                console.log("No setup required for this suite");
+            });
+
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let testData: any;
             const runTest = (description: string, errMsg: string) => {
@@ -237,7 +259,18 @@ suite("Auth endpoints", () => {
      * Tests for getProfile endpoint
      */
     suite("Get profile", () => {
+
         suite('Success cases', () => {
+
+            suiteSetup(() => {
+                console.log("================================");
+                console.log("Test case: Get profile (success)");
+                console.log("================================");
+
+                return DataGenerator.generateDummyAccounts();
+            });
+
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
             let testData: { uid: string };
             let expected: {
@@ -268,6 +301,16 @@ suite("Auth endpoints", () => {
         });
 
         suite('Failure cases', () => {
+
+            suiteSetup(() => {
+                console.log("================================");
+                console.log("Test case: Get profile (failure)");
+                console.log("================================");
+
+                console.log("No setup required for this suite");
+            });
+
+            suiteTeardown(() => DataGenerator.cleanTestData());
 
         });
     });
