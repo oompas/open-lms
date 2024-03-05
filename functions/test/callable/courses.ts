@@ -203,7 +203,7 @@ suite("Course endpoints", () => {
 
             test("Unauthenticated", () => {
                 console.log(`Getting courses...\n`);
-                return callOnCallFunction("getCourses", {})
+                return callOnCallFunction("getAvailableCourses", {})
                     .then(() => { throw new Error("Test case should fail") })
                     .catch((err) => { expect(err.message).to.equal("You must be logged in to call the API") });
             });

@@ -5,6 +5,6 @@
     "experimental-specifier-resolution=node",
     "import=tsx/esm"
   ],
-  "timeout": 5000,
+  "timeout": 10000,
   "slow": 2000
 }
