@@ -85,7 +85,7 @@ class DataGenerator {
         await Promise.all(CourseData.map(async (course) => {
             console.log(`Generating dummy course ${course.name}...`);
 
-            await callOnCallFunctionWithAuth("addCourse", course, DataGenerator.#dummyAdminAccount.email, DataGenerator.#dummyAdminAccount.password)
+            await callOnCallFunctionWithAuth("addCourse", course, DataGenerator.#dummyAdminAccount)
                 .then((result) => {
                     expect(result.data).to.be.a('string');
                     expect(result.data).to.match(new RegExp("^[a-zA-Z0-9]{20}$"));
