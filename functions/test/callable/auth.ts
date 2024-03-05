@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { callOnCallFunction, randomInt, USER_ID_LENGTH } from "../helpers/helpers";
+import { callOnCallFunction, callOnCallFunctionWithAuth, randomInt, USER_ID_LENGTH } from "../helpers/helpers";
 import { HttpsError } from "firebase-functions/v2/https";
 import { faker } from "@faker-js/faker";
 import DataGenerator from "../helpers/dataGenerator";
@@ -272,31 +272,54 @@ suite("Auth endpoints", () => {
 
             suiteTeardown(() => DataGenerator.cleanTestData());
 
-            let testData: { uid: string };
-            let expected: {
-                name: string,
+            let account: {
                 email: string,
-                signUpDate: number,
+                password: string
+            };
+
+            let expected: { // Ignore sign up date as it will change every time
+                name: null | string,
+                email: string,
                 completedCourses: string[],
             };
 
             const runTest = (description: string) => {
-                const inputCopy = testData; // Original may be updated by later test case before running
+                const accountCopy = account; // Original may be updated by later test case before running
+                const expectedCopy = expected; // Original may be updated by later test case before running
+
                 return (
                     test(description, () => {
-                        console.log(`Getting profile for ${inputCopy.uid}`);
-                        return callOnCallFunction("getProfile", inputCopy)
+                        console.log(`Getting profile for ${account.email}`);
+                        return callOnCallFunctionWithAuth("getUserProfile", {}, accountCopy)
                             .then((result) => {
-                                expect(result.data).to.be.an('object');
-                                expect(result.data).to.have.property('email');
-                                expect(result.data).to.have.property('uid');
-                                expect(result.data).to.have.property('role');
-                                expect(result.data).to.have.property('courses');
-                                expect(result.data).to.have.property('quizAttempts');
+                                // @ts-ignore
+                                const signupDate = result.data.signUpDate;
+
+                                // @ts-ignore
+                                expectedCopy["signUpDate"] = signupDate;
+                                expect(result.data).to.deep.equal(expectedCopy);
+
+                                expect(new Date(signupDate).getTime()).to.be.greaterThan(new Date().getTime() - 60 * 1000);
                             });
                     })
                 );
             }
+
+            account = DataGenerator.getDummyLearnerAccount();
+            expected = {
+                name: null,
+                email: DataGenerator.getDummyLearnerAccount().email,
+                completedCourses: []
+            };
+            runTest("Learner account");
+
+            account = DataGenerator.getDummyAdminAccount();
+            expected = {
+                name: null,
+                email: DataGenerator.getDummyAdminAccount().email,
+                completedCourses: []
+            };
+            runTest("Admin account");
 
         });
 
