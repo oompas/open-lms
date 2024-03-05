@@ -1,6 +1,7 @@
-import { callOnCallFunction, delay, randomString } from "./helpers";
+import { callOnCallFunction, callOnCallFunctionWithAuth, delay, randomString } from "./helpers";
 import { expect } from "chai";
 import { adminAuth, adminDb } from "./config/adminSetup";
+import CourseData from "./dummyData/courses.json";
 
 class DataGenerator {
 
@@ -72,6 +73,24 @@ class DataGenerator {
         await delay(2_000); // Ensure the admin permission trigger completes
 
         DataGenerator.#dummyAccountsCreated = true;
+    }
+
+    /**
+     * Generates dummy courses for testing
+     */
+    public static async generateDummyCourses() {
+
+        console.log("Generating dummy courses...");
+
+        await Promise.all(CourseData.map(async (course) => {
+            console.log(`Generating dummy course ${course.name}...`);
+
+            await callOnCallFunctionWithAuth("addCourse", course, DataGenerator.#dummyAdminAccount.email, DataGenerator.#dummyAdminAccount.password)
+                .then((result) => {
+                    expect(result.data).to.be.a('string');
+                    expect(result.data).to.match(new RegExp("^[a-zA-Z0-9]{20}$"));
+                });
+        }));
     }
 
     /**
