@@ -21,7 +21,7 @@ class DataGenerator {
     /**
      * Creates a dummy learner and admin account
      */
-    public static async generateDummyAccounts(): Promise<void> {
+    public static async generateDummyAccounts() {
 
         if (DataGenerator.#dummyAccountsCreated) {
             console.log("Dummy accounts already created, skipping...");
@@ -54,20 +54,18 @@ class DataGenerator {
             expect(result.data).to.be.a('string');
             expect(result.data).to.match(new RegExp("^[a-zA-Z0-9]{28}$"));
 
-            console.log("Account created successfully, adding to test data file...");
             return <string> result.data;
         });
 
-        console.log(`\nAutomatically verifying email and giving admin permissions to ${adminEmail}`);
-        const verifyEmail = adminAuth.updateUser(uid, { emailVerified: true })
+        console.log(`Automatically verifying email and giving admin permissions to ${adminEmail}`);
+        await adminAuth.updateUser(uid, { emailVerified: true })
+            .then(() => console.log(`Successfully verified email for ${adminEmail}`))
             .catch((err) => { throw new Error(`Error manually verifying email for ${adminEmail}: ${err}`); });
 
-        const addAdminPermissions = adminDb.doc(`/User/${uid}`)
+        await adminDb.doc(`/User/${uid}`)
             .update({ admin: true })
             .then(() => console.log(`Successfully updated user document for ${adminEmail} to admin permissions`))
             .catch((err) => { throw new Error(`Error updating user document for ${adminEmail} to admin permissions: ${err}`); });
-
-        await Promise.all([verifyEmail, addAdminPermissions]);
 
         DataGenerator.#dummyAccountsCreated = true;
     }
