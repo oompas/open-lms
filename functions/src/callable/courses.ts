@@ -79,6 +79,7 @@ const getAvailableCourses = onCall(async (request) => {
     const uid: string = request.auth.uid;
 
     return getCollection(DatabaseCollections.Course)
+        .where("active", "==", true)
         .get()
         .then(async (courses) => {
 
@@ -123,7 +124,10 @@ const getAvailableCourses = onCall(async (request) => {
                     id: course.id,
                     name: course.data().name,
                     description: course.data().description,
-                    minQuizTime: course.data().minTime,
+                    link: course.data().link,
+                    minTime: course.data().minTime,
+                    quizTimeLimit: course.data().quizTimeLimit,
+                    maxQuizAttempts: course.data().maxQuizAttempts,
                     status: status,
                 };
 
