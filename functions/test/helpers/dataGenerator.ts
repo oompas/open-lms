@@ -69,6 +69,8 @@ class DataGenerator {
             .then(() => console.log(`Successfully verified email for ${adminEmail}`))
             .catch((err) => { throw new Error(`Error manually verifying email for ${adminEmail}: ${err}`); });
 
+        await delay(2_000); // Ensure the admin permission trigger completes
+
         DataGenerator.#dummyAccountsCreated = true;
     }
 
