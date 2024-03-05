@@ -37,7 +37,10 @@ const callOnCallFunctionWithAuth = async (functionName: string, data: any, email
     return httpsCallable(clientFunctions, functionName)(data);
 }
 
+// Delays execution for the specified number of milliseconds
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const USER_ID_LENGTH: number = 28;
 const DOCUMENT_ID_LENGTH: number = 20;
 
-export { randomString, randomInt, callOnCallFunction, callOnCallFunctionWithAuth, USER_ID_LENGTH, DOCUMENT_ID_LENGTH };
+export { randomString, randomInt, callOnCallFunction, callOnCallFunctionWithAuth, delay, USER_ID_LENGTH, DOCUMENT_ID_LENGTH };

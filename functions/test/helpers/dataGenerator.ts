@@ -1,4 +1,4 @@
-import { callOnCallFunction, randomString } from "./helpers";
+import { callOnCallFunction, delay, randomString } from "./helpers";
 import { expect } from "chai";
 import { adminAuth, adminDb } from "./config/adminSetup";
 
@@ -58,14 +58,14 @@ class DataGenerator {
         });
 
         console.log(`Automatically verifying email and giving admin permissions to ${adminEmail}`);
-        await adminAuth.updateUser(uid, { emailVerified: true })
-            .then(() => console.log(`Successfully verified email for ${adminEmail}`))
-            .catch((err) => { throw new Error(`Error manually verifying email for ${adminEmail}: ${err}`); });
-
         await adminDb.doc(`/User/${uid}`)
             .update({ admin: true })
             .then(() => console.log(`Successfully updated user document for ${adminEmail} to admin permissions`))
             .catch((err) => { throw new Error(`Error updating user document for ${adminEmail} to admin permissions: ${err}`); });
+
+        await adminAuth.updateUser(uid, { emailVerified: true })
+            .then(() => console.log(`Successfully verified email for ${adminEmail}`))
+            .catch((err) => { throw new Error(`Error manually verifying email for ${adminEmail}: ${err}`); });
 
         DataGenerator.#dummyAccountsCreated = true;
     }
@@ -90,7 +90,7 @@ class DataGenerator {
         const users = await adminAuth.listUsers().then((listUsersResult) => listUsersResult.users);
         await Promise.all([...users.map((user) => adminAuth.deleteUser(user.uid))]);
 
-        await new Promise(res => setTimeout(res, 10_000)); // Wait for triggers to finish
+        await delay(10_000); // Wait for triggers to finish
 
         DataGenerator.#dummyAccountsCreated = false;
 
