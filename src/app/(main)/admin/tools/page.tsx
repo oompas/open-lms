@@ -7,8 +7,7 @@ import Button from "@/components/Button";
 import {useRouter} from "next/navigation";
 import { useState } from "react";
 import { useAsync } from "react-async-hook";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import "@/config/firebase";
+import { callApi } from "@/config/firebase";
 
 // Temporary data representing all quizzes that need to be marked
 const TEMP_COURSES_TO_MARK_DATA = [
@@ -49,7 +48,9 @@ const TEMP_COURSE_INSIGHT_DATA = [
 
 export default function Tools() {
 
-    const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
+    const courses = useAsync(callApi('getAvailableCourses'), []);
+    const learnerInsights = useAsync(callApi('getUserReports'), []);
+    const courseInsights = useAsync(callApi('getCourseReports'), []);
 
     const router = useRouter();
     const [search, setSearch] = useState("");
@@ -74,6 +75,86 @@ export default function Tools() {
                     id={course.id}
                 />
             ));
+    }
+
+    const getLearnerInsights = () => {
+        if (learnerInsights.loading) {
+            return <div>Loading...</div>;
+        }
+        if (!learnerInsights.result) {
+            return <div>Error loading learner insights</div>;
+        }
+
+        return (
+            <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
+                <table className="border-collapse w-full">
+                    <thead>
+                    <tr className="bg-gray-200">
+                        <th rowSpan={2} colSpan={1}>
+                            Name
+                        </th>
+                        <th rowSpan={2} colSpan={1}>
+                            Email
+                        </th>
+                        <th rowSpan={1} colSpan={5} className="py-2">
+                            Courses
+                        </th>
+                    </tr>
+                    <tr className="bg-gray-200">
+                        <th className="py-1">Enrolled</th>
+                        <th className="py-1">Started</th>
+                        <th className="py-1">Completed</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    { /* @ts-ignore */}
+                    {learnerInsights.result.data.map((learner: any, key: number) => (
+                            <LearnerInsight
+                                key={key}
+                                name={learner.name}
+                                email={learner.email}
+                                coursesEnrolled={learner.coursesEnrolled}
+                                coursesAttempted={learner.coursesAttempted}
+                                coursesCompleted={learner.coursesComplete}
+                                id={learner.uid}
+                            />
+                        )
+                    )}
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+
+    const getCourseInsights = () => {
+        if (courseInsights.loading) {
+            return <div>Loading...</div>;
+        }
+        if (!courseInsights.result) {
+            return <div>Error loading course insights</div>;
+        }
+
+
+        return (
+            <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
+                <table className="border-collapse border w-full">
+                    <thead>
+                    <tr className="bg-gray-200">
+                        <th className="border p-2">Course Name</th>
+                        <th className="border p-2">Learners Completed</th>
+                        <th className="border p-2">Average Completion Time</th>
+                        <th className="border p-2">Average Quiz Score</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    { /* @ts-ignore */}
+                    {courseInsights.result.data.map((course: any, key: number) => (
+                        <CourseInsight courseData={course}/>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
+        );
     }
 
     return (
@@ -127,31 +208,7 @@ export default function Tools() {
                     <Button text="Invite a Learner" onClick={() => router.push('/home')}/>
                     <Button text="Download User Reports" onClick={() => router.push('/home')} style="ml-4"/>
                 </div>
-                <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                    <table className="border-collapse border w-full">
-                        <thead>
-                        <tr className="bg-gray-200">
-                            <th className="border p-2">Name</th>
-                            <th className="border p-2">Number of Completed Courses</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {TEMP_LEARNER_INSIGHT_DATA.map((learner, key) => (
-                            <tr key={learner.id} className="border">
-                                <td className="border p-2">
-                                    <LearnerInsight
-                                        key={key}
-                                        learner={learner.learner}
-                                        count={learner.count}
-                                        id={learner.id}
-                                    />
-                                </td>
-                                <td className="border p-2">{learner.count}</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
+                {getLearnerInsights()}
             </div>
 
             {/* Course insights section */}
@@ -160,37 +217,7 @@ export default function Tools() {
                     <div className="text-2xl mb-2 mr-auto">Course Insights</div>
                     <Button text="Download Course Reports" onClick={() => router.push('/home')}/>
                 </div>
-                <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                    <table className="border-collapse border w-full">
-                        <thead>
-                        <tr className="bg-gray-200">
-                            <th className="border p-2">Course Name</th>
-                            <th className="border p-2">Percentage of Learners Completed</th>
-                            <th className="border p-2">Average Completion Time</th>
-                            <th className="border p-2">Average Quiz Score</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {TEMP_COURSE_INSIGHT_DATA.map((course, key) => (
-                            <tr key={course.id} className="border">
-                                <td className="border p-2">
-                                    <CourseInsight
-                                        key={key}
-                                        title={course.title}
-                                        count={course.count}
-                                        time={course.time}
-                                        score={course.score}
-                                        id={course.id}
-                                    />
-                                </td>
-                                <td className="border p-2">{course.count}/10</td>
-                                <td className="border p-2">{course.time} minutes</td>
-                                <td className="border p-2">{course.score}%</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
+                {getCourseInsights()}
             </div>
         </main>
     )
