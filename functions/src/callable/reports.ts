@@ -135,7 +135,6 @@ const getCourseReports = onCall(async (request) => {
         return {
             courseId: course.id,
             name: course.data().name,
-            active: course.data().active,
             numEnrolled: courseEnrollments.length,
             numComplete: completedAttempts.length,
             avgTime: averageTime,

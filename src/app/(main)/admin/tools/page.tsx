@@ -126,6 +126,37 @@ export default function Tools() {
         );
     }
 
+    const getCourseInsights = () => {
+        if (courseInsights.loading) {
+            return <div>Loading...</div>;
+        }
+        if (!courseInsights.result) {
+            return <div>Error loading course insights</div>;
+        }
+
+
+        return (
+            <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
+                <table className="border-collapse border w-full">
+                    <thead>
+                    <tr className="bg-gray-200">
+                        <th className="border p-2">Course Name</th>
+                        <th className="border p-2">Learners Completed</th>
+                        <th className="border p-2">Average Completion Time</th>
+                        <th className="border p-2">Average Quiz Score</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    { /* @ts-ignore */}
+                    {courseInsights.result.data.map((course: any, key: number) => (
+                        <CourseInsight courseData={course}/>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+
     return (
         <main className="flex-col justify-center items-center pt-14">
             {/* Quizzes to mark section */}
@@ -186,37 +217,7 @@ export default function Tools() {
                     <div className="text-2xl mb-2 mr-auto">Course Insights</div>
                     <Button text="Download Course Reports" onClick={() => router.push('/home')}/>
                 </div>
-                <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                    <table className="border-collapse border w-full">
-                        <thead>
-                        <tr className="bg-gray-200">
-                            <th className="border p-2">Course Name</th>
-                            <th className="border p-2">Percentage of Learners Completed</th>
-                            <th className="border p-2">Average Completion Time</th>
-                            <th className="border p-2">Average Quiz Score</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {TEMP_COURSE_INSIGHT_DATA.map((course, key) => (
-                            <tr key={course.id} className="border">
-                                <td className="border p-2">
-                                    <CourseInsight
-                                        key={key}
-                                        title={course.title}
-                                        count={course.count}
-                                        time={course.time}
-                                        score={course.score}
-                                        id={course.id}
-                                    />
-                                </td>
-                                <td className="border p-2">{course.count}/10</td>
-                                <td className="border p-2">{course.time} minutes</td>
-                                <td className="border p-2">{course.score}%</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
+                {getCourseInsights()}
             </div>
         </main>
     )
