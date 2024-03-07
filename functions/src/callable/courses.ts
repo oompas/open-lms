@@ -44,9 +44,9 @@ const addCourse = onCall(async (request) => {
         name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
         description: string().required(),
         link: string().required(),
-        minTime: number().notRequired().integer().positive(),
-        maxQuizAttempts: number().notRequired().integer().positive(),
-        quizTimeLimit: number().notRequired().integer().positive(),
+        minTime: number().integer().positive().nullable(),
+        maxQuizAttempts: number().integer().positive().nullable(),
+        quizTimeLimit: number().integer().positive().nullable(),
         active: boolean().required()
     });
 
