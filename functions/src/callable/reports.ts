@@ -79,6 +79,7 @@ const getCourseReports = onCall(async (request) => {
     logger.info("User is an admin, querying database for course reports...");
 
     const courses = await getCollection(DatabaseCollections.Course)
+        .where("active", "==", true)
         .get()
         .then((result) => result.docs)
         .catch((error) => {
