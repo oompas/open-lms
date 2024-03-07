@@ -58,7 +58,7 @@ const getUserReports = onCall(async (request) => {
             coursesAttempted: userAttempts.length,
             coursesComplete: completedAttempts.length,
         };
-    });
+    }).sort((a, b) => b.coursesEnrolled - a.coursesEnrolled);
 });
 
 /**
@@ -140,7 +140,7 @@ const getCourseReports = onCall(async (request) => {
             avgTime: averageTime,
             avgQuizScore: averageScore,
         };
-    })
+    }).sort((a, b) => b.numEnrolled - a.numEnrolled);
 });
 
 export { getUserReports, getCourseReports };
