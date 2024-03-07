@@ -7,8 +7,7 @@ import Button from "@/components/Button";
 import {useRouter} from "next/navigation";
 import { useState } from "react";
 import { useAsync } from "react-async-hook";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import "@/config/firebase";
+import { callApi } from "@/config/firebase";
 
 // Temporary data representing all quizzes that need to be marked
 const TEMP_COURSES_TO_MARK_DATA = [
@@ -49,7 +48,9 @@ const TEMP_COURSE_INSIGHT_DATA = [
 
 export default function Tools() {
 
-    const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
+    const courses = useAsync(callApi('getAvailableCourses'), []);
+    const learnerInsights = useAsync(callApi('getUserReports'), []);
+    const courseInsights = useAsync(callApi('getCourseReports'), []);
 
     const router = useRouter();
     const [search, setSearch] = useState("");
@@ -76,12 +77,45 @@ export default function Tools() {
             ));
     }
 
+    const getLearnerInsights = () => {
+        if (learnerInsights.loading) {
+            return <div>Loading...</div>;
+        }
+        if (learnerInsights.error) {
+            return <div>Error loading learner insights</div>;
+        }
+
+        return (
+            <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
+                <table className="border-collapse border w-full">
+                    <thead>
+                    <tr className="bg-gray-200">
+                        <th className="border p-2">Name</th>
+                        <th className="border p-2">Number of Completed Courses</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        { /* @ts-ignore */ }
+                        {learnerInsights.result.data.map((learner: any, key: number) => (
+                            <LearnerInsight
+                                key={key}
+                                learner={learner.name}
+                                count={learner.count}
+                                id={learner.id}
+                            />
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+
     return (
         <main className="flex-col justify-center items-center pt-14">
             {/* Quizzes to mark section */}
             <div className="flex flex-col h-[60vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-between items-center mb-2">
-                    <div className="flex flex-col">
+                <div className="flex flex-col">
                         <div className="text-2xl mb-2">Quizzes To Mark</div>
                     </div>
                 </div>
@@ -127,31 +161,7 @@ export default function Tools() {
                     <Button text="Invite a Learner" onClick={() => router.push('/home')}/>
                     <Button text="Download User Reports" onClick={() => router.push('/home')} style="ml-4"/>
                 </div>
-                <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                    <table className="border-collapse border w-full">
-                        <thead>
-                        <tr className="bg-gray-200">
-                            <th className="border p-2">Name</th>
-                            <th className="border p-2">Number of Completed Courses</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {TEMP_LEARNER_INSIGHT_DATA.map((learner, key) => (
-                            <tr key={learner.id} className="border">
-                                <td className="border p-2">
-                                    <LearnerInsight
-                                        key={key}
-                                        learner={learner.learner}
-                                        count={learner.count}
-                                        id={learner.id}
-                                    />
-                                </td>
-                                <td className="border p-2">{learner.count}</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
+                {getLearnerInsights()}
             </div>
 
             {/* Course insights section */}
