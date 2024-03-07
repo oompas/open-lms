@@ -25,7 +25,8 @@ export default function CreateQuestion({
 
     const handleSave = () => {
         // TODO - input validation
-        setData(num, { question: question, answers: [qA, qB, qC, qD, qE] });
+        var ans = [qA, qB, qC, qD, qE].filter(str => str ? str.trim() !== '' : false);
+        setData(num, { question: question, answers: ans });
     }
 
     return (
@@ -36,7 +37,8 @@ export default function CreateQuestion({
                     <TextField text={question} onChange={setQuestion}/>
                 </div>
                 <div className="flex flex-col space-y-2 mt-4">
-                    <div>Answers</div>
+                    <div className="-mb-3">Answers</div>
+                    <div className="text-sm text-gray-600">Leave these fields blank to create a short answer question.</div>
                     <div className="flex flex-row space-x-2 items-center">
                         <div className="text-xl w-6">a)</div>
                         <TextField text={qA} onChange={setQA} style="w-full" />

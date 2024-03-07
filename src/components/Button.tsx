@@ -28,12 +28,12 @@ export default function Button({
     </div>
 
     return (
-        <div
+        <button
             onClick={onClick}
             className={ "flex h-fit items-center px-5 py-2 w-fit rounded-xl text-lg font-bold border-[3px] border-red-800 duration-75 ease-out hover:opacity-60 cursor-pointer " + style + (filled ? background : border) }
         >
             <div>{text}</div>
             { icon ? <div className="ml-2">{iconElem}</div> : null }
-        </div>
+        </button>
     )
 }

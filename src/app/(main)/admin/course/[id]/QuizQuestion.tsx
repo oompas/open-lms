@@ -22,11 +22,11 @@ export default function QuizQuestion({
                 <button className="ml-auto text-red-800" onClick={() => editData(num)}><MdEdit size={28}/></button>
                 <button className="ml-4 text-red-800" onClick={() => deleteData(num)}><MdDelete size={28}/></button>
             </div>
-            <div className="flex flex-col mt-2 space-y-1">
+            { data.answers.length > 0 ? <div className="flex flex-col mt-2 space-y-1">
                 { data.answers.map((answer: string, key: number) => (
                     <div key={key}>{letters[key]} {answer}</div>
                 ))}
-            </div>
+            </div> : null }
         </div>
     )
 }
