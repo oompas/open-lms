@@ -103,6 +103,39 @@ suite("Course endpoints", () => {
 
             course = {};
             runTest("Empty object course input", "ValidationError: active is a required field");
+
+            course = {
+                name: "Course name that happens to be longer than 50 characters",
+                description: "Unit test",
+                link: "www.unittest.com",
+                minTime: 1,
+                maxQuizAttempts: 1,
+                quizTimeLimit: 1,
+                active: false,
+            };
+            runTest("Name too long", "ValidationError: Name can't be over 50 characters long");
+
+            course = {
+                name: "Unit test",
+                description: "Unit test",
+                link: "www.unittest.com",
+                minTime: -1,
+                maxQuizAttempts: -1,
+                quizTimeLimit: -1,
+                active: false,
+            };
+            runTest("Negative course input", "ValidationError: quizTimeLimit must be a positive number");
+
+            course = {
+                name: 5,
+                description: 10,
+                link: 4,
+                minTime: "Unit test",
+                maxQuizAttempts: "Unit test",
+                quizTimeLimit: "Unit test",
+                active: "Unit test",
+            };
+            runTest("Incorrect types", "ValidationError: active must be a `boolean` type, but the final value was: `\"Unit test\"`.");
         });
     });
 
@@ -130,8 +163,8 @@ suite("Course endpoints", () => {
                 description: string,
                 link: string,
                 minTime: number,
-                maxQuizAttempts: number,
                 quizTimeLimit: number,
+                maxQuizAttempts: number,
                 status: number,
             }[];
 
@@ -165,8 +198,7 @@ suite("Course endpoints", () => {
                     return { ...data, status: 1 };
                 });
             runTest("As a learner", false);
-
-            runTest("As an admin", false);
+            runTest("As an admin", true);
         });
 
         suite('Failure cases', () => {
@@ -180,14 +212,17 @@ suite("Course endpoints", () => {
             });
 
             suiteTeardown(() => DataGenerator.cleanTestData());
-
-            test("Unauthenticated", () => {
-                console.log(`Getting courses...\n`);
-                return callOnCallFunction("getAvailableCourses", {})
-                    .then(() => { throw new Error("Test case should fail") })
-                    .catch((err) => { expect(err.message).to.equal("You must be logged in to call the API") });
-            });
-
+            const runTest = (description: string, admin: boolean, expectedError: string) => {
+                return (
+                    test("Unauthenticated", () => {
+                        console.log(`Getting courses...\n`);
+                        return callOnCallFunction("getAvailableCourses", {})
+                            .then(() => { throw new Error("Test case failed") })
+                            .catch((err) => { expect(err.message).to.equal("Test case failed") });
+                    })
+                );
+            }
+            runTest("Unauthenticated user", false, "Test case failed");
         });
     });
 
@@ -196,13 +231,79 @@ suite("Course endpoints", () => {
      */
     suite("Get course info", () => {
 
-    });
+        suite('Success cases', () => {
 
-    /**
-     * Tests for updateCourse endpoint
-     */
-    suite("Update course", () => {
+            suiteSetup(async () => {
+                console.log("====================================");
+                console.log("Test case: Get course info (success)");
+                console.log("====================================");
 
+                await DataGenerator.generateDummyAccounts();
+                await DataGenerator.generateDummyCourses();
+            });
+
+            suiteTeardown(() => DataGenerator.cleanTestData());
+
+            const runTest = (description: string, admin: boolean, name: string) => {
+                const user = admin ? DataGenerator.getDummyAdminAccount() : DataGenerator.getDummyLearnerAccount();
+                const DummyCourses = DataGenerator.getDummyCourseData();
+                let courseId : string;
+                return (
+                    test(description, () => {
+                        for (const course of DummyCourses) {
+                            if (course.name === name) {
+                                courseId = course.id;
+                            }
+                        }
+                        console.log(`Getting course info for courseId ${courseId}...\n`);
+                        return callOnCallFunctionWithAuth("getCourseInfo", { courseId }, user)
+                            .then((res) => {
+                                // @ts-ignore
+                                expect(res.data.name).to.deep.equal(name);
+                            });
+                    })
+                );
+            }
+
+            let expected = DummyCourses
+                .filter(c => c.active)
+                .map((course) => {
+                    const { active, ...data } = course;
+                    return { ...data, status: 1 };
+                });
+
+            DummyCourses.forEach(course => {
+                runTest(`Info for course ${course.name}, non admin`, false, course.name);
+                runTest(`Info for course ${course.name}, admin`, true, course.name);
+            });
+        });
+
+        suite('Failure cases', () => {
+
+            suiteSetup(() => {
+                console.log("====================================");
+                console.log("Test case: Get course info (failure)");
+                console.log("====================================");
+
+                return DataGenerator.generateDummyAccounts();
+            });
+
+            suiteTeardown(() => DataGenerator.cleanTestData());
+            const runTest = (description: string, admin: boolean, expectedError: string) => {
+                const user = admin ? DataGenerator.getDummyAdminAccount() : DataGenerator.getDummyLearnerAccount();
+
+                return (
+                    test("No Course ID", () => {
+                        console.log(`Getting course info...\n`);
+                        return callOnCallFunctionWithAuth("getCourseInfo", {}, user)
+                            .then(() => { throw new Error("Test case should fail") })
+                            .catch((err) => { expect(err.message).to.equal("Must provide a course ID to get course info") });
+                    })
+                );
+            }
+            runTest(`No course ID provided, non admin`, false, "Must provide a course ID to get course info");
+            runTest(`No course ID provided, admin`, true, "Must provide a course ID to get course info");
+        });
     });
 
     /**
@@ -212,22 +313,29 @@ suite("Course endpoints", () => {
 
         suite('Success cases', () => {
 
-            suiteSetup(() => {
+            suiteSetup(async () => {
                 console.log("==================================");
                 console.log("Test case: Course enroll (success)");
                 console.log("==================================");
 
-                return DataGenerator.generateDummyAccounts();
+                await DataGenerator.generateDummyAccounts();
+                await DataGenerator.generateDummyCourses();
             });
 
             suiteTeardown(() => DataGenerator.cleanTestData());
 
-            const runTest = (description: string, admin: boolean, courseId: string) => {
+            const runTest = (description: string, admin: boolean, name: string) => {
                 const user = admin ? DataGenerator.getDummyAdminAccount() : DataGenerator.getDummyLearnerAccount();
-
+                const DummyCourses = DataGenerator.getDummyCourseData();
+                let courseId : string;
                 return (
                     test(description, () => {
-                        console.log(`Enrolling in course...\n`);
+                        for (const course of DummyCourses) {
+                            if (course.name === name) {
+                                courseId = course.id;
+                            }
+                        }
+                        console.log(`Enrolling in course ${courseId}...\n`);
                         return callOnCallFunctionWithAuth("courseEnroll", { courseId }, user)
                             .then((result) => {
                                 console.log(`Enrolled in course: ${result.data}`);
@@ -236,10 +344,18 @@ suite("Course endpoints", () => {
                 );
             }
 
-            // for (let i = 0; i < courses.length; i++) {
-            //     runTest(`Course #${i+1} as non-admin`, false, courses[i].courseId);
-            //     runTest(`Course #${i+1} as admin`, true, courses[i].courseId);
-            // }
+            let expected = DummyCourses
+                .filter(c => c.active)
+                .map((course) => {
+                    const { active, ...data } = course;
+                    return { ...data, status: 1 };
+                });
+
+            // Run tests for each course
+            DummyCourses.forEach(course => {
+                runTest(`Enroll in course ${course.name}, non admin`, false, course.name);
+                runTest(`Enroll in course ${course.name}, admin`, true, course.name);
+            });
         });
 
         suite('Failure cases', () => {
@@ -254,7 +370,7 @@ suite("Course endpoints", () => {
 
             suiteTeardown(() => DataGenerator.cleanTestData());
 
-            let testData: any;
+            let testData: any = "Test";
 
             const runTest = (description: string, admin: boolean, expectedError: string) => {
                 const user = admin ? DataGenerator.getDummyAdminAccount() : DataGenerator.getDummyLearnerAccount();
@@ -269,8 +385,8 @@ suite("Course endpoints", () => {
                 );
             }
 
-            testData = undefined;
-            runTest("Invalid course ID", false, "ValidationError: courseId is a required field");
+            runTest("Invalid course ID, non admin", false, "Must provide a course ID to enroll in");
+            runTest("Invalid course ID, admin", true, "Must provide a course ID to enroll in");
         });
     });
 
@@ -305,10 +421,17 @@ suite("Course endpoints", () => {
                 );
             }
 
-            // for (let i = 0; i < courses.length; i++) {
-            //     runTest(`Course #${i+1} as non-admin`, false, courses[i].courseId);
-            //     runTest(`Course #${i+1} as admin`, true, courses[i].courseId);
-            // }
+            let expected = DummyCourses
+                .filter(c => c.active)
+                .map((course) => {
+                    const { active, ...data } = course;
+                    return { ...data, status: 1 };
+                });
+
+            DummyCourses.forEach(course => {
+                runTest(`Unenroll from course ${course.name}, non admin`, false, course.name);
+                runTest(`Unenroll from course ${course.name}, admin`, true, course.name);
+            });
         });
 
         suite('Failure cases', () => {
@@ -323,7 +446,7 @@ suite("Course endpoints", () => {
 
             suiteTeardown(() => DataGenerator.cleanTestData());
 
-            let testData: any;
+            let testData: any = "Test";
 
             const runTest = (description: string, admin: boolean, expectedError: string) => {
                 const user = admin ? DataGenerator.getDummyAdminAccount() : DataGenerator.getDummyLearnerAccount();
@@ -331,15 +454,15 @@ suite("Course endpoints", () => {
                 return (
                     test(description, () => {
                         console.log(`Unenrolling from course...\n`);
-                        return callOnCallFunctionWithAuth("unenrollFromCourse", testData, user)
+                        return callOnCallFunctionWithAuth("courseUnenroll", testData, user)
                             .then(() => { throw new Error("Test case should fail") })
                             .catch((err) => { expect(err.message).to.equal(expectedError) });
                     })
                 );
             }
 
-            testData = undefined;
-            runTest("Invalid course ID", false, "ValidationError: courseId is a required field");
+            runTest("Invalid course ID, non admin", false, "Must provide a course ID to unenroll from");
+            runTest("Invalid course ID, admin", true, "Must provide a course ID to unenroll from");
         });
     });
 });
