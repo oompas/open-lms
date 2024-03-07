@@ -9,8 +9,7 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 
 export default function Course({params}: { params: { id: string } }) {
 
-    const getCourseInfo = (id: string) => httpsCallable(getFunctions(),"getCourseInfo")({ courseId: id });
-    const getCourse = useAsync(getCourseInfo, [params.id]);
+    const getCourse = useAsync(() => httpsCallable(getFunctions(),"getCourseInfo")({ courseId: params.id }), []);
 
     const renderCourse = () => {
         // @ts-ignore

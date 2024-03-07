@@ -23,37 +23,31 @@ export default function IDCourse({
 
     const [status, setStatus] = useState(courseStatus);
 
-    const [endTime, setEndTime] = useState(Math.floor(startTime + minTime));
-    const [countdown, setCountDown] = useState(endTime - Math.floor(Date.now() / 1000));
+    const [countdown, setCountDown] = useState(minTime - Math.floor(new Date().getTime() / 1000 - startTime));
+
     useEffect(() => {
-        const interval = setInterval(() => { setCountDown(endTime - Math.floor(Date.now() / 1000)) }, 1000);
+        if (countdown <= 0) return;
+
+        const interval = setInterval(() => setCountDown(countdown - 1), 1000);
         return () => clearInterval(interval);
     }, [countdown]);
 
     const enroll = () => {
         return httpsCallable(getFunctions(), "courseEnroll")({ courseId: id })
-            .then((result) => {
-                console.log(result);
-                setStatus(2);
-            })
+            .then(() => setStatus(2))
             .catch((err) => { throw new Error(`Error enrolling in course: ${err}`) });
     };
 
     const unEnroll = () => {
         return httpsCallable(getFunctions(), "courseUnenroll")({ courseId: id })
-            .then((result) => {
-                console.log(result);
-                setStatus(1);
-            })
+            .then(() => setStatus(1))
             .catch((err) => { throw new Error(`Error unenrolling in course: ${err}`) });
     };
 
     const start = () => {
         return httpsCallable(getFunctions(), "startCourse")({ courseId: id })
-            .then((result) => {
-                // @ts-ignore
-                setEndTime(result.data + minTime);
-
+            .then(() => {
+                setCountDown(minTime);
                 setStatus(3);
             })
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });
@@ -66,7 +60,7 @@ export default function IDCourse({
             return (
                 <>
                     <a href={link} target={"_blank"}>
-                        <Button text="Go to course" onClick={start} filled icon="link"/>
+                        <Button text="Start course" onClick={async () => await start()} filled icon="link"/>
                     </a>
                     <Button text="Unenroll" onClick={unEnroll} icon="minus"/>
                 </>
@@ -107,13 +101,14 @@ export default function IDCourse({
                         {renderButton()}
                     </div>
                 </div>
-                <div className="flex flex-col justify-center items-center ml-auto border-2 rounded-xl px-10 py-4 shadow-lg">
-                    <div className="text-sm -mb-1">{courseStatus === 1 ? "Minimum" : "Remaining"} time:</div>
-                    <div className="text-3xl">
-                        {getTime()}
-                    </div>
-                    <div className="text-sm mt-2 -mb-1">status:</div>
+                <div
+                    className="flex flex-col justify-center items-center ml-auto border-2 rounded-xl px-10 py-4 shadow-lg">
+                    <div className="text-sm -mb-1">status:</div>
                     <div className="text-2xl">{statusNames[status]}</div>
+                    <div className="text-sm mt-2">{status === 1 ? "Minimum" : "Required"} time:</div>
+                    <div className="text-3xl">
+                        {countdown > 0 || status < 3 ? getTime() : "Completed"}
+                    </div>
                 </div>
             </div>
         </main>
