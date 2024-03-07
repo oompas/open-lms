@@ -25,9 +25,9 @@ const enrolledCourseId = (userId: string, courseId: string) => `${userId}|${cour
  * -name
  * -description
  * -link
- * -minTime
+ * -minTime (in minutes)
  * -maxQuizAttempts
- * -quizTimeLimit
+ * -quizTimeLimit (in minutes)
  * -active
  *
  * And a new course is returned
@@ -44,9 +44,9 @@ const addCourse = onCall(async (request) => {
         name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
         description: string().required(),
         link: string().required(),
-        minTime: number().required().integer().positive(),
-        maxQuizAttempts: number().required().integer().positive(),
-        quizTimeLimit: number().required().integer().positive(),
+        minTime: number().notRequired().integer().positive(),
+        maxQuizAttempts: number().notRequired().integer().positive(),
+        quizTimeLimit: number().notRequired().integer().positive(),
         active: boolean().required()
     });
 
@@ -111,6 +111,8 @@ const getAvailableCourses = onCall(async (request) => {
                  * 3 - In progress
                  * 4 - Failed
                  * 5 - Passed
+                 *
+                 * TODO: Make an enum or something for this (+ on front-end)
                  */
                 let status;
                 if (!courseEnrolled) {
