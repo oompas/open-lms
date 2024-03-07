@@ -16,10 +16,10 @@ export default function Course({params}: { params: { id: string } }) {
         const course: any = getCourse.result.data;
 
         const getCourseTimeString = () => {
-            if (course.minTime < 3600) {
-                return Math.floor(course.minTime / 60) + " minutes";
+            if (course.minTime < 60) {
+                return course.minTime + " minutes";
             }
-            return Math.floor(course.minTime / 3600) + " hours";
+            return Math.floor(course.minTime / 60) + " hours";
         }
 
         return (

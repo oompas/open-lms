@@ -23,7 +23,7 @@ export default function IDCourse({
 
     const [status, setStatus] = useState(courseStatus);
 
-    const [countdown, setCountDown] = useState(minTime - Math.floor(new Date().getTime() / 1000 - startTime));
+    const [countdown, setCountDown] = useState(60 * minTime - Math.floor(new Date().getTime() / 1000 - startTime));
 
     useEffect(() => {
         if (countdown <= 0) return;
@@ -47,7 +47,7 @@ export default function IDCourse({
     const start = () => {
         return httpsCallable(getFunctions(), "startCourse")({ courseId: id })
             .then(() => {
-                setCountDown(minTime);
+                setCountDown(60 * minTime);
                 setStatus(3);
             })
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });
@@ -86,7 +86,7 @@ export default function IDCourse({
             + (Math.floor(time / 60) % 60 + "").padStart(2, '0') + ":" + (time % 60 + "").padStart(2, '0');
 
         if (status === 1 || status === 2) {
-            return format(minTime);
+            return format(60 * minTime);
         }
         return format(countdown);
     }
