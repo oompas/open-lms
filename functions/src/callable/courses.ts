@@ -104,6 +104,14 @@ const getAvailableCourses = onCall(async (request) => {
                         });
                 }
 
+                /*
+                 * Statuses:
+                 * 1 - Not enrolled
+                 * 2 - Enrolled, not started
+                 * 3 - In progress
+                 * 4 - Failed
+                 * 5 - Passed
+                 */
                 let status;
                 if (!courseEnrolled) {
                     status = 1;
