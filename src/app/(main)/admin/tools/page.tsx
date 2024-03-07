@@ -81,29 +81,45 @@ export default function Tools() {
         if (learnerInsights.loading) {
             return <div>Loading...</div>;
         }
-        if (learnerInsights.error) {
+        if (!learnerInsights.result) {
             return <div>Error loading learner insights</div>;
         }
 
         return (
             <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                <table className="border-collapse border w-full">
+                <table className="border-collapse w-full">
                     <thead>
                     <tr className="bg-gray-200">
-                        <th className="border p-2">Name</th>
-                        <th className="border p-2">Number of Completed Courses</th>
+                        <th rowSpan={2} colSpan={1}>
+                            Name
+                        </th>
+                        <th rowSpan={2} colSpan={1}>
+                            Email
+                        </th>
+                        <th rowSpan={1} colSpan={5} className="py-2">
+                            Courses
+                        </th>
+                    </tr>
+                    <tr className="bg-gray-200">
+                        <th className="py-1">Enrolled</th>
+                        <th className="py-1">Started</th>
+                        <th className="py-1">Completed</th>
                     </tr>
                     </thead>
                     <tbody>
-                        { /* @ts-ignore */ }
-                        {learnerInsights.result.data.map((learner: any, key: number) => (
+                    { /* @ts-ignore */}
+                    {learnerInsights.result.data.map((learner: any, key: number) => (
                             <LearnerInsight
                                 key={key}
-                                learner={learner.name}
-                                count={learner.count}
-                                id={learner.id}
+                                name={learner.name}
+                                email={learner.email}
+                                coursesEnrolled={learner.coursesEnrolled}
+                                coursesAttempted={learner.coursesAttempted}
+                                coursesCompleted={learner.coursesComplete}
+                                id={learner.uid}
                             />
-                        ))}
+                        )
+                    )}
                     </tbody>
                 </table>
             </div>
@@ -115,7 +131,7 @@ export default function Tools() {
             {/* Quizzes to mark section */}
             <div className="flex flex-col h-[60vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-between items-center mb-2">
-                <div className="flex flex-col">
+                    <div className="flex flex-col">
                         <div className="text-2xl mb-2">Quizzes To Mark</div>
                     </div>
                 </div>
