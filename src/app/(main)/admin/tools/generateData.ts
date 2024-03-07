@@ -54,9 +54,9 @@ const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max 
 const courses: course[] = rawCourseData.map((course) => {
     return {
         ...course,
-        minTime: (Math.random() < 0.5 ? randomInt(1, 3) * 15 : randomInt(1, 24) * 60) * 60, // 15/30/45 min or 1-24 hours
+        minTime: (Math.random() < 0.7 ? randomInt(1, 3) * 15 : randomInt(1, 12) * 60), // 15/30/45 min or 1-12 hours
         maxQuizAttempts: randomInt(1, 10),
-        quizTimeLimit: Math.random() < 0.8 ? randomInt(1, 3) * 15 : randomInt(1, 4) * 60,
+        quizTimeLimit: Math.random() < 0.8 ? randomInt(1, 3) * 15 : randomInt(1, 4),
         active: Math.random() < 0.9,
     };
 });

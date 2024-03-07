@@ -79,6 +79,7 @@ const getAvailableCourses = onCall(async (request) => {
     const uid: string = request.auth.uid;
 
     return getCollection(DatabaseCollections.Course)
+        .where("active", "==", true)
         .get()
         .then(async (courses) => {
 
