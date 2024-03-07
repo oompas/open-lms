@@ -15,6 +15,13 @@ export default function Course({params}: { params: { id: string } }) {
         // @ts-ignore
         const course: any = getCourse.result.data;
 
+        const getCourseTimeString = () => {
+            if (course.minTime < 3600) {
+                return Math.floor(course.minTime / 60) + " minutes";
+            }
+            return Math.floor(course.minTime / 3600) + " hours";
+        }
+
         return (
             <>
                 <IDCourse
@@ -29,7 +36,7 @@ export default function Course({params}: { params: { id: string } }) {
 
                 <div className="mt-8 text-2xl">
                     <h1 className="mb-4">Required completion verification:</h1>
-                    <Requirement key={1} text={"Spend at least 15mins on the course"} done={true}/>
+                    {course.minTime && <Requirement key={1} text={`Spend at least ${getCourseTimeString()} on the course`} done={true}/>}
                     <Requirement key={2} text={"Complete the required quiz"} done={false}/>
                 </div>
 
