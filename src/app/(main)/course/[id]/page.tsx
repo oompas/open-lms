@@ -6,10 +6,13 @@ import Requirement from "./Requirement";
 import { MdArrowBack } from "react-icons/md";
 import { useAsync } from "react-async-hook";
 import { getFunctions, httpsCallable } from "firebase/functions";
+import { useState } from "react";
 
 export default function Course({params}: { params: { id: string } }) {
 
     const getCourse = useAsync(() => httpsCallable(getFunctions(),"getCourseInfo")({ courseId: params.id }), []);
+
+    const [timeDone, setTimeDone] = useState(false);
 
     const renderCourse = () => {
         // @ts-ignore
@@ -25,18 +28,14 @@ export default function Course({params}: { params: { id: string } }) {
         return (
             <>
                 <IDCourse
-                    title={course.name}
-                    courseStatus={course.status}
-                    description={course.description}
-                    startTime={course.startTime}
-                    minTime={course.minTime}
-                    link={course.link}
-                    id={course.courseId}
+                    course={course}
+                    timeDone={timeDone}
+                    setTimeDone={setTimeDone}
                 />
 
                 <div className="mt-8 text-2xl">
                     <h1 className="mb-4">Required completion verification:</h1>
-                    {course.minTime && <Requirement key={1} text={`Spend at least ${getCourseTimeString()} on the course`} done={true}/>}
+                    {course.minTime && <Requirement key={1} text={`Spend at least ${getCourseTimeString()} on the course`} done={timeDone}/>}
                     <Requirement key={2} text={"Complete the required quiz"} done={false}/>
                 </div>
 
