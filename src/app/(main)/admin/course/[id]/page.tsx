@@ -139,8 +139,12 @@ export default function AdminCourse({params}: { params: { id: string } }) {
             {/* this covers the existing nav buttons in the topbar */}
             <div
                 className="absolute flex flex-row items-center space-x-4 bg-white top-0 right-24 h-32 px-12 text-2xl rounded-b-3xl">
-                <Button text={active ? "Unpublish Course" : "Publish Course"} onClick={() => setActivatePopup(true)}/>
-                <div className="h-1/2 border-[1px] border-gray-300"/>
+                {params.id !== "new" &&
+                    <>
+                        <Button text={active ? "Unpublish Course" : "Publish Course"} onClick={() => setActivatePopup(true)}/>
+                        <div className="h-1/2 border-[1px] border-gray-300"/>
+                    </>
+                }
                 <Button text={params.id === "new" ? "Discard changes" : "Delete course"} onClick={() => alert("delete")}/>
                 <Button text={params.id === "new" ? "Create course" : "Update course"} onClick={() => alert("publish")} filled/>
             </div>
