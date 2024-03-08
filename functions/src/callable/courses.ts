@@ -45,8 +45,6 @@ const addCourse = onCall(async (request) => {
         description: string().required(),
         link: string().required(),
         minTime: number().integer().positive().nullable(),
-        maxQuizAttempts: number().integer().positive().nullable(),
-        quizTimeLimit: number().integer().positive().nullable(),
         active: boolean().required()
     });
 
