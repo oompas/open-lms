@@ -58,7 +58,7 @@ const addCourse = onCall(async (request) => {
 
     return getCollection(DatabaseCollections.Course)
         // @ts-ignore
-        .add({ userID: request.auth.uid, ...request.data })
+        .add({ userID: request.auth.uid, quiz: null, ...request.data })
         .then((doc) => doc.id)
         .catch((err) => { throw new HttpsError("internal", `Error adding new course: ${err}`) });
 });

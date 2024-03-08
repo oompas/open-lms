@@ -69,7 +69,7 @@ const addQuiz = onCall(async (request) => {
 
     const quizQuestionCollection = getCollection(DatabaseCollections.QuizQuestion);
     promises.push(questions.map((question: object) =>
-        quizQuestionCollection.add({ courseId, ...question, numAttempts: 0, numCorrect: 0, active: true})
+        quizQuestionCollection.add({ courseId, numAttempts: 0, numCorrect: 0, active: true, ...question })
             .catch((err) => {
                 logger.error(`Error adding new quiz question: ${err}`);
                 throw new HttpsError("internal", `Error adding new quiz question, please try again later`)
