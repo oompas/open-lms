@@ -9,7 +9,7 @@ export default function TextField({
     text: number | string,
     onChange: any,
     style?: string,
-    hidden: boolean
+    hidden?: boolean
 }) {
     return (
         <input 
