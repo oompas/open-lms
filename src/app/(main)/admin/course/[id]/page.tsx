@@ -14,14 +14,12 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const [desc, setDesc] = useState("");
     const [link, setLink] = useState("");
 
-    const [useMinCourseTime, setUseMinCourseTime] = useState(true);
-    const [minCourseTime, setMinCourseTime] = useState(1);
+    const [minCourseTime, setMinCourseTime] = useState<null|number>(1);
 
     const [useQuiz, setUseQuiz] = useState(true)
-    const [quizMinScore, setQuizMinScore] = useState(0);
-    const [quizAttempts, setQuizAttempts] = useState(1);
-    const [useQuizMaxTime, setUseQuizMaxTime] = useState(true);
-    const [quizMaxTime, setQuizMaxTime] = useState(1);
+    const [quizMinScore, setQuizMinScore] = useState<null|number>(0);
+    const [quizAttempts, setQuizAttempts] = useState<null|number>(1);
+    const [quizMaxTime, setQuizMaxTime] = useState<null|number>(1);
 
     const [showCreateQuestion, setShowCreateQuestion] = useState(false);
     const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
@@ -120,61 +118,118 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 <div className="flex flex-col mb-6">
                     <div className="text-lg">Verification Methods</div>
                     <div className="text-sm text-gray-600 mb-4">Every course must at least have one verification method.</div>
+
                     {/* Minimum completion time */}
                     <div className="flex items-start space-x-4 mb-6">
-                        <Checkbox checked={useMinCourseTime} setChecked={setUseMinCourseTime} />
+                        <Checkbox
+                            checked={minCourseTime !== null}
+                            setChecked={() => setMinCourseTime(minCourseTime === null ? 1 : null)}
+                        />
                         <div className="flex flex-col">
                             <div className="text-lg">Minimum required course completion time</div>
-                            { useMinCourseTime ? 
-                            <div className="flex flex-row space-x-2 items-center mt-2">
-                                <TextField text={minCourseTime} onChange={setMinCourseTime} style="w-24 text-right"/>
-                                <div className="text-lg">minutes</div>
-                            </div> : null }
+                            {minCourseTime !== null &&
+                                <div className="flex flex-row space-x-2 items-center mt-2">
+                                    <TextField text={minCourseTime} onChange={setMinCourseTime} style="w-24 text-right"/>
+                                    <div className="text-lg">minutes</div>
+                                </div>
+                            }
                         </div>
                     </div>
+
                     {/* Knowledge quiz */}
                     <div className="flex items-start space-x-4">
                         <Checkbox checked={useQuiz} setChecked={setUseQuiz} />
                         <div className="flex flex-col">
                             <div className="text-lg">Completion knowledge quiz</div>
-                            { useQuiz ? <div>
-                                <div className="flex flex-row space-x-2 items-center mt-4">
-                                    <TextField text={quizMinScore} onChange={setQuizMinScore} style="w-24 text-right"/>
-                                    <div className="text-lg">minimum score needed to pass</div>
-                                </div>
-                                <div className="flex flex-row space-x-2 items-center mt-4">
-                                    <TextField text={quizAttempts} onChange={setQuizAttempts} style="w-24 text-right"/>
-                                    <div className="text-lg">quiz attempts allowed</div>
-                                </div>
-                                <div className="flex items-start space-x-4 mt-4">
-                                    <Checkbox checked={useQuizMaxTime} setChecked={setUseQuizMaxTime} />
-                                    <div className="flex flex-col">
-                                        <div className="text-lg">Maximum quiz completion time</div>
-                                        { useQuizMaxTime ? 
-                                        <div className="flex flex-row space-x-2 items-center mt-2">
-                                            <TextField text={quizMaxTime} onChange={setQuizMaxTime} style="w-24 text-right"/>
-                                            <div className="text-lg">minutes</div>
-                                        </div> : null }
+                            { useQuiz &&
+                                <div>
+                                    { /* Min score */ }
+                                    <div className="flex items-start space-x-4 mt-4">
+                                        <Checkbox
+                                            checked={quizMinScore !== null}
+                                            setChecked={() => setQuizMinScore(quizMinScore === null ? 1 : null)}
+                                        />
+                                        <div className="flex flex-col">
+                                            <div className="text-lg">Minimum quiz score</div>
+                                            {quizMinScore !== null &&
+                                                <div className="flex flex-row space-x-2 items-center mt-2">
+                                                    <TextField
+                                                        text={quizMinScore}
+                                                        onChange={setQuizMinScore}
+                                                        style="w-24 text-right"
+                                                    />
+                                                    <div className="text-lg">
+                                                        correct
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    { /* Max quiz attempts */ }
+                                    <div className="flex items-start space-x-4 mt-4">
+                                        <Checkbox
+                                            checked={quizAttempts !== 0}
+                                            setChecked={() => setQuizAttempts(quizAttempts === null ? 1 : null)}
+                                        />
+                                        <div className="flex flex-col">
+                                            <div className="text-lg">Maximum attempts allowed</div>
+                                            {quizAttempts &&
+                                                <div className="flex flex-row space-x-2 items-center mt-2">
+                                                    <TextField
+                                                        text={quizAttempts}
+                                                        onChange={setQuizAttempts}
+                                                        style="w-24 text-right"
+                                                    />
+                                                    <div className="text-lg">
+                                                        attempt{quizAttempts === 1 ? "" : "s"}
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    { /* Max quiz time */ }
+                                    <div className="flex items-start space-x-4 mt-4">
+                                        <Checkbox
+                                            checked={quizMaxTime !== null}
+                                            setChecked={() => setQuizMaxTime(quizMaxTime === null ? 1 : null)}
+                                        />
+                                        <div className="flex flex-col">
+                                            <div className="text-lg">Maximum quiz completion time</div>
+                                            {quizMaxTime !== null &&
+                                                <div className="flex flex-row space-x-2 items-center mt-2">
+                                                    <TextField
+                                                        text={quizMaxTime}
+                                                        onChange={setQuizMaxTime}
+                                                        style="w-24 text-right"
+                                                    />
+                                                    <div className="text-lg">
+                                                        minute{quizMaxTime === 1 ? "" : "s"}
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
                                     </div>
                                 </div>
-                            </div> : null }
+                            }
                         </div>
                     </div>
                 </div>
-                { useQuiz ? 
-                <div className="text-lg border-2 p-6 rounded-xl">
-                    <div className="flex flex-row items-center space-x-2 mb-4">
-                        <div>Quiz Questions</div>
-                        <div className="text-sm text-gray-500">({quizQuestions.length} created)</div>
-                    </div>
-                    <div className="flex flex-col space-y-4">
-                        { quizQuestions.map((question, key) => (
-                            <QuizQuestion 
-                                key={key} 
-                                num={key+1} 
-                                data={question} 
-                                editData={handleEditQuestion} 
-                                deleteData={handleDeleteQuestion}
+                {useQuiz ?
+                    <div className="text-lg border-2 p-6 rounded-xl">
+                        <div className="flex flex-row items-center space-x-2 mb-4">
+                            <div>Quiz Questions</div>
+                            <div className="text-sm text-gray-500">({quizQuestions.length} created)</div>
+                        </div>
+                        <div className="flex flex-col space-y-4">
+                            {quizQuestions.map((question, key) => (
+                                <QuizQuestion
+                                    key={key}
+                                    num={key + 1}
+                                    data={question}
+                                    editData={handleEditQuestion}
+                                    deleteData={handleDeleteQuestion}
                             />
                         ))}
                         <button 
