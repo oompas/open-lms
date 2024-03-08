@@ -28,7 +28,7 @@ export default function Home() {
                     title={course.name}
                     status={course.status}
                     description={course.description}
-                    time={(course.minQuizTime >= 3600 ? Math.floor(course.minQuizTime / 3600) + "h " : "") + Math.floor(course.minQuizTime / 60) % 60 + "m"}
+                    time={(course.minQuizTime >= 60 ? Math.floor(course.minQuizTime / 60) + "h " : "") + course.minQuizTime % 60 + "m"}
                     color={(course.status === 2 ? "#468DF0" : (course.status === 3 || course.status === 4 ? "#EEBD31" : "#47AD63"))}
                     id={course.id}
                 />
