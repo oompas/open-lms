@@ -7,8 +7,11 @@ import { MdAdd } from "react-icons/md";
 import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
 import { callApi } from "@/config/firebase";
+import { useRouter } from "next/navigation";
 
 export default function AdminCourse({ params }: { params: { id: string } }) {
+
+    const router = useRouter();
 
     const [active, setActive] = useState(false);
     const [activatePopup, setActivatePopup] = useState(false);
@@ -84,17 +87,21 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
         const courseId = await callApi("addCourse")(courseData).then((result) => result.data);
 
-        const quizData = {
-            courseId: courseId,
-            metaData: {
-                minScore: quizMinScore === null ? null : Number(quizMinScore),
-                maxAttempts: quizAttempts === null ? null : Number(quizAttempts),
-                timeLimit: quizMaxTime === null ? null : Number(quizMaxTime),
-            },
-            questions: quizQuestions.map((q) => ({correctAnswer: 1, ...q})),
+        if (useQuiz) {
+            const quizData = {
+                courseId: courseId,
+                metaData: {
+                    minScore: quizMinScore === null ? null : Number(quizMinScore),
+                    maxAttempts: quizAttempts === null ? null : Number(quizAttempts),
+                    timeLimit: quizMaxTime === null ? null : Number(quizMaxTime),
+                },
+                questions: quizQuestions.map((q) => ({correctAnswer: 1, ...q})),
+            }
+
+            await callApi("addQuiz")(quizData);
         }
 
-        await callApi("addQuiz")(quizData);
+        router.push(`/admin/course/${courseId}`);
     }
 
     const updateCourse = async () => {
@@ -154,8 +161,15 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                         <div className="h-1/2 border-[1px] border-gray-300"/>
                     </>
                 }
-                <Button text={params.id === "new" ? "Discard changes" : "Delete course"} onClick={() => alert("delete")}/>
-                <Button text={params.id === "new" ? "Create course" : "Update course"} onClick={() => alert("publish")} filled/>
+                <Button
+                    text={params.id === "new" ? "Discard changes" : "Delete course"}
+                    onClick={() => alert("delete")}
+                />
+                <Button
+                    text={params.id === "new" ? "Create course" : "Update course"}
+                    onClick={async () => params.id === "new" ? await addCourse() : await updateCourse()}
+                    filled
+                />
             </div>
 
             <div className="flex flex-col h-auto w-1/3 mr-[5%] bg-white p-16 rounded-2xl shadow-custom mb-8">
