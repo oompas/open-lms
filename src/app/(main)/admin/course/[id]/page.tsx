@@ -12,6 +12,7 @@ import CreateQuestion from "./CreateQuestion";
 export default function AdminCourse({ params }: { params: { id: string } }) { 
 
     const [active, setActive] = useState(false);
+    const [activatePopup, setActivatePopup] = useState(false);
 
     const [title, setTitle] = useState("");
     const [desc, setDesc] = useState("");
@@ -21,7 +22,6 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const [minCourseTime, setMinCourseTime] = useState(1);
 
     const [useQuiz, setUseQuiz] = useState(false)
-    const [quizNum, setQuizNum] = useState(1);
     const [quizMinScore, setQuizMinScore] = useState(0);
     const [quizAttempts, setQuizAttempts] = useState(1);
     const [useQuizMaxTime, setUseQuizMaxTime] = useState(false);
@@ -70,17 +70,46 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         setQuizQuestions(temp);
     }
 
+    const handlePublish = () => {
+        setActive(!active);
+        setActivatePopup(false);
+    }
+
     useEffect(() => {
         if (editQuestion != -1)
             setShowCreateQuestion(true)
     }, [editQuestion])
 
+    const activationPopup = ( active ? 
+        <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">Pressing "Unpublish Course" removes users' access to the course without deleting any data. You can re-publish the course to restore access at any time.</div>
+                <div className="flex flex-row space-x-4 mt-6">
+                    <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
+                    <Button text="Unpublish Course" onClick={() => handlePublish()} filled />
+                </div>
+            </div>
+        </div>
+        :
+        <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">Pressing "Publish Course" will allow users of the platform to view, enroll, and complete this course. You can unpublish at any time to remove users' access to the course without losing any data.</div>
+                <div>Any subsequent changes saved will be directly visible to users.</div>
+                <div className="flex flex-row space-x-4 mt-6">
+                    <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
+                    <Button text="Publish Course" onClick={() => handlePublish()} filled />
+                </div>
+            </div>
+        </div>
+    )
 
     return (
         <main className="flex flex-row justify-center pt-14">
             
             {/* this covers the existing nav buttons in the topbar */}
             <div className="absolute flex flex-row items-center space-x-4 bg-white top-0 right-24 h-32 px-12 text-2xl rounded-b-3xl">
+                <Button text={active ? "Unpublish Course" : "Publish Course"} onClick={() => setActivatePopup(true) } />
+                <div className="h-1/2 border-[1px] border-gray-300" />
                 <Button text="Delete Course" onClick={() => alert("delete")} />
                 <Button text="Save Course" onClick={() => alert("publish")} filled />
             </div>
@@ -89,7 +118,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 <div className={"flex w-fit py-1 px-2 text-sm rounded-xl border-2 "+(active ? "text-[#47AD63] border-[#47AD63]" : "text-[#EEBD31] border-[#EEBD31]")}>
                     {active ? "Active" : "Inactive"}
                 </div>
-                <div className="text-sm text-gray-600 mt-1 mb-4">Users are not able to see this course.</div>
+                <div className="text-sm text-gray-600 mt-1 mb-4">{ active ? "Users are able to see and complete this course." : "Users are not able to see this course." }</div>
 
                 <div></div>
                 <div className="flex flex-col mb-6">
@@ -99,7 +128,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
                 <div className="flex flex-col mb-6">
                     <div className="text-lg mb-2">Description</div>
-                    <TextField text={desc} onChange={setDesc} placeholder="Breifly describe course content..."/>
+                    <TextField text={desc} onChange={setDesc} placeholder="Breifly describe course content..." area/>
                 </div>
 
                 <div className="flex flex-col">
@@ -138,10 +167,6 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                             <div className="text-lg">Completion knowledge quiz</div>
                             { useQuiz ? <div>
                                 <div className="flex flex-row space-x-2 items-center mt-2">
-                                    <TextField text={quizNum} onChange={setQuizNum} style="w-24 text-right"/>
-                                    <div className="text-lg">quiz questions</div>
-                                </div>
-                                <div className="flex flex-row space-x-2 items-center mt-4">
                                     <TextField text={quizMinScore} onChange={setQuizMinScore} style="w-24 text-right"/>
                                     <div className="text-lg">minimum score needed to pass</div>
                                 </div>
@@ -168,7 +193,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 <div className="text-lg border-2 p-6 rounded-xl">
                     <div className="flex flex-row items-center space-x-2 mb-4">
                         <div>Quiz Questions</div>
-                        <div className="text-sm text-gray-500">({quizQuestions.length}/{quizNum} created)</div>
+                        <div className="text-sm text-gray-500">({quizQuestions.length} questions)</div>
                     </div>
                     <div className="flex flex-col space-y-4">
                         { quizQuestions.map((question, key) => (
@@ -184,14 +209,13 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                 moveDown={handleMoveDown}
                             />
                         ))}
-                        { quizQuestions.length < quizNum ?
                         <button 
                             className="flex flex-row space-x-4 justify-center items-center border-[3px] border-red-800 p-4 rounded-xl text-red-800 font-bold hover:opacity-60 duration-75"
                             onClick={() => setShowCreateQuestion(true)}
                         >
                             Create a new question
                             <MdAdd size={24} />
-                        </button> : null }
+                        </button>
                     </div>
                 </div> : null }
                 { showCreateQuestion ? 
@@ -201,6 +225,9 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                         closeModal={() => {setShowCreateQuestion(false); setEditQuesiton(-1)}}
                         setData={handleAddQuestion}
                     /> 
+                : null }
+                { activatePopup ?
+                    activationPopup
                 : null }
             </div>
 
