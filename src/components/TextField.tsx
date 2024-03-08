@@ -3,13 +3,15 @@ export default function TextField({
     text,
     onChange,        // onChange function of the state object - pass in the form of: setValue   <- (no brackets)
     style,
-    hidden
+    hidden,
+    readonly
 } : {
     placeholder?: string,
     text: number | string,
     onChange: any,
     style?: string,
-    hidden?: boolean
+    hidden?: boolean,
+    readonly?: boolean
 }) {
     return (
         <input 
@@ -18,6 +20,7 @@ export default function TextField({
             placeholder={placeholder}
             value={text}
             onChange={(e) => onChange(e.target.value)}
+            readOnly={readonly}
         />
     );
 }
