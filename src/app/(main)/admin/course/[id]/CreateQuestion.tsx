@@ -28,8 +28,18 @@ export default function CreateQuestion({
     const [qE, setQE] = useState(data ? data.options[4] : "");
 
     const handleSave = () => {
-        // TODO - input validation
+        // TODO - actual input validation (regex to check for allowed values?)
         var ans = [qA, qB, qC, qD, qE].filter(str => str ? str.trim() !== '' : false);
+        if (question === "") {
+            alert("Make sure to write a question.")
+            return;
+        } else if (type === "mc" && ans.length < 2) {
+            alert("Provide at least two answer options.")
+            return;
+        } else if (type != "sa" && answer === -1) {
+            alert("Select a correct answer.")
+            return;
+        }
         setData(num, { type: type, question: question, options: ans, answer: answer-1 });
     }
 
