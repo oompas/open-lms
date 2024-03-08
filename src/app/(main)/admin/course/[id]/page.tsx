@@ -8,7 +8,7 @@ import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
 import { callApi } from "@/config/firebase";
 
-export default function AdminCourse({params}: { params: { id: string } }) {
+export default function AdminCourse({ params }: { params: { id: string } }) {
 
     const [active, setActive] = useState(false);
     const [activatePopup, setActivatePopup] = useState(false);
@@ -68,11 +68,6 @@ export default function AdminCourse({params}: { params: { id: string } }) {
         setQuizQuestions(temp);
     }
 
-    const handlePublish = () => {
-        setActive(!active);
-        setActivatePopup(false);
-    }
-
     useEffect(() => {
         if (editQuestion != -1)
             setShowCreateQuestion(true)
@@ -106,16 +101,19 @@ export default function AdminCourse({params}: { params: { id: string } }) {
 
     }
 
-    const publishCourse = async () => {
-        await callApi("publishCourse")(params.id)
-            .then(() => setActive(true))
-            .catch((err) => console.log(`Error publishing course: ${err}`));
-    }
+    const handlePublish = async () => {
+        if (active) {
+            await callApi("unPublishCourse")( { courseId: params.id })
+                .then(() => setActive(false))
+                .catch((err) => console.log(`Error unpublishing course: ${err}`));
+        } else {
+            await callApi("publishCourse")({ courseId: params.id })
+                .then(() => setActive(true))
+                .catch((err) => console.log(`Error publishing course: ${err}`));
+        }
 
-    const unpublishCourse = async () => {
-        await callApi("unPublishCourse")(params.id)
-            .then(() => setActive(false))
-            .catch((err) => console.log(`Error unpublishing course: ${err}`));
+        setActive(!active);
+        setActivatePopup(false);
     }
 
     const activationPopup = (
@@ -134,7 +132,11 @@ export default function AdminCourse({params}: { params: { id: string } }) {
                 {!active && <div>Any subsequent changes saved will be directly visible to users.</div>}
                 <div className="flex flex-row space-x-4 mt-6">
                 <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
-                    <Button text={(active ? "Unpublish" : "Publish") + " Course"} onClick={() => handlePublish()} filled/>
+                    <Button
+                        text={(active ? "Unpublish" : "Publish") + " Course"}
+                        onClick={async () => await handlePublish()}
+                        filled
+                    />
                 </div>
             </div>
         </div>
