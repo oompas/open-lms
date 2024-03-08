@@ -18,7 +18,7 @@ export default function IDCourse({
   const router = useRouter();
 
   return (
-    <div className="flex flex-col border-4 w-[23%] h-[15vh] justify-between items-center mb-8 p-6 rounded-2xl" style={{borderColor: "#9D1939"}}>
+    <div className="flex flex-col border-4 w-[21%] justify-between items-center mb-8 p-6 rounded-2xl" style={{borderColor: "#9D1939"}}>
       <div className="text-2xl mb-5">{title}</div>
       <Button text="Unenroll" onClick={() => router.push('/home')}/>
     </div>
