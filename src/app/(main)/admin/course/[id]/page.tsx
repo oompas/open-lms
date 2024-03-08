@@ -11,6 +11,8 @@ import CreateQuestion from "./CreateQuestion";
 
 export default function AdminCourse({ params }: { params: { id: string } }) { 
 
+    const [active, setActive] = useState(false);
+
     const [title, setTitle] = useState("");
     const [desc, setDesc] = useState("");
     const [link, setLink] = useState("");
@@ -79,13 +81,17 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             
             {/* this covers the existing nav buttons in the topbar */}
             <div className="absolute flex flex-row items-center space-x-4 bg-white top-0 right-24 h-32 px-12 text-2xl rounded-b-3xl">
-                <Button text="Save Changes" onClick={() => alert("save")} />
-                <div className="h-1/2 border-[1px] border-gray-300" />
                 <Button text="Delete Course" onClick={() => alert("delete")} />
-                <Button text="Save & Publish Course" onClick={() => alert("publish")} filled />
+                <Button text="Save Course" onClick={() => alert("publish")} filled />
             </div>
 
             <div className="flex flex-col h-auto w-1/3 mr-[5%] bg-white p-16 rounded-2xl shadow-custom mb-8">
+                <div className={"flex w-fit py-1 px-2 text-sm rounded-xl border-2 "+(active ? "text-[#47AD63] border-[#47AD63]" : "text-[#EEBD31] border-[#EEBD31]")}>
+                    {active ? "Active" : "Inactive"}
+                </div>
+                <div className="text-sm text-gray-600 mt-1 mb-4">Users are not able to see this course.</div>
+
+                <div></div>
                 <div className="flex flex-col mb-6">
                     <div className="text-lg mb-2">Course Title</div>
                     <TextField text={title} onChange={setTitle} placeholder="Course Title"/>
