@@ -2,7 +2,7 @@ import {onCall} from "firebase-functions/v2/https";
 import {DatabaseCollections, getCollection, verifyIsAdmin, verifyIsAuthenticated} from "../helpers/helpers";
 import {logger} from "firebase-functions";
 import {array, number, object, string} from "yup";
-import {HttpsError} from "firebase-functions/lib/v2/providers/https";
+import {HttpsError} from "firebase-functions/v2/https";
 
 /**
  * Adds a quiz for a course with the given data:
