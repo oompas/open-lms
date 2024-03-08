@@ -15,14 +15,14 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const [desc, setDesc] = useState("");
     const [link, setLink] = useState("");
 
-    const [useMinCourseTime, setUseMinCourseTime] = useState(true);
+    const [useMinCourseTime, setUseMinCourseTime] = useState(false);
     const [minCourseTime, setMinCourseTime] = useState(1);
 
-    const [useQuiz, setUseQuiz] = useState(true)
+    const [useQuiz, setUseQuiz] = useState(false)
     const [quizNum, setQuizNum] = useState(1);
     const [quizMinScore, setQuizMinScore] = useState(0);
     const [quizAttempts, setQuizAttempts] = useState(1);
-    const [useQuizMaxTime, setUseQuizMaxTime] = useState(true);
+    const [useQuizMaxTime, setUseQuizMaxTime] = useState(false);
     const [quizMaxTime, setQuizMaxTime] = useState(1);
 
     const [showCreateQuestion, setShowCreateQuestion] = useState(false);
@@ -49,6 +49,22 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         // TODO - question delete confirmation
         const temp = [...quizQuestions];
         temp.splice(num-1, 1);
+        setQuizQuestions(temp);
+    }
+
+    const handleMoveUp = (num: number) => {
+        const temp = [...quizQuestions];
+        const qA = temp[num-1];
+        temp[num-1] = temp[num-2];
+        temp[num-2] = qA;
+        setQuizQuestions(temp);
+    }
+
+    const handleMoveDown = (num: number) => {
+        const temp = [...quizQuestions];
+        const qA = temp[num-1];
+        temp[num-1] = temp[num];
+        temp[num] = qA;
         setQuizQuestions(temp);
     }
 
@@ -152,10 +168,14 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                         { quizQuestions.map((question, key) => (
                             <QuizQuestion 
                                 key={key} 
+                                first={key === 0}
+                                last={key === quizQuestions.length-1}
                                 num={key+1} 
                                 data={question} 
                                 editData={handleEditQuestion} 
                                 deleteData={handleDeleteQuestion}
+                                moveUp={handleMoveUp}
+                                moveDown={handleMoveDown}
                             />
                         ))}
                         { quizQuestions.length < quizNum ?
