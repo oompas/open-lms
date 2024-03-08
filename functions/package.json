@@ -1,6 +1,5 @@
 {
   "name": "functions",
-  "type": "module",
   "private": true,
   "scripts": {
     "build": "tsc",

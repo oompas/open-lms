@@ -1,8 +1,8 @@
 import {onCall} from "firebase-functions/v2/https";
-import {DatabaseCollections, getCollection, verifyIsAdmin, verifyIsAuthenticated} from "../helpers/helpers";
+import { DatabaseCollections, getCollection, getDoc, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 import {logger} from "firebase-functions";
 import {array, number, object, string} from "yup";
-import {HttpsError} from "firebase-functions/lib/v2/providers/https";
+import {HttpsError} from "firebase-functions/v2/https";
 
 /**
  * Adds a quiz for a course with the given data:
@@ -32,6 +32,11 @@ const addQuiz = onCall(async (request) => {
 
     const schema = object({
         courseId: string().required(),
+        metaData: object({
+            minScore: number().integer().positive().nullable(),
+            maxAttempts: number().integer().positive().nullable(),
+            timeLimit: number().integer().positive().nullable(),
+        }),
         questions: array().of(
             object({
                 question: string().required(),
@@ -49,16 +54,30 @@ const addQuiz = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const { courseId, questions } = request.data;
+    const { courseId, metaData, questions } = request.data;
 
-    const quizQuestionCollection = getCollection(DatabaseCollections.QuizQuestion);
-    // @ts-ignore
-    const addQuestions = questions.map((question) =>
-        quizQuestionCollection.add({ courseId, ...question, numAttempts: 0, numCorrect: 0, active: true})
+    const promises: Promise<any>[] = [];
+
+    promises.push(
+        getDoc(DatabaseCollections.Course, courseId)
+            .update({ quiz: metaData })
+            .catch((err) => {
+                logger.error(`Error updating course with quiz metadata: ${err}`);
+                throw new HttpsError("internal", `Error updating course, please trya again later`)
+            })
     );
 
-    return Promise.all(addQuestions)
-        .then(docs => docs.map(doc => doc.id))
+    const quizQuestionCollection = getCollection(DatabaseCollections.QuizQuestion);
+    promises.push(questions.map((question: object) =>
+        quizQuestionCollection.add({ courseId, numAttempts: 0, numCorrect: 0, active: true, ...question })
+            .catch((err) => {
+                logger.error(`Error adding new quiz question: ${err}`);
+                throw new HttpsError("internal", `Error adding new quiz question, please try again later`)
+            })
+    ));
+
+    return Promise.all(promises)
+        .then(() => "Added quiz successfully")
         .catch((err) => { throw new HttpsError("internal", `Error adding new quiz question: ${err}`) });
 });
 

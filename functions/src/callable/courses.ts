@@ -43,10 +43,8 @@ const addCourse = onCall(async (request) => {
     const schema = object({
         name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
         description: string().required(),
-        link: string().required(),
+        link: string().url().required(),
         minTime: number().integer().positive().nullable(),
-        maxQuizAttempts: number().integer().positive().nullable(),
-        quizTimeLimit: number().integer().positive().nullable(),
         active: boolean().required()
     });
 
@@ -60,7 +58,7 @@ const addCourse = onCall(async (request) => {
 
     return getCollection(DatabaseCollections.Course)
         // @ts-ignore
-        .add({ userID: request.auth.uid, ...request.data })
+        .add({ userID: request.auth.uid, quiz: null, ...request.data })
         .then((doc) => doc.id)
         .catch((err) => { throw new HttpsError("internal", `Error adding new course: ${err}`) });
 });
