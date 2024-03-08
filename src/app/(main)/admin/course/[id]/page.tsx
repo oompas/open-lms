@@ -1,5 +1,4 @@
 "use client"
-
 import Button from "@/components/Button";
 import Checkbox from "@/components/Checkbox";
 import TextField from "@/components/TextField";
@@ -7,7 +6,7 @@ import { useEffect, useState } from "react";
 import { MdAdd } from "react-icons/md";
 import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
-
+import { callApi } from "@/config/firebase";
 
 export default function AdminCourse({ params }: { params: { id: string } }) { 
 
@@ -36,6 +35,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             temp[num] = data;
         else
             temp.push(data);
+
         setQuizQuestions(temp);
         setEditQuesiton(-1);
         setShowCreateQuestion(false);
@@ -57,6 +57,19 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             setShowCreateQuestion(true)
     }, [editQuestion])
 
+    const publishCourse = () => {
+
+        const courseData = {
+            name: title,
+            description: desc,
+            link: link,
+            minTime: Number(minCourseTime),
+            active: true,
+        };
+
+        callApi("addCourse")(courseData);
+    }
+
 
     return (
         <main className="flex flex-row justify-center pt-14">
@@ -66,7 +79,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 <Button text="Save Changes" onClick={() => alert("save")} />
                 <div className="h-1/2 border-[1px] border-gray-300" />
                 <Button text="Delete Course" onClick={() => alert("delete")} />
-                <Button text="Save & Publish Course" onClick={() => alert("publish")} filled />
+                <Button text="Save & Publish Course" onClick={() => publishCourse()} filled />
             </div>
 
             <div className="flex flex-col h-auto w-1/3 mr-[5%] bg-white p-16 rounded-2xl shadow-custom mb-8">
