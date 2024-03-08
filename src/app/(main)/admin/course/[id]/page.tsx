@@ -18,7 +18,6 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const [minCourseTime, setMinCourseTime] = useState(1);
 
     const [useQuiz, setUseQuiz] = useState(true)
-    const [quizNum, setQuizNum] = useState(1);
     const [quizMinScore, setQuizMinScore] = useState(0);
     const [quizAttempts, setQuizAttempts] = useState(1);
     const [useQuizMaxTime, setUseQuizMaxTime] = useState(true);
@@ -139,10 +138,6 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                         <div className="flex flex-col">
                             <div className="text-lg">Completion knowledge quiz</div>
                             { useQuiz ? <div>
-                                <div className="flex flex-row space-x-2 items-center mt-2">
-                                    <TextField text={quizNum} onChange={setQuizNum} style="w-24 text-right"/>
-                                    <div className="text-lg">quiz questions</div>
-                                </div>
                                 <div className="flex flex-row space-x-2 items-center mt-4">
                                     <TextField text={quizMinScore} onChange={setQuizMinScore} style="w-24 text-right"/>
                                     <div className="text-lg">minimum score needed to pass</div>
@@ -170,7 +165,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 <div className="text-lg border-2 p-6 rounded-xl">
                     <div className="flex flex-row items-center space-x-2 mb-4">
                         <div>Quiz Questions</div>
-                        <div className="text-sm text-gray-500">({quizQuestions.length}/{quizNum} created)</div>
+                        <div className="text-sm text-gray-500">({quizQuestions.length} created)</div>
                     </div>
                     <div className="flex flex-col space-y-4">
                         { quizQuestions.map((question, key) => (
@@ -182,14 +177,13 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                 deleteData={handleDeleteQuestion}
                             />
                         ))}
-                        { quizQuestions.length < quizNum ?
                         <button 
                             className="flex flex-row space-x-4 justify-center items-center border-[3px] border-red-800 p-4 rounded-xl text-red-800 font-bold hover:opacity-60 duration-75"
                             onClick={() => setShowCreateQuestion(true)}
                         >
                             Create a new question
                             <MdAdd size={24} />
-                        </button> : null }
+                        </button>
                     </div>
                 </div> : null }
                 { showCreateQuestion ? 
