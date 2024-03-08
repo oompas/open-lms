@@ -14,8 +14,8 @@ export default function LearnerLayout({
 }) {
     return (
         <html lang="en">
-            <body className="h-[100vh] px-24 bg-gray-100">
-                <div className="flex flex-row bg-white p-12 rounded-b-2xl shadow-custom">
+            <body className="h-[100vh] px-24 bg-gray-100 overflow-x-hidden">
+                <div className="flex flex-row px-12 h-32 items-center bg-white rounded-b-2xl shadow-custom">
                     <Link href="/home" className="font-bold text-4xl">OpenLMS</Link>
                     <div className="flex ml-auto space-x-10 text-2xl">
                         <Link href="/profile">View Profile</Link>
