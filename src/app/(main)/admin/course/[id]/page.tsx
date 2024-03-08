@@ -107,42 +107,38 @@ export default function AdminCourse({params}: { params: { id: string } }) {
     }
 
     const publishCourse = async () => {
-
+        await callApi("publishCourse")(params.id)
+            .then(() => setActive(true))
+            .catch((err) => console.log(`Error publishing course: ${err}`));
     }
 
     const unpublishCourse = async () => {
-
+        await callApi("unPublishCourse")(params.id)
+            .then(() => setActive(false))
+            .catch((err) => console.log(`Error unpublishing course: ${err}`));
     }
 
-    const activationPopup = (active ?
-            <div
-                className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
-                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                    <div className="text-lg mb-2">Pressing "Unpublish Course" removes users' access to the course
-                        without deleting any data. You can re-publish the course to restore access at any time.
-                    </div>
-                    <div className="flex flex-row space-x-4 mt-6">
-                        <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
-                        <Button text="Unpublish Course" onClick={() => handlePublish()} filled/>
-                    </div>
+    const activationPopup = (
+        <div
+            className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    {active
+                        ? "Pressing \"Unpublish Course\" removes users' access to the course\n without deleting any" +
+                        " data. You can re-publish the course to restore access at any time."
+                        : "\"Publish Course\" will allow users of the platform to view, without deleting any data." +
+                        " You can re-publish the course to restore access at any time. enroll, and complete this" +
+                        " course. You can unpublish at any time to remove users' access to the course without losing any data"
+                    }
+                </div>
+                {!active && <div>Any subsequent changes saved will be directly visible to users.</div>}
+                <div className="flex flex-row space-x-4 mt-6">
+                <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
+                    <Button text={(active ? "Unpublish" : "Publish") + " Course"} onClick={() => handlePublish()} filled/>
                 </div>
             </div>
-            :
-            <div
-                className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
-                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                    <div className="text-lg mb-2">Pressing "Publish Course" will allow users of the platform to view,
-                        enroll, and complete this course. You can unpublish at any time to remove users' access to the
-                        course without losing any data.
-                    </div>
-                    <div>Any subsequent changes saved will be directly visible to users.</div>
-                    <div className="flex flex-row space-x-4 mt-6">
-                        <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
-                        <Button text="Publish Course" onClick={() => handlePublish()} filled/>
-                    </div>
-                </div>
-            </div>
-    )
+        </div>
+    );
 
     return (
         <div className="flex flex-row justify-center pt-14">
