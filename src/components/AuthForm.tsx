@@ -15,11 +15,11 @@ export default function AuthForm({
         <div className="flex flex-col space-y-4">
             <div className="flex flex-col">
                 <p className="mb-4 text-lg">Email</p>
-                <TextField text={email} onChange={setEmail} placeholder="john@doe.com"/>
+                <TextField text={email} onChange={setEmail} placeholder="john@doe.com" hidden={false}/>
             </div>
             <div className="flex flex-col">
                 <p className="mb-4 text-lg">Password</p>
-                <TextField text={password} onChange={setPass} placeholder="******"/>
+                <TextField text={password} onChange={setPass} placeholder="******" hidden={true}/>
                 <p className="mt-2 text-gray-500 cursor-pointer">forgot your password?</p>
             </div>
         </div>

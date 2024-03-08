@@ -8,17 +8,26 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { Timestamp } from "firebase/firestore";
 import { boolean, number, object, string } from 'yup';
+import { firestore } from "firebase-admin";
+import FieldValue = firestore.FieldValue;
+
+/**
+ * The ID for an enrolled course is the user & course ID concatenated so:
+ * -No query is needed to check it, can just get the document through an ID
+ * -No duplicate enrollments are possible
+ * The enrollment document will also have these IDs in the document if individual queries are needed
+ */
+const enrolledCourseId = (userId: string, courseId: string) => `${userId}|${courseId}`;
 
 /**
  * Adds a course with the given data:
  * -name
  * -description
  * -link
- * -minTime
+ * -minTime (in minutes)
  * -maxQuizAttempts
- * -quizTimeLimit
+ * -quizTimeLimit (in minutes)
  * -active
  *
  * And a new course is returned
@@ -35,9 +44,9 @@ const addCourse = onCall(async (request) => {
         name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
         description: string().required(),
         link: string().required(),
-        minTime: number().required().integer().positive(),
-        maxQuizAttempts: number().required().integer().positive(),
-        quizTimeLimit: number().required().integer().positive(),
+        minTime: number().integer().positive().nullable(),
+        maxQuizAttempts: number().integer().positive().nullable(),
+        quizTimeLimit: number().integer().positive().nullable(),
         active: boolean().required()
     });
 
@@ -67,33 +76,72 @@ const getAvailableCourses = onCall(async (request) => {
     verifyIsAuthenticated(request);
 
     // @ts-ignore
-    const uid = request.auth.uid;
+    const uid: string = request.auth.uid;
 
-    // Get completed course IDs to exclude from the result
-    // @ts-ignore
-    const userCourses: { courseId: string, pass: boolean }[] = await getCollection(DatabaseCollections.CourseAttempt)
-        .where("userId", "==", uid)
-        .get()
-        .then((docs) => docs.docs.map((doc) => doc.data()))
-        .catch((error) => {
-            logger.error(`Error getting course attempts: ${error}`);
-            throw new HttpsError("internal", `Error getting courses, please try again later`);
-        });
-
-    // Return all active & uncompleted courses
     return getCollection(DatabaseCollections.Course)
+        .where("active", "==", true)
         .get()
-        .then((courses) => {
-            return courses.docs
-                .map((doc) => {
-                    const courseEnrolled = userCourses.filter((course) => course.courseId === doc.id);
-                    return {
-                        id: doc.id,
-                        enrolled: courseEnrolled.length > 0,
-                        pass: courseEnrolled.length === 0 ? null : courseEnrolled[0].pass,
-                        ...doc.data()
-                    }
-                });
+        .then(async (courses) => {
+
+            const allCourses = [];
+
+            for (let course of courses.docs) {
+
+                const courseEnrolled = await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, course.id))
+                    .get()
+                    .then((doc) => doc.exists)
+                    .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
+
+                let courseAttempt = undefined;
+                if (courseEnrolled) {
+                    courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
+                        .where("userId", "==", request.auth?.uid)
+                        .where("courseId", "==", course.id)
+                        .get()
+                        .then((docs) => docs.empty ? null : docs.docs[0].data())
+                        .catch((error) => {
+                            logger.error(`Error getting course attempts: ${error}`);
+                            throw new HttpsError("internal", `Error getting courses, please try again later`);
+                        });
+                }
+
+                /*
+                 * Statuses:
+                 * 1 - Not enrolled
+                 * 2 - Enrolled, not started
+                 * 3 - In progress
+                 * 4 - Failed
+                 * 5 - Passed
+                 *
+                 * TODO: Make an enum or something for this (+ on front-end)
+                 */
+                let status;
+                if (!courseEnrolled) {
+                    status = 1;
+                } else if (courseAttempt === null ) {
+                    status = 2;
+                } else if (courseAttempt?.pass === null) {
+                    status = 3;
+                } else if (courseAttempt?.pass === false) {
+                    status = 4;
+                } else if (courseAttempt?.pass === true) {
+                    status = 5;
+                } else {
+                    throw new HttpsError("internal", "Course is in an invalid state - can't get status");
+                }
+
+                const courseData = {
+                    id: course.id,
+                    name: course.data().name,
+                    description: course.data().description,
+                    minQuizTime: course.data().minTime,
+                    status: status,
+                };
+
+                allCourses.push(courseData);
+            }
+
+            return allCourses;
         })
         .catch((error) => {
             logger.error(`Error getting active courses: ${error}`);
@@ -115,9 +163,16 @@ const getCourseInfo = onCall((request) => {
 
     verifyIsAuthenticated(request);
 
+    // @ts-ignore
+    const uid: string = request.auth?.uid;
+
+    if (typeof request.data.courseId !== 'string' || request.data.courseId.length !== 20) {
+        throw new HttpsError('invalid-argument', "Must provide a course ID to get course info");
+    }
+
     return getDoc(DatabaseCollections.Course, request.data.courseId)
         .get()
-        .then((course) => {
+        .then(async (course) => {
             if (!course.exists) {
                 logger.error(`Error: document '/Course/${request.data.courseId}/' does not exist`);
                 throw new HttpsError("invalid-argument", `Course with ID '${request.data.courseId}' does not exist`);
@@ -129,6 +184,36 @@ const getCourseInfo = onCall((request) => {
                 throw new HttpsError("internal", "Error: document data corrupted");
             }
 
+            const courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
+                .where("userId", "==", request.auth?.uid)
+                .where("courseId", "==", request.data.courseId)
+                .get()
+                .then((docs) => docs.empty ? null : docs.docs[0].data())
+                .catch((error) => {
+                    logger.error(`Error getting course attempts: ${error}`);
+                    throw new HttpsError("internal", `Error getting courses, please try again later`);
+                });
+
+            const courseEnrolled = await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
+                .get()
+                .then((doc) => doc.exists)
+                .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
+
+            let status;
+            if (!courseEnrolled) {
+                status = 1;
+            } else if (courseAttempt === null ) {
+                status = 2;
+            } else if (courseAttempt?.pass === null) {
+                status = 3;
+            } else if (courseAttempt?.pass === false) {
+                status = 4;
+            } else if (courseAttempt?.pass === true) {
+                status = 5;
+            } else {
+                throw new HttpsError("internal", "Course is in an invalid state - can't get status");
+            }
+
             return {
                 courseId: course.id,
                 name: docData.name,
@@ -136,7 +221,9 @@ const getCourseInfo = onCall((request) => {
                 link: docData.link,
                 minTime: docData.minTime,
                 maxQuizAttempts: docData.maxQuizAttempts,
-                quizTimeLimit: docData.quizTimeLimit
+                quizTimeLimit: docData.quizTimeLimit,
+                status: status,
+                startTime: courseAttempt?.startTime._seconds ?? null,
             };
         })
         .catch((error) => {
@@ -151,6 +238,9 @@ const getCourseInfo = onCall((request) => {
 const courseEnroll = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
+
+    // @ts-ignore
+    const uid: string = request.auth?.uid;
 
     // Ensure a valid course ID is passed in
     if (!request.data.courseId) {
@@ -168,12 +258,36 @@ const courseEnroll = onCall(async (request) => {
             throw new HttpsError('internal', "Error enrolling in course, please try again later");
         });
 
-    return getCollection(DatabaseCollections.EnrolledCourse) // @ts-ignore
-        .add({ userId: request.auth.uid, courseId: request.data.courseId })
+    return getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
+        .set({ userId: uid, courseId: request.data.courseId })
         .then(() => "Successfully enrolled in course")
         .catch((error) => {
             logger.error(`Error enrolling in course ${request.data.courseId}: ${error}`);
             throw new HttpsError("internal", "Error enrolling in course, please try again later");
+        });
+});
+
+/**
+ * Unenrolls the requesting user from the specified course
+ */
+const courseUnenroll = onCall(async (request) => {
+
+    verifyIsAuthenticated(request);
+
+    // @ts-ignore
+    const uid: string = request.auth?.uid;
+
+    // Ensure a valid course ID is passed in
+    if (!request.data.courseId) {
+        throw new HttpsError('invalid-argument', "Must provide a course ID to unenroll from");
+    }
+
+    return getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
+        .delete()
+        .then(() => "Successfully unenrolled from course")
+        .catch((error) => {
+            logger.error(`Error unenrolling from course ${request.data.courseId}: ${error}`);
+            throw new HttpsError("internal", "Error unenrolling from course, please try again later");
         });
 });
 
@@ -184,17 +298,17 @@ const startCourse = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
+    // @ts-ignore
+    const uid: string = request.auth?.uid;
+
     // Verify the user in enrolled in the course
     if (!request.data.courseId) {
         throw new HttpsError('invalid-argument', "Must provide a course ID to start");
     }
-    await getCollection(DatabaseCollections.EnrolledCourse)
-        // @ts-ignore
-        .where("userId", "==", request.auth.uid)
-        .where("courseId", "==", request.data.courseId)
+    await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
         .get()
         .then((doc) => {
-            if (doc.empty) { // @ts-ignore
+            if (!doc.exists) { // @ts-ignore
                 logger.error(`No course enrollment with course ID '${request.data.courseId}' and user ID '${request.auth.uid}' exists`);
                 throw new HttpsError('invalid-argument', `You are not enrolled in this course`);
             }
@@ -205,17 +319,16 @@ const startCourse = onCall(async (request) => {
         });
 
     const courseAttempt = {
-        // @ts-ignore
-        userId: request.auth.uid,
+        userId: request.auth?.uid,
         courseId: request.data.courseId,
-        startTime: Timestamp.now(),
+        startTime: FieldValue.serverTimestamp(),
         endTime: null,
         pass: null,
     }
 
     return getCollection(DatabaseCollections.CourseAttempt)
         .add(courseAttempt)
-        .then(() => "Successfully started course")
+        .then((result) => result.get().then((doc) => doc?.data()?.startTime._seconds ))
         .catch((error) => {
             logger.error(`Error starting course ${request.data.courseId}: ${error}`);
             throw new HttpsError("internal", "Error enrolling in course, please try again later");
@@ -259,4 +372,4 @@ const sendCourseFeedback = onCall(async (request) => {
     return sendEmail(courseInfo.creator, subject, content, "sending course feedback");
 });
 
-export { addCourse, getAvailableCourses, getCourseInfo, courseEnroll, startCourse, sendCourseFeedback };
+export { addCourse, getAvailableCourses, getCourseInfo, courseEnroll, courseUnenroll, startCourse, sendCourseFeedback };

@@ -1,5 +1,5 @@
 import { ReactElement } from "react";
-import { MdAddCircleOutline, MdArrowForward, MdOpenInNew } from "react-icons/md";
+import { MdAddCircleOutline, MdRemoveCircleOutline, MdArrowForward, MdOpenInNew } from "react-icons/md";
 
 export default function Button({
     text,
@@ -24,6 +24,8 @@ export default function Button({
         <MdOpenInNew size={20} />
         : icon === "plus" ?
         <MdAddCircleOutline size={20} />
+        : icon === "minus" ?
+        <MdRemoveCircleOutline size={20} />
         : null }
     </div>
 

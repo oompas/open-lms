@@ -5,8 +5,8 @@ interface course {
     description: string,
     link: string,
     minTime: number,
-    maxQuizAttempts: number
-    quizTimeLimit: number
+    maxQuizAttempts: number | null
+    quizTimeLimit: number | null
     active: boolean
 }
 
@@ -52,16 +52,18 @@ const rawCourseData: { name: string, description: string, link: string }[] = [
 const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 const courses: course[] = rawCourseData.map((course) => {
+    const hasQuiz = Math.random() < 0.8;
+
     return {
         ...course,
-        minTime: Math.random() < 0.5 ? randomInt(1, 3) * 15 : randomInt(1, 24) * 60,
-        maxQuizAttempts: randomInt(1, 10),
-        quizTimeLimit: Math.random() < 0.8 ? randomInt(1, 3) * 15 : randomInt(1, 4) * 60,
+        minTime: (Math.random() < 0.7 ? randomInt(1, 3) * 15 : randomInt(1, 12) * 60), // 15/30/45 min or 1-12 hours
+        maxQuizAttempts: hasQuiz ? randomInt(1, 10) : null,
+        quizTimeLimit: hasQuiz ? Math.random() < 0.8 ? randomInt(1, 3) * 15 : randomInt(1, 4) : null,
         active: Math.random() < 0.9,
     };
 });
 
-const generateCourses = async () => {
+const generateDummyData = async () => {
 
     // First, clean the database data (leaves users & emails) so the new data can be added without conflicts
     const functions = getFunctions();
@@ -71,7 +73,7 @@ const generateCourses = async () => {
 
     // Add all the courses
     return Promise.all(courses.map((course) =>
-        httpsCallable(functions, 'saveCourse')(course)
+        httpsCallable(functions, 'addCourse')(course)
             .then((id) => {
                 if (typeof id.data !== 'string') {
                     throw new Error(`Error: saveCourse should return a course ID string. Returned value: ${id}`);
@@ -81,4 +83,4 @@ const generateCourses = async () => {
     ));
 }
 
-export { generateCourses };
+export { generateDummyData };

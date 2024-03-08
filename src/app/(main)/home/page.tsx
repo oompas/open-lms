@@ -1,62 +1,82 @@
-import SearchBar from "@/components/SearchBar";
+"use client";
 import AvailableCourse from "./AvailableCourse";
 import EnrolledCourse from "./EnrolledCourse";
+import { useAsync } from 'react-async-hook';
+import { getFunctions, httpsCallable } from "firebase/functions";
+import "../../../config/firebase";
+import { useState } from "react";
 
 export default function Home() {
 
-    const TEMP_ENROLLED_COURSE_DATA = [
-        { title: "Dog-Walker Health & Safety Training", status: "Todo", description: "Example course description briefly describing the course contents.", time: "1h 25m", color: "#468DF0", id: 1 },
-        { title: "Toddler Potty Training Intensive", status: "In Progress", description: "Example course description briefly describing the course contents.", time: "8h", color: "#EEBD31", id: 2 },
-        { title: "Astronaut WHIMIS Certification ", status: "In Progress", description: "Example course description briefly describing the course contents.", time: "15m", color: "#EEBD31", id: 3 },
-        { title: "The Dictionary 101 ", status: "Complete", description: "Example course description briefly describing the course contents.", time: "15m", color: "#47AD63", id: 4 },
-        { title: "ABCs for Beginners ", status: "Complete", description: "Example course description briefly describing the course contents.", time: "15m", color: "#47AD63", id: 5 }
-    ]
+    const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
+    const [search, setSearch] = useState("");
 
-    const TEMP_AVAIL_COURSE_DATA = [
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 10 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 11 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 12 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 13 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 14 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 15 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 16 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 17 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 18 },
-        { title: "Available Course on OpenLMS Platform", description: "Example course description briefly describing the course contents.", id: 19 }
-    ]
+    const enrolledCourses = () => {
+        if (courses.loading) {
+            return <div>Loading...</div>;
+        }
+        if (courses.error) {
+            return <div>Error loading courses</div>;
+        }
+
+        // @ts-ignore
+        return courses.result.data
+            .filter((course: any) => course.status !== 1)
+            .map((course: any, key: number) => (
+                <EnrolledCourse
+                    key={key}
+                    title={course.name}
+                    status={course.status}
+                    description={course.description}
+                    time={(course.minQuizTime >= 60 ? Math.floor(course.minQuizTime / 60) + "h " : "") + course.minQuizTime % 60 + "m"}
+                    color={(course.status === 2 ? "#468DF0" : (course.status === 3 || course.status === 4 ? "#EEBD31" : "#47AD63"))}
+                    id={course.id}
+                />
+            ));
+    }
+
+    const availableCourses = () => {
+        if (courses.loading) {
+            return <div>Loading...</div>;
+        }
+        if (courses.error) {
+            return <div>Error loading courses</div>;
+        }
+
+        // @ts-ignore
+        return courses.result.data
+            .filter((course: any) => course.status === 1 && (course.name.toLowerCase().includes(search.toLowerCase())
+                    || course.description.toLowerCase().includes(search.toLowerCase())))
+            .map((course: any, key: number) => (
+                <AvailableCourse
+                    key={key}
+                    title={course.name}
+                    description={course.description}
+                    id={course.id}
+                />
+            ));
+    }
 
     return (
         <main className="flex justify-center pt-14">
             <div className="flex flex-col h-[80vh] bg-white w-[60%] p-16 rounded-2xl shadow-custom">
                 <div className="text-2xl mb-8">My Enrolled Courses</div>
                 <div className="flex flex-row flex-wrap justify-between overflow-y-scroll sm:no-scrollbar">
-                    { TEMP_ENROLLED_COURSE_DATA.map((course, key) => (
-                        <EnrolledCourse 
-                            key={key}
-                            title={course.title}
-                            status={course.status}
-                            description={course.description}
-                            time={course.time}
-                            color={course.color}
-                            id={course.id}
-                        />
-                    ))}
+                    {enrolledCourses()}
                 </div>
             </div>
             <div className="flex flex-col h-[80vh] bg-white w-[35%] ml-[5%] p-16 rounded-2xl shadow-custom">
                 <div className="flex flex-row mb-8">
                     <div className="text-2xl mr-auto">Available Courses</div>
-                    <SearchBar />
+                    <input
+                        className={"border-4 border-[#9D1939] w-[55%] px-4 py-2 -mt-2 text-xl rounded-2xl"}
+                        type="text"
+                        placeholder="Search for a course..."
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
                 <div className="flex flex-col justify-between overflow-y-scroll sm:no-scrollbar">
-                    { TEMP_AVAIL_COURSE_DATA.map((course, key) => (
-                        <AvailableCourse 
-                            key={key}
-                            title={course.title}
-                            description={course.description}
-                            id={course.id}
-                        />
-                    ))}
+                    {availableCourses()}
                 </div>
             </div>
         </main>

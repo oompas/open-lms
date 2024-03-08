@@ -1,67 +1,72 @@
+"use client";
 import Link from "next/link";
 import IDCourse from "./IDCourse";
 import Quiz from "./Quiz"
 import Requirement from "./Requirement";
 import { MdArrowBack } from "react-icons/md";
+import { useAsync } from "react-async-hook";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { useState } from "react";
 
-export default function Course({ params }: { params: { id: string } }) {
+export default function Course({params}: { params: { id: string } }) {
 
-    const TEMP_COURSE = { 
-        title: "Dog-Walker Health & Safety Training", 
-        status: "Todo", 
-        description: "Example course description briefly describing the course contents.", 
-        time: "00:16:53", 
-        color: "#468DF0", 
-        id: 1,
-        requirements: [
-            { req: "Spend at least 15mins on the course.", done: true },
-            { req: "Complete all available quizzes.", done: false }
-        ]
+    const getCourse = useAsync(() => httpsCallable(getFunctions(),"getCourseInfo")({ courseId: params.id }), []);
+
+    const [timeDone, setTimeDone] = useState(false);
+
+    const renderCourse = () => {
+        // @ts-ignore
+        const course: any = getCourse.result.data;
+
+        const getCourseTimeString = () => {
+            if (course.minTime < 60) {
+                return course.minTime + " minutes";
+            }
+            return Math.floor(course.minTime / 60) + " hours";
+        }
+
+        return (
+            <>
+                <IDCourse
+                    course={course}
+                    timeDone={timeDone}
+                    setTimeDone={setTimeDone}
+                />
+
+                <div className="mt-8 text-2xl">
+                    <h1 className="mb-4">Required completion verification:</h1>
+                    {course.minTime && <Requirement key={1} text={`Spend at least ${getCourseTimeString()} on the course`} done={timeDone}/>}
+                    {course.maxQuizAttempts && <Requirement key={2} text={"Complete the required quiz"} done={false}/>}
+                </div>
+
+                {course.maxQuizAttempts &&
+                    <div className="mt-4">
+                        <div className="flex flex-col w-1/2">
+                            <Quiz
+                                key={1}
+                                length={course.quizTimeLimit + " minutes"}
+                                attempts={course.maxQuizAttempts}
+                                id={1}
+                            />
+                        </div>
+                    </div>
+                }
+            </>
+        );
     }
-    const TEMP_QUIZ_DATA = [
-        { title: "Quiz #1", length: "1h", attempts: 3, id: 21},
-        { title: "Quiz #2", length: "1h", attempts: 3, id: 22},
-        { title: "Quiz #3", length: "2h", attempts: 3, id: 23}
-    ]
 
     return (
         <main className="mt-14 flex flex-col h-fit bg-white w-[100%] p-16 rounded-2xl shadow-custom">
 
-            <Link href="/home" className="flex flex-row space-x-2 items-center mb-6 -mt-8 text-lg hover:opacity-60 duration-150">
+            <Link href="/home"
+                  className="flex flex-row space-x-2 items-center mb-6 -mt-8 text-lg hover:opacity-60 duration-150">
                 <MdArrowBack size="28" className="text-red-800"/>
                 <div>return to my courses</div>
             </Link>
 
-            <IDCourse 
-                title={TEMP_COURSE.title}
-                status={TEMP_COURSE.status}
-                description={TEMP_COURSE.description}
-                time={TEMP_COURSE.time}
-                id={TEMP_COURSE.id}
-            />
-
-            <div className="mt-8 text-2xl">
-                <h1 className="mb-4">Required completion verification:</h1>
-                { TEMP_COURSE.requirements.map((req, key) => (
-                    <Requirement key={key} text={req.req} done={req.done}/>
-                ))}
-            </div>
-
-            <div className="mt-4">
-                <h2 className="text-lg mb-4">Available Quizzes:</h2>
-                <div className="flex flex-col w-1/2">
-                    { TEMP_QUIZ_DATA.map((quiz, key) => (
-                        <Quiz
-                            key={key}
-                            title={quiz.title}
-                            length={quiz.length}
-                            attempts={quiz.attempts}
-                            id={quiz.id}
-                        />
-                    ))}
-                </div> 
-            </div>
-
+            {getCourse.loading && <div>Loading...</div>}
+            {getCourse.error && <div>Error loading course</div>}
+            {getCourse.result && renderCourse()}
         </main>
     )
 }

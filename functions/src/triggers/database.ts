@@ -1,5 +1,5 @@
-import { onDocumentUpdated } from "firebase-functions/v2/firestore";
-import { DatabaseCollections } from "../helpers/helpers";
+import { onDocumentDeleted, onDocumentUpdated } from "firebase-functions/v2/firestore";
+import { DatabaseCollections, getCollection } from "../helpers/helpers";
 import { auth } from "../helpers/setup";
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
@@ -22,4 +22,40 @@ const updateAdminPermissions = onDocumentUpdated(`${DatabaseCollections.User}/{u
         });
 });
 
-export { updateAdminPermissions };
+/**
+ * When a course is deleted, delete all related data for it (quiz questions, enrollments, attempts, quiz attempts)
+ */
+const onCourseDeleted = onDocumentDeleted(`${DatabaseCollections.Course}/{courseId}`, async (event) => {
+
+    const docsToDelete: any[] = [];
+
+    const collectionsToDelete = [
+        DatabaseCollections.QuizQuestion,
+        DatabaseCollections.EnrolledCourse,
+        DatabaseCollections.CourseAttempt,
+        DatabaseCollections.QuizAttempt,
+    ];
+
+    for (const collection of collectionsToDelete) {
+        const docs = await getCollection(collection)
+            .where("courseId", "==", event.params.courseId)
+            .get()
+            .then((snapshot) => snapshot.docs.map((doc) => doc.ref.delete()))
+            .catch((err) => {
+                logger.error(`Error deleting documents from collection ${collection} for course ${event.params.courseId}: ${err}`);
+                throw new HttpsError("internal", "Error deleting documents");
+            });
+
+        docsToDelete.concat(docs);
+    }
+
+    return Promise.all(docsToDelete)
+        .then(() => logger.log(`Successfully deleted ${docsToDelete.length} documents related to course ${event.params.courseId}`))
+        .catch((err) => {
+            logger.error(`Error deleting documents related to course ${event.params.courseId}: ${err}`);
+            throw new HttpsError("internal", "Error deleting documents");
+        });
+
+});
+
+export { updateAdminPermissions, onCourseDeleted };
