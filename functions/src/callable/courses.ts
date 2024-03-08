@@ -43,7 +43,7 @@ const addCourse = onCall(async (request) => {
     const schema = object({
         name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
         description: string().required(),
-        link: string().required(),
+        link: string().url().required(),
         minTime: number().integer().positive().nullable(),
         active: boolean().required()
     });
