@@ -76,7 +76,7 @@ export default function CreateQuestion({
         <div>
             <div className="flex flex-col">
                 <div className="mb-2">Question</div>
-                <TextField text={question} onChange={setQuestion}/>
+                <TextField text={question} onChange={setQuestion} area/>
             </div>
             <div className="flex flex-col space-y-2 mt-4">
                 <div className="-mb-3">Answers</div>
@@ -113,7 +113,7 @@ export default function CreateQuestion({
         <div>
             <div className="flex flex-col">
                 <div className="mb-2">Question</div>
-                <TextField text={question} onChange={setQuestion}/>
+                <TextField text={question} onChange={setQuestion} area/>
             </div>
             <div className="flex flex-col space-y-2 mt-4">
                 <div className="-mb-3">Answers</div>
@@ -139,7 +139,7 @@ export default function CreateQuestion({
             <div className="flex flex-col">
                 <div className="">Question</div>
                 <div className="text-sm text-gray-600 mb-3">Short answer questions must be manually marked after a quiz is submitted.</div>
-                <TextField text={question} onChange={setQuestion}/>
+                <TextField text={question} onChange={setQuestion} area/>
             </div>
             <div className="flex flex-row space-x-4 mt-6">
                 <Button text="Cancel" onClick={closeModal} style="ml-auto"/>
