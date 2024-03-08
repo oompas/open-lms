@@ -17,12 +17,12 @@ export default function AdminCourse({params}: { params: { id: string } }) {
     const [desc, setDesc] = useState("");
     const [link, setLink] = useState("");
 
-    const [minCourseTime, setMinCourseTime] = useState<null | number>(1);
+    const [minCourseTime, setMinCourseTime] = useState<null | number>(null);
 
     const [useQuiz, setUseQuiz] = useState(true)
-    const [quizMinScore, setQuizMinScore] = useState<null | number>(0);
-    const [quizAttempts, setQuizAttempts] = useState<null | number>(1);
-    const [quizMaxTime, setQuizMaxTime] = useState<null | number>(1);
+    const [quizMinScore, setQuizMinScore] = useState<null | number>(null);
+    const [quizAttempts, setQuizAttempts] = useState<null | number>(null);
+    const [quizMaxTime, setQuizMaxTime] = useState<null | number>(null);
 
     const [showCreateQuestion, setShowCreateQuestion] = useState(false);
     const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
@@ -141,9 +141,8 @@ export default function AdminCourse({params}: { params: { id: string } }) {
                 className="absolute flex flex-row items-center space-x-4 bg-white top-0 right-24 h-32 px-12 text-2xl rounded-b-3xl">
                 <Button text={active ? "Unpublish Course" : "Publish Course"} onClick={() => setActivatePopup(true)}/>
                 <div className="h-1/2 border-[1px] border-gray-300"/>
-                <Button text="Delete Course" onClick={() => alert("delete")}/>
-                <Button text="Save & Publish Course" onClick={async () => await publishCourse()} filled/>
-                <Button text="Save Course" onClick={() => alert("publish")} filled/>
+                <Button text={params.id === "new" ? "Discard changes" : "Delete course"} onClick={() => alert("delete")}/>
+                <Button text={params.id === "new" ? "Create course" : "Update course"} onClick={() => alert("publish")} filled/>
             </div>
 
             <div className="flex flex-col h-auto w-1/3 mr-[5%] bg-white p-16 rounded-2xl shadow-custom mb-8">
