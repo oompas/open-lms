@@ -60,7 +60,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             name: title,
             description: desc,
             link: link,
-            minTime: Number(minCourseTime),
+            minTime: minCourseTime === null ? null : Number(minCourseTime),
             active: true,
         }
 
@@ -69,9 +69,9 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         const quizData = {
             courseId: courseId,
             metaData: {
-                minScore: Number(quizMinScore),
-                maxAttempts: Number(quizAttempts),
-                timeLimit: Number(quizMaxTime),
+                minScore: quizMinScore === null ? null : Number(quizMinScore),
+                maxAttempts: quizAttempts === null ? null : Number(quizAttempts),
+                timeLimit: quizMaxTime === null ? null : Number(quizMaxTime),
             },
             questions: quizQuestions.map((q) => ({ correctAnswer: 1, ...q })),
         }
@@ -169,7 +169,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                     { /* Max quiz attempts */ }
                                     <div className="flex items-start space-x-4 mt-4">
                                         <Checkbox
-                                            checked={quizAttempts !== 0}
+                                            checked={quizAttempts !== null}
                                             setChecked={() => setQuizAttempts(quizAttempts === null ? 1 : null)}
                                         />
                                         <div className="flex flex-col">

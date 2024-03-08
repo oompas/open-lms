@@ -77,7 +77,7 @@ const addQuiz = onCall(async (request) => {
     ));
 
     return Promise.all(promises)
-        .then(docs => docs.map(doc => doc.id))
+        .then(() => "Added quiz successfully")
         .catch((err) => { throw new HttpsError("internal", `Error adding new quiz question: ${err}`) });
 });
 
