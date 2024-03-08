@@ -57,7 +57,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             setShowCreateQuestion(true)
     }, [editQuestion])
 
-    const publishCourse = () => {
+    const publishCourse = async () => {
 
         const courseData = {
             name: title,
@@ -65,11 +65,22 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             link: link,
             minTime: Number(minCourseTime),
             active: true,
-        };
+        }
 
-        callApi("addCourse")(courseData);
+        const courseId = await callApi("addCourse")(courseData).then((result) => result.data);
+
+        const quizData = {
+            courseId: courseId,
+            metaData: {
+                minScore: Number(quizMinScore),
+                maxAttempts: Number(quizAttempts),
+                timeLimit: Number(quizMaxTime),
+            },
+            questions: quizQuestions.map((q) => ({ correctAnswer: 1, ...q })),
+        }
+
+        await callApi("addQuiz")(quizData);
     }
-
 
     return (
         <main className="flex flex-row justify-center pt-14">
@@ -79,7 +90,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 <Button text="Save Changes" onClick={() => alert("save")} />
                 <div className="h-1/2 border-[1px] border-gray-300" />
                 <Button text="Delete Course" onClick={() => alert("delete")} />
-                <Button text="Save & Publish Course" onClick={() => publishCourse()} filled />
+                <Button text="Save & Publish Course" onClick={async () => await publishCourse()} filled />
             </div>
 
             <div className="flex flex-col h-auto w-1/3 mr-[5%] bg-white p-16 rounded-2xl shadow-custom mb-8">
