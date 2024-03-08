@@ -78,14 +78,13 @@ export default function AdminCourse({params}: { params: { id: string } }) {
             setShowCreateQuestion(true)
     }, [editQuestion]);
 
-    const publishCourse = async () => {
+    const addCourse = async () => {
 
         const courseData = {
             name: title,
             description: desc,
             link: link,
             minTime: minCourseTime === null ? null : Number(minCourseTime),
-            active: true,
         }
 
         const courseId = await callApi("addCourse")(courseData).then((result) => result.data);
@@ -101,6 +100,18 @@ export default function AdminCourse({params}: { params: { id: string } }) {
         }
 
         await callApi("addQuiz")(quizData);
+    }
+
+    const updateCourse = async () => {
+
+    }
+
+    const publishCourse = async () => {
+
+    }
+
+    const unpublishCourse = async () => {
+
     }
 
     const activationPopup = (active ?

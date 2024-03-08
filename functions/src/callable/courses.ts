@@ -8,7 +8,7 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { boolean, number, object, string } from 'yup';
+import { number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import FieldValue = firestore.FieldValue;
 
@@ -45,7 +45,6 @@ const addCourse = onCall(async (request) => {
         description: string().required(),
         link: string().url().required(),
         minTime: number().integer().positive().nullable(),
-        active: boolean().required()
     });
 
     await schema.validate(request.data, { strict: true })
@@ -61,6 +60,64 @@ const addCourse = onCall(async (request) => {
         .add({ userID: request.auth.uid, quiz: null, ...request.data })
         .then((doc) => doc.id)
         .catch((err) => { throw new HttpsError("internal", `Error adding new course: ${err}`) });
+});
+
+/**
+ * Publishes the course with the given ID (set 'active' to true)
+ */
+const publishCourse = onCall(async (request) => {
+
+        logger.info(`Entering publishCourse for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
+        await verifyIsAdmin(request);
+
+        logger.info("Administrative permission verification passed");
+
+        const schema = object({
+            courseId: string().required(),
+        });
+
+        await schema.validate(request.data, { strict: true })
+            .catch((err) => {
+                logger.error(`Error validating request: ${err}`);
+                throw new HttpsError('invalid-argument', err);
+            });
+
+        logger.info("Schema verification passed");
+
+        return getDoc(DatabaseCollections.Course, request.data.courseId)
+            .update({ active: true })
+            .then(() => "Course published successfully")
+            .catch((err) => { throw new HttpsError("internal", `Error publishing course: ${err}`) });
+});
+
+/**
+ * Unpublishes the course with the given ID (set 'active' to false)
+ */
+const unPublishCourse = onCall(async (request) => {
+
+        logger.info(`Entering unPublishCourse for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
+        await verifyIsAdmin(request);
+
+        logger.info("Administrative permission verification passed");
+
+        const schema = object({
+            courseId: string().required(),
+        });
+
+        await schema.validate(request.data, { strict: true })
+            .catch((err) => {
+                logger.error(`Error validating request: ${err}`);
+                throw new HttpsError('invalid-argument', err);
+            });
+
+        logger.info("Schema verification passed");
+
+        return getDoc(DatabaseCollections.Course, request.data.courseId)
+            .update({ active: false })
+            .then(() => "Course unpublished successfully")
+            .catch((err) => { throw new HttpsError("internal", `Error unpublishing course: ${err}`) });
 });
 
 /**
@@ -370,4 +427,4 @@ const sendCourseFeedback = onCall(async (request) => {
     return sendEmail(courseInfo.creator, subject, content, "sending course feedback");
 });
 
-export { addCourse, getAvailableCourses, getCourseInfo, courseEnroll, courseUnenroll, startCourse, sendCourseFeedback };
+export { addCourse, publishCourse, unPublishCourse, getAvailableCourses, getCourseInfo, courseEnroll, courseUnenroll, startCourse, sendCourseFeedback };
