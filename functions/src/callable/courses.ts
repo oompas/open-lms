@@ -8,7 +8,7 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { number, object, string } from 'yup';
+import { boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import FieldValue = firestore.FieldValue;
 
@@ -248,14 +248,25 @@ const getAvailableCourses = onCall(async (request) => {
  */
 const getCourseInfo = onCall((request) => {
 
+    logger.info(`Entering getCourseInfo for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
     verifyIsAuthenticated(request);
 
     // @ts-ignore
     const uid: string = request.auth?.uid;
 
-    if (typeof request.data.courseId !== 'string' || request.data.courseId.length !== 20) {
-        throw new HttpsError('invalid-argument', "Must provide a course ID to get course info");
-    }
+    const schema = object({
+        courseId: string().required().length(20),
+        withQuiz: boolean().required(),
+    });
+
+    schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
 
     return getDoc(DatabaseCollections.Course, request.data.courseId)
         .get()
@@ -270,15 +281,17 @@ const getCourseInfo = onCall((request) => {
                 logger.error(`Error: document '/Course/${request.data.courseId}/' exists, but has no data`);
                 throw new HttpsError("internal", "Error: document data corrupted");
             }
-            if (docData.active === false) {
-                await verifyIsAdmin(request); // Only admins can see inactive courses
-            }
 
             /**
              * withQuiz is for the course editor, so it returns the quiz data (including answers, so admin-only)
              * Otherwise, it returns the course with the status and start time for the requesting user (course page)
              */
             if (!request.data.withQuiz) {
+
+                if (!docData.active) {
+                    throw new HttpsError("invalid-argument", "Cannot view inactive course");
+                }
+
                 const courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
                     .where("userId", "==", request.auth?.uid)
                     .where("courseId", "==", request.data.courseId)
@@ -311,7 +324,6 @@ const getCourseInfo = onCall((request) => {
 
                 return {
                     courseId: course.id,
-                    active: docData.active,
                     name: docData.name,
                     description: docData.description,
                     link: docData.link,
