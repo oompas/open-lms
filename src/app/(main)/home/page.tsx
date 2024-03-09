@@ -71,7 +71,7 @@ export default function Home() {
                     <div className="text-2xl mb-10">Browse Available Courses</div>
                     <div className="text-l mb-5">Looking for a course?</div>
                     <div className="text-l mb-10">Find and enroll in a course below.</div>
-                    <Link className="bg-[#4050FF] text-white mb-4 p-4 font-bold w-[50%] rounded-2xl cursor-pointer hover:opacity-60 duration-100" href={`/course_search`}>
+                    <Link className="bg-[#4050FF] text-white mb-4 p-4 font-bold rounded-2xl cursor-pointer hover:opacity-60 duration-100" href={`/course_search`}>
                         <div className="text-l text-center">Browse Now</div>
                     </Link>
                 </div>
