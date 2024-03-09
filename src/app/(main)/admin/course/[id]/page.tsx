@@ -15,14 +15,10 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const newCourse = params.id === "new";
     const router = useRouter();
 
-    const courseData = useAsync(() => newCourse
-        ? new Promise((resolve) => setTimeout(resolve, 1))
-        : callApi("getCourseInfo")({ courseId: params.id })
-        , []);
-
-    const [active, setActive] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [activatePopup, setActivatePopup] = useState(false);
 
+    const [active, setActive] = useState(false);
     const [title, setTitle] = useState("");
     const [desc, setDesc] = useState("");
     const [link, setLink] = useState("");
@@ -77,6 +73,29 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         temp[num] = qA;
         setQuizQuestions(temp);
     }
+
+    useEffect(() => {
+        if (!loading) return;
+
+        callApi("getCourseInfo")({ courseId: params.id })
+            .then((result) => {
+                const data: any = result.data;
+                setTitle(data.name);
+                setDesc(data.description);
+                setLink(data.link);
+                setActive(data.active);
+
+                if (data.quiz !== null) {
+                    setUseQuiz(true);
+                    setQuizMinScore(data.quiz.minScore);
+                    setQuizAttempts(data.quiz.maxAttempts);
+                    setQuizMaxTime(data.quiz.timeLimit);
+                }
+
+                setLoading(false);
+            })
+            .catch((err) => console.log(`Error fetching course data: ${err}`));
+    }, [loading]);
 
     useEffect(() => {
         if (editQuestion != -1)
@@ -362,7 +381,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     }
                 </div>
                 {activatePopup && activationPopup}
-                {!courseData.result && loadingPopup}
+                {loading && loadingPopup}
                 {showCreateQuestion &&
                     <CreateQuestion
                         num={editQuestion}
