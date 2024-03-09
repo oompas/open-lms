@@ -8,14 +8,13 @@ import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
 import { callApi } from "@/config/firebase";
 import { useRouter } from "next/navigation";
-import { useAsync } from "react-async-hook";
 
 export default function AdminCourse({ params }: { params: { id: string } }) {
 
     const newCourse = params.id === "new";
     const router = useRouter();
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!newCourse);
     const [activatePopup, setActivatePopup] = useState(false);
 
     const [active, setActive] = useState(false);
@@ -75,7 +74,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     }
 
     useEffect(() => {
-        if (!loading) return;
+        if (!loading || newCourse) return;
 
         callApi("getCourseInfo")({ courseId: params.id })
             .then((result) => {
