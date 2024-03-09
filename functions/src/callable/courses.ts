@@ -341,8 +341,12 @@ const getCourseInfo = onCall((request) => {
                 if (docData.quiz) {
                     quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
                         .where("courseId", "==", request.data.courseId)
+                        .where("active", "==", true)
                         .get()
-                        .then((docs) => docs.docs.map((doc) => doc.data()))
+                        .then((docs) => docs.docs.map((doc) => {
+                            const data = doc.data();
+                            return { question: data.question, answers: data.answers, correctAnswer: data.correctAnswer };
+                        }))
                         .catch((error) => {
                             logger.error(`Error checking if course has quiz questions: ${error}`);
                             throw new HttpsError('internal', "Error getting course quiz, please try again later");
