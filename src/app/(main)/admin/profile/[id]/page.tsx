@@ -87,8 +87,8 @@ export default function Profile() {
 
         return (
             <>
-                <main className="flex-col justify-center items-center pt-14">
-                    <div className="flex flex-row mb-8">
+                <main className="flex-col pt-14">
+                    <div className="flex flex-col mb-8">
                             {/* Account Details section */}
                             <div className="flex flex-col bg-white w-[50%] h-[50vh] p-16 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar mb-8">
                                 <div className="text-2xl mb-2">Account Details</div>

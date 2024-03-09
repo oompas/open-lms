@@ -29,7 +29,7 @@ export default function Profile() {
         <main className="flex justify-center pt-14">
             <div className="flex flex-col h-[80vh] bg-white w-[60%] p-16 rounded-2xl shadow-custom">
                 <div className="text-2xl mb-8">Account Details</div>
-                <div className="flex flex-col space-y-8 w-[30rem]">
+                <div className="flex flex-col space-y-8 w-[100%] overflow-y-scroll sm:no-scrollbar">
                     <AuthForm 
                         email={email}
                         setEmail={setEmail}
@@ -40,7 +40,7 @@ export default function Profile() {
                     <Button text="Add dummy data (WILL CLEAN DATABASE)" onClick={async () => await generateData()}/>
                 </div>
             </div>
-            <div className="flex flex-col h-[80vh] bg-white w-[35%] ml-[5%] p-16 rounded-2xl shadow-custom">
+            <div className="flex flex-col h-[80vh] bg-white w-[35%] ml-[5%] p-16 rounded-2xl shadow-custom mb-10">
                 <div className="flex flex-row mb-8">
                     <div className="text-2xl mr-auto">Completed Courses</div>
                 </div>
