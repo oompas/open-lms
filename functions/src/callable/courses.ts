@@ -189,7 +189,6 @@ const getAvailableCourses = onCall(async (request) => {
                     id: course.id,
                     name: course.data().name,
                     description: course.data().description,
-                    minQuizTime: course.data().minTime,
                     status: status,
                 };
 
@@ -275,8 +274,7 @@ const getCourseInfo = onCall((request) => {
                 description: docData.description,
                 link: docData.link,
                 minTime: docData.minTime,
-                maxQuizAttempts: docData.maxQuizAttempts,
-                quizTimeLimit: docData.quizTimeLimit,
+                quiz: docData.quiz,
                 status: status,
                 startTime: courseAttempt?.startTime._seconds ?? null,
             };
