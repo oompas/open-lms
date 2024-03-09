@@ -82,10 +82,11 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 setTitle(data.name);
                 setDesc(data.description);
                 setLink(data.link);
+                setMinCourseTime(data.minTime);
                 setActive(data.active);
 
+                setUseQuiz(data.quiz !== null);
                 if (data.quiz !== null) {
-                    setUseQuiz(true);
                     setQuizMinScore(data.quiz.minScore);
                     setQuizAttempts(data.quiz.maxAttempts);
                     setQuizMaxTime(data.quiz.timeLimit);
