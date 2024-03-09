@@ -345,7 +345,7 @@ const getCourseInfo = onCall((request) => {
                         .get()
                         .then((docs) => docs.docs.map((doc) => {
                             const data = doc.data();
-                            return { question: data.question, answers: data.answers, correctAnswer: data.correctAnswer };
+                            return { id: doc.id, question: data.question, answers: data.answers, correctAnswer: data.correctAnswer };
                         }))
                         .catch((error) => {
                             logger.error(`Error checking if course has quiz questions: ${error}`);
