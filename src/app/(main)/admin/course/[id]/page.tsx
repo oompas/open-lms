@@ -131,7 +131,29 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     }
 
     const updateCourse = async () => {
+        const courseData = {
+            courseId: params.id,
+            name: title,
+            description: desc,
+            link: link,
+            minTime: minCourseTime === null ? null : Number(minCourseTime),
+        }
 
+        await callApi("updateCourse")(courseData);
+
+        if (useQuiz) {
+            const quizData = {
+                courseId: params.id,
+                metaData: {
+                    minScore: quizMinScore === null ? null : Number(quizMinScore),
+                    maxAttempts: quizAttempts === null ? null : Number(quizAttempts),
+                    timeLimit: quizMaxTime === null ? null : Number(quizMaxTime),
+                },
+                questions: quizQuestions.map((q) => ({correctAnswer: 1, ...q})),
+            }
+
+            await callApi("updateQuiz")(quizData);
+        }
     }
 
     const handlePublish = async () => {
@@ -192,7 +214,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             {/* this covers the existing nav buttons in the topbar */}
             <div
                 className="absolute flex flex-row items-center space-x-4 bg-white top-0 right-24 h-32 px-12 text-2xl rounded-b-3xl">
-                {params.id !== "new" &&
+                {!newCourse &&
                     <>
                         <Button text={active ? "Unpublish Course" : "Publish Course"}
                                 onClick={() => setActivatePopup(true)}/>
@@ -200,12 +222,12 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     </>
                 }
                 <Button
-                    text={params.id === "new" ? "Discard changes" : "Delete course"}
+                    text={newCourse ? "Discard changes" : "Delete course"}
                     onClick={() => alert("delete")}
                 />
                 <Button
-                    text={params.id === "new" ? "Create course" : "Update course"}
-                    onClick={async () => params.id === "new" ? await addCourse() : await updateCourse()}
+                    text={newCourse ? "Create course" : "Update course"}
+                    onClick={async () => newCourse ? await addCourse() : await updateCourse()}
                     filled
                 />
             </div>

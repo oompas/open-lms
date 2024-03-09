@@ -121,6 +121,39 @@ const unPublishCourse = onCall(async (request) => {
 });
 
 /**
+ * Updates an existing course's data (excluding quiz data)
+ */
+const updateCourse = onCall(async (request) => {
+
+    logger.info(`Entering updateCourse for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
+    await verifyIsAdmin(request);
+
+    logger.info("Administrative permission verification passed");
+
+    const schema = object({
+        courseId: string().required(),
+        name: string().nullable().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
+        description: string().nullable(),
+        link: string().url().nullable(),
+        minTime: number().integer().positive().nullable(),
+    });
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
+
+    return getDoc(DatabaseCollections.Course, request.data.courseId)
+        .update(request.data)
+        .then(() => "Course updated successfully")
+        .catch((err) => { throw new HttpsError("internal", `Error updating course: ${err}`) });
+});
+
+/**
  * Gets a list of all active courses the user hasn't completed, with their:
  * -name
  * -description
@@ -429,4 +462,4 @@ const sendCourseFeedback = onCall(async (request) => {
     return sendEmail(courseInfo.creator, subject, content, "sending course feedback");
 });
 
-export { addCourse, publishCourse, unPublishCourse, getAvailableCourses, getCourseInfo, courseEnroll, courseUnenroll, startCourse, sendCourseFeedback };
+export { addCourse, publishCourse, unPublishCourse, updateCourse, getAvailableCourses, getCourseInfo, courseEnroll, courseUnenroll, startCourse, sendCourseFeedback };
