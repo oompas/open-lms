@@ -76,9 +76,11 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     useEffect(() => {
         if (!loading || newCourse) return;
 
-        callApi("getCourseInfo")({ courseId: params.id })
+        callApi("getCourseInfo")({ courseId: params.id, withQuiz: true })
             .then((result) => {
                 const data: any = result.data;
+
+                // Set course & quiz info on page
                 setTitle(data.name);
                 setDesc(data.description);
                 setLink(data.link);
@@ -90,6 +92,8 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     setQuizMinScore(data.quiz.minScore);
                     setQuizAttempts(data.quiz.maxAttempts);
                     setQuizMaxTime(data.quiz.timeLimit);
+
+                    setQuizQuestions(data.quizQuestions);
                 }
 
                 setLoading(false);
