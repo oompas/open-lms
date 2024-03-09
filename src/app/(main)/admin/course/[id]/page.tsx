@@ -8,10 +8,17 @@ import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
 import { callApi } from "@/config/firebase";
 import { useRouter } from "next/navigation";
+import { useAsync } from "react-async-hook";
 
 export default function AdminCourse({ params }: { params: { id: string } }) {
 
+    const newCourse = params.id === "new";
     const router = useRouter();
+
+    const courseData = useAsync(() => newCourse
+        ? new Promise((resolve) => setTimeout(resolve, 1))
+        : callApi("getCourseInfo")({ courseId: params.id })
+        , []);
 
     const [active, setActive] = useState(false);
     const [activatePopup, setActivatePopup] = useState(false);
@@ -149,6 +156,17 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         </div>
     );
 
+    const loadingPopup = (
+        <div
+            className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    Loading course data...
+                </div>
+            </div>
+        </div>
+    )
+
     return (
         <div className="flex flex-row justify-center pt-14">
 
@@ -157,7 +175,8 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 className="absolute flex flex-row items-center space-x-4 bg-white top-0 right-24 h-32 px-12 text-2xl rounded-b-3xl">
                 {params.id !== "new" &&
                     <>
-                        <Button text={active ? "Unpublish Course" : "Publish Course"} onClick={() => setActivatePopup(true)}/>
+                        <Button text={active ? "Unpublish Course" : "Publish Course"}
+                                onClick={() => setActivatePopup(true)}/>
                         <div className="h-1/2 border-[1px] border-gray-300"/>
                     </>
                 }
@@ -343,6 +362,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     }
                 </div>
                 {activatePopup && activationPopup}
+                {!courseData.result && loadingPopup}
                 {showCreateQuestion &&
                     <CreateQuestion
                         num={editQuestion}
