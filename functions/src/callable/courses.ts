@@ -237,6 +237,9 @@ const getCourseInfo = onCall((request) => {
                 logger.error(`Error: document '/Course/${request.data.courseId}/' exists, but has no data`);
                 throw new HttpsError("internal", "Error: document data corrupted");
             }
+            if (docData.active === false) {
+                await verifyIsAdmin(request); // Only admins can see inactive courses
+            }
 
             const courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
                 .where("userId", "==", request.auth?.uid)
@@ -270,6 +273,7 @@ const getCourseInfo = onCall((request) => {
 
             return {
                 courseId: course.id,
+                active: docData.active,
                 name: docData.name,
                 description: docData.description,
                 link: docData.link,
