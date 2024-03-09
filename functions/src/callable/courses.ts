@@ -345,7 +345,20 @@ const getCourseInfo = onCall((request) => {
                         .get()
                         .then((docs) => docs.docs.map((doc) => {
                             const data = doc.data();
-                            return { id: doc.id, question: data.question, answers: data.answers, correctAnswer: data.correctAnswer };
+                            const question: any = {
+                                id: doc.id,
+                                type: data.type,
+                                question: data.question,
+                            };
+                            if (data.type === "mc") {
+                                question["answers"] = data.answers;
+                                question["correctAnswer"] = data.correctAnswer;
+                            }
+                            if (data.type === "tf") {
+                                question["correctAnswer"] = data.correctAnswer;
+                            }
+
+                            return question;
                         }))
                         .catch((error) => {
                             logger.error(`Error checking if course has quiz questions: ${error}`);
