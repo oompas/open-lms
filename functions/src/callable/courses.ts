@@ -274,41 +274,58 @@ const getCourseInfo = onCall((request) => {
                 await verifyIsAdmin(request); // Only admins can see inactive courses
             }
 
-            const courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
-                .where("userId", "==", request.auth?.uid)
-                .where("courseId", "==", request.data.courseId)
-                .get()
-                .then((docs) => docs.empty ? null : docs.docs[0].data())
-                .catch((error) => {
-                    logger.error(`Error getting course attempts: ${error}`);
-                    throw new HttpsError("internal", `Error getting courses, please try again later`);
-                });
+            /**
+             * withQuiz is for the course editor, so it returns the quiz data (including answers, so admin-only)
+             * Otherwise, it returns the course with the status and start time for the requesting user (course page)
+             */
+            if (!request.data.withQuiz) {
+                const courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
+                    .where("userId", "==", request.auth?.uid)
+                    .where("courseId", "==", request.data.courseId)
+                    .get()
+                    .then((docs) => docs.empty ? null : docs.docs[0].data())
+                    .catch((error) => {
+                        logger.error(`Error getting course attempts: ${error}`);
+                        throw new HttpsError("internal", `Error getting courses, please try again later`);
+                    });
 
-            const courseEnrolled = await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
-                .get()
-                .then((doc) => doc.exists)
-                .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
+                const courseEnrolled = await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
+                    .get()
+                    .then((doc) => doc.exists)
+                    .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
 
-            let status;
-            if (!courseEnrolled) {
-                status = 1;
-            } else if (courseAttempt === null ) {
-                status = 2;
-            } else if (courseAttempt?.pass === null) {
-                status = 3;
-            } else if (courseAttempt?.pass === false) {
-                status = 4;
-            } else if (courseAttempt?.pass === true) {
-                status = 5;
+                let status;
+                if (!courseEnrolled) {
+                    status = 1;
+                } else if (courseAttempt === null ) {
+                    status = 2;
+                } else if (courseAttempt?.pass === null) {
+                    status = 3;
+                } else if (courseAttempt?.pass === false) {
+                    status = 4;
+                } else if (courseAttempt?.pass === true) {
+                    status = 5;
+                } else {
+                    throw new HttpsError("internal", "Course is in an invalid state - can't get status");
+                }
+
+                return {
+                    courseId: course.id,
+                    active: docData.active,
+                    name: docData.name,
+                    description: docData.description,
+                    link: docData.link,
+                    minTime: docData.minTime,
+                    quiz: docData.quiz,
+                    status: status,
+                    startTime: courseAttempt?.startTime._seconds ?? null,
+                };
+
             } else {
-                throw new HttpsError("internal", "Course is in an invalid state - can't get status");
-            }
-
-            let quizQuestions = null;
-            if (request.data.withQuiz) {
 
                 await verifyIsAdmin(request); // This returns quiz answers for course editing, so admin-only
 
+                let quizQuestions = null;
                 if (docData.quiz) {
                     quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
                         .where("courseId", "==", request.data.courseId)
@@ -319,20 +336,18 @@ const getCourseInfo = onCall((request) => {
                             throw new HttpsError('internal', "Error getting course quiz, please try again later");
                         });
                 }
-            }
 
-            return {
-                courseId: course.id,
-                active: docData.active,
-                name: docData.name,
-                description: docData.description,
-                link: docData.link,
-                minTime: docData.minTime,
-                quiz: docData.quiz,
-                quizQuestions: quizQuestions,
-                status: status,
-                startTime: courseAttempt?.startTime._seconds ?? null,
-            };
+                return {
+                    courseId: course.id,
+                    active: docData.active,
+                    name: docData.name,
+                    description: docData.description,
+                    link: docData.link,
+                    minTime: docData.minTime,
+                    quiz: docData.quiz,
+                    quizQuestions: quizQuestions,
+                };
+            }
         })
         .catch((error) => {
             logger.error(`Error getting document '/Course/${request.data.courseId}/': ${error}`);
