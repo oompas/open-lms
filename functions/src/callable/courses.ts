@@ -304,6 +304,23 @@ const getCourseInfo = onCall((request) => {
                 throw new HttpsError("internal", "Course is in an invalid state - can't get status");
             }
 
+            let quizQuestions = null;
+            if (request.data.withQuiz) {
+
+                await verifyIsAdmin(request); // This returns quiz answers for course editing, so admin-only
+
+                if (docData.quiz) {
+                    quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
+                        .where("courseId", "==", request.data.courseId)
+                        .get()
+                        .then((docs) => docs.docs.map((doc) => doc.data()))
+                        .catch((error) => {
+                            logger.error(`Error checking if course has quiz questions: ${error}`);
+                            throw new HttpsError('internal', "Error getting course quiz, please try again later");
+                        });
+                }
+            }
+
             return {
                 courseId: course.id,
                 active: docData.active,
@@ -312,6 +329,7 @@ const getCourseInfo = onCall((request) => {
                 link: docData.link,
                 minTime: docData.minTime,
                 quiz: docData.quiz,
+                quizQuestions: quizQuestions,
                 status: status,
                 startTime: courseAttempt?.startTime._seconds ?? null,
             };
