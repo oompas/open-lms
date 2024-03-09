@@ -50,7 +50,15 @@ export default function CreateQuestion({
             }
         }
 
-        setData(num, { type: type, question: question, answers: opts, correctAnswer: ans });
+        if (type === "mc") {
+            setData(num, {type: type, question: question, answers: opts, correctAnswer: ans});
+        } else if (type === "tf") {
+            setData(num, { type: type, question: question, correctAnswer: ans });
+        } else if (type === "sa") {
+            setData(num, { type: type, question: question });
+        } else {
+            throw new Error(`Invalid question type: ${type}`);
+        }
     }
 
     const checkNumQuestionsValid = () => {
