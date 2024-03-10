@@ -151,9 +151,9 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             const quizData = {
                 courseId: params.id,
                 metaData: {
-                    minScore: quizMinScore === null ? null : Number(quizMinScore),
-                    maxAttempts: quizAttempts === null ? null : Number(quizAttempts),
-                    timeLimit: quizMaxTime === null ? null : Number(quizMaxTime),
+                    minScore: toNumber(quizMinScore),
+                    maxAttempts: toNumber(quizAttempts),
+                    timeLimit: toNumber(quizMaxTime),
                 },
                 questions: quizQuestions.map((q) => ({correctAnswer: 1, ...q})),
             }
