@@ -4,11 +4,14 @@ import Button from "@/components/Button";
 import { callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import { MdCheckCircleOutline } from "react-icons/md";
+import { useState } from "react";
 
 export default function Quiz({ params }: { params: { id: string } }) {
 
     const router = useRouter();
     const quizData = useAsync(() => callApi("getQuiz")({ courseId: params.id }), []);
+
+    const [answers, setAnswers] = useState({});
 
     const loadingPopup = (
         <div
@@ -37,14 +40,16 @@ export default function Quiz({ params }: { params: { id: string } }) {
                             <div className="bg-white w-full p-16 rounded-2xl shadow-custom">
                                 <div className="text-2xl mb-8">Q{key + 1}: {question.question}</div>
                                 <div className="flex flex-col space-y-4">
-                                    {answers.map((answer: string, index: number) => (
-                                        // Button selection should eventually set completed to true
-                                        <div key={index} className="flex items-center">
-                                            <input type="radio" id={`option${index}`} name={`question${key + 1}`}
-                                                   value={answer}/>
-                                            <label htmlFor={`option${index}`} className="ml-2">{answer}</label>
-                                        </div>
-                                    ))}
+                                    {answers.length ? answers.map((answer: string, index: number) => (
+                                            // Button selection should eventually set completed to true
+                                            <div key={index} className="flex items-center">
+                                                <input type="radio" id={`option${index}`} name={`question${key + 1}`}
+                                                       value={answer}/>
+                                                <label htmlFor={`option${index}`} className="ml-2">{answer}</label>
+                                            </div>
+                                        ))
+                                        : <input type="text" className="border-[1px] border-solid border-black rounded-xl p-4"/>
+                                    }
                                 </div>
                             </div>
                         </div>
