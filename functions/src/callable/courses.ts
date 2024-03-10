@@ -121,7 +121,7 @@ const unPublishCourse = onCall(async (request) => {
 });
 
 /**
- * Updates an existing course's data (excluding quiz data)
+ * Updates an existing course's data (excluding quiz questions)
  */
 const updateCourse = onCall(async (request) => {
 
@@ -137,6 +137,11 @@ const updateCourse = onCall(async (request) => {
         description: string().nullable(),
         link: string().url().nullable(),
         minTime: number().integer().positive().nullable(),
+        quiz: object({
+            minScore: number().integer().positive().nullable(),
+            maxAttempts: number().integer().positive().nullable(),
+            timeLimit: number().integer().positive().nullable(),
+        }).nullable()
     });
 
     await schema.validate(request.data, { strict: true })
