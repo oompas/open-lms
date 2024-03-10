@@ -11,7 +11,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const router = useRouter();
     const quizData = useAsync(() => callApi("getQuiz")({ courseId: params.id }), []);
 
-    const [answers, setAnswers] = useState({});
+    const [userAnswers, setUserAnswers] = useState({});
 
     const loadingPopup = (
         <div
@@ -43,12 +43,21 @@ export default function Quiz({ params }: { params: { id: string } }) {
                                     {answers.length ? answers.map((answer: string, index: number) => (
                                             // Button selection should eventually set completed to true
                                             <div key={index} className="flex items-center">
-                                                <input type="radio" id={`option${index}`} name={`question${key + 1}`}
-                                                       value={answer}/>
+                                                <input
+                                                    type="radio"
+                                                    id={index + 1 + ""}
+                                                    name={`question${key + 1}`}
+                                                    value={answer}
+                                                    onChange={(e) => setUserAnswers({ ...userAnswers, [key+1]: index })}
+                                                />
                                                 <label htmlFor={`option${index}`} className="ml-2">{answer}</label>
                                             </div>
                                         ))
-                                        : <input type="text" className="border-[1px] border-solid border-black rounded-xl p-4"/>
+                                        : <input
+                                            type="text"
+                                            className="border-[1px] border-solid border-black rounded-xl p-4"
+                                            onChange={(e) => setUserAnswers({...userAnswers, [key+1]: e.target.value})}
+                                        />
                                     }
                                 </div>
                             </div>
@@ -67,7 +76,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     <div className="flex mt-4">
                         <div className="flex-grow border-4 border-gray-300 mb-2 p-4 rounded-2xl duration-100 flex items-center">
                             <div className="text-2xl">Q{key + 1}</div>
-                                {question.completed && (
+                                { /* @ts-ignore */ }
+                                {userAnswers[key + 1] && (
                                     <div className="ml-2">
                                         <MdCheckCircleOutline size={24} />
                                     </div>
