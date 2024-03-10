@@ -5,12 +5,12 @@ import Quiz from "./Quiz"
 import Requirement from "./Requirement";
 import { MdArrowBack } from "react-icons/md";
 import { useAsync } from "react-async-hook";
-import { getFunctions, httpsCallable } from "firebase/functions";
 import { useState } from "react";
+import { callApi } from "@/config/firebase";
 
 export default function Course({params}: { params: { id: string } }) {
 
-    const getCourse = useAsync(() => httpsCallable(getFunctions(),"getCourseInfo")({ courseId: params.id }), []);
+    const getCourse = useAsync(() => callApi("getCourseInfo")({ courseId: params.id, withQuiz: false }), []);
 
     const [timeDone, setTimeDone] = useState(false);
 
