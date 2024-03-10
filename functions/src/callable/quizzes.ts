@@ -22,7 +22,7 @@ const updateQuizQuestions = onCall(async (request) => {
             object({
                 id: string().optional(),
                 question: string().min(1).max(500).optional(),
-                type: string().length(2).optional(),
+                type: string().oneOf(["mc", "tf", "sa"]).optional(),
                 answers: array().of(string()).min(2).optional(),
                 correctAnswer: number().optional(),
             })

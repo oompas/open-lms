@@ -8,7 +8,7 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { boolean, number, object, string } from 'yup';
+import { array, boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import FieldValue = firestore.FieldValue;
 
@@ -21,16 +21,7 @@ import FieldValue = firestore.FieldValue;
 const enrolledCourseId = (userId: string, courseId: string) => `${userId}|${courseId}`;
 
 /**
- * Adds a course with the given data:
- * -name
- * -description
- * -link
- * -minTime (in minutes)
- * -maxQuizAttempts
- * -quizTimeLimit (in minutes)
- * -active
- *
- * And a new course is returned
+ * Adds a course to the database. Includes both metadata and quiz questions
  */
 const addCourse = onCall(async (request) => {
 
@@ -38,13 +29,29 @@ const addCourse = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
+    // @ts-ignore
+    const uid: string = request.auth?.uid;
+
     logger.info("Administrative permission verification passed");
 
     const schema = object({
         name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
-        description: string().required(),
+        description: string().required().min(1, "Description must be non-empty").max(500, "Description can't be over 500 characters long"),
         link: string().url().required(),
         minTime: number().integer().positive().nullable(),
+        quiz: object({
+            minScore: number().integer().positive().nullable(),
+            maxAttempts: number().integer().positive().nullable(),
+            timeLimit: number().integer().positive().nullable(),
+        }).nullable(),
+        quizQuestions: array().of(
+            object({
+                type: string().required().oneOf(["mc", "tf", "sa"]),
+                question: string().required().min(1).max(500),
+                answers: array().of(string()).min(2).optional(),
+                correctAnswer: number().optional(),
+            })
+        ).min(1).optional(),
     });
 
     await schema.validate(request.data, { strict: true })
@@ -55,11 +62,43 @@ const addCourse = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    return getCollection(DatabaseCollections.Course)
-        // @ts-ignore
-        .add({ userID: request.auth.uid, quiz: null, ...request.data })
-        .then((doc) => doc.id)
-        .catch((err) => { throw new HttpsError("internal", `Error adding new course: ${err}`) });
+    if (request.data.quizQuestions) {
+
+        // Returns true if the update object has the same keys as the desired array
+        const checkKeys = (update: any, desired: string[]) => {
+            const properties = Object.keys(update);
+            return desired.every((key) => properties.includes(key)) && properties.length === desired.length;
+        }
+
+        // Validate all the questions
+        request.data.quizQuestions.forEach((question: any) => {
+            if (question.type === "mc" && !checkKeys(question, ["type", "question", "answers", "correctAnswer"])) {
+                throw new HttpsError(
+                    "invalid-argument",
+                    `Invalid request: question ${JSON.stringify(question)} is invalid; multiple choice must have 'question', 'answers', and 'correctAnswer'`
+                );
+            }
+            if (question.type === "tf" && !checkKeys(question, ["type", "question", "correctAnswer"])) {
+                throw new HttpsError(
+                    "invalid-argument",
+                    `Invalid request: question ${JSON.stringify(question)} is invalid; true/false must have 'question' and 'correctAnswer'`
+                );
+            }
+            if (question.type === "sa" && !checkKeys(question, ["type", "question"])) {
+                throw new HttpsError(
+                    "invalid-argument",
+                    `Invalid request: question ${JSON.stringify(question)} is invalid; short answer must have 'question'`
+                );
+            }
+        });
+
+        const courseId = await getCollection(DatabaseCollections.Course).add({ userID: uid, ...request.data }).then((doc) => doc.id);
+
+        return Promise.all(request.data.quizQuestions.forEach((question: any) =>
+            getCollection(DatabaseCollections.QuizQuestion).add({ courseId, ...question, active: true, numAttempts: 0, numCorrect: 0 }))
+        );
+    }
+    return getCollection(DatabaseCollections.Course).add({ userID: uid, ...request.data }).then((doc) => doc.id);
 });
 
 /**
@@ -133,15 +172,15 @@ const updateCourse = onCall(async (request) => {
 
     const schema = object({
         courseId: string().required(),
-        name: string().nullable().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
-        description: string().nullable(),
-        link: string().url().nullable(),
-        minTime: number().integer().positive().nullable(),
+        name: string().optional().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
+        description: string().optional().min(1, "Description must be non-empty").max(500, "Description can't be over 500 characters long"),
+        link: string().url().optional(),
+        minTime: number().integer().positive().optional(),
         quiz: object({
-            minScore: number().integer().positive().nullable(),
-            maxAttempts: number().integer().positive().nullable(),
-            timeLimit: number().integer().positive().nullable(),
-        }).nullable()
+            minScore: number().integer().positive().optional(),
+            maxAttempts: number().integer().positive().optional(),
+            timeLimit: number().integer().positive().optional(),
+        }).optional()
     });
 
     await schema.validate(request.data, { strict: true })
@@ -152,6 +191,7 @@ const updateCourse = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
+    delete request.data.courseId; // Don't need id in document
     return getDoc(DatabaseCollections.Course, request.data.courseId)
         .update(request.data)
         .then(() => "Course updated successfully")
