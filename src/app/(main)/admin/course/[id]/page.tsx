@@ -8,6 +8,7 @@ import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
 import { callApi } from "@/config/firebase";
 import { useRouter } from "next/navigation";
+const _ = require("lodash");
 
 export default function AdminCourse({ params }: { params: { id: string } }) {
 
@@ -16,9 +17,10 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
     const [loading, setLoading] = useState(!newCourse);
     const [activatePopup, setActivatePopup] = useState(false);
+    const [originalData, setOriginalData] = useState<any>(null);
 
     const [active, setActive] = useState(false);
-    const [title, setTitle] = useState("");
+    const [name, setName] = useState("");
     const [desc, setDesc] = useState("");
     const [link, setLink] = useState("");
 
@@ -83,7 +85,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 const data: any = result.data;
 
                 // Set course & quiz info on page
-                setTitle(data.name);
+                setName(data.name);
                 setDesc(data.description);
                 setLink(data.link);
                 setMinCourseTime(data.minTime);
@@ -98,6 +100,8 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     setQuizQuestions(data.quizQuestions);
                 }
 
+                setOriginalData(data);
+
                 setLoading(false);
             })
             .catch((err) => console.log(`Error fetching course data: ${err}`));
@@ -111,7 +115,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const addCourse = async () => {
 
         const courseData = {
-            name: title,
+            name: name,
             description: desc,
             link: link,
             minTime: toNumber(minCourseTime),
@@ -132,30 +136,38 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
     const updateCourse = async () => {
 
-        const courseData = {
-            courseId: params.id,
-            name: title,
-            description: desc,
-            link: link,
-            minTime: toNumber(minCourseTime),
-            quiz: {
-                minScore: toNumber(quizMinScore),
-                maxAttempts: toNumber(quizAttempts),
-                timeLimit: toNumber(quizMaxTime),
-            }
+        // For updating, only send the changed data
+        const courseData = {}; // @ts-ignore
+        if (originalData.name !== name) courseData["name"] = name; // @ts-ignore
+        if (originalData.description !== desc) courseData["description"] = toNumber(desc); // @ts-ignore
+        if (originalData.link !== link) courseData["link"] = link; // @ts-ignore
+        if (originalData.minTime !== toNumber(minCourseTime)) courseData["minTime"] = toNumber(minCourseTime); // @ts-ignore
+
+        // If quiz is being added or removed
+        if (originalData.quiz === null && useQuiz) { // @ts-ignore
+            courseData["quiz"] = { minScore: null, maxAttempts: null, timeLimit: null };
+        } else if (originalData.quiz !== null && !useQuiz) { // @ts-ignore
+            courseData["quiz"] = null;
         }
+
+        // Quiz metadata
+        if (useQuiz) { // @ts-ignore
+            if (originalData.quiz?.minScore !== toNumber(quizMinScore)) courseData["quiz"]["minScore"] = toNumber(quizMinScore); // @ts-ignore
+            if (originalData.quiz?.maxAttempts !== toNumber(quizAttempts)) courseData["quiz"]["maxAttempts"] = toNumber(quizAttempts); // @ts-ignore
+            if (originalData.quiz?.timeLimit !== toNumber(quizMaxTime)) courseData["quiz"]["timeLimit"] = toNumber(quizMaxTime);
+        }
+
+        if (_.isEqual(courseData, {})) return;
+
+        // @ts-ignore
+        courseData["courseId"] = params.id;
 
         await callApi("updateCourse")(courseData);
 
-        if (useQuiz) {
+        if (!_.isEqual(quizQuestions, originalData.quizQuestions)) {
             const quizData = {
                 courseId: params.id,
-                metaData: {
-                    minScore: toNumber(quizMinScore),
-                    maxAttempts: toNumber(quizAttempts),
-                    timeLimit: toNumber(quizMaxTime),
-                },
-                questions: quizQuestions.map((q) => ({correctAnswer: 1, ...q})),
+                questions: quizQuestions,
             }
 
             await callApi("updateQuiz")(quizData);
@@ -250,8 +262,8 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
                 <div></div>
                 <div className="flex flex-col mb-6">
-                    <div className="text-lg mb-2">Course Title</div>
-                    <TextField text={title} onChange={setTitle} placeholder="Course Title"/>
+                    <div className="text-lg mb-2">Course Name</div>
+                    <TextField text={name} onChange={setName} placeholder="Course Name"/>
                 </div>
 
                 <div className="flex flex-col mb-6">
