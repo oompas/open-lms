@@ -1,5 +1,11 @@
 import { onCall } from "firebase-functions/v2/https";
-import { DatabaseCollections, getCollection, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
+import {
+    DatabaseCollections,
+    getCollection,
+    shuffleArray,
+    verifyIsAdmin,
+    verifyIsAuthenticated
+} from "../helpers/helpers";
 import { logger } from "firebase-functions";
 import { array, number, object, string} from "yup";
 import { HttpsError } from "firebase-functions/v2/https";
@@ -102,6 +108,39 @@ const updateQuizQuestions = onCall(async (request) => {
 });
 
 /**
+ * Gets the quiz questions for a specific course
+ */
+const getQuiz = onCall(async (request) => {
+
+    verifyIsAuthenticated(request);
+
+    if (!request.data.courseId) {
+        throw new HttpsError("invalid-argument", "Invalid request: 'courseId' is required");
+    }
+
+    return getCollection(DatabaseCollections.QuizQuestion)
+        .where("courseId", "==", request.data.courseId)
+        .where("active", "==", true)
+        .get()
+        .then((snapshot) => shuffleArray(snapshot.docs.map((doc) => {
+            const question = {
+                id: doc.id,
+                type: doc.data().type,
+                question: doc.data().question,
+            };
+
+            if (doc.data().type === "mc") { // @ts-ignore
+                question["answers"] = doc.data().answers;
+            }
+
+            return question;
+        })))
+        .catch((err) => {
+            throw new HttpsError("internal", `Error getting quiz questions: ${err}`)
+        });
+});
+
+/**
  * Gets the responses for each question for a specific quiz attempt
  */
 const getQuizResponses = onCall(async (request) => {
@@ -190,4 +229,4 @@ const submitQuiz = onCall((request) => {
     // TODO: Verify the timer is ok (allow a few extra seconds for response time), mark the quiz and return pass/fail
 });
 
-export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz };
+export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz };
