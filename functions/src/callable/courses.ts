@@ -3,7 +3,7 @@ import {
     DatabaseCollections,
     getCollection,
     getDoc,
-    sendEmail,
+    sendEmail, shuffleArray,
     verifyIsAdmin,
     verifyIsAuthenticated
 } from "../helpers/helpers";
@@ -397,7 +397,7 @@ const getCourseInfo = onCall((request) => {
                         .where("courseId", "==", request.data.courseId)
                         .where("active", "==", true)
                         .get()
-                        .then((docs) => docs.docs.map((doc) => {
+                        .then((docs) => shuffleArray(docs.docs.map((doc) => {
                             const data = doc.data();
                             const question: any = {
                                 id: doc.id,
@@ -413,7 +413,7 @@ const getCourseInfo = onCall((request) => {
                             }
 
                             return question;
-                        }))
+                        })))
                         .catch((error) => {
                             logger.error(`Error checking if course has quiz questions: ${error}`);
                             throw new HttpsError('internal', "Error getting course quiz, please try again later");
