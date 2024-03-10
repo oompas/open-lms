@@ -4,7 +4,7 @@ export default function QuizQuestion({
     first,
     last,
     num,
-    data,       // { type: string, question: string, answers: [a, b, c?, d?, e?], answer: num (0-4) }
+    inData,
     editData,
     deleteData,
     moveUp,
@@ -13,14 +13,17 @@ export default function QuizQuestion({
     first: boolean,
     last: boolean,
     num: number,
-    data: any,
+    inData: any,
     editData: any,
     deleteData: any,
     moveUp: any,
     moveDown: any
 }) {
 
-    const letters = ["a)", "b)", "c)", "d)", "e)"]
+    const letters = ["a)", "b)", "c)", "d)", "e)"];
+
+    const data = { ...inData };
+    if (inData.type === "tf") data["answers"] = ["True", "False"];
 
     return (
         <div className="flex flex-row p-6 border-2 rounded-xl text-lg">
@@ -34,12 +37,12 @@ export default function QuizQuestion({
                     <button className="ml-auto text-red-800 hover:opacity-50" onClick={() => editData(num)}><MdEdit size={28}/></button>
                     <button className="ml-4 text-red-800 hover:opacity-50" onClick={() => deleteData(num)}><MdDelete size={28}/></button>
                 </div>
-                { data.answers?.length &&
+                { data.type !== "sa" &&
                     <div className="flex flex-col mt-2 space-y-1">
                         { data.answers.map((answer: string, key: number) => (
                             <div className="flex flex-row items-center">
                                 <div key={key} className="mr-1">{letters[key]} {answer}</div>
-                                { data.correctAnswer === key && <MdCheck size={24} color="#47AD63"/> }
+                                {data.correctAnswer === key && <MdCheck size={24} color="#47AD63"/>}
                             </div>
                         ))}
                     </div>

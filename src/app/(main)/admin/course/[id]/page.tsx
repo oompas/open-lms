@@ -33,6 +33,8 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
     const [editQuestion, setEditQuesiton] = useState(-1);
 
+    const toNumber = (val: string | number | null) => val === null ? null : Number(val);
+
     const handleAddQuestion = (num: number, data: any) => {
         // called by "save question" in create question modal
         const temp = [...quizQuestions];
@@ -112,35 +114,35 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             name: title,
             description: desc,
             link: link,
-            minTime: minCourseTime === null ? null : Number(minCourseTime),
+            minTime: toNumber(minCourseTime),
+            quiz: !useQuiz ? null : {
+                minScore: toNumber(quizMinScore),
+                maxAttempts: toNumber(quizAttempts),
+                timeLimit: toNumber(quizMaxTime),
+            }
+        }
+        if (quizQuestions.length > 0) { // @ts-ignore
+            courseData["quizQuestions"] = quizQuestions;
         }
 
         const courseId = await callApi("addCourse")(courseData).then((result) => result.data);
-
-        if (useQuiz) {
-            const quizData = {
-                courseId: courseId,
-                metaData: {
-                    minScore: quizMinScore === null ? null : Number(quizMinScore),
-                    maxAttempts: quizAttempts === null ? null : Number(quizAttempts),
-                    timeLimit: quizMaxTime === null ? null : Number(quizMaxTime),
-                },
-                questions: quizQuestions.map((q) => ({correctAnswer: 1, ...q})),
-            }
-
-            await callApi("addQuiz")(quizData);
-        }
 
         router.push(`/admin/course/${courseId}`);
     }
 
     const updateCourse = async () => {
+
         const courseData = {
             courseId: params.id,
             name: title,
             description: desc,
             link: link,
-            minTime: minCourseTime === null ? null : Number(minCourseTime),
+            minTime: toNumber(minCourseTime),
+            quiz: {
+                minScore: toNumber(quizMinScore),
+                maxAttempts: toNumber(quizAttempts),
+                timeLimit: toNumber(quizMaxTime),
+            }
         }
 
         await callApi("updateCourse")(courseData);
@@ -220,8 +222,10 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 className="absolute flex flex-row items-center space-x-4 bg-white top-0 right-24 h-32 px-12 text-2xl rounded-b-3xl">
                 {!newCourse &&
                     <>
-                        <Button text={active ? "Unpublish Course" : "Publish Course"}
-                                onClick={() => setActivatePopup(true)}/>
+                        <Button
+                            text={active ? "Unpublish Course" : "Publish Course"}
+                            onClick={() => setActivatePopup(true)}
+                        />
                         <div className="h-1/2 border-[1px] border-gray-300"/>
                     </>
                 }
@@ -388,7 +392,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                         first={key === 0}
                                         last={key === quizQuestions.length - 1}
                                         num={key + 1}
-                                        data={question}
+                                        inData={question}
                                         editData={handleEditQuestion}
                                         deleteData={handleDeleteQuestion}
                                         moveUp={handleMoveUp}
