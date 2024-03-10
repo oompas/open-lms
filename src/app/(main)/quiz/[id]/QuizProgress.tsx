@@ -1,13 +1,14 @@
 import { ReactElement } from "react";
-import {MdCheckCircleOutline} from "react-icons/md";
+import { MdCheckCircleOutline } from "react-icons/md";
+
 export default function QuizProgress({
     completed,
     icon,
-    id
+    number
 } : {
     completed: boolean,
     icon?: string,
-    id: number
+    number: number
 }) {
     // Render icon if completed is true
     const iconElem: ReactElement | null = completed && icon === "check" ? (
@@ -19,7 +20,7 @@ export default function QuizProgress({
     return (
         <div className="flex mt-4">
             <div className="flex-grow border-4 border-gray-300 mb-2 p-4 rounded-2xl duration-100 flex items-center">
-                <div className="text-2xl">Q{id}</div>
+                <div className="text-2xl">Q{number}</div>
                 {iconElem}
             </div>
         </div>

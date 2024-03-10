@@ -8,7 +8,7 @@ import { useAsync } from "react-async-hook";
 import { useState } from "react";
 import { callApi } from "@/config/firebase";
 
-export default function Course({params}: { params: { id: string } }) {
+export default function Course({ params }: { params: { id: string } }) {
 
     const getCourse = useAsync(() => callApi("getCourseInfo")({ courseId: params.id, withQuiz: false }), []);
 
