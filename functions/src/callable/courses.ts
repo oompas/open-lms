@@ -306,7 +306,7 @@ const getAvailableCourses = onCall(async (request) => {
  * -maxQuizAttempts
  * -quizTimeLimit
  */
-const getCourseInfo = onCall((request) => {
+const getCourseInfo = onCall(async (request) => {
 
     logger.info(`Entering getCourseInfo for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
@@ -320,7 +320,7 @@ const getCourseInfo = onCall((request) => {
         withQuiz: boolean().required(),
     });
 
-    schema.validate(request.data, { strict: true })
+    await schema.validate(request.data, { strict: true })
         .catch((err) => {
             logger.error(`Error validating request: ${err}`);
             throw new HttpsError('invalid-argument', err);
