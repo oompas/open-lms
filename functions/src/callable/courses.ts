@@ -200,8 +200,9 @@ const updateCourse = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
+    const courseId = request.data.courseId;
     delete request.data.courseId; // Don't need id in document
-    return getDoc(DatabaseCollections.Course, request.data.courseId)
+    return getDoc(DatabaseCollections.Course, courseId)
         .update(request.data)
         .then(() => "Course updated successfully")
         .catch((err) => { throw new HttpsError("internal", `Error updating course: ${err}`) });
