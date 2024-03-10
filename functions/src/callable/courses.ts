@@ -65,8 +65,8 @@ const addCourse = onCall(async (request) => {
     if (request.data.quizQuestions) {
 
         // Returns true if the update object has the same keys as the desired array
-        const checkKeys = (update: any, desired: string[]) => {
-            const properties = Object.keys(update);
+        const checkKeys = (question: any, desired: string[]) => {
+            const properties = Object.keys(question);
             return desired.every((key) => properties.includes(key)) && properties.length === desired.length;
         }
 
@@ -94,8 +94,8 @@ const addCourse = onCall(async (request) => {
 
         const courseId = await getCollection(DatabaseCollections.Course).add({ userID: uid, ...request.data }).then((doc) => doc.id);
 
-        return Promise.all(request.data.quizQuestions.forEach((question: any) =>
-            getCollection(DatabaseCollections.QuizQuestion).add({ courseId, ...question, active: true, numAttempts: 0, numCorrect: 0 }))
+        return Promise.all([...request.data.quizQuestions.map((question: any) =>
+            getCollection(DatabaseCollections.QuizQuestion).add({ courseId, ...question, active: true, numAttempts: 0, numCorrect: 0 }))]
         );
     }
     return getCollection(DatabaseCollections.Course).add({ userID: uid, ...request.data }).then((doc) => doc.id);
