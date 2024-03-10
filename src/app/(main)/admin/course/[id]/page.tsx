@@ -7,8 +7,8 @@ import { MdAdd } from "react-icons/md";
 import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
 import { callApi } from "@/config/firebase";
-import { useRouter } from "next/navigation";
-const _ = require("lodash");
+import { useRouter } from "next/navigation"; // @ts-ignore
+import _ from "lodash";
 
 export default function AdminCourse({ params }: { params: { id: string } }) {
 
@@ -30,6 +30,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const [quizMinScore, setQuizMinScore] = useState<null | number>(null);
     const [quizAttempts, setQuizAttempts] = useState<null | number>(null);
     const [quizMaxTime, setQuizMaxTime] = useState<null | number>(null);
+    const [preserveOrder, setPreserveOrder] = useState<boolean>(true);
 
     const [showCreateQuestion, setShowCreateQuestion] = useState(false);
     const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
@@ -123,6 +124,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 minScore: toNumber(quizMinScore),
                 maxAttempts: toNumber(quizAttempts),
                 timeLimit: toNumber(quizMaxTime),
+                preserveOrder: preserveOrder,
             }
         }
         if (quizQuestions.length > 0) { // @ts-ignore
@@ -154,7 +156,8 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         if (useQuiz) { // @ts-ignore
             if (originalData.quiz?.minScore !== toNumber(quizMinScore)) courseData["quiz"]["minScore"] = toNumber(quizMinScore); // @ts-ignore
             if (originalData.quiz?.maxAttempts !== toNumber(quizAttempts)) courseData["quiz"]["maxAttempts"] = toNumber(quizAttempts); // @ts-ignore
-            if (originalData.quiz?.timeLimit !== toNumber(quizMaxTime)) courseData["quiz"]["timeLimit"] = toNumber(quizMaxTime);
+            if (originalData.quiz?.timeLimit !== toNumber(quizMaxTime)) courseData["quiz"]["timeLimit"] = toNumber(quizMaxTime); // @ts-ignore
+            if (originalData.quiz?.preserveOrder !== preserveOrder) courseData["quiz"]["preserveOrder"] = preserveOrder;
         }
 
         if (_.isEqual(courseData, {})) return;
@@ -243,7 +246,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 }
                 <Button
                     text={newCourse ? "Discard changes" : "Delete course"}
-                    onClick={() => alert("delete")}
+                    onClick={() => newCourse ? router.push("/admin/tools") : alert("delete course")}
                 />
                 <Button
                     text={newCourse ? "Create course" : "Update course"}
@@ -382,6 +385,17 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                                     </div>
                                                 </div>
                                             }
+                                        </div>
+                                    </div>
+
+                                    { /* Preserve order */}
+                                    <div className="flex items-start space-x-4 mt-4">
+                                        <Checkbox
+                                            checked={preserveOrder}
+                                            setChecked={setPreserveOrder}
+                                        />
+                                        <div className="flex flex-col">
+                                            <div className="text-lg">Preserve question order</div>
                                         </div>
                                     </div>
                                 </div>

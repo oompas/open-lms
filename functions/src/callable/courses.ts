@@ -43,6 +43,7 @@ const addCourse = onCall(async (request) => {
             minScore: number().integer().positive().nullable(),
             maxAttempts: number().integer().positive().nullable(),
             timeLimit: number().integer().positive().nullable(),
+            preserveOrder: boolean().nullable(),
         }).nullable(),
         quizQuestions: array().of(
             object({
@@ -95,11 +96,14 @@ const addCourse = onCall(async (request) => {
         const courseId = await getCollection(DatabaseCollections.Course).add({ userID: uid, ...request.data }).then((doc) => doc.id);
 
         const questions = [...request.data.quizQuestions];
+        if (request.data.quiz.preserveOrder) {
+            questions.forEach((question: any, index: number) => question["order"] = index);
+        }
 
         logger.info(`Adding ${questions.length} questions to course ${courseId}: ${JSON.stringify(questions)}`);
 
         return Promise.all(questions.map((question: any) =>
-                getCollection(DatabaseCollections.QuizQuestion).add({ courseId, ...question, active: true, numAttempts: 0, numCorrect: 0 })
+                getCollection(DatabaseCollections.QuizQuestion).add({ courseId, ...question, active: true, numAttempts: 0, numCorrect: 0, order: null })
             ))
             .then(() => courseId)
             .catch((error) => {
@@ -189,6 +193,7 @@ const updateCourse = onCall(async (request) => {
             minScore: number().integer().positive().optional(),
             maxAttempts: number().integer().positive().optional(),
             timeLimit: number().integer().positive().optional(),
+            preserveOrder: boolean().optional(),
         }).optional()
     });
 
