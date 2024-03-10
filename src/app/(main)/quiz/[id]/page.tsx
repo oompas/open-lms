@@ -1,6 +1,5 @@
 "use client"
 import {useRouter} from "next/navigation";
-import QuizProgress from "@/app/(main)/quiz/[id]/QuizProgress";
 import Button from "@/components/Button";
 import { callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
