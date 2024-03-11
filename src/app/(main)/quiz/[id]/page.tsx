@@ -28,7 +28,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
         return (
             <div>
                 { /* @ts-ignore */ }
-                {quizData.result?.data && quizData.result.data.map((question, key) => {
+                {quizData.result?.data && quizData.result.data.questions.map((question, key) => {
                     const answers = question.type === "mc"
                         ? question.answers
                         : question.type === "tf"
@@ -72,7 +72,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
         return (
             <>
                 { /* @ts-ignore */ }
-                {quizData.result?.data && quizData.result.data.map((question, key) => (
+                {quizData.result?.data && quizData.result.data.questions.map((_, key) => (
                     <div className="flex mt-4">
                         <div className="flex-grow border-4 border-gray-300 mb-2 p-4 rounded-2xl duration-100 flex items-center">
                             <div className="text-2xl">Q{key + 1}</div>

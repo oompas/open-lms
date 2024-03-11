@@ -1,14 +1,14 @@
-import { onCall } from "firebase-functions/v2/https";
+import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
     DatabaseCollections,
     getCollection,
+    getDoc,
     shuffleArray,
     verifyIsAdmin,
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { array, number, object, string} from "yup";
-import { HttpsError } from "firebase-functions/v2/https";
+import { array, number, object, string } from "yup";
 
 /**
  * Updates the quiz for a given course (add, delete or update)
@@ -118,23 +118,51 @@ const getQuiz = onCall(async (request) => {
         throw new HttpsError("invalid-argument", "Invalid request: 'courseId' is required");
     }
 
+    const courseData = await getDoc(DatabaseCollections.Course, request.data.courseId)
+        .get()
+        .then((doc) => {
+            if (!doc.exists || !doc.data()) {
+                throw new HttpsError("not-found", `Course with ID ${request.data.courseId} not found`);
+            } // @ts-ignore
+            if (!doc.data().quiz) {
+                throw new HttpsError("not-found", `Course with ID ${request.data.courseId} does not have a quiz`);
+            }
+            return doc.data();
+        })
+        .catch((err) => {
+            throw new HttpsError("internal", `Error getting course data: ${err}`);
+        });
+
     return getCollection(DatabaseCollections.QuizQuestion)
         .where("courseId", "==", request.data.courseId)
         .where("active", "==", true)
         .get()
-        .then((snapshot) => shuffleArray(snapshot.docs.map((doc) => {
-            const question = {
-                id: doc.id,
-                type: doc.data().type,
-                question: doc.data().question,
-            };
+        .then((snapshot) => {
 
-            if (doc.data().type === "mc") { // @ts-ignore
-                question["answers"] = doc.data().answers;
+            if (snapshot.empty) {
+                throw new HttpsError("not-found", `No quiz questions found for course ${request.data.courseId}`);
             }
 
-            return question;
-        })))
+            const questions = shuffleArray(snapshot.docs.map((doc) => {
+                const question = {
+                    id: doc.id,
+                    type: doc.data().type,
+                    question: doc.data().question,
+                };
+
+                if (doc.data().type === "mc") { // @ts-ignore
+                    question["answers"] = doc.data().answers;
+                }
+
+                return question;
+            }));
+
+            return { // @ts-ignore
+                courseName: courseData.name, // @ts-ignore
+                timeLimit: courseData.quiz.timeLimit,
+                questions: questions,
+            }
+        })
         .catch((err) => {
             throw new HttpsError("internal", `Error getting quiz questions: ${err}`)
         });
