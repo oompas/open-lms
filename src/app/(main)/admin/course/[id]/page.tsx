@@ -230,11 +230,11 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     )
 
     return (
-        <div className="flex flex-row justify-center pt-14">
+        <div className="flex flex-row w-full h-full justify-center pb-[2vh]">
 
             {/* this covers the existing nav buttons in the topbar */}
             <div
-                className="absolute flex flex-row items-center space-x-4 bg-white top-0 right-24 h-32 px-12 text-2xl rounded-b-3xl">
+                className="absolute flex flex-row items-center space-x-4 bg-white top-0 right-24 h-[13vh] px-12 text-2xl rounded-b-3xl">
                 {!newCourse &&
                     <>
                         <Button
@@ -255,7 +255,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 />
             </div>
 
-            <div className="flex flex-col h-auto w-1/3 mr-[5%] bg-white p-16 rounded-2xl shadow-custom mb-8">
+            <div className="flex flex-col h-auto w-1/3 mr-[2%] bg-white p-16 rounded-2xl shadow-custom mb-8">
                 <div
                     className={"flex w-fit py-1 px-2 text-sm rounded-xl border-2 " + (active ? "text-[#47AD63] border-[#47AD63]" : "text-[#EEBD31] border-[#EEBD31]")}>
                     {active ? "Active" : "Inactive"}
@@ -287,7 +287,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 </div> */}
             </div>
 
-            <div className="flex flex-col h-auto w-2/3 bg-white p-16 rounded-2xl shadow-custom mb-8">
+            <div className="flex flex-col w-2/3 h-fit bg-white p-16 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-col mb-6">
                     <div className="text-lg">Verification Methods</div>
                     <div className="text-sm text-gray-600 mb-4">Every course must at least have one verification
@@ -404,7 +404,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     </div>
                 </div>
 
-                <div>
+                <div className="flex flex-col">
                     {useQuiz &&
                         <div className="text-lg border-2 p-6 rounded-xl">
                             <div className="flex flex-row items-center space-x-2 mb-4">
@@ -436,6 +436,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                         </div>
                     }
                 </div>
+
                 {activatePopup && activationPopup}
                 {loading && loadingPopup}
                 {showCreateQuestion &&
