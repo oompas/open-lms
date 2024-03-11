@@ -104,7 +104,7 @@ const addCourse = onCall(async (request) => {
         logger.info(`Adding ${questions.length} questions to course ${courseId}: ${JSON.stringify(questions)}`);
 
         return Promise.all(questions.map((question: any) =>
-                getCollection(DatabaseCollections.QuizQuestion).add({ courseId, ...question, active: true, numAttempts: 0, numCorrect: 0, order: null })
+                getCollection(DatabaseCollections.QuizQuestion).add({ courseId, ...question, active: true, numAttempts: 0, totalScore: 0, order: null })
             ))
             .then(() => courseId)
             .catch((error) => {
