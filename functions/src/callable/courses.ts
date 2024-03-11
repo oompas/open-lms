@@ -93,9 +93,10 @@ const addCourse = onCall(async (request) => {
             }
         });
 
-        const courseId = await getCollection(DatabaseCollections.Course).add({ userID: uid, ...request.data }).then((doc) => doc.id);
+        const { quizQuestions, ...courseData } = request.data;
+        const courseId = await getCollection(DatabaseCollections.Course).add({ userID: uid, ...courseData }).then((doc) => doc.id);
 
-        const questions = [...request.data.quizQuestions];
+        const questions = [...quizQuestions];
         if (request.data.quiz.preserveOrder) {
             questions.forEach((question: any, index: number) => question["order"] = index);
         }
@@ -111,7 +112,8 @@ const addCourse = onCall(async (request) => {
                 throw new HttpsError("internal", `Error adding quiz questions to course, please try again later`);
             });
     }
-    return getCollection(DatabaseCollections.Course).add({ userID: uid, ...request.data }).then((doc) => doc.id);
+
+    return getCollection(DatabaseCollections.Course).add({ userID: uid, active: false, ...request.data }).then((doc) => doc.id);
 });
 
 /**
