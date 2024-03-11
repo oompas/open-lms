@@ -104,7 +104,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                         <div className="flex-grow border-4 border-gray-300 mb-2 p-4 rounded-2xl duration-100 flex items-center">
                             <div className="text-2xl">Q{key + 1}</div>
                                 { /* @ts-ignore */ }
-                                {userAnswers[key + 1] !== undefined && (
+                                {(userAnswers[key + 1] !== undefined && userAnswers[key + 1] !== "") && (
                                     <div className="ml-2">
                                         <MdCheckCircleOutline size={24} />
                                     </div>
