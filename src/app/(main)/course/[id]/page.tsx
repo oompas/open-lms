@@ -37,7 +37,7 @@ export default function Course({ params }: { params: { id: string } }) {
                 <div className="mt-8 text-2xl">
                     <h1 className="mb-4">Required completion verification:</h1>
                     {course.minTime && <Requirement key={1} text={`Spend at least ${getCourseTimeString()} on the course`} done={timeDone}/>}
-                    {course.quiz && <Requirement key={2} text={"Complete the required quiz"} done={false}/>}
+                    {course.quiz && <Requirement key={2} text={"Complete the required quiz"} done={course.status === 5}/>}
                 </div>
 
                 {course.quiz &&
