@@ -10,6 +10,7 @@
     "test": "cd functions && npm test && cd .."
   },
   "dependencies": {
+    "axios": "^1.6.7",
     "firebase": "^10.7.1",
     "firebase-admin": "^12.0.0",
     "firebase-functions": "^4.6.0",

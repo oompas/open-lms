@@ -1,15 +1,16 @@
-import { HttpsError, onCall } from "firebase-functions/v2/https";
+import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {
     DatabaseCollections,
     getCollection,
     getDoc,
-    sendEmail, shuffleArray,
+    sendEmail,
+    shuffleArray,
     verifyIsAdmin,
     verifyIsAuthenticated
 } from "../helpers/helpers";
-import { logger } from "firebase-functions";
-import { array, boolean, number, object, string } from 'yup';
-import { firestore } from "firebase-admin";
+import {logger} from "firebase-functions";
+import {array, boolean, number, object, string} from 'yup';
+import {firestore} from "firebase-admin";
 import FieldValue = firestore.FieldValue;
 
 /**
@@ -19,6 +20,12 @@ import FieldValue = firestore.FieldValue;
  * The enrollment document will also have these IDs in the document if individual queries are needed
  */
 const enrolledCourseId = (userId: string, courseId: string) => `${userId}|${courseId}`;
+
+/**
+ * The ID for a course reported by a user to have a broken platform link is the user & course ID concatenated so:
+ * - No duplicate reports from the same user
+ */
+const reportedCourseId = (userId: string, courseId: string) => `${userId}|${courseId}`;
 
 /**
  * Adds a course to the database. Includes both metadata and quiz questions
@@ -548,6 +555,41 @@ const startCourse = onCall(async (request) => {
 });
 
 /**
+ * Reports the course link as broken by the requested user in the specified course
+ */
+const sendBrokenLinkReport = onCall(async (request) => {
+
+    verifyIsAuthenticated(request);
+
+    // @ts-ignore
+    const uid: string = request.auth?.uid;
+
+    // Ensure a valid course ID is passed in
+    if (!request.data.courseId) {
+        throw new HttpsError('invalid-argument', "Must provide a course ID to enroll in");
+    }
+
+    await getDoc(DatabaseCollections.Course, request.data.courseId).get()
+        .then((doc) => {
+            if (!doc.exists) {
+                throw new HttpsError('invalid-argument', `Course with ID '${request.data.courseId}' does not exist`);
+            }
+        })
+        .catch((error) => {
+            logger.error(`Error checking if course exists: ${error}`);
+            throw new HttpsError('internal', "Error enrolling in course, please try again later");
+        });
+
+    return getDoc(DatabaseCollections.ReportedCourse, reportedCourseId(uid, request.data.courseId))
+        .set({ userId: uid, courseId: request.data.courseId })
+        .then(() => "Successfully reported the course link as broken")
+        .catch((error) => {
+            logger.error(`Error reporting link as broken in course ${request.data.courseId}: ${error}`);
+            throw new HttpsError("internal", "Error reporting course link, please try again later");
+        });
+});
+
+/**
  * Sends feedback for a course to the course creator
  */
 const sendCourseFeedback = onCall(async (request) => {
@@ -584,4 +626,5 @@ const sendCourseFeedback = onCall(async (request) => {
     return sendEmail(courseInfo.creator, subject, content, "sending course feedback");
 });
 
-export { addCourse, publishCourse, unPublishCourse, updateCourse, getAvailableCourses, getCourseInfo, courseEnroll, courseUnenroll, startCourse, sendCourseFeedback };
+export { addCourse, publishCourse, unPublishCourse, updateCourse, getAvailableCourses, getCourseInfo, courseEnroll,
+    courseUnenroll, startCourse, sendBrokenLinkReport, sendCourseFeedback };

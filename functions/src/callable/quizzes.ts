@@ -142,6 +142,7 @@ const getQuiz = onCall(async (request) => {
 
 /**
  * Gets the responses for each question for a specific quiz attempt
+ * - wait on Reid for QuizAttempt schema to easily get this done
  */
 const getQuizResponses = onCall(async (request) => {
 
@@ -159,6 +160,8 @@ const getQuizResponses = onCall(async (request) => {
 
 /**
  * Returns the quiz data and starts the quiz timer
+ * - just need the courseId, userId, time that they started
+ * - creating a QuizAttempt with the userId, courseId, startTime
  */
 const startQuiz = onCall(async (request) => {
 
