@@ -41,7 +41,9 @@ export default function IDCourse({
             return;
         }
 
-        const interval = setInterval(() => setCountDown(countdown - 1), 1000);
+        const interval = setInterval(() =>
+            setCountDown(Math.round(course.startTime + (60 * course.minTime) - (new Date().getTime() / 1000))),
+            1000);
         return () => clearInterval(interval);
     }, [countdown]);
 
@@ -61,6 +63,7 @@ export default function IDCourse({
         return httpsCallable(getFunctions(), "startCourse")({ courseId: course.courseId })
             .then(() => {
                 setCountDown(60 * course.minTime);
+                course.startTime = new Date().getTime() / 1000;
                 setStatus(3);
             })
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });

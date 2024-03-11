@@ -5,12 +5,12 @@ import Quiz from "./Quiz"
 import Requirement from "./Requirement";
 import { MdArrowBack } from "react-icons/md";
 import { useAsync } from "react-async-hook";
-import { getFunctions, httpsCallable } from "firebase/functions";
 import { useState } from "react";
+import { callApi } from "@/config/firebase";
 
-export default function Course({params}: { params: { id: string } }) {
+export default function Course({ params }: { params: { id: string } }) {
 
-    const getCourse = useAsync(() => httpsCallable(getFunctions(),"getCourseInfo")({ courseId: params.id }), []);
+    const getCourse = useAsync(() => callApi("getCourseInfo")({ courseId: params.id, withQuiz: false }), []);
 
     const [timeDone, setTimeDone] = useState(false);
 
@@ -20,9 +20,10 @@ export default function Course({params}: { params: { id: string } }) {
 
         const getCourseTimeString = () => {
             if (course.minTime < 60) {
-                return course.minTime + " minutes";
+                return course.minTime + " minute" + (course.minTime === 1 ? "" : "s");
             }
-            return Math.floor(course.minTime / 60) + " hours";
+            return Math.floor(course.minTime / 60) + " hour" + (Math.floor(course.minTime / 60) > 1 ? "s" : "")
+                + (course.minTime % 60 > 0 ? " and " + course.minTime % 60 + " minute" + (course.minTime % 60 === 1 ? "" : "s") : "");
         }
 
         return (

@@ -7,26 +7,36 @@ import { MdAdd } from "react-icons/md";
 import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
 import { callApi } from "@/config/firebase";
+import { useRouter } from "next/navigation"; // @ts-ignore
+import _ from "lodash";
 
-export default function AdminCourse({params}: { params: { id: string } }) {
+export default function AdminCourse({ params }: { params: { id: string } }) {
+
+    const newCourse = params.id === "new";
+    const router = useRouter();
+
+    const [loading, setLoading] = useState(!newCourse);
+    const [activatePopup, setActivatePopup] = useState(false);
+    const [originalData, setOriginalData] = useState<any>(null);
 
     const [active, setActive] = useState(false);
-    const [activatePopup, setActivatePopup] = useState(false);
-
-    const [title, setTitle] = useState("");
+    const [name, setName] = useState("");
     const [desc, setDesc] = useState("");
     const [link, setLink] = useState("");
 
-    const [minCourseTime, setMinCourseTime] = useState<null | number>(1);
+    const [minCourseTime, setMinCourseTime] = useState<null | number>(null);
 
     const [useQuiz, setUseQuiz] = useState(true)
-    const [quizMinScore, setQuizMinScore] = useState<null | number>(0);
-    const [quizAttempts, setQuizAttempts] = useState<null | number>(1);
-    const [quizMaxTime, setQuizMaxTime] = useState<null | number>(1);
+    const [quizMinScore, setQuizMinScore] = useState<null | number>(null);
+    const [quizAttempts, setQuizAttempts] = useState<null | number>(null);
+    const [quizMaxTime, setQuizMaxTime] = useState<null | number>(null);
+    const [preserveOrder, setPreserveOrder] = useState<boolean>(true);
 
     const [showCreateQuestion, setShowCreateQuestion] = useState(false);
     const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
     const [editQuestion, setEditQuesiton] = useState(-1);
+
+    const toNumber = (val: string | number | null) => val === null ? null : Number(val);
 
     const handleAddQuestion = (num: number, data: any) => {
         // called by "save question" in create question modal
@@ -68,69 +78,155 @@ export default function AdminCourse({params}: { params: { id: string } }) {
         setQuizQuestions(temp);
     }
 
-    const handlePublish = () => {
-        setActive(!active);
-        setActivatePopup(false);
-    }
+    useEffect(() => {
+        if (!loading || newCourse) return;
+
+        callApi("getCourseInfo")({ courseId: params.id, withQuiz: true })
+            .then((result) => {
+                const data: any = result.data;
+
+                // Set course & quiz info on page
+                setName(data.name);
+                setDesc(data.description);
+                setLink(data.link);
+                setMinCourseTime(data.minTime);
+                setActive(data.active);
+
+                setUseQuiz(data.quiz !== null);
+                if (data.quiz !== null) {
+                    setQuizMinScore(data.quiz.minScore);
+                    setQuizAttempts(data.quiz.maxAttempts);
+                    setQuizMaxTime(data.quiz.timeLimit);
+
+                    setQuizQuestions(data.quizQuestions);
+                }
+
+                setOriginalData(data);
+
+                setLoading(false);
+            })
+            .catch((err) => console.log(`Error fetching course data: ${err}`));
+    }, [loading]);
 
     useEffect(() => {
         if (editQuestion != -1)
             setShowCreateQuestion(true)
     }, [editQuestion]);
 
-    const publishCourse = async () => {
+    const addCourse = async () => {
 
         const courseData = {
-            name: title,
+            name: name,
             description: desc,
             link: link,
-            minTime: minCourseTime === null ? null : Number(minCourseTime),
-            active: true,
+            minTime: toNumber(minCourseTime),
+            quiz: !useQuiz ? null : {
+                minScore: toNumber(quizMinScore),
+                maxAttempts: toNumber(quizAttempts),
+                timeLimit: toNumber(quizMaxTime),
+                preserveOrder: preserveOrder,
+            }
+        }
+        if (quizQuestions.length > 0) { // @ts-ignore
+            courseData["quizQuestions"] = quizQuestions;
         }
 
         const courseId = await callApi("addCourse")(courseData).then((result) => result.data);
 
-        const quizData = {
-            courseId: courseId,
-            metaData: {
-                minScore: quizMinScore === null ? null : Number(quizMinScore),
-                maxAttempts: quizAttempts === null ? null : Number(quizAttempts),
-                timeLimit: quizMaxTime === null ? null : Number(quizMaxTime),
-            },
-            questions: quizQuestions.map((q) => ({correctAnswer: 1, ...q})),
-        }
-
-        await callApi("addQuiz")(quizData);
+        router.push(`/admin/course/${courseId}`);
     }
 
-    const activationPopup = (active ?
-            <div
-                className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
-                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                    <div className="text-lg mb-2">Pressing "Unpublish Course" removes users' access to the course
-                        without deleting any data. You can re-publish the course to restore access at any time.
-                    </div>
-                    <div className="flex flex-row space-x-4 mt-6">
-                        <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
-                        <Button text="Unpublish Course" onClick={() => handlePublish()} filled/>
-                    </div>
+    const updateCourse = async () => {
+
+        // For updating, only send the changed data
+        const courseData = {}; // @ts-ignore
+        if (originalData.name !== name) courseData["name"] = name; // @ts-ignore
+        if (originalData.description !== desc) courseData["description"] = toNumber(desc); // @ts-ignore
+        if (originalData.link !== link) courseData["link"] = link; // @ts-ignore
+        if (originalData.minTime !== toNumber(minCourseTime)) courseData["minTime"] = toNumber(minCourseTime); // @ts-ignore
+
+        // If quiz is being added or removed
+        if (originalData.quiz === null && useQuiz) { // @ts-ignore
+            courseData["quiz"] = { minScore: null, maxAttempts: null, timeLimit: null };
+        } else if (originalData.quiz !== null && !useQuiz) { // @ts-ignore
+            courseData["quiz"] = null;
+        }
+
+        // Quiz metadata
+        if (useQuiz) { // @ts-ignore
+            if (originalData.quiz?.minScore !== toNumber(quizMinScore)) courseData["quiz"]["minScore"] = toNumber(quizMinScore); // @ts-ignore
+            if (originalData.quiz?.maxAttempts !== toNumber(quizAttempts)) courseData["quiz"]["maxAttempts"] = toNumber(quizAttempts); // @ts-ignore
+            if (originalData.quiz?.timeLimit !== toNumber(quizMaxTime)) courseData["quiz"]["timeLimit"] = toNumber(quizMaxTime); // @ts-ignore
+            if (originalData.quiz?.preserveOrder !== preserveOrder) courseData["quiz"]["preserveOrder"] = preserveOrder;
+        }
+
+        if (_.isEqual(courseData, {})) return;
+
+        // @ts-ignore
+        courseData["courseId"] = params.id;
+
+        await callApi("updateCourse")(courseData);
+
+        if (!_.isEqual(quizQuestions, originalData.quizQuestions)) {
+            const quizData = {
+                courseId: params.id,
+                questions: quizQuestions,
+            }
+
+            await callApi("updateQuiz")(quizData);
+        }
+    }
+
+    const handlePublish = async () => {
+        if (active) {
+            await callApi("unPublishCourse")( { courseId: params.id })
+                .then(() => setActive(false))
+                .catch((err) => console.log(`Error unpublishing course: ${err}`));
+        } else {
+            await callApi("publishCourse")({ courseId: params.id })
+                .then(() => setActive(true))
+                .catch((err) => console.log(`Error publishing course: ${err}`));
+        }
+
+        setActive(!active);
+        setActivatePopup(false);
+    }
+
+    const activationPopup = (
+        <div
+            className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    {active
+                        ? "Pressing \"Unpublish Course\" removes users' access to the course\n without deleting any" +
+                        " data. You can re-publish the course to restore access at any time."
+                        : "\"Publish Course\" will allow users of the platform to view, without deleting any data." +
+                        " You can re-publish the course to restore access at any time. enroll, and complete this" +
+                        " course. You can unpublish at any time to remove users' access to the course without losing any data"
+                    }
+                </div>
+                {!active && <div>Any subsequent changes saved will be directly visible to users.</div>}
+                <div className="flex flex-row space-x-4 mt-6">
+                <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
+                    <Button
+                        text={(active ? "Unpublish" : "Publish") + " Course"}
+                        onClick={async () => await handlePublish()}
+                        filled
+                    />
                 </div>
             </div>
-            :
-            <div
-                className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
-                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                    <div className="text-lg mb-2">Pressing "Publish Course" will allow users of the platform to view,
-                        enroll, and complete this course. You can unpublish at any time to remove users' access to the
-                        course without losing any data.
-                    </div>
-                    <div>Any subsequent changes saved will be directly visible to users.</div>
-                    <div className="flex flex-row space-x-4 mt-6">
-                        <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
-                        <Button text="Publish Course" onClick={() => handlePublish()} filled/>
-                    </div>
+        </div>
+    );
+
+    const loadingPopup = (
+        <div
+            className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    Loading course data...
                 </div>
             </div>
+        </div>
     )
 
     return (
@@ -139,11 +235,24 @@ export default function AdminCourse({params}: { params: { id: string } }) {
             {/* this covers the existing nav buttons in the topbar */}
             <div
                 className="absolute flex flex-row items-center space-x-4 bg-white top-0 right-24 h-32 px-12 text-2xl rounded-b-3xl">
-                <Button text={active ? "Unpublish Course" : "Publish Course"} onClick={() => setActivatePopup(true)}/>
-                <div className="h-1/2 border-[1px] border-gray-300"/>
-                <Button text="Delete Course" onClick={() => alert("delete")}/>
-                <Button text="Save & Publish Course" onClick={async () => await publishCourse()} filled/>
-                <Button text="Save Course" onClick={() => alert("publish")} filled/>
+                {!newCourse &&
+                    <>
+                        <Button
+                            text={active ? "Unpublish Course" : "Publish Course"}
+                            onClick={() => setActivatePopup(true)}
+                        />
+                        <div className="h-1/2 border-[1px] border-gray-300"/>
+                    </>
+                }
+                <Button
+                    text={newCourse ? "Discard changes" : "Delete course"}
+                    onClick={() => newCourse ? router.push("/admin/tools") : alert("delete course")}
+                />
+                <Button
+                    text={newCourse ? "Create course" : "Update course"}
+                    onClick={async () => newCourse ? await addCourse() : await updateCourse()}
+                    filled
+                />
             </div>
 
             <div className="flex flex-col h-auto w-1/3 mr-[5%] bg-white p-16 rounded-2xl shadow-custom mb-8">
@@ -156,8 +265,8 @@ export default function AdminCourse({params}: { params: { id: string } }) {
 
                 <div></div>
                 <div className="flex flex-col mb-6">
-                    <div className="text-lg mb-2">Course Title</div>
-                    <TextField text={title} onChange={setTitle} placeholder="Course Title"/>
+                    <div className="text-lg mb-2">Course Name</div>
+                    <TextField text={name} onChange={setName} placeholder="Course Name"/>
                 </div>
 
                 <div className="flex flex-col mb-6">
@@ -278,6 +387,17 @@ export default function AdminCourse({params}: { params: { id: string } }) {
                                             }
                                         </div>
                                     </div>
+
+                                    { /* Preserve order */}
+                                    <div className="flex items-start space-x-4 mt-4">
+                                        <Checkbox
+                                            checked={preserveOrder}
+                                            setChecked={setPreserveOrder}
+                                        />
+                                        <div className="flex flex-col">
+                                            <div className="text-lg">Preserve question order</div>
+                                        </div>
+                                    </div>
                                 </div>
                             }
                         </div>
@@ -298,7 +418,7 @@ export default function AdminCourse({params}: { params: { id: string } }) {
                                         first={key === 0}
                                         last={key === quizQuestions.length - 1}
                                         num={key + 1}
-                                        data={question}
+                                        inData={question}
                                         editData={handleEditQuestion}
                                         deleteData={handleDeleteQuestion}
                                         moveUp={handleMoveUp}
@@ -317,6 +437,7 @@ export default function AdminCourse({params}: { params: { id: string } }) {
                     }
                 </div>
                 {activatePopup && activationPopup}
+                {loading && loadingPopup}
                 {showCreateQuestion &&
                     <CreateQuestion
                         num={editQuestion}

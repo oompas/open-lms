@@ -20,36 +20,45 @@ export default function CreateQuestion({
     const [type, setType] = useState(data ? data.type : "");
 
     const [question, setQuestion] = useState(data ? data.question : "");
-    const [answer, setAnswer] = useState(data ? data.type === "mc" ? data.options[data.answer] : data.answer : -1);
-    const [qA, setQA] = useState(data ? data.options[0] : "");
-    const [qB, setQB] = useState(data ? data.options[1] : "");
-    const [qC, setQC] = useState(data ? data.options[2] : "");
-    const [qD, setQD] = useState(data ? data.options[3] : "");
-    const [qE, setQE] = useState(data ? data.options[4] : "");
+    const [correctAnswer, setCorrectAnswer] = useState(data ? data.type === "mc" ? data.answers[data.answer] : data.answer : -1);
+    const [qA, setQA] = useState(data ? data.answers[0] : "");
+    const [qB, setQB] = useState(data ? data.answers[1] : "");
+    const [qC, setQC] = useState(data ? data.answers[2] : "");
+    const [qD, setQD] = useState(data ? data.answers[3] : "");
+    const [qE, setQE] = useState(data ? data.answers[4] : "");
 
     const handleSave = () => {
         // TODO - actual input validation (regex to check for allowed values?)
-        var opts = [qA, qB, qC, qD, qE].filter(str => str ? str.trim() !== '' : false);
-        var ans = answer;
+        let opts = [qA, qB, qC, qD, qE].filter(str => str ? str.trim() !== '' : false);
+        let ans = correctAnswer;
 
         if (question === "") {
             alert("Make sure to write a question.")
             return;
         } else if (type === "mc" && opts.length < 2) {
-            alert("Provide at least two answer options.")
+            alert("Provide at least two possible answers.")
             return;
-        } else if (type != "sa" && answer === -1) {
+        } else if (type != "sa" && correctAnswer === -1) {
             alert("Select a correct answer.")
             return;
         }
         if (type === "mc") {
-            ans = opts.indexOf(answer);
+            ans = opts.indexOf(correctAnswer);
             if (ans === -1) {
                 alert("Please select a correct answer.");
                 return;
             }
         }
-        setData(num, { type: type, question: question, options: opts, answer: ans });
+
+        if (type === "mc") {
+            setData(num, {type: type, question: question, answers: opts, correctAnswer: ans});
+        } else if (type === "tf") {
+            setData(num, { type: type, question: question, correctAnswer: ans });
+        } else if (type === "sa") {
+            setData(num, { type: type, question: question });
+        } else {
+            throw new Error(`Invalid question type: ${type}`);
+        }
     }
 
     const checkNumQuestionsValid = () => {
@@ -96,33 +105,33 @@ export default function CreateQuestion({
                 <div>
                     <div className="">Answers</div>
                     <div className="text-sm text-gray-600 mb-1">Check off the correct answer.</div>
-                    { checkNumQuestionsValid() ? <div className="text-sm text-red-500">Provide at least two answer options.</div> : null }
-                    { answer != -1 ? null : <div className="text-sm text-red-500">Select a correct answer.</div> }
+                    { checkNumQuestionsValid() && <div className="text-sm text-red-500">Provide at least two possible answers.</div> }
+                    { correctAnswer === -1 && <div className="text-sm text-red-500">Select a correct answer.</div> }
                 </div>
                 <div className="flex flex-row space-x-2 items-center mt-3">
-                    <Checkbox checked={answer === qA} setChecked={() => { qA ? setAnswer(qA) :  null}} style="h-11 w-11" disabled={qA === ""} />
+                    <Checkbox checked={correctAnswer === qA} setChecked={() => { qA ? setCorrectAnswer(qA) :  null}} style="h-11 w-11" disabled={qA === ""} />
                     <TextField text={qA} onChange={setQA} style="w-full" />
                 </div>
                 <div className="flex flex-row space-x-2 items-center">
-                    <Checkbox checked={answer === qB} setChecked={() => { qB ? setAnswer(qB) :  null}} style="h-11 w-11" disabled={qB === ""} />
+                    <Checkbox checked={correctAnswer === qB} setChecked={() => { qB ? setCorrectAnswer(qB) :  null}} style="h-11 w-11" disabled={qB === ""} />
                     <TextField text={qB} onChange={setQB} style="w-full" />
                 </div>
                 <div className="flex flex-row space-x-2 items-center">
-                    <Checkbox checked={answer === qC} setChecked={() => { qC ? setAnswer(qC) :  null}} style="h-11 w-11" disabled={qC === ""} />
+                    <Checkbox checked={correctAnswer === qC} setChecked={() => { qC ? setCorrectAnswer(qC) :  null}} style="h-11 w-11" disabled={qC === ""} />
                     <TextField text={qC} onChange={setQC} style="w-full" />
                 </div>
                 <div className="flex flex-row space-x-2 items-center">
-                    <Checkbox checked={answer === qD} setChecked={() => { qD ? setAnswer(qD) :  null}} style="h-11 w-11" disabled={qD === ""} />
+                    <Checkbox checked={correctAnswer === qD} setChecked={() => { qD ? setCorrectAnswer(qD) :  null}} style="h-11 w-11" disabled={qD === ""} />
                     <TextField text={qD} onChange={setQD} style="w-full" />
                 </div>
                 <div className="flex flex-row space-x-2 items-center">
-                    <Checkbox checked={answer === qE} setChecked={() => { qE ? setAnswer(qE) :  null}} style="h-11 w-11" disabled={qE === ""} />
+                    <Checkbox checked={correctAnswer === qE} setChecked={() => { qE ? setCorrectAnswer(qE) :  null}} style="h-11 w-11" disabled={qE === ""} />
                     <TextField text={qE} onChange={setQE} style="w-full" />
                 </div>
             </div>
             <div className="flex flex-row space-x-4 mt-6">
-                <Button text="Cancel" onClick={closeModal} style="ml-auto"/>
-                <Button text="Save Question" onClick={() => handleSave()} filled disabled={!question || checkNumQuestionsValid() || answer === -1}/>
+                <Button text="Cancel" onClick={() => setType("")} style="ml-auto"/>
+                <Button text="Save Question" onClick={() => handleSave()} filled disabled={!question || checkNumQuestionsValid() || correctAnswer === -1}/>
             </div>
         </div>
     )
@@ -138,20 +147,20 @@ export default function CreateQuestion({
                 <div>
                     <div className="">Answers</div>
                     <div className="text-sm text-gray-600 mb-1">Check off the correct answer.</div>
-                    { answer != -1 ? null : <div className="text-sm text-red-500">Select a correct answer.</div> }
+                    { correctAnswer != -1 ? null : <div className="text-sm text-red-500">Select a correct answer.</div> }
                 </div>
                 <div className="flex flex-row space-x-2 items-center">
-                    <Checkbox checked={answer === 0} setChecked={() => setAnswer(0)} style="h-11 w-11" />
+                    <Checkbox checked={correctAnswer === 0} setChecked={() => setCorrectAnswer(0)} style="h-11 w-11" />
                     <TextField text={qA} onChange={setQA} style="w-full" readonly/>
                 </div>
                 <div className="flex flex-row space-x-2 items-center">
-                    <Checkbox checked={answer === 1} setChecked={() => setAnswer(1)} style="h-11 w-11" />
+                    <Checkbox checked={correctAnswer === 1} setChecked={() => setCorrectAnswer(1)} style="h-11 w-11" />
                     <TextField text={qB} onChange={setQB} style="w-full" readonly />
                 </div>
             </div>
             <div className="flex flex-row space-x-4 mt-6">
-                <Button text="Cancel" onClick={closeModal} style="ml-auto"/>
-                <Button text="Save Question" onClick={() => handleSave()} filled disabled={answer === -1 || !question}/>
+                <Button text="Cancel" onClick={() => setType("")} style="ml-auto"/>
+                <Button text="Save Question" onClick={() => handleSave()} filled disabled={correctAnswer === -1 || !question}/>
             </div>
         </div>
     )
@@ -165,7 +174,7 @@ export default function CreateQuestion({
                 <TextField text={question} onChange={setQuestion} area style="mt-3"/>
             </div>
             <div className="flex flex-row space-x-4 mt-6">
-                <Button text="Cancel" onClick={closeModal} style="ml-auto"/>
+                <Button text="Cancel" onClick={() => setType("")} style="ml-auto"/>
                 <Button text="Save Question" onClick={() => handleSave()} filled disabled={!question}/>
             </div>
         </div>

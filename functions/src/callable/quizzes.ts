@@ -1,115 +1,36 @@
-import {onCall} from "firebase-functions/v2/https";
-import { DatabaseCollections, getCollection, getDoc, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
-import {logger} from "firebase-functions";
-import {array, number, object, string} from "yup";
-import {HttpsError} from "firebase-functions/v2/https";
+import { onCall } from "firebase-functions/v2/https";
+import {
+    DatabaseCollections,
+    getCollection,
+    shuffleArray,
+    verifyIsAdmin,
+    verifyIsAuthenticated
+} from "../helpers/helpers";
+import { logger } from "firebase-functions";
+import { array, number, object, string} from "yup";
+import { HttpsError } from "firebase-functions/v2/https";
 
 /**
- * Adds a quiz for a course with the given data:
- * -courseId
+ * Updates the quiz for a given course (add, delete or update)
  *
- * array of quiz questions and answers; map it to it's own object; add it to the
- * QuizQuestion database collection
- *
- * input array of 10 quiz questions (questions, answers, etc); construct 10 objects with
- * the question, possible responses, correct responses, active (default if adding a question),
- * courseId; end of function add all of these objects to the QuizQuestion collection
- *
- * essentially creating n objects where n is the # of questions;
- * put correctAnswers in questions object, set active to true (cause it's adding the initial questions)
- *
- * if ever working on multiple objects in the database (like quiz questions) that don't depend on each other
- * use promise.all so they all they run at the same time and save a BUNCH of time
- * ^ this is used in auth.ts for getUserProfile
+ * Note: old questions (deleted/updated) are kept in the database, just deactivated so status and responses can
+ * still be seen
  */
-const addQuiz = onCall(async (request) => {
+const updateQuizQuestions = onCall(async (request) => {
 
-    logger.info(`Entering addQuiz for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+    logger.info(`Entering updateQuiz for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
     await verifyIsAdmin(request);
 
-    logger.info("Administrative permission verification passed")
-
     const schema = object({
         courseId: string().required(),
-        metaData: object({
-            minScore: number().integer().positive().nullable(),
-            maxAttempts: number().integer().positive().nullable(),
-            timeLimit: number().integer().positive().nullable(),
-        }),
         questions: array().of(
             object({
-                question: string().required(),
-                answers: array().of(string().required()).min(2),
-                correctAnswer: number().required(),
-            })
-        ).min(1).max(99),
-    })
-
-    await schema.validate(request.data, { strict: true })
-        .catch((err) => {
-            logger.error(`Error validating request: ${err}`);
-            throw new HttpsError('invalid-argument', err);
-        });
-
-    logger.info("Schema verification passed");
-
-    const { courseId, metaData, questions } = request.data;
-
-    const promises: Promise<any>[] = [];
-
-    promises.push(
-        getDoc(DatabaseCollections.Course, courseId)
-            .update({ quiz: metaData })
-            .catch((err) => {
-                logger.error(`Error updating course with quiz metadata: ${err}`);
-                throw new HttpsError("internal", `Error updating course, please trya again later`)
-            })
-    );
-
-    const quizQuestionCollection = getCollection(DatabaseCollections.QuizQuestion);
-    promises.push(questions.map((question: object) =>
-        quizQuestionCollection.add({ courseId, numAttempts: 0, numCorrect: 0, active: true, ...question })
-            .catch((err) => {
-                logger.error(`Error adding new quiz question: ${err}`);
-                throw new HttpsError("internal", `Error adding new quiz question, please try again later`)
-            })
-    ));
-
-    return Promise.all(promises)
-        .then(() => "Added quiz successfully")
-        .catch((err) => { throw new HttpsError("internal", `Error adding new quiz question: ${err}`) });
-});
-
-/**
- * Updates the quiz for a given course
- *
- * Note: old questions (deleted/updated) are kept in the database
- */
-const updateQuiz = onCall(async (request) => {
-
-    logger.info(`Entering updateQuiz with payload ${JSON.stringify(request.data)}`);
-
-    await verifyIsAdmin(request);
-
-    // There are 3 cases to consider:
-    // 1. New question: pass in new question object. A new question is created
-    // 2. Updated question: pass in new question object plus the id of the old object. A new question is created and
-    // the old one is deactivated
-    //      ^^ problems arising to potential ordering of the questions? perhaps new attribute or something
-    //      to set question ordering
-    // 3. Deleted question: pass in the id of the old question. The old question is deactivated
-
-    const schema = object({
-        courseId: string().required(),
-        updates: array().of(
-            object({
-                questionId: string().optional(),
-                questions: object({
-                    question: string().optional(),
-                    answers: array().of(string()).min(2).optional(),
-                    correctAnswer: number().optional(),
-                }).optional(),
+                id: string().optional(),
+                question: string().min(1).max(500).optional(),
+                type: string().oneOf(["mc", "tf", "sa"]).optional(),
+                answers: array().of(string()).min(2).optional(),
+                correctAnswer: number().optional(),
             })
         ).min(1),
     });
@@ -122,28 +43,101 @@ const updateQuiz = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const { courseId, updates } = request.data;
-    const quizQuestionCollection = getCollection(DatabaseCollections.QuizQuestion);
+    const { courseId, questions } = request.data;
 
-    // @ts-ignore
-    const updatePromises = updates.map((update) => {
-        if (update.questionId && update.questions) {
-            // Case 2: Updated question
-            const deactivateOld = quizQuestionCollection.doc(update.questionId).update({ active: false });
-            const addNew = quizQuestionCollection.add({ courseId, ...update.questions, active: true });
-            return Promise.all([deactivateOld, addNew])
-        } else if (update.questionId) {
-            // Case 3: Deleted question
-            return quizQuestionCollection.doc(update.questionId).update({ active: false });
-        } else if (update.questions) {
-            // Case 1: New question
-            return quizQuestionCollection.add({ courseId, ...update.questions, active: true });
+    // Returns true if the update object has the same keys as the desired array
+    const checkKeys = (update: any, desired: string[]) => {
+        const properties = Object.keys(update);
+        return desired.every((key) => properties.includes(key)) && properties.length === desired.length;
+    }
+
+    // Returns the type of question update (new, update, delete)
+    const questionType = (update: any) => {
+
+        let type;
+
+        // Delete case is just id - simple
+        if (checkKeys(update, ["id"])) {
+            type = "delete";
+            return type;
         }
+
+        // Verify the type of question is valid
+        let keys = [];
+        if (update.type === "mc") {
+            keys = ["question", "type", "answers", "correctAnswer"];
+        } else if (update.type === "tf") {
+            keys = ["question", "type", "correctAnswer"];
+        } else if (update.type === "sa") {
+            keys = ["question", "type"];
+        } else {
+            throw new HttpsError(
+                "invalid-argument",
+                `Invalid request: question ${JSON.stringify(update)} is invalid; 'type' must be one of 'mc', 'tf', or 'sa'`
+            );
+        }
+        if (!checkKeys(update, update.id ? [...keys, "id"] : keys)) {
+            throw new HttpsError(
+                "invalid-argument",
+                `Invalid request: question ${JSON.stringify(update)} is invalid; must include the following keys: ${keys.join(", ")}`
+            );
+        }
+
+        return update.id ? "update" : "new";
+    }
+
+    const dbCollection = getCollection(DatabaseCollections.QuizQuestion);
+    const updatePromises: Promise<any>[] = [];
+
+    questions.forEach((update: any) => {
+
+        const updateType = questionType(update);
+
+        /**
+         * New question: add to the collection
+         * Update question: deactivate old question, add new question
+         * Delete question: deactivate question
+         */
+        if (updateType === "new" || updateType === "update") updatePromises.push(dbCollection.add({ courseId, ...update, active: true, numAttempts: 0, numCorrect: 0 }));
+        if (updateType === "update" || updateType === "delete") updatePromises.push(dbCollection.doc(update.id).update({ active: false }));
     });
 
     return Promise.all(updatePromises)
-        .then((results) => results.map((result) => Array.isArray(result) ? result[1].id : 'Updated'))
+        .then((results) => results.map(() => `Successfully updated ${questions.length} quiz questions`))
         .catch((err) => { throw new HttpsError("internal", `Error updating quiz question: ${err}`) });
+});
+
+/**
+ * Gets the quiz questions for a specific course
+ */
+const getQuiz = onCall(async (request) => {
+
+    verifyIsAuthenticated(request);
+
+    if (!request.data.courseId) {
+        throw new HttpsError("invalid-argument", "Invalid request: 'courseId' is required");
+    }
+
+    return getCollection(DatabaseCollections.QuizQuestion)
+        .where("courseId", "==", request.data.courseId)
+        .where("active", "==", true)
+        .get()
+        .then((snapshot) => shuffleArray(snapshot.docs.map((doc) => {
+            const question = {
+                id: doc.id,
+                type: doc.data().type,
+                question: doc.data().question,
+            };
+
+            if (doc.data().type === "mc") { // @ts-ignore
+                question["answers"] = doc.data().answers;
+            }
+
+            return question;
+        })))
+        .catch((err) => {
+            throw new HttpsError("internal", `Error getting quiz questions: ${err}`)
+        });
 });
 
 /**
@@ -235,4 +229,4 @@ const submitQuiz = onCall((request) => {
     // TODO: Verify the timer is ok (allow a few extra seconds for response time), mark the quiz and return pass/fail
 });
 
-export { addQuiz, updateQuiz, getQuizResponses, startQuiz, submitQuiz };
+export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz };
