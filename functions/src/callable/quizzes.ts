@@ -130,7 +130,18 @@ const getQuiz = onCall(async (request) => {
             return doc.data();
         })
         .catch((err) => {
+            logger.info(`Error getting course data: ${err}`);
             throw new HttpsError("internal", `Error getting course data: ${err}`);
+        });
+
+    const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
+        .where("courseId", "==", request.data.courseId)
+        .where("userId", "==", request.auth?.uid)
+        .get()
+        .then((snapshot) => snapshot.size)
+        .catch((err) => {
+            logger.info(`Error getting quiz attempts: ${err}`);
+            throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
         });
 
     return getCollection(DatabaseCollections.QuizQuestion)
@@ -159,6 +170,8 @@ const getQuiz = onCall(async (request) => {
 
             return { // @ts-ignore
                 courseName: courseData.name, // @ts-ignore
+                attempt: quizAttempts, // @ts-ignore
+                maxAttempts: courseData.quiz.maxAttempts, // @ts-ignore
                 timeLimit: courseData.quiz.timeLimit,
                 questions: questions,
             }
