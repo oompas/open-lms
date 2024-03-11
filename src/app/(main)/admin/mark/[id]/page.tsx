@@ -21,7 +21,7 @@ export default function Mark() {
     ]
 
     return (
-        <main className="flex justify-start pt-14">
+        <main className="flex justify-start w-full">
             <div className="flex flex-col w-[75%]">
                 <div className="flex">
                     <div className="flex flex-col w-full bg-white p-16 rounded-2xl shadow-custom">
