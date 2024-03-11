@@ -49,7 +49,7 @@ export default function Course({ params }: { params: { id: string } }) {
                                 attempts={course.quiz.maxQuizAttempts}
                                 numQuestions={course.quiz.numQuestions}
                                 minimumScore={course.quiz.minScore}
-                                id={1}
+                                id={course.courseId}
                             />
                         </div>
                     </div>
