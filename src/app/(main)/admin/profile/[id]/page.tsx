@@ -8,8 +8,6 @@ import { useRouter } from 'next/navigation';
 
 export default function Profile() {
 
-    const router = useRouter()
-
     const TEMP_PROFILE_DATA = [
         { name: "Jennie Kim", dateMonth: "November", dateDay: "11", dateYear: "2024", email: "jenniekim@gmail.com", link:"yes", id: 1 },
     ]
@@ -34,22 +32,18 @@ export default function Profile() {
     ]
 
     const profileData = () => {
-        return (
-            <>
-                {TEMP_PROFILE_DATA.map((profile,key) => (
-                    <IDProfile
-                        key={key}
-                        name={profile.name}
-                        dateMonth={profile.dateMonth}
-                        dateDay={profile.dateDay}
-                        dateYear={profile.dateYear}
-                        email={profile.email}
-                        link={profile.link}
-                        id={profile.id}
-                />
-                ))}
-            </>
-        )
+        return ( TEMP_PROFILE_DATA.map((profile,key) => (
+            <IDProfile
+                key={key}
+                name={profile.name}
+                dateMonth={profile.dateMonth}
+                dateDay={profile.dateDay}
+                dateYear={profile.dateYear}
+                email={profile.email}
+                link={profile.link}
+                id={profile.id}
+            />
+        )))
     }
 
     const coursesEnrolledData = () => {
@@ -85,48 +79,44 @@ export default function Profile() {
         )
     }
 
-        return (
-            <>
-                <main className="flex-col justify-center items-center pt-14">
-                    <div className="flex flex-row mb-8">
-                            {/* Account Details section */}
-                            <div className="flex flex-col bg-white w-[50%] h-[50vh] p-16 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar mb-8">
-                                <div className="text-2xl mb-2">Account Details</div>
-                                {profileData()}
-                            </div>
-
-                            <div className="flex flex-col h-[50vh] bg-white w-[50%] p-16 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar">
-                                {/* Completed Courses section */}
-                                <div className="text-2xl mb-8">Completed Courses</div>
-                                <div className="overflow-y-scroll">
-                                    <div className="flex flex-col mr-auto text-lg w-[100%]">
-                                        <table className="flex-col border-collapse border w-full">
-                                                <thead>
-                                                <tr className="bg-gray-200">
-                                                    <th className="border p-2">Name</th>
-                                                    <th className="border p-2">Date of Completion</th>
-                                                </tr>
-                                                </thead>
-                                        </table>
-                                    </div>
-                                    {courseData()}
-                                </div>
-                            </div>
+    return (
+        <main className="flex-col justify-center items-center">
+            <div className="flex flex-row mb-0">
+                    {/* Account Details section */}
+                    <div className="flex flex-col bg-white w-[50%] h-[50vh] p-12 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar mb-4">
+                        <div className="text-lg mb-2">Account Details</div>
+                        { profileData() }
                     </div>
 
-                    {/* Enrolled Courses Section */}
-                    <div className="flex flex-col h-[60vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
-                        <div className="flex flex-row justify-end items-center mb-9">
-                            <div className="text-2xl mb-2 mr-auto">Enrolled Courses</div>
-                        </div>
-                        <div className="flex flex-row flex-wrap justify-between gap-9 overflow-y-scroll">
-                            {coursesEnrolledData()}
+                    <div className="flex flex-col h-[50vh] bg-white w-[50%] p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar">
+                        {/* Completed Courses section */}
+                        <div className="text-lg mb-4">Completed Courses</div>
+                        <div className="overflow-y-scroll">
+                            <div className="flex flex-col mr-auto text-lg w-[100%]">
+                                <table className="flex-col border-collapse border w-full">
+                                        <thead>
+                                        <tr className="bg-gray-200">
+                                            <th className="border p-2">Name</th>
+                                            <th className="border p-2">Date of Completion</th>
+                                        </tr>
+                                        </thead>
+                                </table>
+                            </div>
+                            {courseData()}
                         </div>
                     </div>
+            </div>
 
-                </main>
-            </>
+            {/* Enrolled Courses Section */}
+            <div className="flex flex-col h-[60vh] bg-white p-12 rounded-2xl shadow-custom mb-8">
+                <div className="flex flex-row justify-end items-center mb-4">
+                    <div className="text-lg mb-2 mr-auto">Enrolled Courses</div>
+                </div>
+                <div className="flex flex-row flex-wrap justify-between gap-4 overflow-y-scroll sm:no-scrollbar">
+                    {coursesEnrolledData()} 
+                </div>
+            </div>
 
-            
-        );
+        </main>  
+    );
 }
