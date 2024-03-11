@@ -68,6 +68,33 @@ export default function Quiz({ params }: { params: { id: string } }) {
         )
     }
 
+    const renderTimeLimit = () => {
+        if (!quizData.result?.data) {
+            return <></>;
+        }
+
+        // @ts-ignore
+        if (!quizData.result.data.timeLimit) {
+            return (
+                <div className="flex flex-col text-2xl space-y-8 w-[30rem]">
+                    No time limit
+                </div>
+            );
+        }
+
+        return (
+            <>
+                <div className="flex flex-row items-center justify-center">
+                    Time remaining:
+                </div>
+                <div className="flex flex-col text-4xl items-center justify-center mb-4">
+                    { /* @ts-ignore */ }
+                    {quizData.result.data.timeLimit}
+                </div>
+            </>
+        );
+    }
+
     const renderProgress = () => {
         return (
             <>
@@ -94,7 +121,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
             <div className="flex flex-col w-[75%]">
                 <div className="flex">
                     <div className="flex flex-col w-full bg-white p-16 rounded-2xl shadow-custom">
-                        <div className="text-2xl font-bold mb-4">Example Course Name Quiz</div>
+                        { /* @ts-ignore */ }
+                        <div className="text-2xl font-bold mb-4">{quizData.result?.data && quizData.result.data.courseName}</div>
                         <div className="flex flex-col text-2xl space-y-8 w-[30rem]">Attempt 2/3</div>
                     </div>
                 </div>
@@ -103,18 +131,14 @@ export default function Quiz({ params }: { params: { id: string } }) {
                 </div>
             </div>
             <div className="flex flex-col bg-white w-[20%] p-16 rounded-2xl shadow-custom fixed right-20">
-                <div className="flex flex-row items-center justify-center">
-                    Time remaining:
-                </div>
-                <div className="flex flex-col text-4xl items-center justify-center mb-4">
-                    0:13:24
-                </div>
+                {renderTimeLimit()}
                 <div className="scrollable-list" style={{maxHeight: "40vh", overflowY: "auto"}}>
                     {renderProgress()}
                 </div>
-                <div className="flex justify-center mt-8"><Button text="Submit Quiz" onClick={() => router.push('/home')} filled/></div>
+                <div className="flex justify-center mt-8"><Button text="Submit Quiz"
+                                                                  onClick={() => router.push('/home')} filled/></div>
             </div>
             {!quizData.result && loadingPopup}
         </main>
-)
+    )
 }
