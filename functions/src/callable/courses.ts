@@ -94,7 +94,7 @@ const addCourse = onCall(async (request) => {
         });
 
         const { quizQuestions, ...courseData } = request.data;
-        const courseId = await getCollection(DatabaseCollections.Course).add({ userID: uid, ...courseData }).then((doc) => doc.id);
+        const courseId = await getCollection(DatabaseCollections.Course).add({ userID: uid, active: false, ...courseData }).then((doc) => doc.id);
 
         const questions = [...quizQuestions];
         if (request.data.quiz.preserveOrder) {
