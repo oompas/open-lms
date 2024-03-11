@@ -45,8 +45,10 @@ export default function Course({ params }: { params: { id: string } }) {
                         <div className="flex flex-col w-1/2">
                             <Quiz
                                 key={1}
-                                length={course.quizTimeLimit + " minutes"}
-                                attempts={course.maxQuizAttempts}
+                                length={course.quiz.timeLimit}
+                                attempts={course.quiz.maxQuizAttempts}
+                                numQuestions={course.quiz.numQuestions}
+                                minimumScore={course.quiz.minScore}
                                 id={1}
                             />
                         </div>

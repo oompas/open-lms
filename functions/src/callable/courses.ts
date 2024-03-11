@@ -384,13 +384,26 @@ const getCourseInfo = onCall(async (request) => {
                     throw new HttpsError("internal", "Course is in an invalid state - can't get status");
                 }
 
+                let numQuizQuestions;
+                if (docData.quiz) {
+                    numQuizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
+                        .where("courseId", "==", request.data.courseId)
+                        .where("active", "==", true)
+                        .get()
+                        .then((docs) => docs.size)
+                        .catch((error) => {
+                            logger.error(`Error getting number of quiz questions: ${error}`);
+                            throw new HttpsError('internal', "Error getting course quiz, please try again later");
+                        });
+                }
+
                 return {
                     courseId: course.id,
                     name: docData.name,
                     description: docData.description,
                     link: docData.link,
                     minTime: docData.minTime,
-                    quiz: docData.quiz,
+                    quiz: docData.quiz ? { numQuestions: numQuizQuestions, ...docData.quiz } : null,
                     status: status,
                     startTime: courseAttempt?.startTime._seconds ?? null,
                 };
