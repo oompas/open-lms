@@ -153,12 +153,15 @@ const courses = rawCourseData.map((course) => {
             minScore: randomChance(0.5) ? randomInt(1, 2) : null,
             maxAttempts: randomChance(0.5) ? randomInt(1, 10) : null,
             timeLimit: randomChance(0.5) ? (randomChance(0.7) ? randomInt(1, 3) * 15 : randomInt(1, 4)) : null,
-            preserveOrder: randomChance(0.5),
+            preserveOrder: randomChance(0.5)
         };
     }
 
     if (hasQuiz) { // @ts-ignore
-        course["quizQuestions"] = exampleQuestions.sort(() => Math.random() - 0.5).slice(0, randomInt(2, 6));
+        course["quizQuestions"] = exampleQuestions.sort(() => Math.random() - 0.5).slice(0, randomInt(2, 6)).map((question) => {
+            const marks = question.type === "sa" ? randomInt(2, 5) : randomInt(1, 2);
+            return { ...question, marks: marks };
+        });
     }
 
     return course;
