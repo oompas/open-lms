@@ -40,7 +40,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     return (
                         <div className="flex mt-4">
                             <div className="bg-white w-full p-16 rounded-2xl shadow-custom">
-                                <div className="text-2xl mb-8">Q{key + 1}: {question.question}</div>
+                                <div className="text-2xl mb-2">Q{key + 1}: {question.question}</div>
+                                <div className="mb-6"><i>{question.marks} mark{question.marks === 1 ? "" : "s"}</i></div>
                                 <div className="flex flex-col space-y-4">
                                     {answers.length ? answers.map((answer: string, index: number) => (
                                             // Button selection should eventually set completed to true
