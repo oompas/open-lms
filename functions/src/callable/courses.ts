@@ -73,19 +73,19 @@ const addCourse = onCall(async (request) => {
 
         // Validate all the questions
         request.data.quizQuestions.forEach((question: any) => {
-            if (question.type === "mc" && !checkKeys(question, ["type", "question", "answers", "correctAnswer"])) {
+            if (question.type === "mc" && !checkKeys(question, ["type", "question", "answers", "correctAnswer", "marks"])) {
                 throw new HttpsError(
                     "invalid-argument",
                     `Invalid request: question ${JSON.stringify(question)} is invalid; multiple choice must have 'question', 'answers', and 'correctAnswer'`
                 );
             }
-            if (question.type === "tf" && !checkKeys(question, ["type", "question", "correctAnswer"])) {
+            if (question.type === "tf" && !checkKeys(question, ["type", "question", "correctAnswer", "marks"])) {
                 throw new HttpsError(
                     "invalid-argument",
                     `Invalid request: question ${JSON.stringify(question)} is invalid; true/false must have 'question' and 'correctAnswer'`
                 );
             }
-            if (question.type === "sa" && !checkKeys(question, ["type", "question"])) {
+            if (question.type === "sa" && !checkKeys(question, ["type", "question", "marks"])) {
                 throw new HttpsError(
                     "invalid-argument",
                     `Invalid request: question ${JSON.stringify(question)} is invalid; short answer must have 'question'`

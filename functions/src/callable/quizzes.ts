@@ -32,6 +32,7 @@ const updateQuizQuestions = onCall(async (request) => {
                 question: string().min(1).max(500).optional(),
                 type: string().oneOf(["mc", "tf", "sa"]).optional(),
                 answers: array().of(string()).min(2).optional(),
+                marks: number().optional(),
                 correctAnswer: number().optional(),
             })
         ).min(1),
@@ -67,11 +68,11 @@ const updateQuizQuestions = onCall(async (request) => {
         // Verify the type of question is valid
         let keys = [];
         if (update.type === "mc") {
-            keys = ["question", "type", "answers", "correctAnswer"];
+            keys = ["question", "type", "answers", "correctAnswer", "marks"];
         } else if (update.type === "tf") {
-            keys = ["question", "type", "correctAnswer"];
+            keys = ["question", "type", "correctAnswer", "marks"];
         } else if (update.type === "sa") {
-            keys = ["question", "type"];
+            keys = ["question", "type", "marks"];
         } else {
             throw new HttpsError(
                 "invalid-argument",
@@ -161,6 +162,7 @@ const getQuiz = onCall(async (request) => {
                     id: doc.id,
                     type: doc.data().type,
                     question: doc.data().question,
+                    marks: doc.data().marks,
                 };
 
                 if (doc.data().type === "mc") { // @ts-ignore
@@ -318,9 +320,9 @@ const submitQuiz = onCall(async (request) => {
 
                 let marks;
                 if (question.type === "mc" || question.type === "tf") {
-                    marks = question.data().correctAnswer === response.answer ? 1 : 0;
+                    marks = question.data().correctAnswer === response.answer ? question.data().marks : 0;
                 } else { // TODO: Short answer
-                    marks = 1;
+                    marks = question.data().marks;
                 }
 
                 markedResponses.push({
