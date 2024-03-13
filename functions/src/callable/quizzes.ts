@@ -34,9 +34,9 @@ const updateQuizQuestions = onCall(async (request) => {
                 answers: array().of(string()).min(2).optional(),
                 marks: number().optional(),
                 correctAnswer: number().optional(),
-            })
+            }).noUnknown(true)
         ).min(1),
-    });
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -117,9 +117,15 @@ const getQuiz = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
-    if (!request.data.courseId) {
-        throw new HttpsError("invalid-argument", "Invalid request: 'courseId' is required");
-    }
+    const schema = object({
+        courseId: string().required(),
+    });
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
 
     const courseData = await getDoc(DatabaseCollections.Course, request.data.courseId)
         .get()
@@ -259,9 +265,9 @@ const submitQuiz = onCall(async (request) => {
             object({
                 questionId: string().required(),
                 answer: string().required(),
-            })
+            }).noUnknown(true)
         ).required().min(1),
-    });
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {

@@ -77,7 +77,7 @@ const publishCourse = onCall(async (request) => {
 
         const schema = object({
             courseId: string().required(),
-        });
+        }).required().noUnknown(true);
 
         await schema.validate(request.data, { strict: true })
             .catch((err) => {
@@ -106,7 +106,7 @@ const unPublishCourse = onCall(async (request) => {
 
         const schema = object({
             courseId: string().required(),
-        });
+        }).required().noUnknown(true);
 
         await schema.validate(request.data, { strict: true })
             .catch((err) => {
@@ -144,8 +144,8 @@ const updateCourse = onCall(async (request) => {
             maxAttempts: number().integer().positive().optional(),
             timeLimit: number().integer().positive().optional(),
             preserveOrder: boolean().optional(),
-        }).optional()
-    });
+        }).optional().noUnknown(true)
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -268,7 +268,7 @@ const getCourseInfo = onCall(async (request) => {
     const schema = object({
         courseId: string().required().length(20),
         withQuiz: boolean().required(),
-    });
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -417,10 +417,16 @@ const courseEnroll = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth?.uid;
 
-    // Ensure a valid course ID is passed in
-    if (!request.data.courseId) {
-        throw new HttpsError('invalid-argument', "Must provide a course ID to enroll in");
-    }
+    const schema = object({
+        courseId: string().required(),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
     await getDoc(DatabaseCollections.Course, request.data.courseId).get()
         .then((doc) => {
             if (!doc.exists) {
@@ -452,10 +458,15 @@ const courseUnenroll = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth?.uid;
 
-    // Ensure a valid course ID is passed in
-    if (!request.data.courseId) {
-        throw new HttpsError('invalid-argument', "Must provide a course ID to unenroll from");
-    }
+    const schema = object({
+        courseId: string().required(),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
 
     return getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
         .delete()
@@ -476,10 +487,16 @@ const startCourse = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth?.uid;
 
-    // Verify the user in enrolled in the course
-    if (!request.data.courseId) {
-        throw new HttpsError('invalid-argument', "Must provide a course ID to start");
-    }
+    const schema = object({
+        courseId: string().required(),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
     await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
         .get()
         .then((doc) => {
@@ -517,12 +534,16 @@ const sendCourseFeedback = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
-    if (!request.data.courseId) {
-        throw new HttpsError('invalid-argument', "Must provide a courseId");
-    }
-    if (!request.data.feedback || typeof request.data.feedback !== 'string') {
-        throw new HttpsError('invalid-argument', "Must provide feedback");
-    }
+    const schema = object({
+        courseId: string().required(),
+        feedback: string().required().min(1, "Feedback must be non-empty").max(500, "Feedback can't be over 500 characters long"),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
 
     // @ts-ignore
     const userInfo: { name: string, email: string, uid: string } = await getDoc(DatabaseCollections.User, request.auth.uid)
