@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import '@/config/firebase';
@@ -8,9 +7,14 @@ import AuthForm from '@/components/AuthForm';
 import AuthButton from './AuthButton';
 import { auth } from "@/config/firebase";
 import { signInWithEmailAndPassword } from "@firebase/auth";
-
+import { redirect } from "next/navigation";
 
 export default function AuthPage() {
+
+    console.log(`Auth current user: ${auth.currentUser}`);
+    if (auth.currentUser) {
+        redirect('/home');
+    }
 
   const router = useRouter()
 
@@ -18,8 +22,8 @@ export default function AuthPage() {
   const [password, setPass] = useState("")
 
   // function called on "log in" button press
-  const submitLogin = () => {
-      signInWithEmailAndPassword(auth, email, password)
+  const submitLogin = async () => {
+        await signInWithEmailAndPassword(auth, email, password)
           .then(() => console.log("Signed in!"))
           .catch((err) => console.log(`Error signing in: ${err}`));
 
@@ -27,8 +31,8 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="flex h-[100vh] w-[100vw] items-center justify-center">
-      <div className="flex max-w-[1000px] bg-white p-20 rounded-2xl shadow-custom">
+    <main className="flex h-[100vh] items-center justify-center">
+      <div className="flex max-w-[1000px] bg-white p-12 rounded-2xl shadow-custom">
 
           <div className="flex flex-col h-full w-3/5 space-y-4">
               <div className="border-2 p-6 rounded-2xl">
@@ -39,7 +43,7 @@ export default function AuthPage() {
                   password={password}
                   setPass={setPass}
                 />
-                <Button text="log in" onClick={() => submitLogin()} style="mt-4 ml-auto" icon="arrow" filled/>
+                <Button text="log in" onClick={async () => await submitLogin()} style="mt-4 ml-auto" icon="arrow" filled/>
               </div>
 
               <div>or</div>

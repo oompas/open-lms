@@ -5,6 +5,7 @@ import { useAsync } from 'react-async-hook';
 import { getFunctions, httpsCallable } from "firebase/functions";
 import "../../../config/firebase";
 import { useState } from "react";
+import TextField from "@/components/TextField";
 
 export default function Home() {
 
@@ -28,7 +29,7 @@ export default function Home() {
                     title={course.name}
                     status={course.status}
                     description={course.description}
-                    time={(course.minQuizTime >= 3600 ? Math.floor(course.minQuizTime / 3600) + "h " : "") + Math.floor(course.minQuizTime / 60) % 60 + "m"}
+                    time={(course.minQuizTime >= 60 ? Math.floor(course.minQuizTime / 60) + "h " : "") + course.minQuizTime % 60 + "m"}
                     color={(course.status === 2 ? "#468DF0" : (course.status === 3 || course.status === 4 ? "#EEBD31" : "#47AD63"))}
                     id={course.id}
                 />
@@ -58,21 +59,20 @@ export default function Home() {
     }
 
     return (
-        <main className="flex justify-center pt-14">
-            <div className="flex flex-col h-[80vh] bg-white w-[60%] p-16 rounded-2xl shadow-custom">
-                <div className="text-2xl mb-8">My Enrolled Courses</div>
+        <main className="flex justify-center w-full h-full pb-[2vh]">
+            <div className="flex flex-col h-full bg-white w-[60%] p-12 rounded-2xl shadow-custom">
+                <div className="text-lg mb-4">My Enrolled Courses</div>
                 <div className="flex flex-row flex-wrap justify-between overflow-y-scroll sm:no-scrollbar">
                     {enrolledCourses()}
                 </div>
             </div>
-            <div className="flex flex-col h-[80vh] bg-white w-[35%] ml-[5%] p-16 rounded-2xl shadow-custom">
-                <div className="flex flex-row mb-8">
-                    <div className="text-2xl mr-auto">Available Courses</div>
-                    <input
-                        className={"border-4 border-[#9D1939] w-[55%] px-4 py-2 -mt-2 text-xl rounded-2xl"}
-                        type="text"
-                        placeholder="Search for a course..."
-                        onChange={(e) => setSearch(e.target.value)}
+            <div className="flex flex-col bg-white w-[38%] ml-[2%] p-12 rounded-2xl shadow-custom">
+                <div className="flex flex-col mb-6">
+                    <div className="text-lg mr-auto mb-2">Available Courses</div>
+                    <TextField 
+                        placeholder="Search for a title..."
+                        text={search}
+                        onChange={setSearch}
                     />
                 </div>
                 <div className="flex flex-col justify-between overflow-y-scroll sm:no-scrollbar">

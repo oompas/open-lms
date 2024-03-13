@@ -10,20 +10,55 @@ import { logger } from "firebase-functions";
  */
 const getUserReports = onCall(async (request) => {
 
+    logger.info("Verifying user is an admin...");
+
     await verifyIsAdmin(request);
 
-    return getCollection(DatabaseCollections.User)
-        .where("position", "==", "learner")
+    logger.info("User is an admin, querying database for user reports...");
+
+    const users = await getCollection(DatabaseCollections.User)
         .get()
-        .then((users) => users.docs.map((user) => ({
-            uid: user.id,
-            name: user.data().name,
-            coursesComplete: user.data().coursesComplete
-        })))
+        .then((result) => result.docs)
         .catch((error) => {
             logger.error(`Error querying users: ${error}`);
             throw new HttpsError('internal', "Error getting user reports, please try again later");
         });
+
+    const courseEnrollments = await getCollection(DatabaseCollections.EnrolledCourse)
+        .get()
+        .then((result) => result.docs)
+        .catch((error) => {
+            logger.error(`Error querying course enrollments: ${error}`);
+            throw new HttpsError('internal', "Error getting user reports, please try again later");
+        });
+
+    const courseAttempts = await getCollection(DatabaseCollections.CourseAttempt)
+        .get()
+        .then((result) => result.docs)
+        .catch((error) => {
+            logger.error(`Error querying course attempts: ${error}`);
+            throw new HttpsError('internal', "Error getting user reports, please try again later");
+        });
+
+    logger.info("Successfully queried database data, translating to user data...");
+
+    return users.map((user) => {
+
+        const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.data().userId === user.id);
+
+        const userAttempts = courseAttempts.filter((attempt) => attempt.data().userId === user.id);
+
+        const completedAttempts = courseAttempts.filter((attempt) => attempt.data().userId == user.id && attempt.data().pass === true);
+
+        return {
+            uid: user.id,
+            name: user.data().name,
+            email: user.data().email,
+            coursesEnrolled: userEnrollments.length,
+            coursesAttempted: userAttempts.length,
+            coursesComplete: completedAttempts.length,
+        };
+    }).sort((a, b) => b.coursesEnrolled - a.coursesEnrolled);
 });
 
 /**
@@ -37,9 +72,14 @@ const getUserReports = onCall(async (request) => {
  */
 const getCourseReports = onCall(async (request) => {
 
+    logger.info("Verifying user is an admin...");
+
     await verifyIsAdmin(request);
 
+    logger.info("User is an admin, querying database for course reports...");
+
     const courses = await getCollection(DatabaseCollections.Course)
+        .where("active", "==", true)
         .get()
         .then((result) => result.docs)
         .catch((error) => {
@@ -63,23 +103,44 @@ const getCourseReports = onCall(async (request) => {
             throw new HttpsError('internal', "Error getting course reports, please try again later");
         });
 
-    courses.map((course) => {
-        const courseData = course.data();
+    const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
+        .get()
+        .then((result) => result.docs)
+        .catch((error) => {
+            logger.error(`Error querying quiz attempts: ${error}`);
+            throw new HttpsError('internal', "Error getting course reports, please try again later");
+        });
 
-        const completedAttempts = courseAttempts.filter((attempt) => attempt.data().courseId === course.id && attempt.data().pass === true);
+    logger.info("Successfully queried database collections");
 
-        const completionTimes = completedAttempts.map((attempt) => attempt.data().endTime.toDate() - attempt.data().startTime.toDate());
-        const averageTime = (1 / completionTimes.length) * completionTimes.reduce((a, b) => a + b, 0);
+    return courses.map((course) => {
+
+        const courseEnrollments = enrollments.filter((enrollment) => enrollment.data().courseId === course.id);
+
+        const completedAttempts = courseAttempts.filter((attempt) => {
+            return attempt.data().courseId === course.id && attempt.data().pass === true;
+        });
+
+        const completionTimes = completedAttempts.map((attempt) => {
+            const milliseconds = attempt.data().endTime.toMillis() - attempt.data().startTime.toMillis();
+            return Math.floor(milliseconds / 1000 / 60); // In minutes
+        });
+        const averageTime = completionTimes.length === 0 ? null : (1 / completionTimes.length) * completionTimes.reduce((a, b) => a + b, 0);
+
+        const quizScores = quizAttempts
+            .filter((attempt) => attempt.data().courseId === course.id && attempt.data().pass === true)
+            .map((attempt) => attempt.data().score);
+        const averageScore = quizScores.length === 0 ? null : (1 / quizScores.length) * quizScores.reduce((a, b) => a + b, 0);
 
         return {
             courseId: course.id,
-            name: courseData.name,
-            active: courseData.active,
-            numEnrolled: enrollments.filter((enrollment) => enrollment.data().courseId == course.id).length,
+            name: course.data().name,
+            numEnrolled: courseEnrollments.length,
             numComplete: completedAttempts.length,
             avgTime: averageTime,
+            avgQuizScore: averageScore,
         };
-    })
+    }).sort((a, b) => b.numEnrolled - a.numEnrolled);
 });
 
 export { getUserReports, getCourseReports };

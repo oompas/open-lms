@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "@firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 // Firebase configuration
 // To switch between dev & prod, swap your .env.local file
@@ -17,4 +18,6 @@ initializeApp(firebaseConfig);
 
 const auth = getAuth();
 
-export { auth };
+const callApi = (name: string) => httpsCallable(getFunctions(), name);
+
+export { auth, callApi };

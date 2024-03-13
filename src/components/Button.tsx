@@ -6,13 +6,15 @@ export default function Button({
     onClick,    // function to run on button press - pass in the form of: () => function()
     style,      // additional tailwind style to be applid - ex. "mx-2 shadow-md"
     filled,     // toggles border or filled button types
-    icon        // toggles possible icons - "arrow" (more will be added)
+    icon,        // toggles possible icons - "arrow" (more will be added)
+    disabled
 } : {
     text: string,
     onClick: any,
     style?: string,
     filled?: boolean,
-    icon?: string
+    icon?: string,
+    disabled?: boolean
 }) {
 
     const background: any = " bg-red-800 text-white"
@@ -30,12 +32,13 @@ export default function Button({
     </div>
 
     return (
-        <div
+        <button
             onClick={onClick}
-            className={ "flex h-fit items-center px-5 py-2 w-fit rounded-xl text-lg font-bold border-[3px] border-red-800 duration-75 ease-out hover:opacity-60 cursor-pointer " + style + (filled ? background : border) }
+            className={ "flex h-fit items-center px-5 py-2 w-fit rounded-xl text-lg font-bold border-[3px] border-red-800 duration-75 ease-out " + style + (filled ? background : border) + (disabled ? " opacity-40" : " hover:opacity-60 cursor-pointer") }
+            disabled={disabled}
         >
             <div>{text}</div>
             { icon ? <div className="ml-2">{iconElem}</div> : null }
-        </div>
+        </button>
     )
 }
