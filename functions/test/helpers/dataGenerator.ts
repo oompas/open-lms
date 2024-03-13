@@ -17,7 +17,13 @@ class DataGenerator {
     };
 
     // @ts-ignore
+    static #dummyCourseData: any[] = [];
+
+    // @ts-ignore
     static #dummyAccountsCreated = false;
+
+    // @ts-ignore
+    static #dummyCoursesCreated = false;
 
     /**
      * Creates a dummy learner and admin account
@@ -58,7 +64,7 @@ class DataGenerator {
             return <string> result.data;
         });
 
-        await delay(2_000); // Ensure the user document is created
+        await delay(4_000); // Ensure the user document is created
 
         console.log(`Automatically verifying email and giving admin permissions to ${adminEmail}`);
         await adminDb.doc(`/User/${uid}`)
@@ -70,7 +76,7 @@ class DataGenerator {
             .then(() => console.log(`Successfully verified email for ${adminEmail}`))
             .catch((err) => { throw new Error(`Error manually verifying email for ${adminEmail}: ${err}`); });
 
-        await delay(2_000); // Ensure the admin permission trigger completes
+        await delay(4_000); // Ensure the admin permission trigger completes
 
         DataGenerator.#dummyAccountsCreated = true;
     }
@@ -79,6 +85,11 @@ class DataGenerator {
      * Generates dummy courses for testing
      */
     public static async generateDummyCourses() {
+
+        if (DataGenerator.#dummyCoursesCreated) {
+            console.log("Dummy courses already created, skipping...");
+            return;
+        }
 
         console.log("Generating dummy courses...");
 
@@ -89,8 +100,14 @@ class DataGenerator {
                 .then((result) => {
                     expect(result.data).to.be.a('string');
                     expect(result.data).to.match(new RegExp("^[a-zA-Z0-9]{20}$"));
+                    const courseWithId = {
+                        ...course,
+                        id: result.data
+                    };
+                    this.#dummyCourseData.push(courseWithId);
                 });
         }));
+        DataGenerator.#dummyCoursesCreated = true;
     }
 
     /**
@@ -102,6 +119,11 @@ class DataGenerator {
      * Gets the dummy admin account
      */
     public static getDummyAdminAccount = () => DataGenerator.#dummyAdminAccount;
+
+    /**
+     * Gets the dummy courses
+     */
+    public static getDummyCourseData = () => DataGenerator.#dummyCourseData;
 
     /**
      * Cleans all test data (whole database + all accounts); must be run after every a test suite
@@ -116,6 +138,7 @@ class DataGenerator {
         await delay(10_000); // Wait for triggers to finish
 
         DataGenerator.#dummyAccountsCreated = false;
+        DataGenerator.#dummyCoursesCreated = false;
 
         console.log("Successfully cleaned test accounts (triggers will remove database data)\n\n");
     }
