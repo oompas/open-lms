@@ -8,7 +8,7 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { array, boolean, number, object, string } from 'yup';
+import { boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import FieldValue = firestore.FieldValue;
 
@@ -44,16 +44,8 @@ const addCourse = onCall(async (request) => {
             maxAttempts: number().integer().positive().nullable(),
             timeLimit: number().integer().positive().nullable(),
             preserveOrder: boolean().nullable(),
-        }).nullable(),
-        quizQuestions: array().of(
-            object({
-                type: string().required().oneOf(["mc", "tf", "sa"]),
-                question: string().required().min(1).max(500),
-                answers: array().of(string()).min(2).optional(),
-                correctAnswer: number().optional(),
-            })
-        ).min(1).optional(),
-    });
+        }).nullable().noUnknown(true),
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -63,57 +55,13 @@ const addCourse = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    if (request.data.quizQuestions) {
-
-        // Returns true if the update object has the same keys as the desired array
-        const checkKeys = (question: any, desired: string[]) => {
-            const properties = Object.keys(question);
-            return desired.every((key) => properties.includes(key)) && properties.length === desired.length;
-        }
-
-        // Validate all the questions
-        request.data.quizQuestions.forEach((question: any) => {
-            if (question.type === "mc" && !checkKeys(question, ["type", "question", "answers", "correctAnswer", "marks"])) {
-                throw new HttpsError(
-                    "invalid-argument",
-                    `Invalid request: question ${JSON.stringify(question)} is invalid; multiple choice must have 'question', 'answers', and 'correctAnswer'`
-                );
-            }
-            if (question.type === "tf" && !checkKeys(question, ["type", "question", "correctAnswer", "marks"])) {
-                throw new HttpsError(
-                    "invalid-argument",
-                    `Invalid request: question ${JSON.stringify(question)} is invalid; true/false must have 'question' and 'correctAnswer'`
-                );
-            }
-            if (question.type === "sa" && !checkKeys(question, ["type", "question", "marks"])) {
-                throw new HttpsError(
-                    "invalid-argument",
-                    `Invalid request: question ${JSON.stringify(question)} is invalid; short answer must have 'question'`
-                );
-            }
+    return getCollection(DatabaseCollections.Course)
+        .add({ userID: uid, active: false, ...request.data })
+        .then((doc) => doc.id)
+        .catch((err) => {
+            logger.error(`Error adding course: ${err}`);
+            throw new HttpsError("internal", `Error adding course, please try again later (error: ${err})`)
         });
-
-        const { quizQuestions, ...courseData } = request.data;
-        const courseId = await getCollection(DatabaseCollections.Course).add({ userID: uid, active: false, ...courseData }).then((doc) => doc.id);
-
-        const questions = [...quizQuestions];
-        if (request.data.quiz.preserveOrder) {
-            questions.forEach((question: any, index: number) => question["order"] = index);
-        }
-
-        logger.info(`Adding ${questions.length} questions to course ${courseId}: ${JSON.stringify(questions)}`);
-
-        return Promise.all(questions.map((question: any) =>
-                getCollection(DatabaseCollections.QuizQuestion).add({ courseId, ...question, active: true, numAttempts: 0, totalScore: 0, order: null })
-            ))
-            .then(() => courseId)
-            .catch((error) => {
-                logger.error(`Error adding quiz questions to course ${courseId}: ${error}`);
-                throw new HttpsError("internal", `Error adding quiz questions to course, please try again later`);
-            });
-    }
-
-    return getCollection(DatabaseCollections.Course).add({ userID: uid, active: false, ...request.data }).then((doc) => doc.id);
 });
 
 /**
