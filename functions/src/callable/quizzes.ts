@@ -1,4 +1,4 @@
-import { onCall } from "firebase-functions/v2/https";
+import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {
     DatabaseCollections,
     getCollection,
@@ -6,9 +6,8 @@ import {
     verifyIsAdmin,
     verifyIsAuthenticated
 } from "../helpers/helpers";
-import { logger } from "firebase-functions";
-import { array, number, object, string} from "yup";
-import { HttpsError } from "firebase-functions/v2/https";
+import {logger} from "firebase-functions";
+import {array, number, object, string} from "yup";
 
 /**
  * Updates the quiz for a given course (add, delete or update)
@@ -142,20 +141,31 @@ const getQuiz = onCall(async (request) => {
 
 /**
  * Gets the responses for each question for a specific quiz attempt
- * - wait on Reid for QuizAttempt schema to easily get this done
  */
 const getQuizResponses = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
-    /*
     const schema = object({
         courseId: string().required(),
         userId: string().required(),
-    });
-     */
+    })
 
-    // TODO: Get the course attempt object and return the relevant info
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`)
+            throw new HttpsError('invalid-argument', err);
+        });
+    logger.info("Schema verification passed");
+
+    const { courseId, userId } = request.data
+
+    return getCollection(DatabaseCollections.QuizAttempt)
+        .where("userId", "==", userId)
+        .where("courseId", "==", courseId)
+        .where("endTime", "!=", null)
+
+    // TODO: Get the quiz attempt object and return the relevant info
 });
 
 /**
@@ -165,43 +175,26 @@ const getQuizResponses = onCall(async (request) => {
  */
 const startQuiz = onCall(async (request) => {
 
-    // can't use await without making this an async function
-    // however, it's a quiz, so it can't be async so IDK
-    // what to do instead
+    logger.info(`Starting quiz for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
     verifyIsAuthenticated(request);
 
-    /*
     const schema = object({
         courseId: string().required(),
-    });
-    // need to grab quizId from the course via courseId, for now I just put it as a string
+    })
 
-
-    await schema.validate((request.data)
-        // need to figure out how to know if the schema has been validated before
-        // going into the rest of the logic
-        .then(validationCheck) = > {
-    }
-     */
-    /*
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
             logger.error(`Error validating request: ${err}`);
             throw new HttpsError('invalid-argument', err);
         });
+    logger.info("Schema verification passed");
 
-    // I believe request.auth.uid is because of me coding this like an async function
-    // but without the awaits, so it thinks it can skip around potentially?
-    const { courseId } = request.data;
-    const quizStartInfo = {
-        userId: request.auth.uid,
-        courseId: courseId,
-        quizId: quizId,
-        startTime: Timestamp.now(),
-    }
+    const courseId = request.data;
 
-     */
-    // TODO: Start a quiz attempt & return the questions
+    return getCollection(DatabaseCollections.QuizAttempt).add({ userID: request.auth?.uid,
+        courseId: courseId, startTime: Date() });
+
 });
 
 /**
