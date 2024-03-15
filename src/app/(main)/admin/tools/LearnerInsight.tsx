@@ -22,7 +22,7 @@ export default function LearnerInsight({
             <td className="border p-2">
                 <Link href={"/admin/profile/"+id} className="flex flex-row items-center hover:opacity-60">
                     {name}
-                    <LuExternalLink className="ml-1"/>
+                    <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
                 </Link>
             </td>
             <td className="border p-2">{email}</td>

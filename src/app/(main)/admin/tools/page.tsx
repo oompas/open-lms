@@ -129,23 +129,22 @@ export default function Tools() {
             return <div>Error loading course insights</div>;
         }
 
-
         return (
             <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                <table className="border-collapse border w-full">
+                <table className="border-collapse w-full">
                     <thead>
-                    <tr className="bg-gray-200">
-                        <th className="border p-2">Course Name</th>
-                        <th className="border p-2">Learners Completed</th>
-                        <th className="border p-2">Average Completion Time</th>
-                        <th className="border p-2">Average Quiz Score</th>
-                    </tr>
+                        <tr className="border-b-2 border-black text-left">
+                            <th className="py-1">Course Name</th>
+                            <th className="py-1">Learners Completed</th>
+                            <th className="py-1">Average Completion Time</th>
+                            <th className="py-1">Average Quiz Score</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    { /* @ts-ignore */}
-                    {courseInsights.result.data.map((course: any, key: number) => (
-                        <CourseInsight courseData={course}/>
-                    ))}
+                        { /* @ts-ignore */}
+                        {courseInsights.result.data.map((course: any, key: number) => (
+                            <CourseInsight courseData={course}/>
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -153,7 +152,7 @@ export default function Tools() {
     }
 
     return (
-        <main className="flex-col justify-center items-center pb-[2vh]">
+        <main className="flex-col justify-center items-center">
             {/* Quizzes to mark section */}
             <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-between items-center mb-2">
@@ -214,6 +213,8 @@ export default function Tools() {
                 </div>
                 {getCourseInsights()}
             </div>
+
+            <div className="h-12" />
         </main>
     )
 }
