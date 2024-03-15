@@ -127,11 +127,12 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 preserveOrder: preserveOrder,
             }
         }
-        if (quizQuestions.length > 0) { // @ts-ignore
-            courseData["quizQuestions"] = quizQuestions;
-        }
 
         const courseId = await callApi("addCourse")(courseData).then((result) => result.data);
+
+        if (quizQuestions.length > 0) {
+            await callApi("updateQuizQuestions")({ courseId: courseId, questions: quizQuestions.map((q) => ({ ...q, marks: 1 })) });;
+        }
 
         router.push(`/admin/course/${courseId}`);
     }

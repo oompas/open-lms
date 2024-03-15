@@ -8,7 +8,7 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { array, boolean, number, object, string } from 'yup';
+import { boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import FieldValue = firestore.FieldValue;
 
@@ -44,16 +44,8 @@ const addCourse = onCall(async (request) => {
             maxAttempts: number().integer().positive().nullable(),
             timeLimit: number().integer().positive().nullable(),
             preserveOrder: boolean().nullable(),
-        }).nullable(),
-        quizQuestions: array().of(
-            object({
-                type: string().required().oneOf(["mc", "tf", "sa"]),
-                question: string().required().min(1).max(500),
-                answers: array().of(string()).min(2).optional(),
-                correctAnswer: number().optional(),
-            })
-        ).min(1).optional(),
-    });
+        }).nullable().noUnknown(true),
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -63,55 +55,13 @@ const addCourse = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    if (request.data.quizQuestions) {
-
-        // Returns true if the update object has the same keys as the desired array
-        const checkKeys = (question: any, desired: string[]) => {
-            const properties = Object.keys(question);
-            return desired.every((key) => properties.includes(key)) && properties.length === desired.length;
-        }
-
-        // Validate all the questions
-        request.data.quizQuestions.forEach((question: any) => {
-            if (question.type === "mc" && !checkKeys(question, ["type", "question", "answers", "correctAnswer"])) {
-                throw new HttpsError(
-                    "invalid-argument",
-                    `Invalid request: question ${JSON.stringify(question)} is invalid; multiple choice must have 'question', 'answers', and 'correctAnswer'`
-                );
-            }
-            if (question.type === "tf" && !checkKeys(question, ["type", "question", "correctAnswer"])) {
-                throw new HttpsError(
-                    "invalid-argument",
-                    `Invalid request: question ${JSON.stringify(question)} is invalid; true/false must have 'question' and 'correctAnswer'`
-                );
-            }
-            if (question.type === "sa" && !checkKeys(question, ["type", "question"])) {
-                throw new HttpsError(
-                    "invalid-argument",
-                    `Invalid request: question ${JSON.stringify(question)} is invalid; short answer must have 'question'`
-                );
-            }
+    return getCollection(DatabaseCollections.Course)
+        .add({ userID: uid, active: false, ...request.data })
+        .then((doc) => doc.id)
+        .catch((err) => {
+            logger.error(`Error adding course: ${err}`);
+            throw new HttpsError("internal", `Error adding course, please try again later (error: ${err})`)
         });
-
-        const courseId = await getCollection(DatabaseCollections.Course).add({ userID: uid, ...request.data }).then((doc) => doc.id);
-
-        const questions = [...request.data.quizQuestions];
-        if (request.data.quiz.preserveOrder) {
-            questions.forEach((question: any, index: number) => question["order"] = index);
-        }
-
-        logger.info(`Adding ${questions.length} questions to course ${courseId}: ${JSON.stringify(questions)}`);
-
-        return Promise.all(questions.map((question: any) =>
-                getCollection(DatabaseCollections.QuizQuestion).add({ courseId, ...question, active: true, numAttempts: 0, numCorrect: 0, order: null })
-            ))
-            .then(() => courseId)
-            .catch((error) => {
-                logger.error(`Error adding quiz questions to course ${courseId}: ${error}`);
-                throw new HttpsError("internal", `Error adding quiz questions to course, please try again later`);
-            });
-    }
-    return getCollection(DatabaseCollections.Course).add({ userID: uid, ...request.data }).then((doc) => doc.id);
 });
 
 /**
@@ -127,7 +77,7 @@ const publishCourse = onCall(async (request) => {
 
         const schema = object({
             courseId: string().required(),
-        });
+        }).required().noUnknown(true);
 
         await schema.validate(request.data, { strict: true })
             .catch((err) => {
@@ -156,7 +106,7 @@ const unPublishCourse = onCall(async (request) => {
 
         const schema = object({
             courseId: string().required(),
-        });
+        }).required().noUnknown(true);
 
         await schema.validate(request.data, { strict: true })
             .catch((err) => {
@@ -194,8 +144,8 @@ const updateCourse = onCall(async (request) => {
             maxAttempts: number().integer().positive().optional(),
             timeLimit: number().integer().positive().optional(),
             preserveOrder: boolean().optional(),
-        }).optional()
-    });
+        }).optional().noUnknown(true)
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -318,7 +268,7 @@ const getCourseInfo = onCall(async (request) => {
     const schema = object({
         courseId: string().required().length(20),
         withQuiz: boolean().required(),
-    });
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -382,13 +332,26 @@ const getCourseInfo = onCall(async (request) => {
                     throw new HttpsError("internal", "Course is in an invalid state - can't get status");
                 }
 
+                let numQuizQuestions;
+                if (docData.quiz) {
+                    numQuizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
+                        .where("courseId", "==", request.data.courseId)
+                        .where("active", "==", true)
+                        .get()
+                        .then((docs) => docs.size)
+                        .catch((error) => {
+                            logger.error(`Error getting number of quiz questions: ${error}`);
+                            throw new HttpsError('internal', "Error getting course quiz, please try again later");
+                        });
+                }
+
                 return {
                     courseId: course.id,
                     name: docData.name,
                     description: docData.description,
                     link: docData.link,
                     minTime: docData.minTime,
-                    quiz: docData.quiz,
+                    quiz: docData.quiz ? { numQuestions: numQuizQuestions, ...docData.quiz } : null,
                     status: status,
                     startTime: courseAttempt?.startTime._seconds ?? null,
                 };
@@ -454,10 +417,16 @@ const courseEnroll = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth?.uid;
 
-    // Ensure a valid course ID is passed in
-    if (!request.data.courseId) {
-        throw new HttpsError('invalid-argument', "Must provide a course ID to enroll in");
-    }
+    const schema = object({
+        courseId: string().required(),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
     await getDoc(DatabaseCollections.Course, request.data.courseId).get()
         .then((doc) => {
             if (!doc.exists) {
@@ -489,10 +458,15 @@ const courseUnenroll = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth?.uid;
 
-    // Ensure a valid course ID is passed in
-    if (!request.data.courseId) {
-        throw new HttpsError('invalid-argument', "Must provide a course ID to unenroll from");
-    }
+    const schema = object({
+        courseId: string().required(),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
 
     return getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
         .delete()
@@ -513,10 +487,16 @@ const startCourse = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth?.uid;
 
-    // Verify the user in enrolled in the course
-    if (!request.data.courseId) {
-        throw new HttpsError('invalid-argument', "Must provide a course ID to start");
-    }
+    const schema = object({
+        courseId: string().required(),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
     await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
         .get()
         .then((doc) => {
@@ -554,12 +534,16 @@ const sendCourseFeedback = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
-    if (!request.data.courseId) {
-        throw new HttpsError('invalid-argument', "Must provide a courseId");
-    }
-    if (!request.data.feedback || typeof request.data.feedback !== 'string') {
-        throw new HttpsError('invalid-argument', "Must provide feedback");
-    }
+    const schema = object({
+        courseId: string().required(),
+        feedback: string().required().min(1, "Feedback must be non-empty").max(500, "Feedback can't be over 500 characters long"),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
 
     // @ts-ignore
     const userInfo: { name: string, email: string, uid: string } = await getDoc(DatabaseCollections.User, request.auth.uid)

@@ -37,17 +37,19 @@ export default function Course({ params }: { params: { id: string } }) {
                 <div className="mt-8 text-2xl">
                     <h1 className="mb-4">Required completion verification:</h1>
                     {course.minTime && <Requirement key={1} text={`Spend at least ${getCourseTimeString()} on the course`} done={timeDone}/>}
-                    {course.maxQuizAttempts && <Requirement key={2} text={"Complete the required quiz"} done={false}/>}
+                    {course.quiz && <Requirement key={2} text={"Complete the required quiz"} done={course.status === 5}/>}
                 </div>
 
-                {course.maxQuizAttempts &&
+                {course.quiz &&
                     <div className="mt-4">
                         <div className="flex flex-col w-1/2">
                             <Quiz
                                 key={1}
-                                length={course.quizTimeLimit + " minutes"}
-                                attempts={course.maxQuizAttempts}
-                                id={1}
+                                length={course.quiz.timeLimit}
+                                attempts={course.quiz.maxQuizAttempts}
+                                numQuestions={course.quiz.numQuestions}
+                                minimumScore={course.quiz.minScore}
+                                id={course.courseId}
                             />
                         </div>
                     </div>

@@ -51,7 +51,7 @@ export default function CreateQuestion({
         }
 
         if (type === "mc") {
-            setData(num, {type: type, question: question, answers: opts, correctAnswer: ans});
+            setData(num, { type: type, question: question, answers: opts, correctAnswer: ans });
         } else if (type === "tf") {
             setData(num, { type: type, question: question, correctAnswer: ans });
         } else if (type === "sa") {
