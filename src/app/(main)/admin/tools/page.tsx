@@ -88,28 +88,23 @@ export default function Tools() {
 
         return (
             <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                <table className="border-collapse w-full">
+                <table className="border-collapse w-full mt-2">
                     <thead>
-                    <tr className="bg-gray-200">
-                        <th rowSpan={2} colSpan={1}>
-                            Name
-                        </th>
-                        <th rowSpan={2} colSpan={1}>
-                            Email
-                        </th>
-                        <th rowSpan={1} colSpan={5} className="py-2">
-                            Courses
-                        </th>
-                    </tr>
-                    <tr className="bg-gray-200">
-                        <th className="py-1">Enrolled</th>
-                        <th className="py-1">Started</th>
-                        <th className="py-1">Completed</th>
-                    </tr>
+                        <tr className="border-b-2 border-black text-left">
+                            <th rowSpan={2} colSpan={1}>
+                                Name
+                            </th>
+                            <th rowSpan={2} colSpan={1}>
+                                Email
+                            </th>
+                            <th className="py-1">Enrolled</th>
+                            <th className="py-1">In Progress</th>
+                            <th className="py-1">Completed</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    { /* @ts-ignore */}
-                    {learnerInsights.result.data.map((learner: any, key: number) => (
+                        { /* @ts-ignore */}
+                        { learnerInsights.result.data.map((learner: any, key: number) => (
                             <LearnerInsight
                                 key={key}
                                 name={learner.name}
@@ -119,8 +114,7 @@ export default function Tools() {
                                 coursesCompleted={learner.coursesComplete}
                                 id={learner.uid}
                             />
-                        )
-                    )}
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -161,13 +155,13 @@ export default function Tools() {
     return (
         <main className="flex-col justify-center items-center pb-[2vh]">
             {/* Quizzes to mark section */}
-            <div className="flex flex-col h-[60vh] bg-white p-12 rounded-2xl shadow-custom mb-8">
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-between items-center mb-2">
                     <div className="flex flex-col">
                         <div className="text-lg mb-2">Quizzes To Mark</div>
                     </div>
                 </div>
-                <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
+                <div className="flex flex-wrap justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
                     {TEMP_COURSES_TO_MARK_DATA.map((quiz, key) => (
                         <QuizToMark
                             key={key}
@@ -181,7 +175,7 @@ export default function Tools() {
             </div>
 
             {/* Manage courses section */}
-            <div className="flex flex-col h-[60vh] bg-white p-12 rounded-2xl shadow-custom mb-8">
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-between items-center mb-2">
                     <div className="flex flex-col">
                         <div className="text-lg mb-0">Manage Courses</div>
@@ -197,13 +191,13 @@ export default function Tools() {
                         />
                     </div>
                 </div>
-                <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
+                <div className="flex flex-wrap justify-between gap-2 overflow-y-scroll sm:no-scrollbar">
                     {getCourses()}
                 </div>
             </div>
 
             {/* Learner insights section */}
-            <div className="flex flex-col h-[50vh] bg-white p-12 rounded-2xl shadow-custom mb-8">
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-end items-center mb-2">
                     <div className="text-lg mb-2 mr-auto">Learner Insights</div>
                     <Button text="Invite a Learner" onClick={() => router.push('/home')}/>
@@ -213,7 +207,7 @@ export default function Tools() {
             </div>
 
             {/* Course insights section */}
-            <div className="flex flex-col h-[50vh] bg-white p-12 rounded-2xl shadow-custom">
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom">
                 <div className="flex flex-row justify-end items-center mb-2">
                     <div className="text-lg mb-2 mr-auto">Course Insights</div>
                     <Button text="Download Course Reports" onClick={() => router.push('/home')}/>

@@ -13,11 +13,11 @@ export default function QuizToMark({
 }) {
     return (
         <Link
-            className="flex-shrink-0 w-1/5 mr-4 border-4 border-gray-300 mb-4 p-4 rounded-2xl cursor-pointer hover:opacity-60 duration-100"
+            className="flex flex-col flex-shrink-0 w-[24%] border-4 border-gray-300 p-4 rounded-2xl cursor-pointer hover:opacity-60 duration-100"
             href={"/admin/mark/" + id}
         >
-            <div className="text-2xl font-bold">{title}</div>
-            <div className="mt-1 text-lg">{learner}, {course}</div>
+            <div className="text-lg font-bold">{title}</div>
+            <div className="text-md">{learner}, {course}</div>
         </Link>
     )
 }
