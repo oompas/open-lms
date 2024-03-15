@@ -142,7 +142,9 @@ export default function Tools() {
                     </thead>
                     <tbody>
                         { /* @ts-ignore */}
-                        {courseInsights.result.data.map((course: any, key: number) => (
+                        { courseInsights.result.data
+                        .filter((course: any) => course.name.toLowerCase().includes(search.toLowerCase()))
+                        .map((course: any, key: number) => (
                             <CourseInsight courseData={course}/>
                         ))}
                     </tbody>
@@ -173,45 +175,35 @@ export default function Tools() {
                 </div>
             </div>
 
-            {/* Manage courses section */}
+            {/* Course insights section */}
             <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
-                <div className="flex flex-row justify-between items-center mb-2">
-                    <div className="flex flex-col">
-                        <div className="text-lg mb-0">Manage Courses</div>
-                        <p className="mb-0 mr-2">Click on a course to navigate to course update screen.</p>
+                <div className="flex flex-row justify-end items-center mb-2 space-x-4">
+                    <div className="flex flex-col mr-auto">
+                        <div className="text-lg -mb-1">Course Insights</div>
+                        <p className="mr-2 text-gray-500">Click on a course to manage course contents.</p>
                     </div>
-                    <div className="flex flex-row justify-end">
-                        <Button text="Create a Course" onClick={() => router.push('/admin/course/new')}/>
-                        <TextField 
-                            placeholder="Search for a course..."
-                            text={search}
-                            onChange={setSearch}
-                            style={"ml-4"}
-                        />
-                    </div>
+                    <TextField 
+                        placeholder="Search for a course..."
+                        text={search}
+                        onChange={setSearch}
+                    />
+                    <Button text="Create a Course" onClick={() => router.push('/admin/course/new')} filled />
+                    <Button text="Download Course Reports" onClick={() => router.push('/home')}/>
                 </div>
-                <div className="flex flex-wrap justify-between gap-2 overflow-y-scroll sm:no-scrollbar">
-                    {getCourses()}
-                </div>
+                {getCourseInsights()}
             </div>
 
             {/* Learner insights section */}
-            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
-                <div className="flex flex-row justify-end items-center mb-2">
-                    <div className="text-lg mb-2 mr-auto">Learner Insights</div>
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom">
+                <div className="flex flex-row justify-end items-center">
+                    <div className="flex flex-col mr-auto">
+                        <div className="text-lg -mb-1">Learner Insights</div>
+                        <p className="mr-2 text-gray-500">Click on a user to view individual data.</p>
+                    </div>
                     <Button text="Invite a Learner" onClick={() => router.push('/home')}/>
                     <Button text="Download User Reports" onClick={() => router.push('/home')} style="ml-4"/>
                 </div>
                 {getLearnerInsights()}
-            </div>
-
-            {/* Course insights section */}
-            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom">
-                <div className="flex flex-row justify-end items-center mb-2">
-                    <div className="text-lg mb-2 mr-auto">Course Insights</div>
-                    <Button text="Download Course Reports" onClick={() => router.push('/home')}/>
-                </div>
-                {getCourseInsights()}
             </div>
 
             <div className="h-12" />
