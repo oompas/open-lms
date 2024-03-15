@@ -317,6 +317,21 @@ const getCourseInfo = onCall(async (request) => {
                     .then((doc) => doc.exists)
                     .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
 
+                const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
+                    .where("userId", "==", request.auth?.uid)
+                    .where("courseId", "==", request.data.courseId)
+                    .get()
+                    .then((docs) => {
+                        return {
+                            numAttempts: docs.size,
+                            attempts: docs.docs,
+                        };
+                    })
+                    .catch((error) => {
+                        logger.error(`Error getting quiz attempts: ${error}`);
+                        throw new HttpsError("internal", `Error getting courses, please try again later`);
+                    });
+
                 let status;
                 if (!courseEnrolled) {
                     status = 1;
@@ -354,6 +369,7 @@ const getCourseInfo = onCall(async (request) => {
                     quiz: docData.quiz ? { numQuestions: numQuizQuestions, ...docData.quiz } : null,
                     status: status,
                     startTime: courseAttempt?.startTime._seconds ?? null,
+                    quizAttempts: quizAttempts,
                 };
 
             } else {
