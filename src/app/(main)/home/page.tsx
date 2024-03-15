@@ -61,21 +61,15 @@ export default function Home() {
     return (
         <main className="flex justify-center pt-14">
             <div className="flex flex-col bg-white w-[100%] p-16 rounded-2xl shadow-custom">
-                <div className="text-4xl mb-8">My Enrolled Courses</div>
+                <div className="flex flex-row items-center">
+                    <div className="text-4xl mb-8">My Enrolled Courses</div>
+                    <Link className="bg-red-800 ml-auto text-white mb-4 p-4 font-bold rounded-2xl cursor-pointer hover:opacity-60 duration-100" href={`/course_search`}>
+                        <div className="text-l text-center">Browse Available Courses</div>
+                    </Link>
+                </div>
                 <div className="flex flex-row flex-wrap justify-between overflow-y-scroll sm:no-scrollbar">
                     {enrolledCourses()}
                 </div>
-            </div>
-            <div className="flex-col justify-center w-[60%] items-center">
-                <div className="flex flex-col mb-10 bg-white p-10 ml-10 rounded-2xl shadow-custom">
-                    <div className="text-2xl mb-10">Browse Available Courses</div>
-                    <div className="text-l mb-5">Looking for a course?</div>
-                    <div className="text-l mb-10">Find and enroll in a course below.</div>
-                    <Link className="bg-[#4050FF] text-white mb-4 p-4 font-bold rounded-2xl cursor-pointer hover:opacity-60 duration-100" href={`/course_search`}>
-                        <div className="text-l text-center">Browse Now</div>
-                    </Link>
-                </div>
-                {notificationData()}
             </div>
         </main>
     )
