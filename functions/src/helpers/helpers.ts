@@ -6,10 +6,11 @@ import { logger } from "firebase-functions";
 enum DatabaseCollections {
     User = "User",
     Course = "Course",
-    EnrolledCourse = "EnrolledCourse",
     QuizQuestion = "QuizQuestion",
+    EnrolledCourse = "EnrolledCourse",
     CourseAttempt = "CourseAttempt",
     QuizAttempt = "QuizAttempt",
+    QuizQuestionAttempt = "QuizQuestionAttempt",
     Email = "Email",
 }
 
