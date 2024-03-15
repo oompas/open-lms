@@ -141,6 +141,8 @@ const getQuiz = onCall(async (request) => {
 
 /**
  * Gets the responses for each question for a specific quiz attempt
+ * pass in CourseAttemptID & QuizAttemptID
+ * then query QuizQuestions objects for matching, then return those values
  */
 const getQuizResponses = onCall(async (request) => {
 
@@ -175,6 +177,7 @@ const getQuizResponses = onCall(async (request) => {
  */
 const startQuiz = onCall(async (request) => {
 
+    // verify they do not have an in progress quiz attempt
     logger.info(`Starting quiz for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
     verifyIsAuthenticated(request);
@@ -194,6 +197,7 @@ const startQuiz = onCall(async (request) => {
 
     return getCollection(DatabaseCollections.QuizAttempt).add({ userID: request.auth?.uid,
         courseId: courseId, startTime: Date() });
+    // look into firestore specific date object in markQuiz or submitQuiz instead of using Date()
 
 });
 
