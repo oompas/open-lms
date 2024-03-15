@@ -50,7 +50,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                                                     id={index + 1 + ""}
                                                     name={`question${key + 1}`}
                                                     value={answer}
-                                                    onChange={() => setUserAnswers({ ...userAnswers, [key+1]: index })}
+                                                    onChange={(e) => setUserAnswers({ ...userAnswers, [question.id]: e.target.value })}
                                                 />
                                                 <label htmlFor={`option${index}`} className="ml-2">{answer}</label>
                                             </div>
@@ -58,7 +58,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                                         : <input
                                             type="text"
                                             className="border-[1px] border-solid border-black rounded-xl p-4"
-                                            onChange={(e) => setUserAnswers({...userAnswers, [key+1]: e.target.value})}
+                                            onChange={(e) => setUserAnswers({...userAnswers, [question.id]: e.target.value})}
                                         />
                                     }
                                 </div>
@@ -98,12 +98,12 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const renderProgress = () => {
         return (
             <>
-                {quizData && quizData.questions.map((_: any, key: number) => (
+                {quizData && quizData.questions.map((question: any, key: number) => (
                     <div className="flex mt-2">
                         <div className="flex-grow border-[1px] border-gray-300 px-4 py-2 rounded-2xl duration-100 flex items-center">
                             <div className="text-lg">Q{key + 1}</div>
                                 { /* @ts-ignore */ }
-                                {(userAnswers[key + 1] !== undefined && userAnswers[key + 1] !== "") && (
+                                {(userAnswers[question.id] !== undefined && userAnswers[question.id] !== "") && (
                                     <div className="ml-2">
                                         <MdCheckCircleOutline size={24} className="mx-auto" color="#47AD63"/>
                                     </div>
@@ -113,6 +113,37 @@ export default function Quiz({ params }: { params: { id: string } }) {
                 ))}
             </>
         );
+    }
+
+    const handleSubmit = async () => {
+
+        const responses = [];
+        for (const [key, value] of Object.entries(userAnswers)) {
+
+            if (!value) {
+                alert("Please answer all questions before submitting the quiz");
+                return;
+            }
+
+            const questionData = quizData?.questions.find((question) => question.id === key);
+            if (questionData.type === "sa") {
+                responses.push({ questionId: key, answer: value });
+            } else {
+                responses.push({ questionId: key, answer: questionData.answers.indexOf(value) + "" });
+            }
+        }
+
+        let error = false;
+        await callApi("submitQuiz")({ courseId: params.id, responses: responses })
+            .then(() => router.push(`/course/${params.id}`))
+            .catch((err) => {
+                console.error(err);
+                error = true;
+            });
+
+        if (!error) {
+            router.push(`/course/${params.id}`);
+        }
     }
 
     return (
@@ -136,7 +167,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     {renderProgress()}
                 </div>
                 <div className="flex justify-center mt-8">
-                    <Button text="Submit Quiz" onClick={() => router.push('/home')} filled style="mx-auto mt-auto"/>
+                    <Button text="Submit Quiz" onClick={async () => await handleSubmit() } filled style="mx-auto mt-auto"/>
                 </div>
             </div>
             {!quizData && loadingPopup}
