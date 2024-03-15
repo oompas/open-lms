@@ -8,6 +8,7 @@ import {useRouter} from "next/navigation";
 import { useState } from "react";
 import { useAsync } from "react-async-hook";
 import { callApi } from "@/config/firebase";
+import TextField from "@/components/TextField";
 
 // Temporary data representing all quizzes that need to be marked
 const TEMP_COURSES_TO_MARK_DATA = [
@@ -158,12 +159,12 @@ export default function Tools() {
     }
 
     return (
-        <main className="flex-col justify-center items-center pt-14">
+        <main className="flex-col justify-center items-center pb-[2vh]">
             {/* Quizzes to mark section */}
-            <div className="flex flex-col h-[60vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
+            <div className="flex flex-col h-[60vh] bg-white p-12 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-between items-center mb-2">
                     <div className="flex flex-col">
-                        <div className="text-2xl mb-2">Quizzes To Mark</div>
+                        <div className="text-lg mb-2">Quizzes To Mark</div>
                     </div>
                 </div>
                 <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
@@ -180,19 +181,19 @@ export default function Tools() {
             </div>
 
             {/* Manage courses section */}
-            <div className="flex flex-col h-[60vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
+            <div className="flex flex-col h-[60vh] bg-white p-12 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-between items-center mb-2">
                     <div className="flex flex-col">
-                        <div className="text-2xl mb-2">Manage Courses</div>
+                        <div className="text-lg mb-0">Manage Courses</div>
                         <p className="mb-0 mr-2">Click on a course to navigate to course update screen.</p>
                     </div>
                     <div className="flex flex-row justify-end">
                         <Button text="Create a Course" onClick={() => router.push('/admin/course/new')}/>
-                        <input
-                            className={"border-4 border-[#9D1939] w-[55%] px-4 py-2 -mt-2 text-xl rounded-2xl ml-4"}
-                            type="text"
+                        <TextField 
                             placeholder="Search for a course..."
-                            onChange={(e) => setSearch(e.target.value)}
+                            text={search}
+                            onChange={setSearch}
+                            style={"ml-4"}
                         />
                     </div>
                 </div>
@@ -202,9 +203,9 @@ export default function Tools() {
             </div>
 
             {/* Learner insights section */}
-            <div className="flex flex-col h-[50vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
+            <div className="flex flex-col h-[50vh] bg-white p-12 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-end items-center mb-2">
-                    <div className="text-2xl mb-2 mr-auto">Learner Insights</div>
+                    <div className="text-lg mb-2 mr-auto">Learner Insights</div>
                     <Button text="Invite a Learner" onClick={() => router.push('/home')}/>
                     <Button text="Download User Reports" onClick={() => router.push('/home')} style="ml-4"/>
                 </div>
@@ -212,9 +213,9 @@ export default function Tools() {
             </div>
 
             {/* Course insights section */}
-            <div className="flex flex-col h-[50vh] bg-white p-16 rounded-2xl shadow-custom">
+            <div className="flex flex-col h-[50vh] bg-white p-12 rounded-2xl shadow-custom">
                 <div className="flex flex-row justify-end items-center mb-2">
-                    <div className="text-2xl mb-2 mr-auto">Course Insights</div>
+                    <div className="text-lg mb-2 mr-auto">Course Insights</div>
                     <Button text="Download Course Reports" onClick={() => router.push('/home')}/>
                 </div>
                 {getCourseInsights()}

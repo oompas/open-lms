@@ -59,10 +59,10 @@ export default function Course({ params }: { params: { id: string } }) {
     }
 
     return (
-        <main className="mt-14 flex flex-col h-fit bg-white w-[100%] p-16 rounded-2xl shadow-custom">
+        <main className="flex flex-col h-fit bg-white w-[100%] p-12 rounded-2xl shadow-custom">
 
             <Link href="/home"
-                  className="flex flex-row space-x-2 items-center mb-6 -mt-8 text-lg hover:opacity-60 duration-150">
+                  className="flex flex-row space-x-2 items-center mb-6 -mt-4 text-lg hover:opacity-60 duration-150">
                 <MdArrowBack size="28" className="text-red-800"/>
                 <div>return to my courses</div>
             </Link>

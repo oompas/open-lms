@@ -38,13 +38,12 @@ export default function Quiz({ params }: { params: { id: string } }) {
                         : [];
 
                     return (
-                        <div className="flex mt-4">
-                            <div className="bg-white w-full p-16 rounded-2xl shadow-custom">
-                                <div className="text-2xl mb-2">Q{key + 1}: {question.question}</div>
+                        <div className="flex mt-4 mb-4">
+                            <div className="bg-white w-full p-12 rounded-2xl shadow-custom">
+                                <div className="text-xl mb-4">Q{key + 1}: {question.question}</div>
                                 <div className="mb-6"><i>{question.marks} mark{question.marks === 1 ? "" : "s"}</i></div>
-                                <div className="flex flex-col space-y-4">
+                                <div className="flex flex-col space-y-2">
                                     {answers.length ? answers.map((answer: string, index: number) => (
-                                            // Button selection should eventually set completed to true
                                             <div key={index} className="flex items-center">
                                                 <input
                                                     type="radio"
@@ -100,13 +99,13 @@ export default function Quiz({ params }: { params: { id: string } }) {
         return (
             <>
                 {quizData && quizData.questions.map((_: any, key: number) => (
-                    <div className="flex mt-4">
-                        <div className="flex-grow border-4 border-gray-300 mb-2 p-4 rounded-2xl duration-100 flex items-center">
-                            <div className="text-2xl">Q{key + 1}</div>
+                    <div className="flex mt-2">
+                        <div className="flex-grow border-[1px] border-gray-300 px-4 py-2 rounded-2xl duration-100 flex items-center">
+                            <div className="text-lg">Q{key + 1}</div>
                                 { /* @ts-ignore */ }
                                 {(userAnswers[key + 1] !== undefined && userAnswers[key + 1] !== "") && (
                                     <div className="ml-2">
-                                        <MdCheckCircleOutline size={24} />
+                                        <MdCheckCircleOutline size={24} className="mx-auto" color="#47AD63"/>
                                     </div>
                                 )}
                         </div>
@@ -117,12 +116,12 @@ export default function Quiz({ params }: { params: { id: string } }) {
     }
 
     return (
-        <main className="flex justify-start pt-14">
+        <main className="flex justify-start w-full h-full">
             <div className="flex flex-col w-[75%]">
                 <div className="flex">
-                    <div className="flex flex-col w-full bg-white p-16 rounded-2xl shadow-custom">
-                        <div className="text-2xl font-bold mb-4">{quizData && quizData.courseName}</div>
-                        <div className="flex flex-col text-2xl space-y-8 w-[30rem]">
+                    <div className="flex flex-col w-full bg-white p-12 rounded-2xl shadow-custom">
+                        <div className="text-lg font-bold mb-0">{quizData && quizData.courseName}</div>
+                        <div className="flex flex-col text-md space-y-8 w-[30rem]">
                             Attempt {quizData && quizData.attempt}{quizData && quizData.maxAttempts && `/${quizData.maxAttempts}`}
                         </div>
                     </div>
@@ -131,13 +130,13 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     {renderQuestions()}
                 </div>
             </div>
-            <div className="flex flex-col bg-white w-[20%] p-16 rounded-2xl shadow-custom fixed right-20">
+            <div className="flex flex-col bg-white w-[20%] h-[82%] p-12 rounded-2xl shadow-custom fixed right-20">
                 {renderTimeLimit()}
-                <div className="scrollable-list" style={{maxHeight: "40vh", overflowY: "auto"}}>
+                <div className="flex flex-col h-full mb-4 overflow-y-scroll sm:no-scrollbar">
                     {renderProgress()}
                 </div>
                 <div className="flex justify-center mt-8">
-                    <Button text="Submit Quiz" onClick={() => router.push('/home')} filled/>
+                    <Button text="Submit Quiz" onClick={() => router.push('/home')} filled style="mx-auto mt-auto"/>
                 </div>
             </div>
             {!quizData && loadingPopup}

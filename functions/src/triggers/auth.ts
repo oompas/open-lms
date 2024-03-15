@@ -69,6 +69,8 @@ const beforeSignIn = functions.auth.user().beforeSignIn((user) => {
 /**
  * Logic that's run when a user is deleted:
  * -Delete user document from firestore
+ * -Delete all emails sent to the user
+ * -Delete all courses created by the user
  */
 const onUserDelete = functions.auth.user().onDelete(async (user) => {
 
@@ -78,6 +80,13 @@ const onUserDelete = functions.auth.user().onDelete(async (user) => {
 
     const userDoc = getDoc(DatabaseCollections.User, user.uid);
     promises.push(userDoc.delete());
+
+    const emails = await getCollection(DatabaseCollections.Email)
+        .where('to', '==', user.email)
+        .get()
+        .then((result) => result.docs)
+        .catch((err) => { throw new HttpsError('internal', `Error getting user emails: ${err}`) });
+    promises.concat(emails.map((email) => email.ref.delete()));
 
     if (user.customClaims && user.customClaims["admin"] === true) {
         const userCourses = await getCollection(DatabaseCollections.Course)
