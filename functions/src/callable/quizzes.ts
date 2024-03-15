@@ -305,6 +305,7 @@ const submitQuiz = onCall(async (request) => {
         });
 
     const promises: Promise<any>[] = [];
+    const timestamp = FieldValue.serverTimestamp();
 
     // Mark the quiz and update question stats
     await getCollection(DatabaseCollections.QuizQuestion)
@@ -346,6 +347,7 @@ const submitQuiz = onCall(async (request) => {
                     response: response.answer,
                     possibleMarks: question.data().marks,
                     marksAchieved: marks,
+                    timestamp: timestamp,
                 };
 
                 // Add question attempt to database
@@ -392,4 +394,73 @@ const submitQuiz = onCall(async (request) => {
         });
 });
 
-export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz };
+/**
+ * Returns the short answer questions that need to be marked by an admin
+ */
+const getQuestionsToMark = onCall(async (request) => {
+
+    logger.info(`Entering getQuestionsToMark for user ${request.auth?.uid}`);
+
+    await verifyIsAdmin(request);
+
+    const schema = object({}).noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema & admin verification passed");
+
+    const quizzesToMark = await getCollection(DatabaseCollections.QuizAttempt)
+        .where("endTime", "!=", null)
+        .where("pass", "==", null)
+        .get()
+        .then((snapshot) => snapshot.docs)
+        .catch((err) => {
+            logger.info(`Error getting short answer questions: ${err}`);
+            throw new HttpsError("internal", `Error getting short answer questions: ${err}`);
+        });
+
+    logger.info(`Successfully retrieved ${quizzesToMark.length} quizzes with short answer questions to mark`);
+
+    const courseData = await Promise.all([...new Set(quizzesToMark.map((quiz) => quiz.data().courseId))].map((courseId) =>
+        getDoc(DatabaseCollections.Course, courseId)
+            .get()
+            .then((course) => ({ ...course.data(), id: courseId }))
+            .catch((err) => {
+                logger.info(`Error getting course data: ${err}`);
+                throw new HttpsError("internal", `Error getting course data: ${err}`);
+            })
+    ));
+
+    logger.info(`Successfully retrieved course data for ${courseData.length} courses`);
+
+    const userData = await Promise.all([...new Set(quizzesToMark.map((quiz) => quiz.data().userId))].map((userId) =>
+        getDoc(DatabaseCollections.User, userId)
+            .get()
+            .then((user) => ({ ...user.data(), id: userId }))
+            .catch((err) => {
+                logger.info(`Error getting user data: ${err}`);
+                throw new HttpsError("internal", `Error getting user data: ${err}`);
+            })
+    ));
+
+    logger.info(`Successfully retrieved user data for ${userData.length} users`);
+
+    return quizzesToMark.map((question) => {
+        const course: any = courseData.find((course) => course.id === question.data().courseId);
+        const user: any = userData.find((user) => user.id === question.data().userId);
+
+        return {
+            courseId: course.courseId,
+            courseName: course.name,
+            userId: user.id,
+            userName: user.name,
+            timestamp: question.data().timestamp,
+        };
+    });
+});
+
+export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuestionsToMark };
