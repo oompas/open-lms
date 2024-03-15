@@ -6,6 +6,7 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 import "../../../config/firebase";
 import { useState } from "react";
 import Link from "next/link"
+import TextField from "@/components/TextField";
 
 export default function Home() {
 
@@ -51,7 +52,7 @@ export default function Home() {
                     title={course.name}
                     status={course.status}
                     description={course.description}
-                    time={(course.minQuizTime >= 3600 ? Math.floor(course.minQuizTime / 3600) + "h " : "") + Math.floor(course.minQuizTime / 60) % 60 + "m"}
+                    time={(course.minQuizTime >= 60 ? Math.floor(course.minQuizTime / 60) + "h " : "") + course.minQuizTime % 60 + "m"}
                     color={(course.status === 2 ? "#468DF0" : (course.status === 3 || course.status === 4 ? "#EEBD31" : "#47AD63"))}
                     id={course.id}
                 />
@@ -61,9 +62,9 @@ export default function Home() {
     return (
         <main className="flex justify-center pt-14">
             <div className="flex flex-col bg-white w-[100%] p-16 rounded-2xl shadow-custom">
-                <div className="flex flex-row items-center">
-                    <div className="text-4xl mb-8">My Enrolled Courses</div>
-                    <Link className="bg-red-800 ml-auto text-white mb-4 p-4 font-bold rounded-2xl cursor-pointer hover:opacity-60 duration-100" href={`/course_search`}>
+                <div className="flex flex-row items-center mb-2">
+                    <div className="text-lg">My Enrolled Courses</div>
+                    <Link className="bg-red-800 ml-auto text-white p-4 font-bold rounded-2xl cursor-pointer hover:opacity-60 duration-100" href={`/course_search`}>
                         <div className="text-l text-center">Browse Available Courses</div>
                     </Link>
                 </div>

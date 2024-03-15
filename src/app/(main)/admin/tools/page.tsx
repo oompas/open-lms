@@ -1,4 +1,5 @@
 "use client"
+import QuizToMark from "@/app/(main)/admin/tools/QuizToMark";
 import ManageCourse from "@/app/(main)/admin/tools/ManageCourse";
 import LearnerInsight from "@/app/(main)/admin/tools/LearnerInsight";
 import CourseInsight from "@/app/(main)/admin/tools/CourseInsight";
@@ -6,8 +7,17 @@ import Button from "@/components/Button";
 import {useRouter} from "next/navigation";
 import { useState } from "react";
 import { useAsync } from "react-async-hook";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import "@/config/firebase";
+import { callApi } from "@/config/firebase";
+import TextField from "@/components/TextField";
+
+// Temporary data representing all quizzes that need to be marked
+const TEMP_COURSES_TO_MARK_DATA = [
+    { title: "Quiz on OpenLMS Platform", course: "Course on OpenLMS Platform", learner: "John Doe", id: 1 },
+    { title: "Quiz on OpenLMS Platform", course: "Course on OpenLMS Platform", learner: "Jane Doe", id: 2 },
+    { title: "Quiz on OpenLMS Platform", course: "Course on OpenLMS Platform", learner: "Jack Doe", id: 3 },
+    { title: "Quiz on OpenLMS Platform", course: "Course on OpenLMS Platform", learner: "Jackie Doe", id: 4 },
+    { title: "Quiz on OpenLMS Platform", course: "Course on OpenLMS Platform", learner: "Jim Doe", id: 5 }
+]
 
 // Temporary data representing all learners
 const TEMP_LEARNER_INSIGHT_DATA = [
@@ -39,7 +49,9 @@ const TEMP_COURSE_INSIGHT_DATA = [
 
 export default function Tools() {
 
-    const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
+    const courses = useAsync(callApi('getAvailableCourses'), []);
+    const learnerInsights = useAsync(callApi('getUserReports'), []);
+    const courseInsights = useAsync(callApi('getCourseReports'), []);
 
     const router = useRouter();
     const [search, setSearch] = useState("");
@@ -66,102 +78,135 @@ export default function Tools() {
             ));
     }
 
+    const getLearnerInsights = () => {
+        if (learnerInsights.loading) {
+            return <div>Loading...</div>;
+        }
+        if (!learnerInsights.result) {
+            return <div>Error loading learner insights</div>;
+        }
+
+        return (
+            <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
+                <table className="border-collapse w-full mt-2">
+                    <thead>
+                        <tr className="border-b-2 border-black text-left">
+                            <th rowSpan={2} colSpan={1}>
+                                Name
+                            </th>
+                            <th rowSpan={2} colSpan={1}>
+                                Email
+                            </th>
+                            <th className="py-1">Enrolled</th>
+                            <th className="py-1">In Progress</th>
+                            <th className="py-1">Completed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        { /* @ts-ignore */}
+                        { learnerInsights.result.data.map((learner: any, key: number) => (
+                            <LearnerInsight
+                                key={key}
+                                name={learner.name}
+                                email={learner.email}
+                                coursesEnrolled={learner.coursesEnrolled}
+                                coursesAttempted={learner.coursesAttempted}
+                                coursesCompleted={learner.coursesComplete}
+                                id={learner.uid}
+                            />
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+
+    const getCourseInsights = () => {
+        if (courseInsights.loading) {
+            return <div>Loading...</div>;
+        }
+        if (!courseInsights.result) {
+            return <div>Error loading course insights</div>;
+        }
+
+        return (
+            <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
+                <table className="border-collapse w-full">
+                    <thead>
+                        <tr className="border-b-2 border-black text-left">
+                            <th className="py-1">Course Name</th>
+                            <th className="py-1">Learners Completed</th>
+                            <th className="py-1">Average Completion Time</th>
+                            <th className="py-1">Average Quiz Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        { /* @ts-ignore */}
+                        { courseInsights.result.data
+                        .filter((course: any) => course.name.toLowerCase().includes(search.toLowerCase()))
+                        .map((course: any, key: number) => (
+                            <CourseInsight courseData={course}/>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+
     return (
-        <main className="flex-col justify-center items-center pt-14">
-            {/* Manage courses section */}
-            <div className="flex flex-col h-[60vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
+        <main className="flex-col justify-center items-center">
+            {/* Quizzes to mark section */}
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-between items-center mb-2">
                     <div className="flex flex-col">
-                        <div className="text-2xl mb-2">Manage Courses</div>
-                        <p className="mb-0 mr-2">Click on a course to navigate to course update screen.</p>
+                        <div className="text-lg mb-2">Quizzes To Mark</div>
                     </div>
-                    <div className="flex flex-row justify-end">
-                        <Button text="Create a Course" onClick={() => router.push('/home')}/>
-                        <input
-                            className={"border-4 border-[#9D1939] w-[55%] px-4 py-2 -mt-2 text-xl rounded-2xl ml-4"}
-                            type="text"
-                            placeholder="Search for a course..."
-                            onChange={(e) => setSearch(e.target.value)}
+                </div>
+                <div className="flex flex-wrap justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
+                    {TEMP_COURSES_TO_MARK_DATA.map((quiz, key) => (
+                        <QuizToMark
+                            key={key}
+                            title={quiz.title}
+                            course={quiz.course}
+                            learner={quiz.learner}
+                            id={quiz.id}
                         />
-                    </div>
-                </div>
-                <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                    {getCourses()}
-                </div>
-            </div>
-
-            {/* Learner insights section */}
-            <div className="flex flex-col h-[50vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
-                <div className="flex flex-row justify-end items-center mb-2">
-                    <div className="text-2xl mb-2 mr-auto">Learner Insights</div>
-                    <Button text="Invite a Learner" onClick={() => router.push('/home')}/>
-                    <Button text="Download User Reports" onClick={() => router.push('/home')} style="ml-4"/>
-                </div>
-                <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                    <table className="border-collapse border w-full">
-                        <thead>
-                        <tr className="bg-gray-200">
-                            <th className="border p-2">Name</th>
-                            <th className="border p-2">Number of Completed Courses</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {TEMP_LEARNER_INSIGHT_DATA.map((learner, key) => (
-                            <tr key={learner.id} className="border">
-                                <td className="border p-2">
-                                    <LearnerInsight
-                                        key={key}
-                                        learner={learner.learner}
-                                        count={learner.count}
-                                        id={learner.id}
-                                    />
-                                </td>
-                                <td className="border p-2">{learner.count}</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                    ))}
                 </div>
             </div>
 
             {/* Course insights section */}
-            <div className="flex flex-col h-[50vh] bg-white p-16 rounded-2xl shadow-custom">
-                <div className="flex flex-row justify-end items-center mb-2">
-                    <div className="text-2xl mb-2 mr-auto">Course Insights</div>
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
+                <div className="flex flex-row justify-end items-center mb-2 space-x-4">
+                    <div className="flex flex-col mr-auto">
+                        <div className="text-lg -mb-1">Course Insights</div>
+                        <p className="mr-2 text-gray-500">Click on a course to manage course contents.</p>
+                    </div>
+                    <TextField 
+                        placeholder="Search for a course..."
+                        text={search}
+                        onChange={setSearch}
+                    />
+                    <Button text="Create a Course" onClick={() => router.push('/admin/course/new')} filled />
                     <Button text="Download Course Reports" onClick={() => router.push('/home')}/>
                 </div>
-                <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                    <table className="border-collapse border w-full">
-                        <thead>
-                        <tr className="bg-gray-200">
-                            <th className="border p-2">Course Name</th>
-                            <th className="border p-2">Percentage of Learners Completed</th>
-                            <th className="border p-2">Average Completion Time</th>
-                            <th className="border p-2">Average Quiz Score</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {TEMP_COURSE_INSIGHT_DATA.map((course, key) => (
-                            <tr key={course.id} className="border">
-                                <td className="border p-2">
-                                    <CourseInsight
-                                        key={key}
-                                        title={course.title}
-                                        count={course.count}
-                                        time={course.time}
-                                        score={course.score}
-                                        id={course.id}
-                                    />
-                                </td>
-                                <td className="border p-2">{course.count}/10</td>
-                                <td className="border p-2">{course.time} minutes</td>
-                                <td className="border p-2">{course.score}%</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
+                {getCourseInsights()}
             </div>
+
+            {/* Learner insights section */}
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom">
+                <div className="flex flex-row justify-end items-center">
+                    <div className="flex flex-col mr-auto">
+                        <div className="text-lg -mb-1">Learner Insights</div>
+                        <p className="mr-2 text-gray-500">Click on a user to view individual data.</p>
+                    </div>
+                    <Button text="Invite a Learner" onClick={() => router.push('/home')}/>
+                    <Button text="Download User Reports" onClick={() => router.push('/home')} style="ml-4"/>
+                </div>
+                {getLearnerInsights()}
+            </div>
+
+            <div className="h-12" />
         </main>
     )
 }
