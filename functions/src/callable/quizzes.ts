@@ -7,7 +7,9 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import {logger} from "firebase-functions";
+import {firestore} from "firebase-admin";
 import {array, number, object, string} from "yup";
+import FieldValue = firestore.FieldValue;
 
 /**
  * Updates the quiz for a given course (add, delete or update)
@@ -141,17 +143,14 @@ const getQuiz = onCall(async (request) => {
 
 /**
  * Gets the responses for each question for a specific quiz attempt
- * pass in CourseAttemptID & QuizAttemptID
- * then query QuizQuestions objects for matching, then return those values
  */
 const getQuizResponses = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
     const schema = object({
-        courseId: string().required(),
-        userId: string().required(),
-    })
+        quizAttemptId: string().required(),
+    });
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -160,30 +159,50 @@ const getQuizResponses = onCall(async (request) => {
         });
     logger.info("Schema verification passed");
 
-    const { courseId, userId } = request.data
+    const quizAttemptId = request.data;
 
-    return getCollection(DatabaseCollections.QuizAttempt)
-        .where("userId", "==", userId)
-        .where("courseId", "==", courseId)
-        .where("endTime", "!=", null)
+    // Verify the quiz attempt isn't in progress
+    const quizAttemptRef = await getCollection(DatabaseCollections.QuizAttempt)
+        .doc(quizAttemptId)
+        .get();
 
-    // TODO: Get the quiz attempt object and return the relevant info
+    if (!quizAttemptRef.exists) {
+        logger.error(`Quiz attempt ${quizAttemptId} does not exist.`)
+    }
+
+    // Verify the quiz attempt has been completed
+    // @ts-ignore
+    if (!quizAttemptRef.data().endTime) {
+        logger.info(`Quiz attempt ${quizAttemptId} is not completed.`)
+    }
+
+    // Retrieve the respective quiz question attempt objects if the quiz attempt is completed
+    const quizQuestionAttempts = await getCollection(DatabaseCollections.QuizQuestionAttempt)
+        .where("quizAttemptId", "==", quizAttemptId)
+        .get();
+
+    if (quizQuestionAttempts.empty) {
+        logger.info(`No responses found for quiz attempt ${quizAttemptId}`);
+        return [];
+    } else {
+        return quizQuestionAttempts.docs.map(doc => ({
+            id: doc.id, ...doc.data()
+        }));
+    }
+
 });
 
 /**
  * Returns the quiz data and starts the quiz timer
- * - just need the courseId, userId, time that they started
- * - creating a QuizAttempt with the userId, courseId, startTime
  */
 const startQuiz = onCall(async (request) => {
 
-    // verify they do not have an in progress quiz attempt
     logger.info(`Starting quiz for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
     verifyIsAuthenticated(request);
 
     const schema = object({
-        courseId: string().required(),
+        courseAttemptId: string().required(),
     })
 
     await schema.validate(request.data, { strict: true })
@@ -193,12 +212,27 @@ const startQuiz = onCall(async (request) => {
         });
     logger.info("Schema verification passed");
 
-    const courseId = request.data;
+    const courseAttemptId = request.data;
+    const userId = request.auth?.uid;
 
-    return getCollection(DatabaseCollections.QuizAttempt).add({ userID: request.auth?.uid,
-        courseId: courseId, startTime: Date() });
-    // look into firestore specific date object in markQuiz or submitQuiz instead of using Date()
+    // Verifying there's no in-progress quiz attempt
+    const quizAttemptCollection = getCollection(DatabaseCollections.QuizAttempt);
+    const existingAttemptQuery = await quizAttemptCollection
+        .where("userId", "==", userId)
+        .where("courseAttemptId", "==", courseAttemptId)
+        .where("endTime", "==", "null")
+        .get();
 
+    if (!existingAttemptQuery.empty) {
+        logger.error(`User ${userId} already has a quiz attempt in progress under ${courseAttemptId}`);
+        throw new HttpsError('already-exists', `User ${userId} already has a quiz attempt in progress.`);
+    }
+
+    return quizAttemptCollection.add({
+        userId: userId,
+        courseAttemptId: courseAttemptId,
+        startTime: FieldValue.serverTimestamp(),
+    });
 });
 
 /**

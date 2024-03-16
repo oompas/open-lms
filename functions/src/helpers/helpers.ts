@@ -9,6 +9,7 @@ enum DatabaseCollections {
     EnrolledCourse = "EnrolledCourse",
     ReportedCourse = "ReportedCourse",
     QuizQuestion = "QuizQuestion",
+    QuizQuestionAttempt = "QuizQuestionAttempt",
     CourseAttempt = "CourseAttempt",
     QuizAttempt = "QuizAttempt",
     Email = "Email",
