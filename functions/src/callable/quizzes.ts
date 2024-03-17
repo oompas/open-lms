@@ -115,6 +115,8 @@ const updateQuizQuestions = onCall(async (request) => {
  */
 const getQuiz = onCall(async (request) => {
 
+    logger.info(`Retrieving quiz questions for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
     verifyIsAuthenticated(request);
 
     const schema = object({
@@ -196,16 +198,42 @@ const getQuiz = onCall(async (request) => {
  */
 const getQuizResponses = onCall(async (request) => {
 
+    logger.info(`Retrieving quiz responses for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
     await verifyIsAdmin(request);
 
-    /*
-    const schema = object({
-        courseId: string().required(),
-        userId: string().required(),
-    });
-     */
+    if (!request.data.quizAttemptId) {
+        throw new HttpsError("invalid-argument", "Invalid request: 'quizAttemptId' is required");
+    }
 
-    // TODO: Get the course attempt object and return the relevant info
+    const quizAttemptId = request.data;
+
+    // Verify the quiz attempt exists
+    const quizAttemptRef = await getCollection(DatabaseCollections.QuizAttempt)
+        .where("quizAttemptId", "==", quizAttemptId)
+        .where("endTime", "==", null)
+        .get();
+
+    // Verify the quiz attempt has been completed
+    if (!quizAttemptRef.empty) {
+        logger.info(`Quiz attempt ${quizAttemptId} is not completed.`)
+        return [];
+    }
+
+    // Retrieve the respective quiz question attempt objects if the quiz attempt is completed
+    const quizQuestionAttempts = await getCollection(DatabaseCollections.QuizQuestionAttempt)
+        .where("quizAttemptId", "==", quizAttemptId)
+        .get();
+
+    if (quizQuestionAttempts.empty) {
+        logger.info(`No responses found for quiz attempt ${quizAttemptId}`);
+        return [];
+    } else {
+        return quizQuestionAttempts.docs.map(doc => ({
+            id: doc.id, ...doc.data()
+        }));
+    }
+
 });
 
 /**
@@ -213,43 +241,33 @@ const getQuizResponses = onCall(async (request) => {
  */
 const startQuiz = onCall(async (request) => {
 
-    // can't use await without making this an async function
-    // however, it's a quiz, so it can't be async so IDK
-    // what to do instead
+    logger.info(`Starting quiz for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
     verifyIsAuthenticated(request);
 
-    /*
-    const schema = object({
-        courseId: string().required(),
+    if (!request.data.courseAttemptId) {
+        throw new HttpsError("invalid-argument", "Invalid request: 'courseAttemptId' is required");
+    }
+
+    const courseAttemptId = request.data;
+    const userId = request.auth?.uid;
+
+    // Verifying there's no in-progress quiz attempt
+    const quizAttemptCollection = getCollection(DatabaseCollections.QuizAttempt);
+    const existingAttemptQuery = await quizAttemptCollection
+        .where("courseAttemptId", "==", courseAttemptId)
+        .where("endTime", "==", null)
+        .get();
+
+    if (!existingAttemptQuery.empty) {
+        logger.error(`User ${userId} already has a quiz attempt in progress under ${courseAttemptId}`);
+        throw new HttpsError('already-exists', `User ${userId} already has a quiz attempt in progress.`);
+    }
+
+    return quizAttemptCollection.add({
+        courseAttemptId: courseAttemptId,
+        startTime: FieldValue.serverTimestamp(),
     });
-    // need to grab quizId from the course via courseId, for now I just put it as a string
-
-
-    await schema.validate((request.data)
-        // need to figure out how to know if the schema has been validated before
-        // going into the rest of the logic
-        .then(validationCheck) = > {
-    }
-     */
-    /*
-    await schema.validate(request.data, { strict: true })
-        .catch((err) => {
-            logger.error(`Error validating request: ${err}`);
-            throw new HttpsError('invalid-argument', err);
-        });
-
-    // I believe request.auth.uid is because of me coding this like an async function
-    // but without the awaits, so it thinks it can skip around potentially?
-    const { courseId } = request.data;
-    const quizStartInfo = {
-        userId: request.auth.uid,
-        courseId: courseId,
-        quizId: quizId,
-        startTime: Timestamp.now(),
-    }
-
-     */
-    // TODO: Start a quiz attempt & return the questions
 });
 
 /**

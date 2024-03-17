@@ -6,8 +6,9 @@ import { logger } from "firebase-functions";
 enum DatabaseCollections {
     User = "User",
     Course = "Course",
-    QuizQuestion = "QuizQuestion",
     EnrolledCourse = "EnrolledCourse",
+    ReportedCourse = "ReportedCourse",
+    QuizQuestion = "QuizQuestion",
     CourseAttempt = "CourseAttempt",
     QuizAttempt = "QuizAttempt",
     QuizQuestionAttempt = "QuizQuestionAttempt",

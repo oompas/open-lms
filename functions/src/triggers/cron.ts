@@ -1,8 +1,8 @@
-import { logger } from "firebase-functions";
-import { onSchedule } from 'firebase-functions/v2/scheduler';
-import { HttpsError } from "firebase-functions/v2/https";
-import { auth } from "../helpers/setup";
-import { DatabaseCollections, getCollection } from "../helpers/helpers";
+import {logger} from "firebase-functions";
+import {onSchedule} from 'firebase-functions/v2/scheduler';
+import {HttpsError} from "firebase-functions/v2/https";
+import {auth} from "../helpers/setup";
+import {DatabaseCollections, getCollection} from "../helpers/helpers";
 
 /**
  * Removes users that have been unverified for at least 30 days
