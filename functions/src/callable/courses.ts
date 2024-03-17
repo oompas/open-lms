@@ -9,7 +9,7 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { array, boolean, number, object, string } from 'yup';
+import { boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import FieldValue = firestore.FieldValue;
 
@@ -240,6 +240,7 @@ const getAvailableCourses = onCall(async (request) => {
                     name: course.data().name,
                     description: course.data().description,
                     status: status,
+                    minTime: course.data().minTime,
                 };
 
                 allCourses.push(courseData);
