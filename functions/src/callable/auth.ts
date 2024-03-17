@@ -104,18 +104,6 @@ const resetPassword = onCall(async (request) => {
 
     logger.info(`Generated password reset link for ${email}: ${link}`);
 
-    // const emailData = {
-    //     to: email,
-    //     message: {
-    //         subject: 'Reset Your Password for OpenLMS',
-    //         html: `<p style="font-size: 16px;">A password reset request was made for your account</p>
-    //                <p style="font-size: 16px;">Reset your password here: ${link}</p>
-    //                <p style="font-size: 12px;">If you didn't request this, you can safely disregard this email</p>
-    //                <p style="font-size: 12px;">Best Regards,</p>
-    //                <p style="font-size: 12px;">The OpenLMS Team</p>`,
-    //     }
-    // };
-
     const emailData = {
         to: email,
         message: {
@@ -123,7 +111,7 @@ const resetPassword = onCall(async (request) => {
             html: `
         <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ccc; padding: 20px;">
             <header style="text-align: center; margin-bottom: 20px;">
-                <img src="YOUR_LOGO_URL" alt="OpenLMS Logo" style="max-width: 200px;">
+                <img src="LOGO_URL" alt="OpenLMS Logo" style="max-width: 200px;">
             </header>
             <section style="margin-bottom: 20px;">
                 <h2 style="font-size: 24px; color: #333;">Password Reset Request</h2>
@@ -139,8 +127,8 @@ const resetPassword = onCall(async (request) => {
             <footer style="font-size: 12px; color: #777; text-align: center;">
                 <p>Best Regards,</p>
                 <p>The OpenLMS Team</p>
-                <p><a href="https://github.com/oompas/open-lms" style="color: #0066CC;">Platform ReadMe</a> | 
-                <a href="YOUR_TERMS_SERVICE_URL" style="color: #0066CC;">Platform License</a></p>
+                <p><a href="https://github.com/oompas/open-lms" style="color: #0066CC;">Platform Readme</a> | 
+                <a href="https://github.com/oompas/open-lms/blob/main/LICENSE" style="color: #0066CC;">Platform License</a></p>
             </footer>
         </div>
         `,
