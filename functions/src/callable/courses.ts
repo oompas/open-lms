@@ -314,12 +314,7 @@ const getCourseInfo = onCall(async (request) => {
                     .where("userId", "==", request.auth?.uid)
                     .where("courseId", "==", request.data.courseId)
                     .get()
-                    .then((snapshot) => {
-                        const attempt = snapshot?.docs[0]?.data() ?? null;
-                        if (attempt === null) return null;
-                        attempt["id"] = snapshot.docs[0].id;
-                        return attempt;
-                    })
+                    .then((docs) => docs.empty ? null : docs.docs[0].data())
                     .catch((error) => {
                         logger.error(`Error getting course attempts: ${error}`);
                         throw new HttpsError("internal", `Error getting courses, please try again later`);
@@ -373,8 +368,7 @@ const getCourseInfo = onCall(async (request) => {
                         });
                 }
 
-                logger.info(`Data queries completed, returning course info...`);
-                logger.info(`Course attempt: ${JSON.stringify(courseAttempt)}`);
+                logger.info("Data queries passed, returning course info...");
 
                 return {
                     courseId: course.id,
