@@ -275,13 +275,19 @@ const startQuiz = onCall(async (request) => {
             }
         });
 
-    return quizAttemptCollection.add({
-        userId: userId,
-        courseId: request.data.courseId,
-        courseAttemptId: request.data.courseAttemptId,
-        startTime: FieldValue.serverTimestamp(),
-        endTime: null,
-    });
+    return quizAttemptCollection
+        .add({
+            userId: userId,
+            courseId: request.data.courseId,
+            courseAttemptId: request.data.courseAttemptId,
+            startTime: FieldValue.serverTimestamp(),
+            endTime: null,
+        })
+        .then(() => "Successfully started quiz")
+        .catch((err) => {
+            logger.error(`Error starting quiz: ${err}`);
+            throw new HttpsError('internal', `Error starting quiz}`);
+        });
 });
 
 /**
