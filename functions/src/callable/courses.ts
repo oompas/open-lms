@@ -314,7 +314,19 @@ const getCourseInfo = onCall(async (request) => {
                     .where("userId", "==", request.auth?.uid)
                     .where("courseId", "==", request.data.courseId)
                     .get()
-                    .then((docs) => docs.empty ? null : docs.docs[0].data())
+                    .then((docs) => {
+                        const currentAttempt = docs.docs.filter((doc) => doc.data().endTime === null);
+                        if (currentAttempt.length > 1) {
+                            throw new HttpsError("internal", "User has multiple in-progress course attempts");
+                        }
+                        if (currentAttempt.length === 0) {
+                            return null;
+                        }
+
+                        const attempt = currentAttempt[0].data();
+                        attempt["id"] = currentAttempt[0].id;
+                        return attempt;
+                    })
                     .catch((error) => {
                         logger.error(`Error getting course attempts: ${error}`);
                         throw new HttpsError("internal", `Error getting courses, please try again later`);

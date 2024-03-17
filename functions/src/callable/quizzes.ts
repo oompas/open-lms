@@ -245,28 +245,42 @@ const startQuiz = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
-    if (!request.data.courseAttemptId) {
-        throw new HttpsError("invalid-argument", "Invalid request: 'courseAttemptId' is required");
-    }
+    const schema = object({
+        courseId: string().required().length(20),
+        courseAttemptId: string().required().length(20),
+    }).noUnknown(true);
 
-    const courseAttemptId = request.data;
-    const userId = request.auth?.uid;
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
+
+    // @ts-ignore
+    const userId: string = request.auth?.uid;
 
     // Verifying there's no in-progress quiz attempt
     const quizAttemptCollection = getCollection(DatabaseCollections.QuizAttempt);
-    const existingAttemptQuery = await quizAttemptCollection
-        .where("courseAttemptId", "==", courseAttemptId)
+    await quizAttemptCollection
+        .where("userId", "==", userId)
+        .where("courseAttemptId", "==", request.data.courseAttemptId)
         .where("endTime", "==", null)
-        .get();
-
-    if (!existingAttemptQuery.empty) {
-        logger.error(`User ${userId} already has a quiz attempt in progress under ${courseAttemptId}`);
-        throw new HttpsError('already-exists', `User ${userId} already has a quiz attempt in progress.`);
-    }
+        .get()
+        .then((snapshot) => {
+            if (!snapshot.empty) {
+                logger.error(`User ${userId} already has quiz attempt(s) (${snapshot.size}) in progress under ${request.data.courseAttemptId}`);
+                throw new HttpsError('already-exists', `User ${userId} already has a quiz attempt in progress.`);
+            }
+        });
 
     return quizAttemptCollection.add({
-        courseAttemptId: courseAttemptId,
+        userId: userId,
+        courseId: request.data.courseId,
+        courseAttemptId: request.data.courseAttemptId,
         startTime: FieldValue.serverTimestamp(),
+        endTime: null,
     });
 });
 
