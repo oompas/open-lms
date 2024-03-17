@@ -1,10 +1,9 @@
 "use client";
 import Link from 'next/link';
 import '../globals.css';
-import { auth, callApi } from '@/config/firebase';
+import { auth } from '@/config/firebase';
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from 'react';
-type HttpsCallableResult<T = any> = import('@/config/firebase').HttpsCallableResult<T>;
 
 export default function LearnerLayout({
    children,
@@ -22,13 +21,13 @@ export default function LearnerLayout({
     const useAdminStatus = () => {
         const [isAdmin, setIsAdmin] = useState(false);
         useEffect(() => {
-            const getUserProfile = callApi('getUserProfile');
-            getUserProfile()
-                .then((result: HttpsCallableResult) => {
-                    setIsAdmin(result.data.isAdmin || false);
+            auth.currentUser?.getIdTokenResult()
+                .then((idTokenResult) => {
+                    // Confirm the user is an Admin.
+                    setIsAdmin(!!idTokenResult.claims.admin);
                 })
-                .catch((error: Error) => {
-                    console.error('Error:', error.message);
+                .catch((error) => {
+                    console.log(error);
                 });
         }, []);
         return isAdmin;
