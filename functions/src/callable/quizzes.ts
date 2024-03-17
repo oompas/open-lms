@@ -113,6 +113,8 @@ const updateQuizQuestions = onCall(async (request) => {
  */
 const getQuiz = onCall(async (request) => {
 
+    logger.info(`Retrieving quiz questions for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
     verifyIsAuthenticated(request);
 
     if (!request.data.courseId) {
@@ -146,34 +148,26 @@ const getQuiz = onCall(async (request) => {
  */
 const getQuizResponses = onCall(async (request) => {
 
+    logger.info(`Retrieving quiz responses for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
     await verifyIsAdmin(request);
 
-    const schema = object({
-        quizAttemptId: string().required(),
-    });
-
-    await schema.validate(request.data, { strict: true })
-        .catch((err) => {
-            logger.error(`Error validating request: ${err}`)
-            throw new HttpsError('invalid-argument', err);
-        });
-    logger.info("Schema verification passed");
+    if (!request.data.quizAttemptId) {
+        throw new HttpsError("invalid-argument", "Invalid request: 'quizAttemptId' is required");
+    }
 
     const quizAttemptId = request.data;
 
-    // Verify the quiz attempt isn't in progress
+    // Verify the quiz attempt exists
     const quizAttemptRef = await getCollection(DatabaseCollections.QuizAttempt)
-        .doc(quizAttemptId)
+        .where("quizAttemptId", "==", quizAttemptId)
+        .where("endTime", "==", null)
         .get();
 
-    if (!quizAttemptRef.exists) {
-        logger.error(`Quiz attempt ${quizAttemptId} does not exist.`)
-    }
-
     // Verify the quiz attempt has been completed
-    // @ts-ignore
-    if (!quizAttemptRef.data().endTime) {
+    if (!quizAttemptRef.empty) {
         logger.info(`Quiz attempt ${quizAttemptId} is not completed.`)
+        return [];
     }
 
     // Retrieve the respective quiz question attempt objects if the quiz attempt is completed
@@ -201,16 +195,9 @@ const startQuiz = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
-    const schema = object({
-        courseAttemptId: string().required(),
-    })
-
-    await schema.validate(request.data, { strict: true })
-        .catch((err) => {
-            logger.error(`Error validating request: ${err}`);
-            throw new HttpsError('invalid-argument', err);
-        });
-    logger.info("Schema verification passed");
+    if (!request.data.courseAttemptId) {
+        throw new HttpsError("invalid-argument", "Invalid request: 'courseAttemptId' is required");
+    }
 
     const courseAttemptId = request.data;
     const userId = request.auth?.uid;
@@ -218,9 +205,8 @@ const startQuiz = onCall(async (request) => {
     // Verifying there's no in-progress quiz attempt
     const quizAttemptCollection = getCollection(DatabaseCollections.QuizAttempt);
     const existingAttemptQuery = await quizAttemptCollection
-        .where("userId", "==", userId)
         .where("courseAttemptId", "==", courseAttemptId)
-        .where("endTime", "==", "null")
+        .where("endTime", "==", null)
         .get();
 
     if (!existingAttemptQuery.empty) {
@@ -229,7 +215,6 @@ const startQuiz = onCall(async (request) => {
     }
 
     return quizAttemptCollection.add({
-        userId: userId,
         courseAttemptId: courseAttemptId,
         startTime: FieldValue.serverTimestamp(),
     });
