@@ -18,7 +18,7 @@ const createAccount = onCall(async (request) => {
 
     const schema = object({
         email: string().required().email(),
-        password: string().required().min(6, "Password must be at least six characters long"),
+        password: string().required().min(10, "Password must be at least ten characters long"),
     });
 
     await schema.validate(request.data, { strict: true })
@@ -31,6 +31,23 @@ const createAccount = onCall(async (request) => {
 
     const email = request.data.email;
     const password = request.data.password;
+
+    let score = 0;
+
+    const hasUpperCase = /[A-Z]/;
+    const hasLowerCase = /[a-z]/;
+    const hasNumbers = /[0-9]/;
+    const hasSpecialChars = /[!#$%&@?]/
+
+    // Check for each password requirement
+    if (hasUpperCase.test(password)) score += 1;
+    if (hasLowerCase.test(password)) score += 1;
+    if (hasNumbers.test(password)) score += 1;
+    if (hasSpecialChars.test(password)) score += 1;
+
+    if (score < 4) {
+        throw new HttpsError('invalid-argument', "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character");
+    }
 
     // Create user (will throw an error if the email is already in use)
     return auth
@@ -51,7 +68,7 @@ const createAccount = onCall(async (request) => {
             }
             if (error.code === 'auth/invalid-password') {
                 logger.warn(`Password ${password} is invalid`);
-                throw new HttpsError('invalid-argument', `Password is invalid. It must be a string with at least six characters.`);
+                throw new HttpsError('invalid-argument', `Password is invalid. It must be a string with at least ten characters.`);
             }
             if (error.code === 'auth/email-already-exists') {
                 logger.warn(`Email ${email} in use`);
@@ -87,15 +104,46 @@ const resetPassword = onCall(async (request) => {
 
     logger.info(`Generated password reset link for ${email}: ${link}`);
 
+    // const emailData = {
+    //     to: email,
+    //     message: {
+    //         subject: 'Reset Your Password for OpenLMS',
+    //         html: `<p style="font-size: 16px;">A password reset request was made for your account</p>
+    //                <p style="font-size: 16px;">Reset your password here: ${link}</p>
+    //                <p style="font-size: 12px;">If you didn't request this, you can safely disregard this email</p>
+    //                <p style="font-size: 12px;">Best Regards,</p>
+    //                <p style="font-size: 12px;">The OpenLMS Team</p>`,
+    //     }
+    // };
+
     const emailData = {
         to: email,
         message: {
-            subject: 'Reset your password for OpenLMS',
-            html: `<p style="font-size: 16px;">A password reset request was made for your account</p>
-                   <p style="font-size: 16px;">Reset your password here: ${link}</p>
-                   <p style="font-size: 12px;">If you didn't request this, you can safely disregard this email</p>
-                   <p style="font-size: 12px;">Best Regards,</p>
-                   <p style="font-size: 12px;">-The OpenLMS Team</p>`,
+            subject: 'Reset Your Password for OpenLMS',
+            html: `
+        <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ccc; padding: 20px;">
+            <header style="text-align: center; margin-bottom: 20px;">
+                <img src="YOUR_LOGO_URL" alt="OpenLMS Logo" style="max-width: 200px;">
+            </header>
+            <section style="margin-bottom: 20px;">
+                <h2 style="font-size: 24px; color: #333;">Password Reset Request</h2>
+                <p style="font-size: 16px; color: #555;">Hi there,</p>
+                <p style="font-size: 16px; color: #555;">A password reset request was made for your account. 
+                If you did not make this request, please ignore this email. Otherwise, you can reset your password by 
+                clicking the button below:</p>
+                <div style="text-align: center; margin: 20px 0;">
+                    <a href="${link}" style="background-color: #0066CC; color: white; padding: 10px 20px; 
+                    text-decoration: none; font-size: 16px; border-radius: 5px;">Reset Your Password</a>
+                </div>
+            </section>
+            <footer style="font-size: 12px; color: #777; text-align: center;">
+                <p>Best Regards,</p>
+                <p>The OpenLMS Team</p>
+                <p><a href="https://github.com/oompas/open-lms" style="color: #0066CC;">Platform ReadMe</a> | 
+                <a href="YOUR_TERMS_SERVICE_URL" style="color: #0066CC;">Platform License</a></p>
+            </footer>
+        </div>
+        `,
         }
     };
 
