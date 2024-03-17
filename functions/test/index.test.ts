@@ -19,5 +19,3 @@ console.log("Starting firebase tests...");
 console.log("==========================");
 
 export default testEnv;
-
-import "./helpers/setupDummyData";

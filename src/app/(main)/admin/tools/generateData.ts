@@ -1,14 +1,4 @@
-import { getFunctions, httpsCallable } from "firebase/functions";
-
-interface course {
-    name: string,
-    description: string,
-    link: string,
-    minTime: number,
-    maxQuizAttempts: number | null
-    quizTimeLimit: number | null
-    active: boolean
-}
+import { callApi } from "@/config/firebase";
 
 // Dummy course data
 const rawCourseData: { name: string, description: string, link: string }[] = [
@@ -49,37 +39,158 @@ const rawCourseData: { name: string, description: string, link: string }[] = [
     }
 ];
 
+const exampleQuestions = [
+    {
+        question: "What is the capital of Canada?",
+        type: "mc",
+        answers: ["Ottawa", "Toronto", "Montreal", "Vancouver"],
+        correctAnswer: 0,
+    },
+    {
+        question: "Is the sky blue?",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "What is the largest city in Canada by population?",
+        type: "mc",
+        answers: ["Ottawa", "Toronto", "Montreal", "Vancouver"],
+        correctAnswer: 1,
+    },
+    {
+        question: "What is the largest province in Canada by area?",
+        type: "mc",
+        answers: ["Ontario", "Quebec", "British Columbia", "Alberta"],
+        correctAnswer: 1,
+    },
+    {
+        question: "What is the smallest province in Canada by area?",
+        type: "mc",
+        answers: ["Ontario", "Quebec", "British Columbia", "Prince Edward Island"],
+        correctAnswer: 3,
+    },
+    {
+        question: "What is the smallest territory in Canada by area?",
+        type: "mc",
+        answers: ["Yukon", "Northwest Territories", "Nunavut"],
+        correctAnswer: 0,
+    },
+    {
+        question: "What is the largest territory in Canada by area?",
+        type: "mc",
+        answers: ["Yukon", "Northwest Territories", "Nunavut"],
+        correctAnswer: 2,
+    },
+    {
+        question: "Which Canadian province or territory is the most beautiful? Why?",
+        type: "sa",
+    },
+    {
+        question: "Canadian confederation was in 1867",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "What is the national animal of Canada?",
+        type: "mc",
+        answers: ["Beaver", "Moose", "Polar Bear", "Loon"],
+        correctAnswer: 0,
+    },
+    {
+        question: "What sets Canada apart from the United states culturally?",
+        type: "sa",
+    },
+    {
+        question: "What person, place or thing best exemplifies Canadian culture best in your opinion and why?",
+        type: "sa",
+    },
+    {
+        question: "What is the national summer sport of Canada?",
+        type: "mc",
+        answers: ["Hockey", "Lacrosse", "Soccer", "Baseball"],
+        correctAnswer: 1,
+    },
+    {
+        question: "What is the national winter sport of Canada?",
+        type: "mc",
+        answers: ["Hockey", "Lacrosse", "Soccer", "Baseball"],
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Ontario is Toronto",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Quebec is Montreal",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of British Columbia is Vancouver",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Alberta is Calgary",
+        type: "tf",
+        correctAnswer: 1,
+    }
+]
+
 const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+const randomChance = (chance: number) => Math.random() < chance;
 
-const courses: course[] = rawCourseData.map((course) => {
-    const hasQuiz = Math.random() < 0.8;
+const courses = rawCourseData.map((course) => {
 
-    return {
-        ...course,
-        minTime: (Math.random() < 0.7 ? randomInt(1, 3) * 15 : randomInt(1, 12) * 60), // 15/30/45 min or 1-12 hours
-        maxQuizAttempts: hasQuiz ? randomInt(1, 10) : null,
-        quizTimeLimit: hasQuiz ? Math.random() < 0.8 ? randomInt(1, 3) * 15 : randomInt(1, 4) : null,
-        active: Math.random() < 0.9,
-    };
+    if (randomChance(0.7)) { // @ts-ignore
+        course["minTime"] = Math.random() < 0.7 ? randomInt(1, 3) * 15 : randomInt(1, 12) * 60;
+    }
+    let hasQuiz = false; // @ts-ignore
+    if (!course["minTime"] || randomChance(0.6)) {
+        hasQuiz = true; // @ts-ignore
+        course["quiz"] = {
+            minScore: randomChance(0.5) ? randomInt(1, 2) : null,
+            maxAttempts: randomChance(0.5) ? randomInt(1, 10) : null,
+            timeLimit: randomChance(0.5) ? (randomChance(0.7) ? randomInt(1, 3) * 15 : randomInt(1, 4)) : null,
+            preserveOrder: randomChance(0.5)
+        };
+    }
+
+    if (hasQuiz) { // @ts-ignore
+        course["quizQuestions"] = exampleQuestions.sort(() => Math.random() - 0.5).slice(0, randomInt(2, 6)).map((question) => {
+            const marks = question.type === "sa" ? randomInt(2, 5) : randomInt(1, 2);
+            return { ...question, marks: marks };
+        });
+    }
+
+    return course;
 });
 
 const generateDummyData = async () => {
 
     // First, clean the database data (leaves users & emails) so the new data can be added without conflicts
-    const functions = getFunctions();
-    await httpsCallable(functions, 'cleanDatabase')()
+    await callApi('cleanDatabase')()
         .then(() => console.log("Successfully cleaned database data"))
         .catch((error) => { throw new Error(`Error cleaning database data: ${error}`); });
 
     // Add all the courses
-    return Promise.all(courses.map((course) =>
-        httpsCallable(functions, 'addCourse')(course)
+    const ids: string[] = [];
+    await Promise.all(courses.map((course) =>
+        callApi('addCourse')(course)
             .then((id) => {
                 if (typeof id.data !== 'string') {
                     throw new Error(`Error: saveCourse should return a course ID string. Returned value: ${id}`);
                 }
+                ids.push(id.data);
             })
             .catch((error) => { throw new Error(`Error adding course (name: ${course.name}): ${error}`); })
+    ));
+
+    return Promise.all(ids.map((id) =>
+        callApi('publishCourse')( { courseId: id })
+            .then(() => console.log(`Successfully published course ${id}`))
+            .catch((error) => { throw new Error(`Error publishing course ${id}: ${error}`); })
     ));
 }
 

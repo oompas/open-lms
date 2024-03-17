@@ -23,21 +23,24 @@ const randomInt = (min: number, max: number) => Math.floor(Math.random() * (Math
 const callOnCallFunction = async (functionName: string, data: any) => httpsCallable(clientFunctions, functionName)(data);
 
 // Calls an onCall function for a given user
-const callOnCallFunctionWithAuth = async (functionName: string, data: any, email: string, password: string) => {
+const callOnCallFunctionWithAuth = async (functionName: string, data: any, user: { email: string, password: string }) => {
     if (clientAuth.currentUser) {
         await signOut(clientAuth)
-            .then(() => console.log(`Successfully signed out of account ${email}`))
+            .then(() => console.log(`Successfully signed out of account ${user.email}`))
             .catch((err) => { throw new Error(`Error signing out: ${err}`); });
     }
 
-    await signInWithEmailAndPassword(clientAuth, email, password)
-        .then(() => console.log(`Successfully logged in to account ${email}`))
-        .catch((err) => { throw new Error(`Error signing into ${email}: ${err}`); });
+    await signInWithEmailAndPassword(clientAuth, user.email, user.password)
+        .then(() => console.log(`Successfully logged in to account ${user.email}`))
+        .catch((err) => { throw new Error(`Error signing into ${user.email}: ${err}`); });
 
     return httpsCallable(clientFunctions, functionName)(data);
 }
 
+// Delays execution for the specified number of milliseconds
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const USER_ID_LENGTH: number = 28;
 const DOCUMENT_ID_LENGTH: number = 20;
 
-export { randomString, randomInt, callOnCallFunction, callOnCallFunctionWithAuth, USER_ID_LENGTH, DOCUMENT_ID_LENGTH };
+export { randomString, randomInt, callOnCallFunction, callOnCallFunctionWithAuth, delay, USER_ID_LENGTH, DOCUMENT_ID_LENGTH };

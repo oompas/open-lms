@@ -121,10 +121,16 @@ export default function IDCourse({
                     className="flex flex-col justify-center items-center ml-auto border-2 rounded-xl px-10 py-4 shadow-lg">
                     <div className="text-sm -mb-1">status:</div>
                     <div className="text-2xl">{statusNames[status]}</div>
-                    <div className="text-sm mt-2">{status === 1 ? "Minimum" : "Required"} time:</div>
-                    <div className="text-3xl">
-                        {countdown > 0 || status < 3 ? getTime() : "Completed"}
-                    </div>
+                    {
+                        course.minTime && (
+                            <>
+                                <div className="text-sm mt-2">{status === 1 ? "Minimum" : "Required"} time:</div>
+                                <div className="text-3xl">
+                                    {countdown > 0 || status < 3 ? getTime() : "Completed"}
+                                </div>
+                            </>
+                        )
+                    }
                 </div>
             </div>
         </main>

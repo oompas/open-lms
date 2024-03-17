@@ -8,6 +8,7 @@ import {useRouter} from "next/navigation";
 import { useState } from "react";
 import { useAsync } from "react-async-hook";
 import { callApi } from "@/config/firebase";
+import TextField from "@/components/TextField";
 
 // Temporary data representing all quizzes that need to be marked
 const TEMP_COURSES_TO_MARK_DATA = [
@@ -87,28 +88,23 @@ export default function Tools() {
 
         return (
             <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                <table className="border-collapse w-full">
+                <table className="border-collapse w-full mt-2">
                     <thead>
-                    <tr className="bg-gray-200">
-                        <th rowSpan={2} colSpan={1}>
-                            Name
-                        </th>
-                        <th rowSpan={2} colSpan={1}>
-                            Email
-                        </th>
-                        <th rowSpan={1} colSpan={5} className="py-2">
-                            Courses
-                        </th>
-                    </tr>
-                    <tr className="bg-gray-200">
-                        <th className="py-1">Enrolled</th>
-                        <th className="py-1">Started</th>
-                        <th className="py-1">Completed</th>
-                    </tr>
+                        <tr className="border-b-2 border-black text-left">
+                            <th rowSpan={2} colSpan={1}>
+                                Name
+                            </th>
+                            <th rowSpan={2} colSpan={1}>
+                                Email
+                            </th>
+                            <th className="py-1">Enrolled</th>
+                            <th className="py-1">In Progress</th>
+                            <th className="py-1">Completed</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    { /* @ts-ignore */}
-                    {learnerInsights.result.data.map((learner: any, key: number) => (
+                        { /* @ts-ignore */}
+                        { learnerInsights.result.data.map((learner: any, key: number) => (
                             <LearnerInsight
                                 key={key}
                                 name={learner.name}
@@ -118,8 +114,7 @@ export default function Tools() {
                                 coursesCompleted={learner.coursesComplete}
                                 id={learner.uid}
                             />
-                        )
-                    )}
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -134,23 +129,24 @@ export default function Tools() {
             return <div>Error loading course insights</div>;
         }
 
-
         return (
             <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                <table className="border-collapse border w-full">
+                <table className="border-collapse w-full">
                     <thead>
-                    <tr className="bg-gray-200">
-                        <th className="border p-2">Course Name</th>
-                        <th className="border p-2">Learners Completed</th>
-                        <th className="border p-2">Average Completion Time</th>
-                        <th className="border p-2">Average Quiz Score</th>
-                    </tr>
+                        <tr className="border-b-2 border-black text-left">
+                            <th className="py-1">Course Name</th>
+                            <th className="py-1">Learners Completed</th>
+                            <th className="py-1">Average Completion Time</th>
+                            <th className="py-1">Average Quiz Score</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    { /* @ts-ignore */}
-                    {courseInsights.result.data.map((course: any, key: number) => (
-                        <CourseInsight courseData={course}/>
-                    ))}
+                        { /* @ts-ignore */}
+                        { courseInsights.result.data
+                        .filter((course: any) => course.name.toLowerCase().includes(search.toLowerCase()))
+                        .map((course: any, key: number) => (
+                            <CourseInsight courseData={course}/>
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -158,15 +154,15 @@ export default function Tools() {
     }
 
     return (
-        <main className="flex-col justify-center items-center pt-14">
+        <main className="flex-col justify-center items-center">
             {/* Quizzes to mark section */}
-            <div className="flex flex-col h-[60vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-between items-center mb-2">
                     <div className="flex flex-col">
-                        <div className="text-2xl mb-2">Quizzes To Mark</div>
+                        <div className="text-lg mb-2">Quizzes To Mark</div>
                     </div>
                 </div>
-                <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
+                <div className="flex flex-wrap justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
                     {TEMP_COURSES_TO_MARK_DATA.map((quiz, key) => (
                         <QuizToMark
                             key={key}
@@ -179,46 +175,38 @@ export default function Tools() {
                 </div>
             </div>
 
-            {/* Manage courses section */}
-            <div className="flex flex-col h-[60vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
-                <div className="flex flex-row justify-between items-center mb-2">
-                    <div className="flex flex-col">
-                        <div className="text-2xl mb-2">Manage Courses</div>
-                        <p className="mb-0 mr-2">Click on a course to navigate to course update screen.</p>
+            {/* Course insights section */}
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
+                <div className="flex flex-row justify-end items-center mb-2 space-x-4">
+                    <div className="flex flex-col mr-auto">
+                        <div className="text-lg -mb-1">Course Insights</div>
+                        <p className="mr-2 text-gray-500">Click on a course to manage course contents.</p>
                     </div>
-                    <div className="flex flex-row justify-end">
-                        <Button text="Create a Course" onClick={() => router.push('/admin/course/new')}/>
-                        <input
-                            className={"border-4 border-[#9D1939] w-[55%] px-4 py-2 -mt-2 text-xl rounded-2xl ml-4"}
-                            type="text"
-                            placeholder="Search for a course..."
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                    </div>
+                    <TextField 
+                        placeholder="Search for a course..."
+                        text={search}
+                        onChange={setSearch}
+                    />
+                    <Button text="Create a Course" onClick={() => router.push('/admin/course/new')} filled />
+                    <Button text="Download Course Reports" onClick={() => router.push('/home')}/>
                 </div>
-                <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
-                    {getCourses()}
-                </div>
+                {getCourseInsights()}
             </div>
 
             {/* Learner insights section */}
-            <div className="flex flex-col h-[50vh] bg-white p-16 rounded-2xl shadow-custom mb-8">
-                <div className="flex flex-row justify-end items-center mb-2">
-                    <div className="text-2xl mb-2 mr-auto">Learner Insights</div>
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom">
+                <div className="flex flex-row justify-end items-center">
+                    <div className="flex flex-col mr-auto">
+                        <div className="text-lg -mb-1">Learner Insights</div>
+                        <p className="mr-2 text-gray-500">Click on a user to view individual data.</p>
+                    </div>
                     <Button text="Invite a Learner" onClick={() => router.push('/home')}/>
                     <Button text="Download User Reports" onClick={() => router.push('/home')} style="ml-4"/>
                 </div>
                 {getLearnerInsights()}
             </div>
 
-            {/* Course insights section */}
-            <div className="flex flex-col h-[50vh] bg-white p-16 rounded-2xl shadow-custom">
-                <div className="flex flex-row justify-end items-center mb-2">
-                    <div className="text-2xl mb-2 mr-auto">Course Insights</div>
-                    <Button text="Download Course Reports" onClick={() => router.push('/home')}/>
-                </div>
-                {getCourseInsights()}
-            </div>
+            <div className="h-12" />
         </main>
     )
 }

@@ -31,8 +31,8 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="flex h-[100vh] w-[100vw] items-center justify-center">
-      <div className="flex max-w-[1000px] bg-white p-20 rounded-2xl shadow-custom">
+    <main className="flex h-[100vh] items-center justify-center">
+      <div className="flex max-w-[1000px] bg-white p-12 rounded-2xl shadow-custom">
 
           <div className="flex flex-col h-full w-3/5 space-y-4">
               <div className="border-2 p-6 rounded-2xl">
