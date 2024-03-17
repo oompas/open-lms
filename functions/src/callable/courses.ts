@@ -314,13 +314,10 @@ const getCourseInfo = onCall(async (request) => {
                     .where("userId", "==", request.auth?.uid)
                     .where("courseId", "==", request.data.courseId)
                     .get()
-                    .then((docs) => {
-                        const currentAttempt = docs.docs.filter((doc) => doc.data().endTime === null);
-                        if (currentAttempt.length > 1) throw new HttpsError("internal", "User has multiple in-progress course attempts");
-                        if (currentAttempt.length === 0) return null;
-
-                        const attempt = currentAttempt[0].data();
-                        attempt["id"] = currentAttempt[0].id;
+                    .then((snapshot) => {
+                        const attempt = snapshot?.docs[0]?.data() ?? null;
+                        if (attempt === null) return null;
+                        attempt["id"] = snapshot.docs[0].id;
                         return attempt;
                     })
                     .catch((error) => {
@@ -377,6 +374,7 @@ const getCourseInfo = onCall(async (request) => {
                 }
 
                 logger.info(`Data queries completed, returning course info...`);
+                logger.info(`Course attempt: ${JSON.stringify(courseAttempt)}`);
 
                 return {
                     courseId: course.id,
@@ -388,7 +386,7 @@ const getCourseInfo = onCall(async (request) => {
                     status: status,
                     startTime: courseAttempt?.startTime._seconds ?? null,
                     quizAttempts: quizAttempts,
-                    courseAttemptId: courseAttempt?.id,
+                    courseAttemptId: courseAttempt?.id ?? null,
                 };
 
             } else {
