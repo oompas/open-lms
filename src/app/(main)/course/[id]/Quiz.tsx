@@ -1,6 +1,7 @@
 "use client";
 import Button from "@/components/Button"
 import { useRouter } from 'next/navigation'
+import { callApi } from "@/config/firebase";
 
 export default function Quiz({
     length,
@@ -18,6 +19,12 @@ export default function Quiz({
 
     const router = useRouter();
 
+    const startQuiz = async () => {
+        await callApi("startQuiz")({})
+            .then(() => router.push(`/quiz/${id}`))
+            .catch((e) => console.log(`Error starting quiz: ${e}`));
+    }
+
     return (
         <div className="border-4 mb-8 p-6 rounded-2xl">
             <div className="text-2xl mb-2">Quiz</div>
@@ -27,7 +34,7 @@ export default function Quiz({
                     {attempts && <div># of attempts allowed: {attempts}</div>}
                     <div>{numQuestions} questions{minimumScore && ` (${minimumScore} required to pass)`}</div>
                 </div>
-                <Button text="Click to start" onClick={() => router.push("/quiz/" + id)} style="mt-2"/>
+                <Button text="Click to start" onClick={async () => await startQuiz()} style="mt-2"/>
             </div>
         </div>
     );
