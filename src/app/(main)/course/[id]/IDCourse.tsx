@@ -69,6 +69,18 @@ export default function IDCourse({
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });
     }
 
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const reportBrokenLink = () => {
+        return httpsCallable(getFunctions(), "sendBrokenLinkReport")({courseId: course.courseId})
+            .then(() => {
+                setShowSuccessMessage(true);
+            })
+            .catch((err) => {
+                console.error(err);
+                throw new Error(`Error reporting broken link: ${err}`)
+            });
+    }
+
     const renderButton = () => {
         if (status === 1) {
             return <Button text="Enroll" onClick={enroll} icon="plus" />;
@@ -79,6 +91,7 @@ export default function IDCourse({
                         <Button text="Start course" onClick={async () => await start()} filled icon="link"/>
                     </a>
                     <Button text="Unenroll" onClick={unEnroll} icon="minus"/>
+                    <Button text="Report Broken Link" onClick={reportBrokenLink} icon="report"/>
                 </>
             );
         }
@@ -113,9 +126,14 @@ export default function IDCourse({
                 <div className="flex flex-col">
                     <div className="text-2xl font-bold">{course.name}</div>
                     <div className="mt-2 text-2xl">{course.description}</div>
-                    <div className="flex flex-row space-x-4 mt-4">
+                    <div className="flex flex-row space-x-4 mt-4 mb-4">
                         {renderButton()}
                     </div>
+                    {showSuccessMessage && (
+                        <div className="success-message">
+                            <p>Successfully reported broken link</p>
+                        </div>
+                    )}
                 </div>
                 <div
                     className="flex flex-col justify-center items-center ml-auto border-2 rounded-xl px-10 py-4 shadow-lg">
