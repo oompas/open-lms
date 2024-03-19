@@ -329,12 +329,7 @@ const getCourseInfo = onCall(async (request) => {
                     .where("userId", "==", request.auth?.uid)
                     .where("courseId", "==", request.data.courseId)
                     .get()
-                    .then((docs) => {
-                        return {
-                            numAttempts: docs.size,
-                            attempts: docs.docs,
-                        };
-                    })
+                    .then((docs) => docs.docs.map((doc) => doc.data()))
                     .catch((error) => {
                         logger.error(`Error getting quiz attempts: ${error}`);
                         throw new HttpsError("internal", `Error getting courses, please try again later`);
