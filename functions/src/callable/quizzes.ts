@@ -129,6 +129,8 @@ const getQuiz = onCall(async (request) => {
             throw new HttpsError('invalid-argument', err);
         });
 
+    logger.info("Schema verification passed");
+
     const courseData = await getDoc(DatabaseCollections.Course, request.data.courseId)
         .get()
         .then((doc) => {
@@ -148,8 +150,19 @@ const getQuiz = onCall(async (request) => {
     const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
         .where("courseId", "==", request.data.courseId)
         .where("userId", "==", request.auth?.uid)
+        .where("endTime", "==", null)
         .get()
-        .then((snapshot) => snapshot.size)
+        .then((snapshot) => {
+            if (snapshot.empty) {
+                logger.error(`No quiz attempts found for course ${request.data.courseId}`);
+                throw new HttpsError("not-found", `No quiz attempts found for course ${request.data.courseId}`);
+            }
+            if (snapshot.size > 1) {
+                logger.error(`Multiple active quiz attempts found for course ${request.data.courseId}`);
+                throw new HttpsError("failed-precondition", `Multiple active quiz attempts found for course ${request.data.courseId}`);
+            }
+            return snapshot.size;
+        })
         .catch((err) => {
             logger.info(`Error getting quiz attempts: ${err}`);
             throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
