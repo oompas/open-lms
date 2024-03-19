@@ -5,15 +5,17 @@ import { callApi } from "@/config/firebase";
 
 export default function Quiz({
     length,
-    attempts,
+    maxAttempts,
     numQuestions,
     minimumScore,
+    inProgress,
     id
 } : {
     length: string
-    attempts: number
+    maxAttempts: number
     numQuestions: number
     minimumScore: number
+    inProgress: boolean
     id: number
 }) {
 
@@ -31,10 +33,10 @@ export default function Quiz({
             <div className="flex flex-row items-end">
                 <div className="flex flex-col mr-auto text-lg">
                     {length && <div>Quiz Length: {length} minutes</div>}
-                    {attempts && <div># of attempts allowed: {attempts}</div>}
+                    {maxAttempts && <div># of attempts allowed: {maxAttempts}</div>}
                     <div>{numQuestions} questions{minimumScore && ` (${minimumScore} required to pass)`}</div>
                 </div>
-                <Button text="Click to start" onClick={async () => await startQuiz()} style="mt-2"/>
+                <Button text={inProgress ? "Continue quiz" : "Click to start"} onClick={async () => await startQuiz()} style="mt-2"/>
             </div>
         </div>
     );

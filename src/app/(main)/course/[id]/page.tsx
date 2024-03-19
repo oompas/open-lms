@@ -46,9 +46,10 @@ export default function Course({ params }: { params: { id: string } }) {
                             <Quiz
                                 key={1}
                                 length={course.quiz.timeLimit}
-                                attempts={course.quiz.maxQuizAttempts}
+                                maxAttempts={course.quiz.maxQuizAttempts}
                                 numQuestions={course.quiz.numQuestions}
                                 minimumScore={course.quiz.minScore}
+                                inProgress={course.quizAttempts.length > 0}
                                 id={course.courseId}
                             />
                         </div>
