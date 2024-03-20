@@ -33,7 +33,10 @@ export default function QuizQuestion({
             </div>
             <div className="flex flex-col w-full">
                 <div className="flex flex-row items-center">
-                    <div><b>Q{num}.</b> {data.question}</div>
+                    <div>
+                        <b className="mr-1">Q{num})</b> {data.question}
+                        <span className="text-xs text-gray-600 ml-2">({data.marks} marks)</span>
+                    </div>
                     <button className="ml-auto text-red-800 hover:opacity-50" onClick={() => editData(num)}><MdEdit size={28}/></button>
                     <button className="ml-4 text-red-800 hover:opacity-50" onClick={() => deleteData(num)}><MdDelete size={28}/></button>
                 </div>

@@ -131,7 +131,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         const courseId = await callApi("addCourse")(courseData).then((result) => result.data);
 
         if (quizQuestions.length > 0) {
-            await callApi("updateQuizQuestions")({ courseId: courseId, questions: quizQuestions.map((q) => ({ ...q, marks: 1 })) });;
+            await callApi("updateQuizQuestions")({ courseId: courseId, questions: quizQuestions.map((q) => ({ ...q })) });;
         }
 
         router.push(`/admin/course/${courseId}`);
