@@ -312,6 +312,8 @@ const startQuiz = onCall(async (request) => {
  */
 const submitQuiz = onCall(async (request) => {
 
+    logger.info(`Submitting quiz for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
     verifyIsAuthenticated(request);
 
     const schema = object({
@@ -329,6 +331,8 @@ const submitQuiz = onCall(async (request) => {
             logger.error(`Error validating request: ${err}`);
             throw new HttpsError('invalid-argument', err);
         });
+
+    logger.info("Schema verification passed");
 
     const { courseId, responses } = request.data;
 
@@ -390,7 +394,7 @@ const submitQuiz = onCall(async (request) => {
                     marks = question.data().correctAnswer === response.answer ? question.data().marks : 0;
                 } else {
                     // Short answer: must be marked by an admin
-                    marks = null;
+                    marks = null; // TODO: Add to admin queue
                 }
 
                 const markedResponse = {
@@ -420,7 +424,7 @@ const submitQuiz = onCall(async (request) => {
                     getDoc(DatabaseCollections.QuizQuestion, question.id)
                         .update({
                             numAttempts: FieldValue.increment(1),
-                            totalScore: FieldValue.increment(marks),
+                            totalScore: FieldValue.increment(marks ?? 0),
                         })
                         .catch((err) => {
                             logger.info(`Error updating question stats: ${err}`);
