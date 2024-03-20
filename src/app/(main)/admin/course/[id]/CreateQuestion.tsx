@@ -20,12 +20,18 @@ export default function CreateQuestion({
     const [type, setType] = useState(data ? data.type : "");
 
     const [question, setQuestion] = useState(data ? data.question : "");
-    const [correctAnswer, setCorrectAnswer] = useState(data ? data.type === "mc" ? data.answers[data.answer] : data.answer : -1);
-    const [qA, setQA] = useState(data ? data.answers[0] : "");
-    const [qB, setQB] = useState(data ? data.answers[1] : "");
-    const [qC, setQC] = useState(data ? data.answers[2] : "");
-    const [qD, setQD] = useState(data ? data.answers[3] : "");
-    const [qE, setQE] = useState(data ? data.answers[4] : "");
+    const [correctAnswer, setCorrectAnswer] = useState(data ? data.type === "mc" ? data.answers[Number(data.correctAnswer)] : data.answer : -1);
+    const [qA, setQA] = useState(data ? data.type === "mc" ? data.answers[0] : "" : "");
+    const [qB, setQB] = useState(data ? data.type === "mc" ? data.answers[1] : "" : "");
+    const [qC, setQC] = useState(data ? data.type === "mc" ? data.answers[2] : "" : "");
+    const [qD, setQD] = useState(data ? data.type === "mc" ? data.answers[3] : "" : "");
+    const [qE, setQE] = useState(data ? data.type === "mc" ? data.answers[4] : "" : "");
+    const [value, setValue] = useState(data ? data.marks : "1");
+
+    const isInt = (str: string) => {
+        var n = Math.floor(Number(str));
+        return n !== Infinity && String(n) === str && n >= 0;
+    }
 
     const handleSave = () => {
         // TODO - actual input validation (regex to check for allowed values?)
@@ -51,11 +57,11 @@ export default function CreateQuestion({
         }
 
         if (type === "mc") {
-            setData(num, { type: type, question: question, answers: opts, correctAnswer: ans });
+            setData(num, { type: type, question: question, answers: opts, correctAnswer: ans, marks: value });
         } else if (type === "tf") {
-            setData(num, { type: type, question: question, correctAnswer: ans });
+            setData(num, { type: type, question: question, correctAnswer: ans, marks: value });
         } else if (type === "sa") {
-            setData(num, { type: type, question: question });
+            setData(num, { type: type, question: question, marks: value });
         } else {
             throw new Error(`Invalid question type: ${type}`);
         }
@@ -129,9 +135,19 @@ export default function CreateQuestion({
                     <TextField text={qE} onChange={setQE} style="w-full" />
                 </div>
             </div>
+            <div className="flex flex-col space-y-2 mt-4">
+                <div className="-mb-2">Value</div>
+                <div className="text-sm text-gray-600 mb-1">How many marks is this question worth?</div>
+                { !isInt(value) && <div className="text-sm text-red-500">Mark must be a positive whole number.</div> }
+                <div className="flex flex-row items-baseline">
+                    <TextField text={value} onChange={setValue} style="w-20 text-right mr-2" />
+                    <div>mark(s)</div>
+                </div>
+            </div>
             <div className="flex flex-row space-x-4 mt-6">
-                <Button text="Cancel" onClick={() => setType("")} style="ml-auto"/>
-                <Button text="Save Question" onClick={() => handleSave()} filled disabled={!question || checkNumQuestionsValid() || correctAnswer === -1}/>
+                <Button text="Cancel" onClick={closeModal} style="ml-auto"/>
+                { !data && <Button text="Back" onClick={() => setType("")} style="ml-auto"/> }
+                <Button text="Save Question" onClick={() => handleSave()} filled disabled={!question || checkNumQuestionsValid() || correctAnswer === -1 || !isInt(value)}/>
             </div>
         </div>
     )
@@ -158,8 +174,18 @@ export default function CreateQuestion({
                     <TextField text={qB} onChange={setQB} style="w-full" readonly />
                 </div>
             </div>
+            <div className="flex flex-col space-y-2 mt-4">
+                <div className="-mb-2">Value</div>
+                <div className="text-sm text-gray-600 mb-1">How many marks is this question worth?</div>
+                { !isInt(value) && <div className="text-sm text-red-500">Mark must be a positive whole number.</div> }
+                <div className="flex flex-row items-baseline">
+                    <TextField text={value} onChange={setValue} style="w-20 text-right mr-2" />
+                    <div>mark(s)</div>
+                </div>
+            </div>
             <div className="flex flex-row space-x-4 mt-6">
-                <Button text="Cancel" onClick={() => setType("")} style="ml-auto"/>
+                <Button text="Cancel" onClick={closeModal} style="ml-auto"/>
+                { !data && <Button text="Back" onClick={() => setType("")} style="ml-auto"/> }
                 <Button text="Save Question" onClick={() => handleSave()} filled disabled={correctAnswer === -1 || !question}/>
             </div>
         </div>
@@ -173,8 +199,18 @@ export default function CreateQuestion({
                 { question ? null : <div className="text-sm text-red-500">Write a question.</div> }
                 <TextField text={question} onChange={setQuestion} area style="mt-3"/>
             </div>
+            <div className="flex flex-col space-y-2 mt-4">
+                <div className="-mb-2">Value</div>
+                <div className="text-sm text-gray-600 mb-1">How many marks is this question worth?</div>
+                { !isInt(value) && <div className="text-sm text-red-500">Mark must be a positive whole number.</div> }
+                <div className="flex flex-row items-baseline">
+                    <TextField text={value} onChange={setValue} style="w-20 text-right mr-2" />
+                    <div>mark(s)</div>
+                </div>
+            </div>
             <div className="flex flex-row space-x-4 mt-6">
-                <Button text="Cancel" onClick={() => setType("")} style="ml-auto"/>
+                <Button text="Cancel" onClick={closeModal} style="ml-auto"/>
+                { !data && <Button text="Back" onClick={() => setType("")} style="ml-auto"/> }
                 <Button text="Save Question" onClick={() => handleSave()} filled disabled={!question}/>
             </div>
         </div>
@@ -182,7 +218,7 @@ export default function CreateQuestion({
 
     return (
         <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
-            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+            <div className="flex flex-col w-1/2 max-h-[90vh] overflow-y-scroll bg-white p-12 rounded-xl text-lg shadow-xl sm:no-scrollbar">
                 { !type ? 
                     questionType
                 : type === "mc" ?
