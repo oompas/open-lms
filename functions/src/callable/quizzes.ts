@@ -150,18 +150,17 @@ const getQuiz = onCall(async (request) => {
     const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
         .where("courseId", "==", request.data.courseId)
         .where("userId", "==", request.auth?.uid)
-        .where("endTime", "==", null)
         .get()
         .then((snapshot) => {
             if (snapshot.empty) {
                 logger.error(`No quiz attempts found for course ${request.data.courseId}`);
                 throw new HttpsError("not-found", `No quiz attempts found for course ${request.data.courseId}`);
             }
-            if (snapshot.size > 1) {
-                logger.error(`Multiple active quiz attempts found for course ${request.data.courseId}`);
-                throw new HttpsError("failed-precondition", `Multiple active quiz attempts found for course ${request.data.courseId}`);
+            if (!snapshot.docs.find((doc) => !doc.data().endTime)) {
+                logger.error(`No active quiz attempts found for course ${request.data.courseId}`);
+                throw new HttpsError("not-found", `No active quiz attempts found for course ${request.data.courseId}`);
             }
-            return snapshot.size;
+            return snapshot.docs;
         })
         .catch((err) => {
             logger.info(`Error getting quiz attempts: ${err}`);
@@ -193,11 +192,14 @@ const getQuiz = onCall(async (request) => {
                 return question;
             }));
 
+            // @ts-ignore
+            const startTime = Math.floor(quizAttempts.find((doc) => !doc.data().endTime).data().startTime.toMillis() / 1000);
             return { // @ts-ignore
                 courseName: courseData.name, // @ts-ignore
-                attempt: quizAttempts, // @ts-ignore
+                numAttempts: quizAttempts.length, // @ts-ignore
                 maxAttempts: courseData.quiz.maxAttempts, // @ts-ignore
                 timeLimit: courseData.quiz.timeLimit,
+                startTime: startTime,
                 questions: questions,
             }
         })
