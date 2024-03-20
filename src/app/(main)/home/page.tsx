@@ -46,24 +46,48 @@ export default function Home() {
             return <div>Error loading courses</div>;
         }
         // @ts-ignore
-        if (courses.result?.data.filter((course: any) => course.status !== 1).length === 0)
+        if (courses.result?.data.filter((course: any) => course.status !== 1).length === 0) {
             return <div className="text-gray-600 text-center">Enroll in courses to get started!</div>
-
+        }
 
         // @ts-ignore
         return courses.result.data
             .filter((course: any) => course.status !== 1)
-            .map((course: any, key: number) => (
-                <EnrolledCourse
-                    key={key}
-                    title={course.name}
-                    status={course.status}
-                    description={course.description}
-                    time={!course.minTime ? "" : (course.minTime >= 60 ? Math.floor(course.minTime / 60) + "h " : "") + course.minTime % 60 + "m"}
-                    color={(course.status === 2 ? "#468DF0" : (course.status === 3 || course.status === 4 ? "#EEBD31" : "#47AD63"))}
-                    id={course.id}
-                />
-            ));
+            .map((course: any, key: number) => {
+
+                let time = "";
+                if (course.minTime) {
+                    if (course.minTime >= 60) {
+                        time += `${Math.floor(course.minTime / 60)}h `;
+                    }
+                    if (course.minTime % 60 !== 0) {
+                        time += `${course.minTime % 60}m`;
+                    }
+                    time += " course ";
+                }
+                if (course.maxQuizTime) {
+                    time += time.length > 0 ? " + " : "";
+                    if (course.maxQuizTime >= 60) {
+                        time += `${Math.floor(course.maxQuizTime / 60)}h `;
+                    }
+                    if (course.maxQuizTime % 60 !== 0) {
+                        time += `${course.maxQuizTime % 60}m`;
+                    }
+                    time += " quiz";
+                }
+
+                return (
+                    <EnrolledCourse
+                        key={key}
+                        title={course.name}
+                        status={course.status}
+                        description={course.description}
+                        time={time}
+                        color={(course.status === 2 ? "#468DF0" : (course.status === 3 || course.status === 4 ? "#EEBD31" : "#47AD63"))}
+                        id={course.id}
+                    />
+                );
+            });
     }
 
     return (

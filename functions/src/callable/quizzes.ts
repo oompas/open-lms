@@ -539,4 +539,15 @@ const getQuizzesToMark = onCall(async (request) => {
     });
 });
 
+/**
+ * Gets a specific quiz attempt to mark
+ */
+const getQuizToMark = onCall(async (request) => {
+
+    logger.info(`Entering getQuizToMark for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
+    await verifyIsAdmin(request);
+
+});
+
 export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuizzesToMark };
