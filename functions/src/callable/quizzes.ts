@@ -394,8 +394,10 @@ const submitQuiz = onCall(async (request) => {
                 }
 
                 let marks = null; // Default for short answer (need to be marked)
+                let userResponse = response.answer;
                 if (question.type === "mc" || question.type === "tf") {
-                    marks = Number(question.correctAnswer) === Number(response.answer) ? question.marks : 0;
+                    userResponse = Number(response.answer);
+                    marks = question.correctAnswer === userResponse ? question.marks : 0;
                 }
 
                 const markedResponse = {
@@ -403,7 +405,7 @@ const submitQuiz = onCall(async (request) => {
                     courseId: courseId,
                     questionId: response.questionId,
                     quizAttemptId: attemptId,
-                    response: response.answer,
+                    response: userResponse,
                     marksAchieved: marks,
                 };
 
