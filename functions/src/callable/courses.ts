@@ -394,6 +394,7 @@ const getCourseInfo = onCall(async (request) => {
                                 id: doc.id,
                                 type: data.type,
                                 question: data.question,
+                                marks: data.marks
                             };
                             if (data.type === "mc") {
                                 question["answers"] = data.answers;
