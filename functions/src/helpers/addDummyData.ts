@@ -9,26 +9,21 @@ const cleanDatabase = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
-    const collectionsToClean = [];
+    const collections = Object.values(DatabaseCollections)
+        .filter((collection) => collection !== DatabaseCollections.User && collection !== DatabaseCollections.Email);
 
-    const collections = [
-        DatabaseCollections.Course,
-        DatabaseCollections.EnrolledCourse,
-        DatabaseCollections.CourseAttempt,
-        DatabaseCollections.QuizQuestion,
-        DatabaseCollections.QuizAttempt,
-    ];
-
+    const promises = [];
     for (let collection of collections) {
         const docToClean = await getCollection(collection)
             .listDocuments()
             .then((docs) => docs.map((doc) => doc.delete()))
             .catch((err) => { throw new HttpsError('internal', `Error getting all documents in collection '${collection}': ${err}`); });
-        collectionsToClean.push(docToClean);
+
+        promises.push(docToClean);
     }
 
-    await Promise.all(collectionsToClean)
-        .then(() => logger.info("Database successfully cleaned"))
+    await Promise.all(promises)
+        .then(() => logger.info(`Successfully cleaned ${promises.length} documents`))
         .catch((err) => { throw new HttpsError('internal', `Error cleaning database: ${err}`); })
 });
 

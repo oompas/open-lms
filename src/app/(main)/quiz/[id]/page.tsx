@@ -1,7 +1,7 @@
 "use client"
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import { MdCheckCircleOutline } from "react-icons/md";
@@ -9,27 +9,33 @@ import { MdCheckCircleOutline } from "react-icons/md";
 export default function Quiz({ params }: { params: { id: string } }) {
 
     const router = useRouter();
-    const getQuizData = useAsync(() => callApi("getQuiz")({ courseId: params.id }), []);
   
-    const [isOpen, setIsOpen] = useState(false);
+    const [countdown, setCountDown] = useState(0);
 
-    const TEMP_QUIZ_DATA = [
-        { question: "Example knowledge quiz question 1?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: true, id: 1 },
-        { question: "Example knowledge quiz question 2?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: true, id: 2 },
-        { question: "Example knowledge quiz question 3?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: true, id: 3 },
-        { question: "Example knowledge quiz question 4?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 4 },
-        { question: "Example knowledge quiz question 5?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 5 },
-        { question: "Example knowledge quiz question 6?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 6 },
-        { question: "Example knowledge quiz question 7?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 7 },
-        { question: "Example knowledge quiz question 8?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 8 },
-        { question: "Example knowledge quiz question 9?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 9 },
-        { question: "Example knowledge quiz question 10?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 10 }
-    ]
+    const getQuizData = useAsync(() =>
+        callApi("getQuiz")({ courseId: params.id })
+            .then((rsp) => {
+                // @ts-ignore
+                setCountDown(Math.floor(rsp.data.startTime + (60 * rsp.data.timeLimit) - (Date.now() / 1000)));
+                // @ts-ignore
+                setUserAnswers(rsp.data.questions.map(question => question.id).reduce((prev: any, cur: any) => ({ ...prev, [cur]: null }), {}));
+                return rsp;
+            }),
+        []);
 
     // @ts-ignore
-    const quizData: null | { questions: any[], timeLimit: number, courseName: number, attempt: number, maxAttempts: number }
+    const quizData: undefined | { questions: any[], timeLimit: number, courseName: number, numAttempts: number, maxAttempts: number, startTime: number }
         = getQuizData.result?.data;
     const [userAnswers, setUserAnswers] = useState({});
+
+    useEffect(() => {
+        if (countdown <= 0 || !quizData) {
+            return;
+        }
+
+        const interval = setInterval(() => setCountDown(Math.floor(quizData.startTime + (60 * quizData.timeLimit) - (Date.now() / 1000))), 1000);
+        return () => clearInterval(interval);
+    }, [countdown]);
 
     const loadingPopup = (
         <div
@@ -65,7 +71,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                                                     id={index + 1 + ""}
                                                     name={`question${key + 1}`}
                                                     value={answer}
-                                                    onChange={() => setUserAnswers({ ...userAnswers, [key+1]: index })}
+                                                    onChange={(e) => setUserAnswers({ ...userAnswers, [question.id]: e.target.value })}
                                                 />
                                                 <label htmlFor={`option${index}`} className="ml-2">{answer}</label>
                                             </div>
@@ -73,7 +79,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                                         : <input
                                             type="text"
                                             className="border-[1px] border-solid border-black rounded-xl p-4"
-                                            onChange={(e) => setUserAnswers({...userAnswers, [key+1]: e.target.value})}
+                                            onChange={(e) => setUserAnswers({...userAnswers, [question.id]: e.target.value})}
                                         />
                                     }
                                 </div>
@@ -98,13 +104,16 @@ export default function Quiz({ params }: { params: { id: string } }) {
             );
         }
 
+        const timeFormat = (Math.floor(countdown / 3600) + "").padStart(2, '0') + ":"
+            + (Math.floor(countdown / 60) % 60 + "").padStart(2, '0') + ":" + (countdown % 60 + "").padStart(2, '0');
+
         return (
             <>
                 <div className="flex flex-row items-center justify-center">
                     Time remaining:
                 </div>
                 <div className="flex flex-col text-4xl items-center justify-center mb-4">
-                    {quizData.timeLimit}
+                    {timeFormat}
                 </div>
             </>
         );
@@ -113,12 +122,12 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const renderProgress = () => {
         return (
             <>
-                {quizData && quizData.questions.map((_: any, key: number) => (
+                {quizData && quizData.questions.map((question: any, key: number) => (
                     <div className="flex mt-2">
                         <div className="flex-grow border-[1px] border-gray-300 px-4 py-2 rounded-2xl duration-100 flex items-center">
                             <div className="text-lg">Q{key + 1}</div>
                                 { /* @ts-ignore */ }
-                                {(userAnswers[key + 1] !== undefined && userAnswers[key + 1] !== "") && (
+                                {(userAnswers[question.id] !== null && userAnswers[question.id] !== "") && (
                                     <div className="ml-2">
                                         <MdCheckCircleOutline size={24} className="mx-auto" color="#47AD63"/>
                                     </div>
@@ -130,6 +139,31 @@ export default function Quiz({ params }: { params: { id: string } }) {
         );
     }
 
+    const handleSubmit = async () => {
+
+        const responses = [];
+        for (const [key, value] of Object.entries(userAnswers)) {
+
+            if (value === null) {
+                alert("Please answer all questions before submitting the quiz");
+                return;
+            }
+
+            const questionData = quizData?.questions.find((question) => question.id === key);
+            if (questionData.type === "sa") {
+                responses.push({ questionId: key, answer: value });
+            } else if (questionData.type === "tf") {
+                responses.push({ questionId: key, answer: value === "True" ? "0" : "1" });
+            } else {
+                responses.push({ questionId: key, answer: questionData.answers.indexOf(value) + "" });
+            }
+        }
+
+        await callApi("submitQuiz")({ courseId: params.id, responses: responses })
+            .then(() => router.push(`/course/${params.id}`))
+            .catch((err) => console.log(`Error calling submitquiz: ${err}`));
+    }
+
     return (
         <main className="flex justify-start w-full h-full">
             <div className="flex flex-col w-[75%]">
@@ -137,7 +171,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     <div className="flex flex-col w-full bg-white p-12 rounded-2xl shadow-custom">
                         <div className="text-lg font-bold mb-0">{quizData && quizData.courseName}</div>
                         <div className="flex flex-col text-md space-y-8 w-[30rem]">
-                            Attempt {quizData && quizData.attempt}{quizData && quizData.maxAttempts && `/${quizData.maxAttempts}`}
+                            Attempt {quizData && quizData.numAttempts}{quizData && quizData.maxAttempts && `/${quizData.maxAttempts}`}
                         </div>
                     </div>
                 </div>
@@ -151,7 +185,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     {renderProgress()}
                 </div>
                 <div className="flex justify-center mt-8">
-                    <Button text="Submit Quiz" onClick={() => router.push('/home')} filled style="mx-auto mt-auto"/>
+                    <Button text="Submit Quiz" onClick={async () => await handleSubmit() } filled style="mx-auto mt-auto"/>
                 </div>
             </div>
             {!quizData && loadingPopup}

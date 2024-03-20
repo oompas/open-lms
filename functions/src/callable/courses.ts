@@ -9,7 +9,7 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { array, boolean, number, object, string } from 'yup';
+import { boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import FieldValue = firestore.FieldValue;
 
@@ -240,6 +240,7 @@ const getAvailableCourses = onCall(async (request) => {
                     name: course.data().name,
                     description: course.data().description,
                     status: status,
+                    minTime: course.data().minTime,
                 };
 
                 allCourses.push(courseData);
@@ -324,16 +325,26 @@ const getCourseInfo = onCall(async (request) => {
                     .then((doc) => doc.exists)
                     .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
 
+                const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
+                    .where("userId", "==", request.auth?.uid)
+                    .where("courseId", "==", request.data.courseId)
+                    .get()
+                    .then((docs) => docs.docs.map((doc) => doc.data()))
+                    .catch((error) => {
+                        logger.error(`Error getting quiz attempts: ${error}`);
+                        throw new HttpsError("internal", `Error getting courses, please try again later`);
+                    });
+
                 let status;
-                if (!courseEnrolled) {
+                if (!courseEnrolled) { // Status 1: not enrolled in course
                     status = 1;
-                } else if (courseAttempt === null ) {
+                } else if (courseAttempt === null ) { // Status 2: enrolled, not started
                     status = 2;
-                } else if (courseAttempt?.pass === null) {
+                } else if (courseAttempt?.pass === null) { // Status 3: in progress
                     status = 3;
-                } else if (courseAttempt?.pass === false) {
+                } else if (courseAttempt?.pass === false) { // Status 4: completed, failed
                     status = 4;
-                } else if (courseAttempt?.pass === true) {
+                } else if (courseAttempt?.pass === true) { // Status 5: completed, passed
                     status = 5;
                 } else {
                     throw new HttpsError("internal", "Course is in an invalid state - can't get status");
@@ -352,6 +363,8 @@ const getCourseInfo = onCall(async (request) => {
                         });
                 }
 
+                logger.info("Data queries passed, returning course info...");
+
                 return {
                     courseId: course.id,
                     name: docData.name,
@@ -361,6 +374,8 @@ const getCourseInfo = onCall(async (request) => {
                     quiz: docData.quiz ? { numQuestions: numQuizQuestions, ...docData.quiz } : null,
                     status: status,
                     startTime: courseAttempt?.startTime._seconds ?? null,
+                    quizAttempts: quizAttempts,
+                    courseAttemptId: courseAttempt?.id ?? null,
                 };
 
             } else {
