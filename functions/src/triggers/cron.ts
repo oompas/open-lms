@@ -40,15 +40,20 @@ const purgeUnverifiedUsers = onSchedule('0 0 * * *', async () => {
 });
 
 /**
- * Every day at midnight UTC, deletes old (30+ days) email metadata in the db
+ * Every day at midnight UTC, deletes:
+ * -30+ day old successful emails
+ * -90+ day old failed emails
  */
 const purgeExpiredEmails = onSchedule('0 0 * * *', async () => {
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
     logger.log(`Getting all emails sent before ${thirtyDaysAgo} (30 days ago)...`);
 
-    // Query expired emails
     const expiredEmails = await getCollection(DatabaseCollections.Email)
         .where('delivery.state', '==', 'SUCCESS')
         .where('delivery.endTime', '<=', thirtyDaysAgo)
@@ -61,19 +66,64 @@ const purgeExpiredEmails = onSchedule('0 0 * * *', async () => {
             throw new HttpsError('internal', `Failed to query expired emails: ${err}`);
         });
 
-    if (expiredEmails.length === 0) {
+    logger.log(`Getting all failed emails sent before ${ninetyDaysAgo} (90 days ago)...`);
+
+    const failedEmails = await getCollection(DatabaseCollections.Email)
+        .where('delivery.state', '==', 'ERROR')
+        .where('delivery.endTime', '<=', ninetyDaysAgo)
+        .get()
+        .then((result) => {
+            logger.info(`Successfully queried ${result.docs.length} failed and expired emails`);
+            return result.docs;
+        })
+        .catch((err) => {
+            throw new HttpsError('internal', `Failed to query failed emails: ${err}`);
+        });
+
+    if (expiredEmails.length === 0 && failedEmails.length === 0) {
         logger.info(`No expired emails found, quitting cron...`);
         return;
     }
 
     // And delete them concurrently
-    return Promise.all(expiredEmails.map((email) => {
-        const docId = email.id;
-        return email.ref.delete()
-            .then(() => logger.info(`Successfully deleted email ${docId}`))
-            .catch((err) => logger.error(`Error deleting email document ${docId}`));
-    }))
-        .then(() => logger.info(`Successfully deleted ${expiredEmails.length} expired emails`))
+    const expiredSuccessfulIds: string[] = [];
+    const expiredFailedIds: string[] = [];
+    const promises = [
+        ...expiredEmails.map((email) =>
+            email.ref.delete()
+                .then(() => expiredSuccessfulIds.push(email.id))
+                .catch((err) => logger.error(`Error deleting email document ${email.id}: ${err}`))
+        ),
+        ...failedEmails.map((email) =>
+            email.ref.delete()
+                .then(() => expiredFailedIds.push(email.id))
+                .catch((err) => logger.error(`Error deleting email document ${email.id}: ${err}`))
+        )
+    ];
+
+    return Promise.all(promises)
+        .then(() => {
+            // Verify all the emails were deleted ok
+            if (expiredSuccessfulIds.length !== expiredEmails.length) {
+                throw new HttpsError('internal', `expiredSuccessfulIds.length (${expiredSuccessfulIds.length}) !== expiredEmails.length (${expiredEmails.length})`);
+            }
+            if (expiredFailedIds.length !== failedEmails.length) {
+                throw new HttpsError('internal', `expiredFailedIds.length (${expiredFailedIds.length}) !== failedEmails.length (${failedEmails.length})`);
+            }
+
+            let returnedMessage = "";
+            if (expiredSuccessfulIds.length > 0) {
+                returnedMessage += `Successfully deleted ${expiredSuccessfulIds.length} expired successful emails: ${expiredSuccessfulIds} `;
+            }
+            if (expiredFailedIds.length > 0) {
+                returnedMessage += `Successfully deleted ${expiredFailedIds.length} expired failed emails: ${expiredFailedIds}`;
+            }
+            if (returnedMessage.length === 0) {
+                returnedMessage = "No emails were deleted";
+            }
+
+            logger.info(returnedMessage)
+        })
         .catch((err) => logger.error(`Error deleting expired emails: ${err}`));
 });
 
