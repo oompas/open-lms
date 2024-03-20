@@ -1,16 +1,42 @@
 "use client";
-import AvailableCourse from "./AvailableCourse";
 import EnrolledCourse from "./EnrolledCourse";
+import Notifications from "./Notifications"
 import { useAsync } from 'react-async-hook';
 import { getFunctions, httpsCallable } from "firebase/functions";
 import "../../../config/firebase";
 import { useState } from "react";
+import Link from "next/link"
 import TextField from "@/components/TextField";
+import Button from "@/components/Button";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
 
+    const router = useRouter();
+
     const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
     const [search, setSearch] = useState("");
+
+    const TEMP_NOTIFICATION_DATA = [
+        { title: "CISC 423", description: "Jan 1, 2023", urgency: "URGENT", link: "no", id: 1 },
+    ]
+
+    const notificationData = () => {
+        return (
+            <>
+                {TEMP_NOTIFICATION_DATA.map((notification,key) => (
+                    <Notifications
+                        key={key}
+                        title={notification.title}
+                        description={notification.description}
+                        urgency={notification.urgency}
+                        link={notification.link}
+                        id={notification.id}
+                    />
+                ))}
+            </>
+        )
+    }
 
     const enrolledCourses = () => {
         if (courses.loading) {
@@ -19,6 +45,10 @@ export default function Home() {
         if (courses.error) {
             return <div>Error loading courses</div>;
         }
+        // @ts-ignore
+        if (courses.result?.data.filter((course: any) => course.status !== 1).length === 0)
+            return <div className="text-gray-600 text-center">Enroll in courses to get started!</div>
+
 
         // @ts-ignore
         return courses.result.data
@@ -36,47 +66,15 @@ export default function Home() {
             ));
     }
 
-    const availableCourses = () => {
-        if (courses.loading) {
-            return <div>Loading...</div>;
-        }
-        if (courses.error) {
-            return <div>Error loading courses</div>;
-        }
-
-        // @ts-ignore
-        return courses.result.data
-            .filter((course: any) => course.status === 1 && (course.name.toLowerCase().includes(search.toLowerCase())
-                    || course.description.toLowerCase().includes(search.toLowerCase())))
-            .map((course: any, key: number) => (
-                <AvailableCourse
-                    key={key}
-                    title={course.name}
-                    description={course.description}
-                    id={course.id}
-                />
-            ));
-    }
-
     return (
-        <main className="flex justify-center w-full h-full pb-[2vh]">
-            <div className="flex flex-col h-full bg-white w-[60%] p-12 rounded-2xl shadow-custom">
-                <div className="text-lg mb-4">My Enrolled Courses</div>
+        <main className="flex w-full justify-center pt-14">
+            <div className="flex flex-col bg-white w-full p-16 rounded-2xl shadow-custom">
+                <div className="flex flex-row items-center mb-2">
+                    <div className="text-lg">My Enrolled Courses</div>
+                    <Button text="Browse Available Courses" onClick={() => router.push("/course_search")} style="ml-auto" />
+                </div>
                 <div className="flex flex-row flex-wrap justify-between overflow-y-scroll sm:no-scrollbar">
                     {enrolledCourses()}
-                </div>
-            </div>
-            <div className="flex flex-col bg-white w-[38%] ml-[2%] p-12 rounded-2xl shadow-custom">
-                <div className="flex flex-col mb-6">
-                    <div className="text-lg mr-auto mb-2">Available Courses</div>
-                    <TextField 
-                        placeholder="Search for a title..."
-                        text={search}
-                        onChange={setSearch}
-                    />
-                </div>
-                <div className="flex flex-col justify-between overflow-y-scroll sm:no-scrollbar">
-                    {availableCourses()}
                 </div>
             </div>
         </main>
