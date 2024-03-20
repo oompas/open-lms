@@ -17,6 +17,7 @@ const createAccount = onCall(async (request) => {
     logger.info(`Entering createAccount with payload ${JSON.stringify(request.data)} (user: ${request.auth?.uid})`);
 
     const schema = object({
+        name: string().required().min(5, "Name must be at least five characters long"),
         email: string().required().email(),
         password: string().required().min(10, "Password must be at least ten characters long"),
     });
@@ -32,20 +33,13 @@ const createAccount = onCall(async (request) => {
     const email = request.data.email;
     const password = request.data.password;
 
-    let score = 0;
-
     const hasUpperCase = /[A-Z]/;
     const hasLowerCase = /[a-z]/;
     const hasNumbers = /[0-9]/;
     const hasSpecialChars = /[!#$%&@?]/
 
     // Check for each password requirement
-    if (hasUpperCase.test(password)) score += 1;
-    if (hasLowerCase.test(password)) score += 1;
-    if (hasNumbers.test(password)) score += 1;
-    if (hasSpecialChars.test(password)) score += 1;
-
-    if (score < 4) {
+    if (!(hasUpperCase.test(password) && hasLowerCase.test(password) && hasNumbers.test(password) && hasSpecialChars.test(password))) {
         throw new HttpsError('invalid-argument', "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character");
     }
 
