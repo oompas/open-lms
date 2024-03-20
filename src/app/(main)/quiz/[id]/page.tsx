@@ -155,17 +155,9 @@ export default function Quiz({ params }: { params: { id: string } }) {
             }
         }
 
-        let error = false;
         await callApi("submitQuiz")({ courseId: params.id, responses: responses })
             .then(() => router.push(`/course/${params.id}`))
-            .catch((err) => {
-                console.error(err);
-                error = true;
-            });
-
-        if (!error) {
-            router.push(`/course/${params.id}`);
-        }
+            .catch((err) => console.log(`Error calling submitquiz: ${err}`));
     }
 
     return (
