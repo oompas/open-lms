@@ -422,8 +422,8 @@ const submitQuiz = onCall(async (request) => {
                     promises.push(
                         getDoc(DatabaseCollections.QuizQuestion, question.id)
                             .update({
-                                numAttempts: FieldValue.increment(1),
-                                totalScore: FieldValue.increment(marks),
+                                "stats.numAttempts": FieldValue.increment(1),
+                                "stats.totalScore": FieldValue.increment(marks),
                             })
                             .catch((err) => {
                                 logger.info(`Error updating question stats: ${err}`);
