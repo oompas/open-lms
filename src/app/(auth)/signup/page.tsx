@@ -1,8 +1,7 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from "@/config/firebase";
-import { createUserWithEmailAndPassword } from "@firebase/auth";
+import { callApi } from "@/config/firebase";
 import Button from "@/components/Button";
 import AuthForm from "@/components/AuthForm";
 
@@ -14,10 +13,18 @@ export default function SignUpPage() {
 
     const signUp = async () => {
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
-            router.push('/');
+            const response = await callApi('createAccount')({
+                email: email,
+                password: password
+            });
+            if (response && response.data) {
+                console.log("Account created successfully.");
+                router.push('/');
+            } else {
+                console.error("Error creating account:", response);
+            }
         } catch (error) {
-            console.error("Error signing up:", error);
+            console.error("Error creating account:", error);
         }
     };
 

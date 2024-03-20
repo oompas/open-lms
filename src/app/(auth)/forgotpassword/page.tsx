@@ -1,8 +1,7 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from "@/config/firebase";
-import { sendPasswordResetEmail } from "@firebase/auth";
+import { callApi } from "@/config/firebase";
 import Button from "@/components/Button";
 
 export default function ForgotPasswordPage() {
@@ -12,8 +11,12 @@ export default function ForgotPasswordPage() {
 
     const sendResetEmail = async () => {
         try {
-            await sendPasswordResetEmail(auth, email);
-            setIsSent(true);
+            const response = await callApi('resetPassword')({ email: email });
+            if (response && response.data) {
+                setIsSent(true);
+            } else {
+                console.error("An error occurred while sending the reset email.");
+            }
         } catch (error) {
             console.error("Error sending reset email:", error);
         }
