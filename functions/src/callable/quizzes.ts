@@ -374,7 +374,7 @@ const submitQuiz = onCall(async (request) => {
         .then((snapshot) => {
 
             // Verify questions are valid
-            const questions: any[] = snapshot.docs;
+            const questions: any[] = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
             if (!questions || questions.length === 0) {
                 throw new HttpsError("not-found", `No quiz questions found for course ${request.data.courseId}`);
             }
@@ -391,7 +391,7 @@ const submitQuiz = onCall(async (request) => {
 
                 let marks;
                 if (question.type === "mc" || question.type === "tf") {
-                    marks = question.data().correctAnswer === response.answer ? question.data().marks : 0;
+                    marks = Number(question.correctAnswer) === Number(response.answer) ? question.marks : 0;
                 } else {
                     // Short answer: must be marked by an admin
                     marks = null; // TODO: Add to admin queue
@@ -401,10 +401,10 @@ const submitQuiz = onCall(async (request) => {
                     userId: request.auth?.uid,
                     courseId: courseId,
                     questionId: response.questionId,
-                    question: question.data().question,
-                    type: question.data().type,
+                    question: question.question,
+                    type: question.type,
                     response: response.answer,
-                    possibleMarks: question.data().marks,
+                    possibleMarks: question.marks,
                     marksAchieved: marks,
                     timestamp: timestamp,
                 };
