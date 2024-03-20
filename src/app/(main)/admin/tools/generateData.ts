@@ -175,23 +175,41 @@ const generateDummyData = async () => {
         .catch((error) => { throw new Error(`Error cleaning database data: ${error}`); });
 
     // Add all the courses
-    const ids: string[] = [];
-    await Promise.all(courses.map((course) =>
-        callApi('addCourse')(course)
+    const courseQuizQuestions: any[] = [];
+    await Promise.all(courses.map(async (course) => {
+        // @ts-ignore
+        const { quizQuestions, ...courseData } = course;
+        return callApi('addCourse')(courseData)
             .then((id) => {
                 if (typeof id.data !== 'string') {
                     throw new Error(`Error: saveCourse should return a course ID string. Returned value: ${id}`);
                 }
-                ids.push(id.data);
+                courseQuizQuestions.push({ id: id.data, quizQuestions });
             })
-            .catch((error) => { throw new Error(`Error adding course (name: ${course.name}): ${error}`); })
-    ));
+            .catch((error) => { throw new Error(`Error adding course (name: ${course.name}): ${error}`); });
+    }));
 
-    return Promise.all(ids.map((id) =>
-        callApi('publishCourse')( { courseId: id })
-            .then(() => console.log(`Successfully published course ${id}`))
-            .catch((error) => { throw new Error(`Error publishing course ${id}: ${error}`); })
-    ));
+    const promises: Promise<any>[] = [];
+
+    courseQuizQuestions.forEach((course) => {
+        if (course.quizQuestions) {
+            promises.push(
+                callApi('updateQuizQuestions')({ courseId: course.id, questions: course.quizQuestions })
+                    .then(() => console.log(`Successfully added quiz questions for course ${course.id}`))
+                    .catch((error) => { throw new Error(`Error adding quiz questions for course ${course.id}: ${error}`); })
+            );
+        }
+
+        promises.push(
+            callApi('publishCourse')({ courseId: course.id })
+                .then(() => console.log(`Successfully published course ${course.id}`))
+                .catch((error) => { throw new Error(`Error publishing course ${course.id}: ${error}`); })
+        );
+    });
+
+    return Promise.all(promises)
+        .then(() => console.log("Successfully adding all quiz questions and publishing all courses"))
+        .catch((error) => { throw new Error(`Error adding all quiz questions and publishing all courses: ${error}`); });
 }
 
 export { generateDummyData };
