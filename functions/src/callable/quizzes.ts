@@ -454,9 +454,9 @@ const submitQuiz = onCall(async (request) => {
 });
 
 /**
- * Returns the short answer questions that need to be marked by an admin
+ * Returns a list of quiz attempts that need marking
  */
-const getQuestionsToMark = onCall(async (request) => {
+const getQuizzesToMark = onCall(async (request) => {
 
     logger.info(`Entering getQuestionsToMark for user ${request.auth?.uid}`);
 
@@ -472,54 +472,69 @@ const getQuestionsToMark = onCall(async (request) => {
 
     logger.info("Schema & admin verification passed");
 
-    const quizzesToMark = await getCollection(DatabaseCollections.QuizAttempt)
-        .where("endTime", "!=", null)
-        .where("pass", "==", null)
+    // Get all quiz attempts that need marking (filter multiple questions from an attempt down to one object)
+    const attemptsToMark = await getCollection(DatabaseCollections.QuizQuestionAttempt)
+        .where("marksAchieved", "==", null)
         .get()
-        .then((snapshot) => snapshot.docs)
+        .then((snapshot) => [...new Set(snapshot.docs.map((doc) => `${doc.data().courseId}|${doc.data().userId}|${doc.data().quizAttemptId}`))])
         .catch((err) => {
             logger.info(`Error getting short answer questions: ${err}`);
             throw new HttpsError("internal", `Error getting short answer questions: ${err}`);
         });
 
-    logger.info(`Successfully retrieved ${quizzesToMark.length} quizzes with short answer questions to mark`);
+    logger.info(`Successfully retrieved ${attemptsToMark.length} quiz attempts with short answer questions to mark`);
 
-    const courseData = await Promise.all([...new Set(quizzesToMark.map((quiz) => quiz.data().courseId))].map((courseId) =>
+    const courseNames = {};
+    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[0]))].map((courseId) =>
         getDoc(DatabaseCollections.Course, courseId)
-            .get()
-            .then((course) => ({ ...course.data(), id: courseId }))
+            .get() // @ts-ignore
+            .then((course) => courseNames[courseId] = course.data().name)
             .catch((err) => {
                 logger.info(`Error getting course data: ${err}`);
                 throw new HttpsError("internal", `Error getting course data: ${err}`);
             })
     ));
 
-    logger.info(`Successfully retrieved course data for ${courseData.length} courses`);
+    logger.info(`Successfully retrieved course data for ${Object.keys(courseNames).length} courses`);
 
-    const userData = await Promise.all([...new Set(quizzesToMark.map((quiz) => quiz.data().userId))].map((userId) =>
+    const userNames = {};
+    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[1]))].map((userId) =>
         getDoc(DatabaseCollections.User, userId)
-            .get()
-            .then((user) => ({ ...user.data(), id: userId }))
+            .get() // @ts-ignore
+            .then((user) => userNames[userId] = user.data().name)
             .catch((err) => {
                 logger.info(`Error getting user data: ${err}`);
                 throw new HttpsError("internal", `Error getting user data: ${err}`);
             })
     ));
 
-    logger.info(`Successfully retrieved user data for ${userData.length} users`);
+    logger.info(`Successfully retrieved user data for ${Object.keys(userNames).length} users`);
 
-    return quizzesToMark.map((question) => {
-        const course: any = courseData.find((course) => course.id === question.data().courseId);
-        const user: any = userData.find((user) => user.id === question.data().userId);
+    const attemptTimestamps = {};
+    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[2]))].map((quizAttemptId) =>
+        getDoc(DatabaseCollections.QuizAttempt, quizAttemptId)
+            .get() // @ts-ignore
+            .then((attempt) => attemptTimestamps[quizAttemptId] = attempt.data().endTime)
+            .catch((err) => {
+                logger.info(`Error getting quiz attempt data: ${err}`);
+                throw new HttpsError("internal", `Error getting quiz attempt data: ${err}`);
+            })
+    ));
+
+    logger.info(`Successfully retrieved quiz attempt data for ${Object.keys(attemptTimestamps).length} attempts`);
+
+    return attemptsToMark.map((question) => {
+
+        const [courseId, userId, quizAttemptId] = question.split("|");
 
         return {
-            courseId: course.courseId,
-            courseName: course.name,
-            userId: user.id,
-            userName: user.name,
-            timestamp: question.data().timestamp,
+            courseId, // @ts-ignore
+            courseName: courseNames[courseId],
+            userId, // @ts-ignore
+            userName: userNames[userId], // @ts-ignore
+            timestamp: attemptTimestamps[quizAttemptId].toMillis() / 1000,
         };
     });
 });
 
-export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuestionsToMark };
+export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuizzesToMark };
