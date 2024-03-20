@@ -1,6 +1,7 @@
 "use client"
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
+import React, { useState } from 'react';
 import { callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import { MdCheckCircleOutline } from "react-icons/md";
@@ -9,7 +10,7 @@ import { useEffect, useState } from "react";
 export default function Quiz({ params }: { params: { id: string } }) {
 
     const router = useRouter();
-
+  
     const [countdown, setCountDown] = useState(0);
 
     const getQuizData = useAsync(() =>
@@ -22,6 +23,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
                 return rsp;
             }),
         []);
+  
+    const [isOpen, setIsOpen] = useState(false);
 
     // @ts-ignore
     const quizData: undefined | { questions: any[], timeLimit: number, courseName: number, numAttempts: number, maxAttempts: number, startTime: number }
