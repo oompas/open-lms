@@ -118,7 +118,7 @@ export default function Tools() {
     }
 
     const getQuizzesToMark = async () => {
-        await callApi("getQuestionsToMark")({})
+        await callApi("getQuizzesToMark")({})
             .then((data) => {
                 // @ts-ignore
                 setQuizzesToMark(data.data);
