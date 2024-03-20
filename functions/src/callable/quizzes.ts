@@ -191,7 +191,7 @@ const getQuiz = onCall(async (request) => {
                 };
 
                 if (doc.data().type === "mc") { // @ts-ignore
-                    question["answers"] = shuffleArray(doc.data().answers);
+                    question["answers"] = doc.data().answers;
                 }
 
                 return question;
