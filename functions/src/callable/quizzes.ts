@@ -32,7 +32,7 @@ const updateQuizQuestions = onCall(async (request) => {
                 question: string().min(1).max(500).optional(),
                 type: string().oneOf(["mc", "tf", "sa"]).optional(),
                 answers: array().of(string()).min(2).optional(),
-                marks: number().optional(),
+                marks: number().optional().min(1).max(20),
                 correctAnswer: number().optional(),
             }).noUnknown(true)
         ).min(1),
@@ -96,12 +96,17 @@ const updateQuizQuestions = onCall(async (request) => {
 
         const updateType = questionType(update);
 
+        // Each question has statistics - score for tf/mc, distribution for sa (since partial marks are possible)
+        const defaultStats = { numAttempts: 0 }; // @ts-ignore
+        if (update.type === "mc" || update.type === "tf") defaultStats["totalScore"] = 0; // @ts-ignore
+        if (update.type === "sa") defaultStats["distribution"] = new Array(update.marks + 1).fill(0);
+
         /**
          * New question: add to the collection
          * Update question: deactivate old question, add new question
          * Delete question: deactivate question
          */
-        if (updateType === "new" || updateType === "update") updatePromises.push(dbCollection.add({ courseId, ...update, active: true, numAttempts: 0, totalScore: 0 }));
+        if (updateType === "new" || updateType === "update") updatePromises.push(dbCollection.add({ courseId, ...update, active: true, stats: defaultStats }));
         if (updateType === "update" || updateType === "delete") updatePromises.push(dbCollection.doc(update.id).update({ active: false }));
     });
 
