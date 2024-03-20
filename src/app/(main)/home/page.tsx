@@ -7,8 +7,12 @@ import "../../../config/firebase";
 import { useState } from "react";
 import Link from "next/link"
 import TextField from "@/components/TextField";
+import Button from "@/components/Button";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+
+    const router = useRouter();
 
     const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
     const [search, setSearch] = useState("");
@@ -41,6 +45,9 @@ export default function Home() {
         if (courses.error) {
             return <div>Error loading courses</div>;
         }
+        // @ts-ignore
+        if (courses.result?.data.filter((course: any) => course.status !== 1).length === 0)
+            return <div className="text-gray-600 text-center">Enroll in courses to get started!</div>
 
 
         // @ts-ignore
@@ -60,13 +67,11 @@ export default function Home() {
     }
 
     return (
-        <main className="flex justify-center pt-14">
-            <div className="flex flex-col bg-white w-[100%] p-16 rounded-2xl shadow-custom">
+        <main className="flex w-full justify-center pt-14">
+            <div className="flex flex-col bg-white w-full p-16 rounded-2xl shadow-custom">
                 <div className="flex flex-row items-center mb-2">
                     <div className="text-lg">My Enrolled Courses</div>
-                    <Link className="bg-red-800 ml-auto text-white p-4 font-bold rounded-2xl cursor-pointer hover:opacity-60 duration-100" href={`/course_search`}>
-                        <div className="text-l text-center">Browse Available Courses</div>
-                    </Link>
+                    <Button text="Browse Available Courses" onClick={() => router.push("/course_search")} style="ml-auto" />
                 </div>
                 <div className="flex flex-row flex-wrap justify-between overflow-y-scroll sm:no-scrollbar">
                     {enrolledCourses()}

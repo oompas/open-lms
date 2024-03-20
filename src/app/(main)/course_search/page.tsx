@@ -4,6 +4,7 @@ import AvailableCourse from "./AvailableCourse";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import "../../../config/firebase";
 import { useState } from "react";
+import TextField from '@/components/TextField';
 
 export default function Home() {
 
@@ -33,18 +34,13 @@ export default function Home() {
     }
 
     return (
-        <main className="flex justify-center pt-14">
-            <div className="flex flex-col w-[100%] h-[100vh] bg-white p-16 rounded-2xl shadow-custom">
-                <div className="flex flex-col mb-10">
-                    <input
-                        className={"border-4 border-[#9D1939] w-[100%] px-4 py-2 mt-2 text-6xl mb-10 rounded-2xl"}
-                        type="text"
-                        placeholder=" Search for a course..."
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
+        <main className="flex w-full mb-4 justify-center">
+            <div className="flex flex-col w-full h-full bg-white p-12 rounded-2xl shadow-custom">
+                <div className="flex flex-row items-center">
+                    <div className="text-lg mb-4">Available Courses</div> 
+                    <TextField text={search} onChange={setSearch} placeholder='search for a course title...' style="mb-4 ml-auto w-1/3"/>
                 </div>
-                <div className="text-4xl mb-10">Available Courses</div>
-                <div className="flex flex-col justify-between overflow-y-scroll">
+                <div className="flex flex-col gap-4 justify-between overflow-y-scroll sm:no-scrollbar">
                     {availableCourses()}
                 </div>
             </div>
