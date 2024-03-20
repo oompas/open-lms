@@ -73,7 +73,7 @@ export default function Home() {
                     <div className="text-lg">My Enrolled Courses</div>
                     <Button text="Browse Available Courses" onClick={() => router.push("/course_search")} style="ml-auto" />
                 </div>
-                <div className="flex flex-row flex-wrap justify-between overflow-y-scroll sm:no-scrollbar">
+                <div className="flex flex-row flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
                     {enrolledCourses()}
                 </div>
             </div>
