@@ -336,15 +336,15 @@ const getCourseInfo = onCall(async (request) => {
                     });
 
                 let status;
-                if (!courseEnrolled) {
+                if (!courseEnrolled) { // Status 1: not enrolled in course
                     status = 1;
-                } else if (courseAttempt === null ) {
+                } else if (courseAttempt === null ) { // Status 2: enrolled, not started
                     status = 2;
-                } else if (courseAttempt?.pass === null) {
+                } else if (courseAttempt?.pass === null) { // Status 3: in progress
                     status = 3;
-                } else if (courseAttempt?.pass === false) {
+                } else if (courseAttempt?.pass === false) { // Status 4: completed, failed
                     status = 4;
-                } else if (courseAttempt?.pass === true) {
+                } else if (courseAttempt?.pass === true) { // Status 5: completed, passed
                     status = 5;
                 } else {
                     throw new HttpsError("internal", "Course is in an invalid state - can't get status");

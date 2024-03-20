@@ -6,7 +6,9 @@ import { useEffect, useState } from "react";
 export default function IDCourse({
     course,
     timeDone,
-    setTimeDone
+    setTimeDone,
+    status,
+    setStatus
 } : {
     course: {
         name: string,
@@ -18,7 +20,9 @@ export default function IDCourse({
         courseId: number
     },
     timeDone: boolean,
-    setTimeDone: any
+    setTimeDone: any,
+    status: number,
+    setStatus: any
 }) {
 
     const startingCountdown = () => {
@@ -28,8 +32,6 @@ export default function IDCourse({
 
         return minimumSeconds - timeSinceStart;
     }
-
-    const [status, setStatus] = useState(course.status);
 
     const [countdown, setCountDown] = useState(startingCountdown());
 
@@ -120,6 +122,7 @@ export default function IDCourse({
                 <div
                     className="flex flex-col justify-center items-center ml-auto border-2 rounded-xl px-10 py-4 shadow-lg">
                     <div className="text-sm -mb-1">status:</div>
+                    { /* @ts-ignore */ }
                     <div className="text-2xl">{statusNames[status]}</div>
                     {
                         course.minTime && (

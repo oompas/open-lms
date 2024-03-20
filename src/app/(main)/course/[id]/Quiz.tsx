@@ -15,7 +15,7 @@ export default function Quiz({
     maxAttempts: number
     numQuestions: number
     minimumScore: number
-    inProgress: boolean
+    inProgress: boolean | null
     id: number
 }) {
 
@@ -36,7 +36,7 @@ export default function Quiz({
                     {maxAttempts && <div># of attempts allowed: {maxAttempts}</div>}
                     <div>{numQuestions} questions{minimumScore && ` (${minimumScore} required to pass)`}</div>
                 </div>
-                <Button text={inProgress ? "Continue quiz" : "Click to start"} onClick={async () => await startQuiz()} style="mt-2"/>
+                {inProgress !== null && <Button text={inProgress ? "Continue quiz" : "Click to start"} onClick={async () => await startQuiz()} style="mt-2"/>}
             </div>
         </div>
     );

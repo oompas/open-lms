@@ -10,9 +10,15 @@ import { callApi } from "@/config/firebase";
 
 export default function Course({ params }: { params: { id: string } }) {
 
-    const getCourse = useAsync(() => callApi("getCourseInfo")({ courseId: params.id, withQuiz: false }), []);
+    const getCourse = useAsync(() =>
+        callApi("getCourseInfo")({ courseId: params.id, withQuiz: false })
+            // @ts-ignore
+            .then((result) => { setStatus(result.data.status); return result; }),
+        []);
 
+    const [status, setStatus] = useState(0);
     const [timeDone, setTimeDone] = useState(false);
+
 
     const renderCourse = () => {
         // @ts-ignore
@@ -32,6 +38,8 @@ export default function Course({ params }: { params: { id: string } }) {
                     course={course}
                     timeDone={timeDone}
                     setTimeDone={setTimeDone}
+                    status={status}
+                    setStatus={setStatus}
                 />
 
                 <div className="mt-8 text-2xl">
@@ -49,7 +57,7 @@ export default function Course({ params }: { params: { id: string } }) {
                                 maxAttempts={course.quiz.maxQuizAttempts}
                                 numQuestions={course.quiz.numQuestions}
                                 minimumScore={course.quiz.minScore}
-                                inProgress={course.quizAttempts.length > 0}
+                                inProgress={status <= 2 || !timeDone ? null : course.quizAttempts.length > 0}
                                 id={course.courseId}
                             />
                         </div>
