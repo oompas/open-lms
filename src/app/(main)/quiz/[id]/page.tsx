@@ -17,6 +17,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
             .then((rsp) => {
                 // @ts-ignore
                 setCountDown(Math.floor(rsp.data.startTime + (60 * rsp.data.timeLimit) - (Date.now() / 1000)));
+                // @ts-ignore
+                setUserAnswers(rsp.data.questions.map(question => question.id).reduce((prev: any, cur: any) => ({ ...prev, [cur]: null }), {}));
                 return rsp;
             }),
         []);
@@ -125,7 +127,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                         <div className="flex-grow border-[1px] border-gray-300 px-4 py-2 rounded-2xl duration-100 flex items-center">
                             <div className="text-lg">Q{key + 1}</div>
                                 { /* @ts-ignore */ }
-                                {(userAnswers[question.id] !== undefined && userAnswers[question.id] !== "") && (
+                                {(userAnswers[question.id] !== null && userAnswers[question.id] !== "") && (
                                     <div className="ml-2">
                                         <MdCheckCircleOutline size={24} className="mx-auto" color="#47AD63"/>
                                     </div>
@@ -142,7 +144,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
         const responses = [];
         for (const [key, value] of Object.entries(userAnswers)) {
 
-            if (!value) {
+            if (value === null) {
                 alert("Please answer all questions before submitting the quiz");
                 return;
             }
@@ -150,6 +152,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
             const questionData = quizData?.questions.find((question) => question.id === key);
             if (questionData.type === "sa") {
                 responses.push({ questionId: key, answer: value });
+            } else if (questionData.type === "tf") {
+                responses.push({ questionId: key, answer: value === "True" ? "0" : "1" });
             } else {
                 responses.push({ questionId: key, answer: questionData.answers.indexOf(value) + "" });
             }
