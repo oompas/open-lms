@@ -1,15 +1,30 @@
 "use client"
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
+import React, { useState } from 'react';
 import { callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import { MdCheckCircleOutline } from "react-icons/md";
-import { useState } from "react";
 
 export default function Quiz({ params }: { params: { id: string } }) {
 
     const router = useRouter();
     const getQuizData = useAsync(() => callApi("getQuiz")({ courseId: params.id }), []);
+  
+    const [isOpen, setIsOpen] = useState(false);
+
+    const TEMP_QUIZ_DATA = [
+        { question: "Example knowledge quiz question 1?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: true, id: 1 },
+        { question: "Example knowledge quiz question 2?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: true, id: 2 },
+        { question: "Example knowledge quiz question 3?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: true, id: 3 },
+        { question: "Example knowledge quiz question 4?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 4 },
+        { question: "Example knowledge quiz question 5?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 5 },
+        { question: "Example knowledge quiz question 6?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 6 },
+        { question: "Example knowledge quiz question 7?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 7 },
+        { question: "Example knowledge quiz question 8?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 8 },
+        { question: "Example knowledge quiz question 9?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 9 },
+        { question: "Example knowledge quiz question 10?", options: ["Quiz answer 1", "Quiz answer 2", "Quiz answer 3", "Quiz answer 4"], completed: false, id: 10 }
+    ]
 
     // @ts-ignore
     const quizData: null | { questions: any[], timeLimit: number, courseName: number, attempt: number, maxAttempts: number }
