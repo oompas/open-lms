@@ -364,7 +364,6 @@ const submitQuiz = onCall(async (request) => {
         });
 
     const promises: Promise<any>[] = [];
-    const timestamp = FieldValue.serverTimestamp();
 
     // Mark the quiz and update question stats
     await getCollection(DatabaseCollections.QuizQuestion)
@@ -389,24 +388,18 @@ const submitQuiz = onCall(async (request) => {
                     throw new HttpsError("not-found", `Question with ID ${response.questionId} not found`);
                 }
 
-                let marks;
+                let marks = null; // Default for short answer (need to be marked)
                 if (question.type === "mc" || question.type === "tf") {
                     marks = Number(question.correctAnswer) === Number(response.answer) ? question.marks : 0;
-                } else {
-                    // Short answer: must be marked by an admin
-                    marks = null; // TODO: Add to admin queue
                 }
 
                 const markedResponse = {
                     userId: request.auth?.uid,
                     courseId: courseId,
                     questionId: response.questionId,
-                    question: question.question,
-                    type: question.type,
+                    quizAttemptId: attemptId,
                     response: response.answer,
-                    possibleMarks: question.marks,
                     marksAchieved: marks,
-                    timestamp: timestamp,
                 };
 
                 // Add question attempt to database
@@ -420,17 +413,19 @@ const submitQuiz = onCall(async (request) => {
                 );
 
                 // Update question stats
-                promises.push(
-                    getDoc(DatabaseCollections.QuizQuestion, question.id)
-                        .update({
-                            numAttempts: FieldValue.increment(1),
-                            totalScore: FieldValue.increment(marks ?? 0),
-                        })
-                        .catch((err) => {
-                            logger.info(`Error updating question stats: ${err}`);
-                            throw new HttpsError("internal", `Error updating question stats: ${err}`);
-                        })
-                );
+                if (marks !== null) {
+                    promises.push(
+                        getDoc(DatabaseCollections.QuizQuestion, question.id)
+                            .update({
+                                numAttempts: FieldValue.increment(1),
+                                totalScore: FieldValue.increment(marks),
+                            })
+                            .catch((err) => {
+                                logger.info(`Error updating question stats: ${err}`);
+                                throw new HttpsError("internal", `Error updating question stats: ${err}`);
+                            })
+                    );
+                }
             }
         })
         .catch((err) => {
