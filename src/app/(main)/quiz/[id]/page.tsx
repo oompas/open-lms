@@ -4,17 +4,36 @@ import Button from "@/components/Button";
 import { callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import { MdCheckCircleOutline } from "react-icons/md";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Quiz({ params }: { params: { id: string } }) {
 
     const router = useRouter();
-    const getQuizData = useAsync(() => callApi("getQuiz")({ courseId: params.id }), []);
+
+    const [countdown, setCountDown] = useState(0);
+
+    const getQuizData = useAsync(() =>
+        callApi("getQuiz")({ courseId: params.id })
+            .then((rsp) => {
+                // @ts-ignore
+                setCountDown(Math.floor(rsp.data.startTime + (60 * rsp.data.timeLimit) - (Date.now() / 1000)));
+                return rsp;
+            }),
+        []);
 
     // @ts-ignore
-    const quizData: null | { questions: any[], timeLimit: number, courseName: number, attempt: number, maxAttempts: number }
+    const quizData: undefined | { questions: any[], timeLimit: number, courseName: number, numAttempts: number, maxAttempts: number, startTime: number }
         = getQuizData.result?.data;
     const [userAnswers, setUserAnswers] = useState({});
+
+    useEffect(() => {
+        if (countdown <= 0 || !quizData) {
+            return;
+        }
+
+        const interval = setInterval(() => setCountDown(Math.floor(quizData.startTime + (60 * quizData.timeLimit) - (Date.now() / 1000))), 1000);
+        return () => clearInterval(interval);
+    }, [countdown]);
 
     const loadingPopup = (
         <div
@@ -83,13 +102,16 @@ export default function Quiz({ params }: { params: { id: string } }) {
             );
         }
 
+        const timeFormat = (Math.floor(countdown / 3600) + "").padStart(2, '0') + ":"
+            + (Math.floor(countdown / 60) % 60 + "").padStart(2, '0') + ":" + (countdown % 60 + "").padStart(2, '0');
+
         return (
             <>
                 <div className="flex flex-row items-center justify-center">
                     Time remaining:
                 </div>
                 <div className="flex flex-col text-4xl items-center justify-center mb-4">
-                    {quizData.timeLimit}
+                    {timeFormat}
                 </div>
             </>
         );
@@ -153,7 +175,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     <div className="flex flex-col w-full bg-white p-12 rounded-2xl shadow-custom">
                         <div className="text-lg font-bold mb-0">{quizData && quizData.courseName}</div>
                         <div className="flex flex-col text-md space-y-8 w-[30rem]">
-                            Attempt {quizData && quizData.attempt}{quizData && quizData.maxAttempts && `/${quizData.maxAttempts}`}
+                            Attempt {quizData && quizData.numAttempts}{quizData && quizData.maxAttempts && `/${quizData.maxAttempts}`}
                         </div>
                     </div>
                 </div>
