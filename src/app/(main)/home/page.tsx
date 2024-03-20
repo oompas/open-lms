@@ -67,8 +67,8 @@ export default function Home() {
     }
 
     return (
-        <main className="flex w-full justify-center pt-14">
-            <div className="flex flex-col bg-white w-full p-16 rounded-2xl shadow-custom">
+        <main className="flex w-full justify-center mb-4">
+            <div className="flex flex-col bg-white w-full p-12 rounded-2xl shadow-custom">
                 <div className="flex flex-row items-center mb-2">
                     <div className="text-lg">My Enrolled Courses</div>
                     <Button text="Browse Available Courses" onClick={() => router.push("/course_search")} style="ml-auto" />
