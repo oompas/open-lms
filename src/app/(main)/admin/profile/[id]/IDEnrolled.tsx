@@ -1,12 +1,10 @@
 export default function IDCoursesEnrolled({
     title,
     completionDate,
-    link,
     id
 } : {
-    title: string
-    completionDate: string
-    link: string
+    title: string,
+    completionDate: string,
     id: number
 }) {
     return (
