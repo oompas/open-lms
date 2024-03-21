@@ -1,22 +1,21 @@
 "use client";
 import Link from 'next/link';
 import '../globals.css';
-import { auth } from '@/config/firebase';
+import { auth, callApi } from '@/config/firebase';
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from 'react';
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import {useAsync} from "react-async-hook";
+import { useState } from 'react';
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
     const router = useRouter();
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
     const logout = async () => {
         await auth.signOut()
             .then(() => router.push('/'));
     }
 
+    // Takes time to detect if the user is logged in; if so, check if they're an admin
     auth.onAuthStateChanged((user) => {
         if (user) {
             auth.currentUser?.getIdTokenResult()
@@ -33,7 +32,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const handleSubmitFeedback = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
-            await httpsCallable(getFunctions(), 'sendPlatformFeedback')({ feedback });
+            await callApi('sendPlatformFeedback')({ feedback });
             setFeedback('');
             setFeedbackSent(true);
         } catch (error) {
@@ -71,7 +70,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                     rows={4}
                     required
                 ></textarea>
-                <span className="text-white p-4">Is admin: {JSON.stringify(isAdmin)}</span>
                 <button
                     type="submit"
                     className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-2"
