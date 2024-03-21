@@ -79,7 +79,7 @@ export default function Mark({ params }: { params: { id: string } }) {
                             key={key}
                             index={key}
                             question={question.question}
-                            answer={question.answer}
+                            answer={question.response}
                             marks={question.marks}
                             handleMark={handleUpdateMark}
                             id={question.id}

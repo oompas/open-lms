@@ -35,7 +35,7 @@ export default function QuizAnswer({
         <div className="flex mt-4">
             <div className="flex flex-row bg-white w-full p-12 rounded-2xl shadow-custom">
                 <div className="w-full">
-                    <div className="text-lg mb-2">Q{id}) {question}</div>
+                    <div className="text-lg mb-2">Q{index + 1}) {question}</div>
                     <div className="text-lg">A) {answer}</div>
                 </div>
                 {/* TODO - replace this */}
