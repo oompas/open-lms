@@ -241,6 +241,7 @@ const getAvailableCourses = onCall(async (request) => {
                     description: course.data().description,
                     status: status,
                     minTime: course.data().minTime,
+                    maxQuizTime: course.data().quiz !== null ? course.data().quiz.timeLimit : -1
                 };
 
                 allCourses.push(courseData);
@@ -394,6 +395,7 @@ const getCourseInfo = onCall(async (request) => {
                                 id: doc.id,
                                 type: data.type,
                                 question: data.question,
+                                marks: data.marks
                             };
                             if (data.type === "mc") {
                                 question["answers"] = data.answers;

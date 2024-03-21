@@ -146,9 +146,21 @@ const resetPassword = onCall(async (request) => {
  */
 const getUserProfile = onCall(async (request) => {
 
+    logger.info(`Entering getUserProfile with payload ${JSON.stringify(request.data)} (user: ${request.auth?.uid})`);
+
     verifyIsAuthenticated(request);
 
-    const email = request.data.email;
+    const schema = object({
+        targetUid: string().length(28).optional(),
+    }).noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
 
     // @ts-ignore
     let user = await auth.getUser(request.auth.uid)
@@ -159,20 +171,47 @@ const getUserProfile = onCall(async (request) => {
         });
 
     // Only administrators can view other's profiles
-    if (email) {
+    if (request.data.targetUid) {
         // @ts-ignore
         if (!user.customClaims['admin']) {
             logger.error(`Non-admin user '${user.email}' is trying to request this endpoint`);
             throw new HttpsError('permission-denied', "You must be an administrator to perform this action");
         }
 
-        user = await auth.getUserByEmail(email)
+        user = await auth.getUser(request.data.targetUid)
             .then((user) => user)
             .catch((error) => {
                 logger.error(`Error getting UserRecord object: ${error}`);
                 throw new HttpsError("internal", "Error getting user data, try again later");
             });
     }
+
+    const userName = await getDoc(DatabaseCollections.User, user.uid)
+        .get() // @ts-ignore
+        .then((doc) => doc.data().name)
+        .catch((error) => {
+            logger.error(`Error querying user data: ${error}`);
+            throw new HttpsError("internal", "Error getting user data, try again later");
+        });
+
+    const enrolledCourses = await getCollection(DatabaseCollections.EnrolledCourse)
+        .where('userId', "==", user.uid)
+        .get()
+        .then((result) => result.docs.map((doc) => doc.data().courseId))
+        .catch((error) => {
+            logger.error(`Error querying enrolled courses: ${error}`);
+            throw new HttpsError("internal", "Error getting user data, try again later");
+        });
+
+    const enrolledCourseData = await Promise.all(enrolledCourses.map(async (courseId) =>
+        getDoc(DatabaseCollections.Course, courseId)
+            .get() // @ts-ignore
+            .then((course) => ({ id: courseId, name: course.data().name }))
+            .catch((error) => {
+                logger.error(`Error querying enrolled course data: ${error}`);
+                throw new HttpsError("internal", "Error getting user data, try again later");
+            })
+    ));
 
     // Query course & course attempt data
     const completedCourseIds = await getCollection(DatabaseCollections.CourseAttempt)
@@ -189,7 +228,7 @@ const getUserProfile = onCall(async (request) => {
         getDoc(DatabaseCollections.Course, data.id)
             .get()
             // @ts-ignore
-            .then((course) => ({name: course.data().name, link: course.data().link, date: data.date}))
+            .then((course) => ({ name: course.data().name, link: course.data().link, date: data.date }))
             .catch((error) => {
                 logger.error(`Error querying completed course data: ${error}`);
                 throw new HttpsError("internal", "Error getting user data, try again later");
@@ -197,9 +236,10 @@ const getUserProfile = onCall(async (request) => {
     ));
 
     return {
-        name: user.displayName,
+        name: userName,
         email: user.email,
         signUpDate: user.metadata.creationTime,
+        enrolledCourses: enrolledCourseData,
         completedCourses: completedCourseData,
     };
 });
