@@ -614,6 +614,7 @@ const getQuizToMark = onCall(async (request) => {
                     question: doc.data().question, // @ts-ignore
                     response: attempt.response, // @ts-ignore
                     marks: doc.data().marks, // @ts-ignore
+                    marksAchieved: attempt.marksAchieved, // @ts-ignore
                     type: doc.data().type,
                 }
             })
