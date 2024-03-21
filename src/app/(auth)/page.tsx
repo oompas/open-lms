@@ -65,6 +65,7 @@ export default function AuthPage() {
                                 {error === "auth/user-not-found" && "User not found. Please check your credentials or sign up."}
                                 {error === "auth/wrong-password" && "Invalid password. Please enter your correct password."}
                                 {error === "auth/internal-error" && "Email address not verified. Please check your inbox and verify your address."}
+                                {error === "auth/missing-password" && "Missing password. Please enter a password."}
                             </p>
                         )}
                     </div>
