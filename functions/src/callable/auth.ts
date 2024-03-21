@@ -17,7 +17,7 @@ const createAccount = onCall(async (request) => {
     logger.info(`Entering createAccount with payload ${JSON.stringify(request.data)} (user: ${request.auth?.uid})`);
 
     const schema = object({
-        name: string().required().min(5, "Name must be at least five characters long"),
+        name: string().required().min(1, "Name must be at least one character long"),
         email: string().required().email(),
         password: string().required().min(10, "Password must be at least ten characters long"),
     });
