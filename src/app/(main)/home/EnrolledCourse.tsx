@@ -17,7 +17,7 @@ export default function EnrolledCourse({
 }) {
 
     const statusValues = {
-        2: "Todo",
+        2: "To do",
         3: "In progress",
         4: "In progress",
         5: "Completed",
