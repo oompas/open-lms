@@ -560,13 +560,12 @@ const getQuizToMark = onCall(async (request) => {
 
     logger.info("Schema & admin verification passed");
 
-    const attempts = await getCollection(DatabaseCollections.QuizQuestionAttempt)
+    const allAttempts = await getCollection(DatabaseCollections.QuizQuestionAttempt)
         .where("quizAttemptId", "==", request.data.quizAttemptId)
-        .where("marksAchieved", "==", null)
         .get()
         .then((snapshot) => {
-            if (snapshot.empty) {
-                throw new HttpsError("not-found", `No quiz questions found for quiz attempt ${request.data.quizAttemptId}`);
+            if (!snapshot.docs.find((doc) => doc.data().marksAchieved === null)) {
+                throw new HttpsError("not-found", `No unmarked short answer quiz questions found for quiz attempt ${request.data.quizAttemptId}`);
             }
             return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         })
@@ -575,7 +574,35 @@ const getQuizToMark = onCall(async (request) => {
             throw new HttpsError("internal", `Error getting quiz questions: ${err}`);
         });
 
-    return Promise.all(attempts.map((attempt) => // @ts-ignore
+    // @ts-ignore
+    const courseName: string = await getDoc(DatabaseCollections.QuizAttempt, allAttempts[0].courseId)
+        .get()
+        .then((doc) => {
+            if (!doc.exists || !doc.data()) { // @ts-ignore
+                throw new HttpsError("not-found", `Course with ID ${allAttempts[0].courseId} not found`);
+            } // @ts-ignore
+            return doc.data().name;
+        })
+        .catch((err) => {
+            logger.info(`Error getting course data: ${err}`);
+            throw new HttpsError("internal", `Error getting course data: ${err}`);
+        });
+
+    // @ts-ignore
+    const userName: string = await getDoc(DatabaseCollections.User, allAttempts[0].userId)
+        .get()
+        .then((doc) => {
+            if (!doc.exists || !doc.data()) { // @ts-ignore
+                throw new HttpsError("not-found", `User with ID ${allAttempts[0].userId} not found`);
+            } // @ts-ignore
+            return doc.data().name;
+        })
+        .catch((err) => {
+            logger.info(`Error getting user data: ${err}`);
+            throw new HttpsError("internal", `Error getting user data: ${err}`);
+        });
+
+    const attemptData = await Promise.all(allAttempts.map((attempt) => // @ts-ignore
         getDoc(DatabaseCollections.QuizQuestion, attempt.questionId)
             .get()
             .then((doc) => {
@@ -586,7 +613,8 @@ const getQuizToMark = onCall(async (request) => {
                     id: attempt.id, // @ts-ignore
                     question: doc.data().question, // @ts-ignore
                     response: attempt.response, // @ts-ignore
-                    marks: doc.data().marks,
+                    marks: doc.data().marks, // @ts-ignore
+                    type: doc.data().type,
                 }
             })
             .catch((err) => {
@@ -599,6 +627,13 @@ const getQuizToMark = onCall(async (request) => {
             logger.info(`Error getting quiz questions: ${err}`);
             throw new HttpsError("internal", `Error getting quiz questions: ${err}`);
         });
+
+    return {
+        courseName: courseName,
+        learnerName: userName,
+        saQuestions: attemptData.filter((attempt) => attempt.type === "sa"),
+        otherQuestions: attemptData.filter((attempt) => attempt.type !== "sa"),
+    };
 });
 
 export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuizzesToMark, getQuizToMark };
