@@ -575,7 +575,7 @@ const getQuizToMark = onCall(async (request) => {
         });
 
     // @ts-ignore
-    const courseName: string = await getDoc(DatabaseCollections.QuizAttempt, allAttempts[0].courseId)
+    const courseName: string = await getDoc(DatabaseCollections.Course, allAttempts[0].courseId)
         .get()
         .then((doc) => {
             if (!doc.exists || !doc.data()) { // @ts-ignore
