@@ -170,7 +170,7 @@ const courses = rawCourseData.map((course) => {
 const generateDummyData = async () => {
 
     // First, clean the database data (leaves users & emails) so the new data can be added without conflicts
-    await callApi('cleanDatabase')()
+    await callApi('cleanDatabase', {})
         .then(() => console.log("Successfully cleaned database data"))
         .catch((error) => { throw new Error(`Error cleaning database data: ${error}`); });
 
@@ -179,7 +179,7 @@ const generateDummyData = async () => {
     await Promise.all(courses.map(async (course) => {
         // @ts-ignore
         const { quizQuestions, ...courseData } = course;
-        return callApi('addCourse')(courseData)
+        return callApi('addCourse', courseData)
             .then((id) => {
                 if (typeof id.data !== 'string') {
                     throw new Error(`Error: saveCourse should return a course ID string. Returned value: ${id}`);
@@ -194,14 +194,14 @@ const generateDummyData = async () => {
     courseQuizQuestions.forEach((course) => {
         if (course.quizQuestions) {
             promises.push(
-                callApi('updateQuizQuestions')({ courseId: course.id, questions: course.quizQuestions })
+                callApi('updateQuizQuestions', { courseId: course.id, questions: course.quizQuestions })
                     .then(() => console.log(`Successfully added quiz questions for course ${course.id}`))
                     .catch((error) => { throw new Error(`Error adding quiz questions for course ${course.id}: ${error}`); })
             );
         }
 
         promises.push(
-            callApi('publishCourse')({ courseId: course.id })
+            callApi('publishCourse', { courseId: course.id })
                 .then(() => console.log(`Successfully published course ${course.id}`))
                 .catch((error) => { throw new Error(`Error publishing course ${course.id}: ${error}`); })
         );

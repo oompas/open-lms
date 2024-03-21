@@ -11,7 +11,7 @@ export default function Mark({ params }: { params: { id: string } }) {
     const router = useRouter();
 
     const quizQuestions = useAsync(() =>
-        callApi('getQuizToMark')({ quizAttemptId: params.id }) // @ts-ignore
+        callApi('getQuizToMark', { quizAttemptId: params.id }) // @ts-ignore
             .then((rsp) => { setQuestions(rsp.data); return rsp; }),
         []);
 

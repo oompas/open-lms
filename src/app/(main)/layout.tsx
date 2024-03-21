@@ -32,7 +32,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const handleSubmitFeedback = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
-            await callApi('sendPlatformFeedback')({ feedback });
+            await callApi('sendPlatformFeedback', { feedback });
             setFeedback('');
             setFeedbackSent(true);
         } catch (error) {

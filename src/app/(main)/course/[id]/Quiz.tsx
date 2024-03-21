@@ -22,7 +22,7 @@ export default function Quiz({
     const router = useRouter();
 
     const startQuiz = async () => {
-        await callApi("startQuiz")({ courseId: id })
+        await callApi("startQuiz", { courseId: id })
             .then(() => router.push(`/quiz/${id}`))
             .catch((e) => console.log(`Error starting quiz: ${e}`));
     }

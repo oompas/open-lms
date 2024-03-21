@@ -81,7 +81,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     useEffect(() => {
         if (!loading || newCourse) return;
 
-        callApi("getCourseInfo")({ courseId: params.id, withQuiz: true })
+        callApi("getCourseInfo", { courseId: params.id, withQuiz: true })
             .then((result) => {
                 const data: any = result.data;
 
@@ -128,10 +128,10 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             }
         }
 
-        const courseId = await callApi("addCourse")(courseData).then((result) => result.data);
+        const courseId = await callApi("addCourse", courseData).then((result) => result.data);
 
         if (quizQuestions.length > 0) {
-            await callApi("updateQuizQuestions")({ courseId: courseId, questions: quizQuestions.map((q) => ({ ...q })) });;
+            await callApi("updateQuizQuestions", { courseId: courseId, questions: quizQuestions.map((q) => ({ ...q })) });;
         }
 
         router.push(`/admin/course/${courseId}`);
@@ -166,7 +166,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         // @ts-ignore
         courseData["courseId"] = params.id;
 
-        await callApi("updateCourse")(courseData);
+        await callApi("updateCourse", courseData);
 
         if (!_.isEqual(quizQuestions, originalData.quizQuestions)) {
             const quizData = {
@@ -174,17 +174,17 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 questions: quizQuestions,
             }
 
-            await callApi("updateQuiz")(quizData);
+            await callApi("updateQuiz", quizData);
         }
     }
 
     const handlePublish = async () => {
         if (active) {
-            await callApi("unPublishCourse")( { courseId: params.id })
+            await callApi("unPublishCourse", { courseId: params.id })
                 .then(() => setActive(false))
                 .catch((err) => console.log(`Error unpublishing course: ${err}`));
         } else {
-            await callApi("publishCourse")({ courseId: params.id })
+            await callApi("publishCourse", { courseId: params.id })
                 .then(() => setActive(true))
                 .catch((err) => console.log(`Error publishing course: ${err}`));
         }

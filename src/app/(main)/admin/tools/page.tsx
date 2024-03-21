@@ -12,10 +12,10 @@ import TextField from "@/components/TextField";
 
 export default function Tools() {
 
-    const quizzesToMark = useAsync(callApi('getQuizzesToMark'), []);
-    const courses = useAsync(callApi('getAvailableCourses'), []);
-    const learnerInsights = useAsync(callApi('getUserReports'), []);
-    const courseInsights = useAsync(callApi('getCourseReports'), []);
+    const quizzesToMark = useAsync(() => callApi('getQuizzesToMark', {}), []);
+    const courses = useAsync(() => callApi('getAvailableCourses', {}), []);
+    const learnerInsights = useAsync(() => callApi('getUserReports', {}), []);
+    const courseInsights = useAsync(() => callApi('getCourseReports', {}), []);
 
     const router = useRouter();
     const [search, setSearch] = useState("");

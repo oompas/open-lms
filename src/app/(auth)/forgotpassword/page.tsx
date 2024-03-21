@@ -11,7 +11,7 @@ export default function ForgotPasswordPage() {
 
     const sendResetEmail = async () => {
         try {
-            const response = await callApi('resetPassword')({ email: email });
+            const response = await callApi('resetPassword', { email: email });
             if (response && response.data) {
                 setIsSent(true);
             } else {

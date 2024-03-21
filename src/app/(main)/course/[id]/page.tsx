@@ -11,7 +11,7 @@ import { callApi } from "@/config/firebase";
 export default function Course({ params }: { params: { id: string } }) {
 
     const getCourse = useAsync(() =>
-        callApi("getCourseInfo")({ courseId: params.id, withQuiz: false })
+        callApi("getCourseInfo", { courseId: params.id, withQuiz: false })
             // @ts-ignore
             .then((result) => { setStatus(result.data.status); return result; }),
         []);

@@ -43,7 +43,7 @@ export default function SignUpPage() {
         }
 
         try {
-            const response = await callApi('createAccount')({
+            const response = await callApi('createAccount', {
                 name: name,
                 email: email,
                 password: password

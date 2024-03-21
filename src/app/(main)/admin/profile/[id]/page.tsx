@@ -11,7 +11,7 @@ import { useAsync } from "react-async-hook";
 export default function Profile({ params }: { params: { id: string } }) {
 
     const userData = useAsync(() =>
-        callApi('getUserProfile')({ targetUid: params.id }) // @ts-ignore
+        callApi('getUserProfile', { targetUid: params.id }) // @ts-ignore
             .then((rsp) => { setUser(rsp.data); return rsp; }),
         []);
 
