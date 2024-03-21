@@ -25,14 +25,16 @@ export default function Mark({ params }: { params: { id: string } }) {
         if (!questions) {
             return;
         }
-
+        
         const temp_marks: any[] = [];
         let temp_total = 0;
         let temp_score = 0;
+        // @ts-ignore
         questions.saQuestions.map((q, i) => {
             temp_marks.push(0)
             temp_total += q.marks
         })
+        // @ts-ignore
         questions.otherQuestions.map((q, i) => {
             temp_marks.push(0)
             temp_total += q.marks
@@ -80,12 +82,15 @@ export default function Mark({ params }: { params: { id: string } }) {
             <div className="flex flex-col w-[75%] overflow-y-scroll sm:no-scrollbar">
                 <div className="flex">
                     <div className="flex flex-col w-full bg-white p-12 rounded-2xl shadow-custom">
+                        {/* @ts-ignore */}
                         <div className="text-2xl font-bold mb-2">{questions && questions.courseName}</div>
+                        {/* @ts-ignore */}
                         <div className="flex flex-col text-lg space-y-8 w-[30rem]">Learner: {questions && questions.learnerName}</div>
                     </div>
                 </div>
 
                 <div className="flex flex-col">
+                    {/* @ts-ignore */}
                     {questions && questions.saQuestions.map((question, key) => (
                         <QuizAnswer
                             key={key}
@@ -100,6 +105,7 @@ export default function Mark({ params }: { params: { id: string } }) {
                 </div>
                 <div className="text-center mt-4">Automatically Marked Questions</div>
                 <div className="flex flex-col mt-4 space-y-4">
+                    {/* @ts-ignore */}
                     {questions && questions.otherQuestions.map((question, key) => (
                         <div className="flex flex-row bg-white py-4 px-12 rounded-xl">
                             <div className="text-lg w-full">Q) {question.question}</div>
