@@ -560,7 +560,7 @@ const getQuizToMark = onCall(async (request) => {
 
     logger.info("Schema & admin verification passed");
 
-    return getCollection(DatabaseCollections.QuizQuestionAttempt)
+    const attempts = await getCollection(DatabaseCollections.QuizQuestionAttempt)
         .where("quizAttemptId", "==", request.data.quizAttemptId)
         .where("marksAchieved", "==", null)
         .get()
@@ -570,6 +570,31 @@ const getQuizToMark = onCall(async (request) => {
             }
             return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         })
+        .catch((err) => {
+            logger.info(`Error getting quiz questions: ${err}`);
+            throw new HttpsError("internal", `Error getting quiz questions: ${err}`);
+        });
+
+    return Promise.all(attempts.map((attempt) => // @ts-ignore
+        getDoc(DatabaseCollections.QuizQuestion, attempt.questionId)
+            .get()
+            .then((doc) => {
+                if (!doc.exists || !doc.data()) { // @ts-ignore
+                    throw new HttpsError("not-found", `Question with ID ${attempt.questionId} not found`);
+                }
+                return {
+                    id: attempt.id, // @ts-ignore
+                    question: doc.data().question, // @ts-ignore
+                    response: attempt.response, // @ts-ignore
+                    marks: doc.data().marks,
+                }
+            })
+            .catch((err) => {
+                logger.info(`Error getting quiz questions: ${err}`);
+                throw new HttpsError("internal", `Error getting quiz questions: ${err}`);
+            })
+    ))
+        .then((result) => result)
         .catch((err) => {
             logger.info(`Error getting quiz questions: ${err}`);
             throw new HttpsError("internal", `Error getting quiz questions: ${err}`);
