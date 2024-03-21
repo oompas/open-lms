@@ -90,7 +90,7 @@ export default function Mark({ params }: { params: { id: string } }) {
                 <div className="text-center">Total Score</div>
                 <div className="flex flex-row items-center justify-center text-3xl border py-3 rounded-xl mt-2">
                     <div className="font-bold">
-                        todo
+                        {questions && questions.saQuestions.map(q => q.marksAchieved).concat(questions.otherQuestions.map(q => q.marksAchieved)).reduce((partialSum, a) => partialSum + a, 0)}
                     </div>
                     <div className="ml-1 text-gray-500">{"/"}</div>
                     <div className="text-gray-500">
