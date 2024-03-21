@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import { MdCheckCircleOutline } from "react-icons/md";
+import TextField from "@/components/TextField";
 
 export default function Quiz({ params }: { params: { id: string } }) {
 
@@ -61,8 +62,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     return (
                         <div className="flex mt-4 mb-4">
                             <div className="bg-white w-full p-12 rounded-2xl shadow-custom">
-                                <div className="text-xl mb-4">Q{key + 1}: {question.question}</div>
-                                <div className="mb-6"><i>{question.marks} mark{question.marks === 1 ? "" : "s"}</i></div>
+                                <div className="text-xl mb-4">Q{key + 1}: {question.question} <div className="text-sm"><i>{question.marks} mark{question.marks === 1 ? "" : "s"}</i></div></div>
                                 <div className="flex flex-col space-y-2">
                                     {answers.length ? answers.map((answer: string, index: number) => (
                                             <div key={index} className="flex items-center">
@@ -76,8 +76,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
                                                 <label htmlFor={`option${index}`} className="ml-2">{answer}</label>
                                             </div>
                                         ))
-                                        : <input
-                                            type="text"
+                                        : 
+                                        <textarea
                                             className="border-[1px] border-solid border-black rounded-xl p-4"
                                             onChange={(e) => setUserAnswers({...userAnswers, [question.id]: e.target.value})}
                                         />
@@ -124,14 +124,14 @@ export default function Quiz({ params }: { params: { id: string } }) {
             <>
                 {quizData && quizData.questions.map((question: any, key: number) => (
                     <div className="flex mt-2">
-                        <div className="flex-grow border-[1px] border-gray-300 px-4 py-2 rounded-2xl duration-100 flex items-center">
+                        <div className="flex-grow border-[1px] border-gray-300 px-4 py-2 rounded-2xl duration-100 flex items-center justify-center">
                             <div className="text-lg">Q{key + 1}</div>
-                                { /* @ts-ignore */ }
-                                {(userAnswers[question.id] !== null && userAnswers[question.id] !== "") && (
-                                    <div className="ml-2">
-                                        <MdCheckCircleOutline size={24} className="mx-auto" color="#47AD63"/>
-                                    </div>
-                                )}
+                            { /* @ts-ignore */ }
+                            {(userAnswers[question.id] !== null && userAnswers[question.id] !== "") && (
+                                <div className="ml-2">
+                                    <MdCheckCircleOutline size={24} className="mx-auto" color="#47AD63"/>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -165,8 +165,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
     }
 
     return (
-        <main className="flex justify-start w-full h-full">
-            <div className="flex flex-col w-[75%]">
+        <main className="flex justify-between w-full h-full pb-4">
+            <div className="flex flex-col w-[75%] h-full overflow-y-scroll sm:no-scrollbar rounded-2xl">
                 <div className="flex">
                     <div className="flex flex-col w-full bg-white p-12 rounded-2xl shadow-custom">
                         <div className="text-lg font-bold mb-0">{quizData && quizData.courseName}</div>
@@ -179,7 +179,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     {renderQuestions()}
                 </div>
             </div>
-            <div className="flex flex-col bg-white w-[20%] h-[82%] p-12 rounded-2xl shadow-custom fixed right-20">
+            <div className="flex flex-col bg-white w-[23%] h-full p-12 rounded-2xl shadow-custom">
                 {renderTimeLimit()}
                 <div className="flex flex-col h-full mb-4 overflow-y-scroll sm:no-scrollbar">
                     {renderProgress()}
