@@ -12,13 +12,37 @@ import TextField from "@/components/TextField";
 
 export default function Tools() {
 
-    const [quizzesToMark, setQuizzesToMark] = useState([]);
+    const quizzesToMark = useAsync(callApi('getQuizzesToMark'), []);
     const courses = useAsync(callApi('getAvailableCourses'), []);
     const learnerInsights = useAsync(callApi('getUserReports'), []);
     const courseInsights = useAsync(callApi('getCourseReports'), []);
 
     const router = useRouter();
     const [search, setSearch] = useState("");
+
+    const getQuizzesToMark = () => {
+        if (quizzesToMark.loading) {
+            return <div>Loading...</div>;
+        }
+        if (quizzesToMark.error) {
+            return <div>Error loading quizzes to mark</div>;
+        }
+
+        return (
+            <div className="flex flex-wrap justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
+                { /* @ts-ignore */ }
+                {quizzesToMark.result?.data && quizzesToMark.result.data.map((quiz, key) => (
+                    <QuizToMark
+                        key={key}
+                        title={quiz.courseName}
+                        date={new Date(quiz.timestamp).toLocaleDateString()}
+                        learner={quiz.userName}
+                        id={key}
+                    />
+                ))}
+            </div>
+        );
+    }
 
     const getCourses = () => {
         if (courses.loading) {
@@ -117,16 +141,6 @@ export default function Tools() {
         );
     }
 
-    const getQuizzesToMark = async () => {
-        await callApi("getQuizzesToMark")({})
-            .then((data) => {
-                // @ts-ignore
-                setQuizzesToMark(data.data);
-            })
-            .catch((err) => console.log(err));
-    }
-
-    console.log(JSON.stringify(quizzesToMark, null, 4));
     return (
         <main className="flex-col w-full justify-center items-center">
             {/* Quizzes to mark section */}
@@ -137,16 +151,7 @@ export default function Tools() {
                     </div>
                 </div>
                 <div className="flex flex-wrap justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
-                    {!quizzesToMark.length && <Button text="Get quizzes to mark" onClick={async () => await getQuizzesToMark()}/>}
-                    {quizzesToMark.map((quiz, key) => (
-                        <QuizToMark
-                            key={key}
-                            title={quiz.courseName}
-                            date={new Date(quiz.timestamp).toLocaleDateString()}
-                            learner={quiz.userName}
-                            id={key}
-                        />
-                    ))}
+                    {getQuizzesToMark()}
                 </div>
             </div>
 
