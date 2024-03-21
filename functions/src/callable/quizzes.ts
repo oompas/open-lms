@@ -548,6 +548,32 @@ const getQuizToMark = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
+    const schema = object({
+        quizAttemptId: string().required(),
+    }).noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema & admin verification passed");
+
+    return getCollection(DatabaseCollections.QuizQuestionAttempt)
+        .where("quizAttemptId", "==", request.data.quizAttemptId)
+        .where("marksAchieved", "==", null)
+        .get()
+        .then((snapshot) => {
+            if (snapshot.empty) {
+                throw new HttpsError("not-found", `No quiz questions found for quiz attempt ${request.data.quizAttemptId}`);
+            }
+            return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        })
+        .catch((err) => {
+            logger.info(`Error getting quiz questions: ${err}`);
+            throw new HttpsError("internal", `Error getting quiz questions: ${err}`);
+        });
 });
 
-export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuizzesToMark };
+export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuizzesToMark, getQuizToMark };
