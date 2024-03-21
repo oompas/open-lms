@@ -5,12 +5,16 @@ import { auth } from '@/config/firebase';
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from 'react';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import styles from './DropdownMenu.module.css'
 
 export default function LearnerLayout({
    children,
 }: {
     children: React.ReactNode
 }) {
+    const [isOpen, setIsOpen] = useState(false)
+    
+    const toggleDropdown = () => setIsOpen(!isOpen)
 
     const router = useRouter();
 
@@ -54,15 +58,27 @@ export default function LearnerLayout({
     return (
         <html lang="en">
         <body className="h-[100vh] px-20 bg-gray-100 overflow-x-hidden">
-        <div className="flex flex-row px-12 h-[13vh] items-center bg-white rounded-b-2xl shadow-custom">
+        <div className="flex flex-row px-12 h-[13vh] justify-between items-center bg-white rounded-b-2xl shadow-custom">
             <Link href="/home" className="font-bold text-4xl">OpenLMS</Link>
-            <div className="flex ml-auto space-x-10 text-2xl">
-                {isAdmin && <Link href="/admin/tools" className="hover:opacity-50 duration-75">Admin Tools</Link>}
-                <Link href="/profile" className="hover:opacity-50 duration-75">View Profile</Link>
-                <div onClick={async () => await logout()} className="cursor-pointer hover:opacity-50 duration-75">Log
-                    Out
+            <div className={styles.dropdown}>
+                <div className="text-2xl">
+                    <button onClick={toggleDropdown}>
+                        {isOpen ? 'Menu =' : 'Menu ='}
+                    </button>
+                    <div className="flex flex-row justify-right">
+                        {isOpen && (
+                            <div className={styles.menu}>
+                                <Link href="/home" className="hover:opacity-50 duration-75 mb-[1vh] hover:rounded-2xl hover:bg-white p-4" onClick={toggleDropdown}>Home</Link>
+                                {isAdmin && <Link href="/admin/tools" className="hover:opacity-50 duration-75 mb-[1vh] hover:rounded-2xl hover:bg-white p-4" onClick={toggleDropdown}>Admin Tools</Link>}
+                                <Link href="/profile" className="hover:opacity-50 duration-75 mb-[1vh] hover:rounded-2xl hover:bg-white p-4" onClick={toggleDropdown}>View Profile</Link>
+                                <div onClick={async () => await logout()} className="cursor-pointer hover:opacity-50 duration-75 hover:rounded-2xl hover:bg-white p-4">Log
+                                    Out
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
+            </div>        
         </div>
         <div className='flex h-[85vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar'>
             {children}

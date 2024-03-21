@@ -1,0 +1,22 @@
+.dropdown {
+    position: relative;
+  }
+  
+  .menu {
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 167px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    padding: 20px 20px;
+    border-radius: 10%;
+    text-align: center;
+    right: 0;
+    top: 50px;
+  }
+  
+  .menu a {
+    color: black;
+    text-decoration: none;
+    display: block;
+  }
