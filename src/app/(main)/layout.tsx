@@ -7,36 +7,23 @@ import { useState, useEffect } from 'react';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import {useAsync} from "react-async-hook";
 
-export default function LearnerLayout({
-   children,
-}: {
-    children: React.ReactNode
-}) {
+export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
     const router = useRouter();
     const [isAdmin, setIsAdmin] = useState(false);
 
     const logout = async () => {
-        await auth.signOut();
-        router.push('/');
+        await auth.signOut()
+            .then(() => router.push('/'));
     }
 
-    const status =
-    useAsync(async () => {
-        try {
-            console.log("string" + auth.currentUser);
-            const idTokenResult = await auth.currentUser?.getIdTokenResult();
-            console.log(idTokenResult);
-            if (idTokenResult) {
-                setIsAdmin(!!idTokenResult.claims.admin);
-                console.log(JSON.stringify(idTokenResult, null, 4));
-                return idTokenResult;
-            }
-        } catch (error) {
-            console.error('Error fetching ID token:', error);
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            auth.currentUser?.getIdTokenResult()
+                .then((idTokenResult) => setIsAdmin(!!idTokenResult.claims.admin))
+                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
         }
-    }, []);
-
+    });
 
     const [feedback, setFeedback] = useState('');
     const [feedbackSent, setFeedbackSent] = useState(false);
@@ -84,10 +71,7 @@ export default function LearnerLayout({
                     rows={4}
                     required
                 ></textarea>
-                <span className="text-white p-4">{isAdmin}</span>
-                {status.loading && <div>Loading admin status...</div>}
-                {!status.result && <div>Error loading admin status Data: {JSON.stringify(status?.result)}</div>}
-                {status.result && <div>Data: {JSON.stringify(status?.result)}</div>}
+                <span className="text-white p-4">Is admin: {JSON.stringify(isAdmin)}</span>
                 <button
                     type="submit"
                     className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-2"
