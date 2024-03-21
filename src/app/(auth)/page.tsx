@@ -7,26 +7,26 @@ import AuthForm from '@/components/AuthForm';
 import AuthButton from './AuthButton';
 import { auth } from "@/config/firebase";
 import { signInWithEmailAndPassword } from "@firebase/auth";
-import { redirect } from "next/navigation";
 
 export default function AuthPage() {
 
-    console.log(`Auth current user: ${auth.currentUser}`);
-    if (auth.currentUser) {
-        redirect('/home');
-    }
+    const router = useRouter();
 
-    const router = useRouter()
+    // If a user logs in, closes the app, then re-opens it, they're still logged in, so redirect them to the home page
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            router.push('/home');
+        }
+    });
+
     const [email, setEmail] = useState("")
     const [password, setPass] = useState("")
 
     // function called on "log in" button press
     const submitLogin = async () => {
         await signInWithEmailAndPassword(auth, email, password)
-            .then(() => console.log("Signed in!"))
+            .then(() => router.push('/home'))
             .catch((err) => console.log(`Error signing in: ${err}`));
-
-        router.push('/home');
     }
 
     const handleForgotPassword = () => {
