@@ -27,7 +27,7 @@ export default function Mark({ params }: { params: { id: string } }) {
 
         const temp_marks: any[] = [];
         let temp = 0;
-        questions.map((q, i) => {
+        questions.saQuestions.map((q, i) => {
             temp_marks.push(0)
             temp += q.marks
         })
@@ -68,13 +68,12 @@ export default function Mark({ params }: { params: { id: string } }) {
             <div className="flex flex-col w-[75%] overflow-y-scroll sm:no-scrollbar">
                 <div className="flex">
                     <div className="flex flex-col w-full bg-white p-12 rounded-2xl shadow-custom">
-                        <div className="text-2xl font-bold mb-4">Example Course Name Quiz</div>
-                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Course name: Available Course on OpenLMS</div>
-                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Learner name: John Doe</div>
+                        <div className="text-2xl font-bold mb-4">{questions && questions.courseName}</div>
+                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Learner name: {questions && questions.learnerName}</div>
                     </div>
                 </div>
                 <div className="flex flex-col">
-                {questions && questions.map((question, key) => (
+                {questions && questions.saQuestions.map((question, key) => (
                         <QuizAnswer
                             key={key}
                             index={key}
@@ -90,9 +89,13 @@ export default function Mark({ params }: { params: { id: string } }) {
             <div className="flex flex-col bg-white w-[23%] p-12 rounded-2xl shadow-custom">
                 <div className="text-center">Total Score</div>
                 <div className="flex flex-row items-center justify-center text-3xl border py-3 rounded-xl mt-2">
-                    <div className="font-bold">{score}</div>
+                    <div className="font-bold">
+                        todo
+                    </div>
                     <div className="ml-1 text-gray-500">{"/"}</div>
-                    <div className="text-gray-500">{total}</div>
+                    <div className="text-gray-500">
+                        {questions && questions.saQuestions.map(q => q.marks).concat(questions.otherQuestions.map(q => q.marks)).reduce((partialSum, a) => partialSum + a, 0)}
+                    </div>
                 </div>
                 <Button text="Submit Graded Quiz" onClick={() => router.push('/home')} filled style="mt-auto" />
             </div>
