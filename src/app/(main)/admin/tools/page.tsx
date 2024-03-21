@@ -44,28 +44,6 @@ export default function Tools() {
         );
     }
 
-    const getCourses = () => {
-        if (courses.loading) {
-            return <div>Loading...</div>;
-        }
-        if (courses.error) {
-            return <div>Error loading courses</div>;
-        }
-
-        // @ts-ignore
-        return courses.result.data
-            .filter((course: any) => course.name.toLowerCase().includes(search.toLowerCase())
-                || course.description.toLowerCase().includes(search.toLowerCase()))
-            .map((course: any, key: number) => (
-                <ManageCourse
-                    key={key}
-                    title={course.name}
-                    description={course.description}
-                    id={course.id}
-                />
-            ));
-    }
-
     const getLearnerInsights = () => {
         if (learnerInsights.loading) {
             return <div>Loading...</div>;
