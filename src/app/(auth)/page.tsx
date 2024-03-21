@@ -23,10 +23,8 @@ export default function AuthPage() {
     // function called on "log in" button press
     const submitLogin = async () => {
         await signInWithEmailAndPassword(auth, email, password)
-            .then(() => console.log("Signed in!"))
+            .then(() => router.push('/home'))
             .catch((err) => console.log(`Error signing in: ${err}`));
-
-        router.push('/home');
     }
 
     const handleForgotPassword = () => {
