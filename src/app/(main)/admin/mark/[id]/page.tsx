@@ -19,6 +19,7 @@ export default function Mark({ params }: { params: { id: string } }) {
     const [marks, setMarks] = useState<any[]>([]);
     const [total, setTotal] = useState(0);
     const [score, setScore] = useState(0);
+    const [marked, setMarked] = useState(0);
 
     useEffect(() => {
         if (!questions) {
@@ -26,14 +27,21 @@ export default function Mark({ params }: { params: { id: string } }) {
         }
 
         const temp_marks: any[] = [];
-        let temp = 0;
+        let temp_total = 0;
+        let temp_score = 0;
         questions.saQuestions.map((q, i) => {
             temp_marks.push(0)
-            temp += q.marks
+            temp_total += q.marks
+        })
+        questions.otherQuestions.map((q, i) => {
+            temp_marks.push(0)
+            temp_total += q.marks
+            temp_score += q.marksAchieved
         })
         setMarks(temp_marks)
-        setTotal(temp)
-    }, [])
+        setTotal(temp_total)
+        setMarked(temp_score)
+    }, [questions])
 
     const handleUpdateMark = (index: number, mark: number) => {
         var temp_marks = [...marks]
@@ -63,17 +71,22 @@ export default function Mark({ params }: { params: { id: string } }) {
         );
     }
 
+    const handleSubmit = () => {
+        router.push('/admin/tools');
+    }
+
     return (
         <main className="flex h-auto w-full mb-4 justify-between">
             <div className="flex flex-col w-[75%] overflow-y-scroll sm:no-scrollbar">
                 <div className="flex">
                     <div className="flex flex-col w-full bg-white p-12 rounded-2xl shadow-custom">
-                        <div className="text-2xl font-bold mb-4">{questions && questions.courseName}</div>
-                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Learner name: {questions && questions.learnerName}</div>
+                        <div className="text-2xl font-bold mb-2">{questions && questions.courseName}</div>
+                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Learner: {questions && questions.learnerName}</div>
                     </div>
                 </div>
+
                 <div className="flex flex-col">
-                {questions && questions.saQuestions.map((question, key) => (
+                    {questions && questions.saQuestions.map((question, key) => (
                         <QuizAnswer
                             key={key}
                             index={key}
@@ -85,19 +98,28 @@ export default function Mark({ params }: { params: { id: string } }) {
                         />
                     ))}
                 </div>
+                <div className="text-center mt-4">Automatically Marked Questions</div>
+                <div className="flex flex-col mt-4 space-y-4">
+                    {questions && questions.otherQuestions.map((question, key) => (
+                        <div className="flex flex-row bg-white py-4 px-12 rounded-xl">
+                            <div className="text-lg w-full">Q) {question.question}</div>
+                            <div className="text-xl w-16">{question.marksAchieved}/{question.marks}</div>
+                        </div>
+                    ))}
+                </div>
             </div>
             <div className="flex flex-col bg-white w-[23%] p-12 rounded-2xl shadow-custom">
                 <div className="text-center">Total Score</div>
                 <div className="flex flex-row items-center justify-center text-3xl border py-3 rounded-xl mt-2">
                     <div className="font-bold">
-                        {questions && questions.saQuestions.map(q => q.marksAchieved).concat(questions.otherQuestions.map(q => q.marksAchieved)).reduce((partialSum, a) => partialSum + a, 0)}
+                        {marked+score}
                     </div>
                     <div className="ml-1 text-gray-500">{"/"}</div>
                     <div className="text-gray-500">
-                        {questions && questions.saQuestions.map(q => q.marks).concat(questions.otherQuestions.map(q => q.marks)).reduce((partialSum, a) => partialSum + a, 0)}
+                        {total}
                     </div>
                 </div>
-                <Button text="Submit Graded Quiz" onClick={() => router.push('/home')} filled style="mt-auto" />
+                <Button text="Submit Graded Quiz" onClick={() => handleSubmit()} filled style="mt-auto mx-auto" />
             </div>
             {loadingPopup()}
         </main>

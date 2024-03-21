@@ -34,11 +34,10 @@ export default function QuizAnswer({
     return (
         <div className="flex mt-4">
             <div className="flex flex-row bg-white w-full p-12 rounded-2xl shadow-custom">
-                <div className="w-full">
-                    <div className="text-lg mb-2">Q{index + 1}) {question}</div>
+                <div className="w-full mr-4">
+                    <div className="text-lg mb-2">Q) {question}</div>
                     <div className="text-lg">A) {answer}</div>
                 </div>
-                {/* TODO - replace this */}
                 <div className="flex items-center">
                     <div className="flex flex-row items-baseline">
                         <TextField text={mark} onChange={setMark} style="text-right w-20" />

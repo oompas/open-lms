@@ -127,7 +127,7 @@ export default function Tools() {
     }
 
     return (
-        <main className="flex-col justify-center items-center">
+        <main className="flex-col w-full justify-center items-center">
             {/* Quizzes to mark section */}
             <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-between items-center mb-2">
