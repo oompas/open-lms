@@ -1,26 +1,23 @@
 import Button from "@/components/Button";
+import Link from "next/link";
 import {useRouter} from "next/navigation";
+import { LuExternalLink } from "react-icons/lu";
 
 export default function IDCourse({
     title,
-    grade,
-    completion,
-    link,
     id
 } : {
     title: string,
-    grade: number,
-    completion: number,
-    link: string,
     id: number
 }) {
 
-  const router = useRouter();
-
   return (
     <div className="flex flex-col border-2 w-[24%] justify-between items-center p-6 rounded-2xl">
-      <div className="text-xl mb-2">{title}</div>
-      <Button text="Unenroll" onClick={() => router.push('/home')}/>
+      <Link href={"/course/"+id} className="flex flex-row items-center hover:opacity-60 text-xl text-center mb-4">
+          {title}
+          <LuExternalLink className="ml-1" color="rgb(153 27 27" />
+      </Link>
+      <Button text="Unenroll" onClick={() => alert("UNENROLL "+title)} />
     </div>
   )
 }
