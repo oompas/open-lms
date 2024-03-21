@@ -592,7 +592,7 @@ const getQuizzesToMark = onCall(async (request) => {
             courseName: courseNames[courseId],
             userId, // @ts-ignore
             userName: userNames[userId], // @ts-ignore
-            timestamp: attemptTimestamps[quizAttemptId].toMillis() / 1000,
+            timestamp: attemptTimestamps[quizAttemptId].toMillis(),
         };
     });
 });

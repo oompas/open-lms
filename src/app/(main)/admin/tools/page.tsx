@@ -126,6 +126,7 @@ export default function Tools() {
             .catch((err) => console.log(err));
     }
 
+    console.log(JSON.stringify(quizzesToMark, null, 4));
     return (
         <main className="flex-col w-full justify-center items-center">
             {/* Quizzes to mark section */}
@@ -140,9 +141,9 @@ export default function Tools() {
                     {quizzesToMark.map((quiz, key) => (
                         <QuizToMark
                             key={key}
-                            title={"title"}
-                            course={"course"}
-                            learner={"learner"}
+                            title={quiz.courseName}
+                            date={new Date(quiz.timestamp).toLocaleDateString()}
+                            learner={quiz.userName}
                             id={key}
                         />
                     ))}

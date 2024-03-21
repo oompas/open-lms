@@ -2,12 +2,12 @@ import Link from "next/link"
 
 export default function QuizToMark({
     title,
-    course,
+    date,
     learner,
     id
 } : {
     title: string,
-    course: string,
+    date: string,
     learner: string,
     id: number
 }) {
@@ -17,7 +17,7 @@ export default function QuizToMark({
             href={"/admin/mark/" + id}
         >
             <div className="text-lg font-bold">{title}</div>
-            <div className="text-md">{learner}, {course}</div>
+            <div className="text-md">{learner}, {date}</div>
         </Link>
     )
 }
