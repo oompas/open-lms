@@ -186,6 +186,14 @@ const getUserProfile = onCall(async (request) => {
             });
     }
 
+    const userName = await getDoc(DatabaseCollections.User, user.uid)
+        .get() // @ts-ignore
+        .then((doc) => doc.data().name)
+        .catch((error) => {
+            logger.error(`Error querying user data: ${error}`);
+            throw new HttpsError("internal", "Error getting user data, try again later");
+        });
+
     const enrolledCourses = await getCollection(DatabaseCollections.EnrolledCourse)
         .where('userId', "==", user.uid)
         .get()
@@ -228,7 +236,7 @@ const getUserProfile = onCall(async (request) => {
     ));
 
     return {
-        name: user.displayName,
+        name: userName,
         email: user.email,
         signUpDate: user.metadata.creationTime,
         enrolledCourses: enrolledCourseData,
