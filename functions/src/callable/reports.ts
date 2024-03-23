@@ -143,4 +143,33 @@ const getCourseReports = onCall(async (request) => {
     }).sort((a, b) => b.numEnrolled - a.numEnrolled);
 });
 
-export { getUserReports, getCourseReports };
+
+/**
+ * Returns a list of statistics for the course on the platform:
+ * -List of enrolled users
+ *      -Status of completion
+ *      -Quiz to be marked (Y/N)
+ * -Number of enrolled learners
+ * -Number of learners who completed the course
+ * -Average course completion time (not including quiz attempt(s))
+ * -List of question fail rate amongst all the questions for a distribution
+ */
+const getCourseReport = onCall(async (request) => {
+
+    logger.info("Verifying user is an admin...");
+
+    await verifyIsAdmin(request);
+
+    logger.info("User is an admin, querying database for this course's report...");
+
+    // query CourseAttempt's with a specific courseId whose pass is null (i.e. not finished and they're still doing the course)
+    // unsure
+    // query QuizQuestionAtempt's with a userId for questions whose marksAchieved is null
+    // next 3 are repeats from prior function
+    // query QuizQuestions for active questions and get their marks (i.e. max marks attainable)
+    // query QuizQuestionAttempt's for both the question average marks and absolute number of question attempts
+    // this gives the relative question percentage score and allows a distribution to be built for the front-end
+    // to detect if there's an ingrained issue with a specific question
+});
+
+export { getUserReports, getCourseReports, getCourseReport };
