@@ -165,7 +165,7 @@ export default function Insights({ params }: { params: { id: string } }) {
                         </div>
                     </div>
                 </div>
-                <Button text="Edit Course Contents" onClick={() => router.push("/admin/course/"+params.id)} style="ml-auto" />
+                <Button text="Edit Course Details" onClick={() => router.push("/admin/course/"+params.id)} style="ml-auto" />
             </div>
             <div className="flex flex-row space-x-6">
                 <div className="flex flex-col bg-white w-1/2 p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar mb-4">
