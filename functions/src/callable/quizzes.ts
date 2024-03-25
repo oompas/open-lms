@@ -328,7 +328,7 @@ const submitQuiz = onCall(async (request) => {
     verifyIsAuthenticated(request);
 
     const schema = object({
-        courseId: string().required(),
+        quizAttemptId: string().required(),
         responses: array().of(
             object({
                 questionId: string().required(),
@@ -345,7 +345,7 @@ const submitQuiz = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const { courseId, responses } = request.data;
+    const { quizAttemptId, responses } = request.data;
 
     /**
      * Verify attempt is valid
@@ -353,7 +353,30 @@ const submitQuiz = onCall(async (request) => {
      * -Quiz attempt is valid
      * -Maximum quiz attempts haven't been reached yet
      */
-    const quizRequirements = await getDoc(DatabaseCollections.Course, courseId)
+
+    const quizAttempt = await getDoc(DatabaseCollections.QuizAttempt, quizAttemptId)
+        .get()
+        .then((doc) => {
+            if (!doc.exists || !doc.data()) {
+                logger.error(`No quiz attempt found with ID ${quizAttemptId}`);
+                throw new HttpsError("not-found", `No quiz attempt found with ID ${quizAttemptId}`);
+            }
+
+            const attempt = doc.data() as {
+                courseId: string,
+                userId: string,
+                courseAttemptId: string,
+                startTime: firestore.Timestamp,
+                endTime: firestore.Timestamp
+            };
+            if (attempt.endTime !== null) {
+                logger.error(`Quiz attempt with ID ${quizAttemptId} is already completed`);
+                throw new HttpsError("failed-precondition", `Quiz attempt with ID ${quizAttemptId} is already completed`);
+            }
+            return attempt;
+        });
+
+    const quizRequirements = await getDoc(DatabaseCollections.Course, quizAttempt.courseId)
         .get()
         .then((course) => { // @ts-ignore
             if (!course.exists || !course.data()) {
@@ -367,35 +390,11 @@ const submitQuiz = onCall(async (request) => {
             throw new HttpsError("internal", `Error getting course data: ${err}`);
         });
 
-    const attempt = await getCollection(DatabaseCollections.QuizAttempt)
-        .where("courseId", "==", courseId)
-        .where("userId", "==", request.auth?.uid)
-        .get()
-        .then((snapshot) => {
-            if (snapshot.size === 0) {
-                throw new HttpsError("not-found", `No quiz attempts found for course ${courseId}`);
-            }
-            if (snapshot.size > 1) {
-                throw new HttpsError("failed-precondition", `Multiple active quiz attempts found for course ${courseId}`);
-            }
-
-            const attempt = snapshot.docs[0];
-            if (!attempt.exists || !attempt.data()) {
-                throw new HttpsError("not-found", `No active quiz attempt found for course ${courseId}`);
-            }
-            // Start time + max quiz time + 10 seconds (to account for API call time, etc.), all in milliseconds
-            const maxEndTime = (attempt.data().startTime.toMillis()) + (attempt.data().maxTime * 60 * 1000) + (10 * 1000);
-            if (maxEndTime < Date.now()) {
-                throw new HttpsError("failed-precondition", `Quiz attempt for course ${courseId} has expired`);
-            }
-
-            return {
-                id: attempt.id,
-                courseId: attempt.data().courseId,
-                userId: attempt.data().userId,
-                courseAttemptId: attempt.data().courseAttemptId,
-            };
-        });
+    // Start time + max quiz time + 10 seconds (to account for API call time, etc.), all in milliseconds
+    const maxEndTime = (attempt.startTime.toMillis()) + (attempt.maxTime * 60 * 1000) + (10 * 1000);
+    if (maxEndTime < Date.now()) {
+        throw new HttpsError("failed-precondition", `Quiz attempt for course ${courseId} has expired`);
+    }
 
     await getCollection(DatabaseCollections.QuizAttempt)
         .where("courseId", "==", attempt.courseId)
