@@ -347,15 +347,33 @@ const submitQuiz = onCall(async (request) => {
 
     const { courseId, responses } = request.data;
 
-    // Verify quiz attempt is all good
+    /**
+     * Verify attempt is valid
+     * -Quiz attempt exists
+     * -Quiz attempt is valid
+     * -Maximum quiz attempts haven't been reached yet
+     */
+    const quizRequirements = await getDoc(DatabaseCollections.Course, courseId)
+        .get()
+        .then((course) => { // @ts-ignore
+            if (!course.exists || !course.data()) {
+                logger.error(`Course with ID ${attempt.courseId} not found or empty`);
+                throw new HttpsError("not-found", `Course with ID ${attempt.courseId} not found`);
+            } // @ts-ignore
+            return course.data().quiz as { minScore: number | null, maxAttempts: number | null };
+        })
+        .catch((err) => {
+            logger.info(`Error getting course data: ${err}`);
+            throw new HttpsError("internal", `Error getting course data: ${err}`);
+        });
+
     const attempt = await getCollection(DatabaseCollections.QuizAttempt)
         .where("courseId", "==", courseId)
         .where("userId", "==", request.auth?.uid)
-        .where("endTime", "==", null)
         .get()
         .then((snapshot) => {
             if (snapshot.size === 0) {
-                throw new HttpsError("not-found", `No active quiz attempt found for course ${courseId}`);
+                throw new HttpsError("not-found", `No quiz attempts found for course ${courseId}`);
             }
             if (snapshot.size > 1) {
                 throw new HttpsError("failed-precondition", `Multiple active quiz attempts found for course ${courseId}`);
@@ -377,6 +395,17 @@ const submitQuiz = onCall(async (request) => {
                 userId: attempt.data().userId,
                 courseAttemptId: attempt.data().courseAttemptId,
             };
+        });
+
+    await getCollection(DatabaseCollections.QuizAttempt)
+        .where("courseId", "==", attempt.courseId)
+        .where("userId", "==", request.auth?.uid)
+        .where("courseAttemptId", "==", attempt.courseAttemptId)
+        .get()
+        .then((snapshot) => snapshot.size)
+        .catch((err) => {
+            logger.info(`Error getting quiz attempts: ${err}`);
+            throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
         });
 
     const promises: Promise<any>[] = [];
@@ -462,45 +491,22 @@ const submitQuiz = onCall(async (request) => {
         throw new HttpsError("internal", `Error adding marked questions: ${err}`);
     });
 
-    // Check if quiz passed (is there's no short answers)
+    // Check if quiz passed
+    let pass: boolean | null = null; // null: short answer questions (can't be marked yet)
     if (marksAchieved !== null) {
-        const courseData = await getDoc(DatabaseCollections.Course, attempt.courseId)
-            .get()
-            .then((course) => { // @ts-ignore
-                if (!course.exists || !course.data()) throw new HttpsError("not-found", `Course with ID ${attempt.courseId} not found`);
-                return course.data();
-            })
-            .catch((err) => {
-                logger.info(`Error getting course data: ${err}`);
-                throw new HttpsError("internal", `Error getting course data: ${err}`);
-            });
+        // If there's no minimum score, they pass by default. Otherwise, verify their score is at least the threshold
+        if (quizRequirements.minScore === null) {
+            pass = true;
+        } else {
+            pass = marksAchieved >= quizRequirements.minScore;
+        }
 
-        // @ts-ignore
-        if (courseData.quiz.minScore !== null) {
-            let pass: boolean | null = null; // @ts-ignore
-            if (marksAchieved >= courseData.quiz.minScore) {
-                pass = true;
-            } else {
-                const numQuizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
-                    .where("courseId", "==", attempt.courseId)
-                    .where("userId", "==", request.auth?.uid)
-                    .where("courseAttemptId", "==", attempt.courseAttemptId)
-                    .get()
-                    .then((snapshot) => snapshot.size)
-                    .catch((err) => {
-                        logger.info(`Error getting quiz attempts: ${err}`);
-                        throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
-                    });
+        if (quizRequirements.minScore !== null) {
 
-                // @ts-ignore
-                if (courseData.quiz.maxAttempts !== null && numQuizAttempts >= courseData.quiz.maxAttempts) {
-                    pass = false;
-                }
-            }
 
             if (pass !== null) { // @ts-ignore
                 await getDoc(DatabaseCollections.Course, attempt.courseId)
-                    .update({ "pass": pass })
+                    .update({"pass": pass})
                     .catch((err) => {
                         logger.info(`Error updating course pass status: ${err}`);
                         throw new HttpsError("internal", `Error updating course pass status: ${err}`);
@@ -511,7 +517,7 @@ const submitQuiz = onCall(async (request) => {
 
     // Update quiz attempt
     return getDoc(DatabaseCollections.QuizAttempt, attempt.id)
-        .update({ endTime: FieldValue.serverTimestamp() })
+        .update({ endTime: FieldValue.serverTimestamp(), pass: pass })
         .then(async () => "Successfully submitted quiz")
         .catch((err) => {
             logger.info(`Error submitting quiz attempt: ${err}`);
