@@ -3,7 +3,7 @@ import { logger } from "firebase-functions";
 import {
     DatabaseCollections,
     getCollection,
-    getDoc,
+    getDoc, sendEmail,
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { auth } from "../helpers/setup";
@@ -20,7 +20,7 @@ const createAccount = onCall(async (request) => {
         name: string().required().min(1, "Name must be at least one character long"),
         email: string().required().email(),
         password: string().required().min(10, "Password must be at least ten characters long"),
-    });
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -30,8 +30,7 @@ const createAccount = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const email = request.data.email;
-    const password = request.data.password;
+    const { email, password, name } = request.data;
 
     const hasUpperCase = /[A-Z]/;
     const hasLowerCase = /[a-z]/;
@@ -50,9 +49,42 @@ const createAccount = onCall(async (request) => {
             emailVerified: false,
             password: password,
             disabled: false,
+            displayName: name,
         })
-        .then((user) => {
-            logger.log(`Successfully created new user ${user.uid} (${email})`);
+        .then(async (user) => {
+            logger.info("Successfully created user, adding user document to db & sending verification email...");
+
+            const defaultDoc = {
+                email: user.email,
+                name: name,
+                admin: false,
+            };
+            await getDoc(DatabaseCollections.User, user.uid)
+                .set(defaultDoc)
+                .catch((err) => {
+                    logger.error(`Error creating default db data for ${user.uid}: ${err}`);
+                    throw new HttpsError('internal', `Error creating default db data for ${user.uid}`);
+                });
+
+            // Create a verification email
+            const verifyLink = await auth
+                .generateEmailVerificationLink(email)
+                .then((link) => link)
+                .catch((err) => {
+                    logger.error(`Error generating verification link: ${err}`)
+                    throw new HttpsError('internal', `Error generating verification link, please try again later`);
+                });
+
+            const emailHtml =
+                `<p style="font-size: 16px;">Thanks for signing up!</p>
+                 <p style="font-size: 16px;">Verify your account here: ${verifyLink}</p>
+                 <p style="font-size: 12px;">If you didn't sign up, please disregard this email</p>
+                 <p style="font-size: 12px;">Best Regards,</p>
+                 <p style="font-size: 12px;">-The OpenLMS Team</p>`;
+
+            await sendEmail(email, 'Verify your email for OpenLMS', emailHtml, 'email address verification');
+
+            logger.info(`Verification email sent and user document created`);
             return user.uid;
         })
         .catch((error) => {
