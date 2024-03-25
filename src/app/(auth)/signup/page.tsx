@@ -1,9 +1,10 @@
 "use client"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { callApi } from "@/config/firebase";
 import Button from "@/components/Button";
 import AuthForm from "@/components/AuthForm";
+import VerifyEmailPopup from "@/app/(auth)/signup/VerifyEmail";
 
 export default function SignUpPage() {
     const router = useRouter();
@@ -13,6 +14,8 @@ export default function SignUpPage() {
     const [isInvalidName, setInvalidName] = useState(false);
     const [isInvalidEmail, setInvalidEmail] = useState(false);
     const [isInvalidPass, setInvalidPass] = useState(false);
+    const [showVerifyEmailPopup, setShowVerifyEmailPopup] = useState(false);
+    const [redirectAfterPopupClosed, setRedirectAfterPopupClosed] = useState(false);
 
     const signUp = async () => {
         setInvalidPass(false);
@@ -23,7 +26,7 @@ export default function SignUpPage() {
         const hasNumbers = /[0-9]/;
         const hasSpecialChars = /[!#$%&@?]/;
 
-        if (!(hasUpperCase.test(password) && hasLowerCase.test(password) && hasNumbers.test(password) && hasSpecialChars.test(password))) {
+        if (!(hasUpperCase.test(password) && hasLowerCase.test(password) && hasNumbers.test(password) && hasSpecialChars.test(password) && password.length >= 10)) {
             console.error("Password must be at least ten characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character");
             setInvalidPass(true);
             return;
@@ -50,7 +53,7 @@ export default function SignUpPage() {
             });
             if (response && response.data) {
                 console.log("Account created successfully.");
-                router.push('/');
+                setShowVerifyEmailPopup(true);
             } else {
                 console.error("Error creating account:", response);
             }
@@ -58,6 +61,17 @@ export default function SignUpPage() {
             console.error("Error creating account:", error);
         }
     };
+
+    const handlePopupClose = () => {
+        setShowVerifyEmailPopup(false);
+        setRedirectAfterPopupClosed(true);
+    };
+
+    useEffect(() => {
+        if (redirectAfterPopupClosed) {
+            router.push('/');
+        }
+    }, [redirectAfterPopupClosed, router]);
 
     return (
         <main className="flex h-[100vh] items-center justify-center">
@@ -75,17 +89,17 @@ export default function SignUpPage() {
                             showName={true}
                         />
                         {isInvalidName && (
-                            <p style={{ maxWidth: "300px" }}>
+                            <p className="text-red-500 mt-2" style={{ maxWidth: "300px" }}>
                                 Name must be at least one character long.
                             </p>
                         )}
                         {isInvalidEmail && (
-                            <p style={{ maxWidth: "300px" }}>
+                            <p className="text-red-500 mt-2" style={{ maxWidth: "300px" }}>
                                 Invalid email format.
                             </p>
                         )}
                         {isInvalidPass && (
-                            <p style={{ maxWidth: "300px" }}>
+                            <p className="text-red-500 mt-2" style={{ maxWidth: "300px" }}>
                                 Password must be at least ten characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.
                             </p>
                         )}
@@ -95,6 +109,7 @@ export default function SignUpPage() {
                     <Button text="back to login" onClick={() => router.push('/')} style="border-[3px] border-red-800" filled={false}/>
                 </div>
             </div>
+            {showVerifyEmailPopup && <VerifyEmailPopup onClose={handlePopupClose} />}
         </main>
     );
 }
