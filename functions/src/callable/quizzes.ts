@@ -272,7 +272,8 @@ const startQuiz = onCall(async (request) => {
 
     const schema = object({
         courseId: string().required().length(20),
-    }).noUnknown(true);
+        courseAttemptId: string().required().length(20),
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -284,6 +285,47 @@ const startQuiz = onCall(async (request) => {
 
     // @ts-ignore
     const userId: string = request.auth?.uid;
+
+    // Verify the max # of attempts haven't been reached & min time has been passed
+    await getDoc(DatabaseCollections.Course, request.data.courseId)
+        .get()
+        .then(async (doc) => {
+            if (!doc.exists || !doc.data()) {
+                logger.error(`Course with ID ${request.data.courseId} not found or empty`);
+                throw new HttpsError("not-found", `Course with ID ${request.data.courseId} not found`);
+            }
+
+            await getCollection(DatabaseCollections.QuizAttempt)
+                .where("courseAttemptId", "==", request.data.courseAttemptId)
+                .get()
+                .then((snapshot) => {
+                    if (snapshot.size >= doc.data().quiz.maxAttempts) {
+                        logger.error(`Max number of quiz attempts reached for course ${request.data.courseId}`);
+                        throw new HttpsError("failed-precondition", `Max number of quiz attempts reached for course ${request.data.courseId}`);
+                    }
+                })
+                .catch((err) => {
+                    logger.error(`Error getting quiz attempts: ${err}`);
+                    throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
+                });
+
+            const courseAttempt = await getDoc(DatabaseCollections.CourseAttempt, request.data.courseAttemptId)
+                .get()
+                .then((doc) => {
+                    if (!doc.exists || !doc.data()) {
+                        logger.error(`Course attempt with ID ${request.data.courseAttemptId} not found or empty`);
+                        throw new HttpsError("not-found", `Course attempt with ID ${request.data.courseAttemptId} not found`);
+                    }
+                    return doc.data() as { courseId: string, userId: string, startTime: number, endTime: number | null, pass: boolean | null };
+                });
+            if (Date.now() < courseAttempt.startTime + doc.data().quiz.minTime) {
+                ;
+            }
+        })
+        .catch((err) => {
+            logger.error(`Error getting course data: ${err}`);
+            throw new HttpsError("internal", `Error getting course data: ${err}`);
+        });
 
     const attemptId = await getCollection(DatabaseCollections.CourseAttempt)
         .where("userId", "==", userId)
