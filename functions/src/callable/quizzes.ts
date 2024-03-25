@@ -11,7 +11,7 @@ import { logger } from "firebase-functions";
 import { array, number, object, string } from "yup";
 import { firestore } from "firebase-admin";
 import FieldValue = firestore.FieldValue;
-import { DatabaseCollections, CourseDocument } from "../helpers/database";
+import { DatabaseCollections, CourseDocument, CourseAttemptDocument } from "../helpers/database";
 
 /**
  * Updates the quiz for a given course (add, delete or update)
@@ -272,7 +272,6 @@ const startQuiz = onCall(async (request) => {
     verifyIsAuthenticated(request);
 
     const schema = object({
-        courseId: string().required().length(20),
         courseAttemptId: string().required().length(20),
     }).required().noUnknown(true);
 
@@ -284,27 +283,39 @@ const startQuiz = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    // @ts-ignore
-    const userId: string = request.auth?.uid;
+    const { courseAttemptId } = request.data;
 
-    await getDoc(DatabaseCollections.Course, request.data.courseId)
+    // Verify data is all good
+    const courseAttempt = await getDoc(DatabaseCollections.CourseAttempt, courseAttemptId)
+        .get()
+        .then((doc) => {
+            docExists(doc, `Course attempt with ID ${courseAttemptId}`);
+            return doc.data() as CourseAttemptDocument;
+        })
+        .catch((err) => {
+            logger.error(`Error getting course attempt data: ${err}`);
+            throw new HttpsError("internal", `Error getting course attempt data: ${err}`);
+        });
+
+    const courseId = courseAttempt.courseId;
+    await getDoc(DatabaseCollections.Course, courseId)
         .get()
         .then(async (doc) => {
             if (!doc.exists || !doc.data()) {
-                logger.error(`Course with ID ${request.data.courseId} not found or empty`);
-                throw new HttpsError("not-found", `Course with ID ${request.data.courseId} not found`);
+                logger.error(`Course with ID ${courseId} not found or empty`);
+                throw new HttpsError("not-found", `Course with ID ${courseId} not found`);
             }
             const courseData = doc.data() as CourseDocument;
 
             // Verify the user hasn't used all their quiz attempts
             if (courseData.quiz?.maxAttempts) {
                 await getCollection(DatabaseCollections.QuizAttempt)
-                    .where("courseAttemptId", "==", request.data.courseAttemptId)
+                    .where("courseAttemptId", "==", courseAttemptId)
                     .get()
                     .then((snapshot) => {
                         if (courseData.quiz?.maxAttempts && snapshot.size >= courseData.quiz.maxAttempts) {
-                            logger.error(`Max number of quiz attempts reached for course ${request.data.courseId}`);
-                            throw new HttpsError("failed-precondition", `Max number of quiz attempts reached for course ${request.data.courseId}`);
+                            logger.error(`Max number of quiz attempts reached for course ${courseId}`);
+                            throw new HttpsError("failed-precondition", `Max number of quiz attempts reached for course ${courseId}`);
                         }
                     })
                     .catch((err) => {
@@ -315,49 +326,46 @@ const startQuiz = onCall(async (request) => {
 
             // Verify the user has waited the minimum time before starting the quiz (if required)
             if (courseData.minTime !== null) {
-                await getDoc(DatabaseCollections.CourseAttempt, request.data.courseAttemptId)
+                await getDoc(DatabaseCollections.CourseAttempt, courseAttemptId)
                     .get()
                     .then((doc) => {
-                        docExists(doc);
-                        if (!doc.exists || !doc.data()) {
-                            logger.error(`Course attempt with ID ${request.data.courseAttemptId} not found or empty`);
-                            throw new HttpsError("not-found", `Course attempt with ID ${request.data.courseAttemptId} not found`);
+                        docExists(doc, `Course attempt with ID ${courseAttemptId}`);
+
+                        const attempt = doc.data() as CourseAttemptDocument; // @ts-ignore
+                        if (Date.now() < attempt.startTime.toMillis() + courseData.minTime * 60 * 1000) {
+                            logger.error(`User has not waited the minimum time (${courseData.minTime}) before starting the quiz`);
+                            throw new HttpsError("failed-precondition", `You must wait ${courseData.minTime} minutes before starting the quiz`);
                         }
-                        return doc.data() as { courseId: string, userId: string, startTime: number, endTime: number | null, pass: boolean | null };
                     });
             }
 
-            if (Date.now() < courseAttempt.startTime + courseData.minTime * 60) {
-                ;
-            }
+            // Ensure the user doesn't have a quiz attempt in progress
+            await getCollection(DatabaseCollections.QuizAttempt)
+                .where("userId", "==", request.auth?.uid)
+                .where("courseId", "==", courseId)
+                .where("courseAttemptId", "==", courseAttemptId)
+                .get()
+                .then((snapshot) => {
+                    if (snapshot.docs.find((doc) => doc.data().endTime === null)) {
+                        logger.error(`User has a quiz attempt in progress for course ${courseId}`);
+                        throw new HttpsError("failed-precondition", `You have a quiz attempt in progress for course ${courseId}`);
+                    }
+                })
+                .catch((err) => {
+                    logger.error(`Error getting quiz attempts: ${err}`);
+                    throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
+                });
         })
         .catch((err) => {
             logger.error(`Error getting course data: ${err}`);
             throw new HttpsError("internal", `Error getting course data: ${err}`);
         });
 
-    const attemptId = await getCollection(DatabaseCollections.CourseAttempt)
-        .where("userId", "==", userId)
-        .where("courseId", "==", request.data.courseId)
-        .where("endTime", "==", null)
-        .get()
-        .then((snapshot) => {
-            if (snapshot.empty) {
-                logger.error(`No active course attempt found for course ${request.data.courseId}`);
-                throw new HttpsError("not-found", `No active course attempt found for course ${request.data.courseId}`);
-            }
-            if (snapshot.size > 1) {
-                logger.error(`Multiple active course attempts found for course ${request.data.courseId}`);
-                throw new HttpsError("failed-precondition", `Multiple active course attempts found for course ${request.data.courseId}`);
-            }
-            return snapshot.docs[0].id;
-        });
-
     return getCollection(DatabaseCollections.QuizAttempt)
         .add({
-            userId: userId,
-            courseId: request.data.courseId,
-            courseAttemptId: attemptId,
+            userId: request.auth?.uid,
+            courseId: courseAttempt.courseId,
+            courseAttemptId: courseAttemptId,
             startTime: FieldValue.serverTimestamp(),
             endTime: null,
             pass: null,

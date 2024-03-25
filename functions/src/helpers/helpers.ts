@@ -18,10 +18,15 @@ const verifyIsAuthenticated = (request: CallableRequest) => {
     }
 };
 
-const docExists = (doc: firestore.DocumentSnapshot<firestore.DocumentData>) => {
+// Call after querying a document to verify it exists and isn't empty
+const docExists = (doc: firestore.DocumentSnapshot<firestore.DocumentData>, context: string) => {
     if (!doc.exists) {
-        logger.error(`Document does not exist`);
-        throw new HttpsError('not-found', `Document does not exist`);
+        logger.error(`${context} does not exist`);
+        throw new HttpsError('not-found', `${context} does not exist`);
+    }
+    if (!doc.data()) {
+        logger.error(`${context} has no data`);
+        throw new HttpsError('internal', `${context} has no data`);
     }
 }
 
