@@ -1,3 +1,5 @@
+import { firestore } from "firebase-admin";
+
 // All database collections
 enum DatabaseCollections {
     User = "User",
@@ -15,6 +17,7 @@ interface UserDocument {
     email: string;
     name: string;
     admin: boolean;
+    signUpTime: firestore.Timestamp;
 }
 
-export { DatabaseCollections };
+export { DatabaseCollections, UserDocument };

@@ -34,7 +34,8 @@ const sendEmail = (emailAddress: string, subject: string, html: string, context:
             return "Email created successfully";
         })
         .catch((err) => {
-            throw new HttpsError('internal', `Error creating ${context} email for ${emailAddress}: ${err}`);
+            logger.error(`Error creating ${context} email for ${emailAddress}: ${err}`);
+            throw new HttpsError('internal', `Error creating ${context} email for ${emailAddress}`);
         });
 };
 
@@ -66,4 +67,7 @@ const shuffleArray = (array: any[]) => {
     return array;
 }
 
-export { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated, sendEmail, verifyIsAdmin, shuffleArray };
+const DOCUMENT_ID_LENGTH = 20;
+const USER_UID_LENGTH = 28;
+
+export { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated, sendEmail, verifyIsAdmin, shuffleArray, DOCUMENT_ID_LENGTH, USER_UID_LENGTH };
