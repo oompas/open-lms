@@ -5,8 +5,8 @@ enum DatabaseCollections {
     User = "User",
     Course = "Course",
     EnrolledCourse = "EnrolledCourse",
-    ReportedCourse = "ReportedCourse",
     QuizQuestion = "QuizQuestion",
+    ReportedCourse = "ReportedCourse",
     CourseAttempt = "CourseAttempt",
     QuizAttempt = "QuizAttempt",
     QuizQuestionAttempt = "QuizQuestionAttempt",
@@ -19,4 +19,79 @@ interface UserDocument {
     signUpTime: firestore.Timestamp;
 }
 
-export { DatabaseCollections, UserDocument };
+interface CourseDocument {
+    name: string;
+    description: string;
+    link: string;
+    active: boolean;
+    minTime: number | null;
+    userId: string;
+    quiz: {
+        maxAttempts: number | null;
+        minScore: number | null;
+        preserveOrder: boolean;
+        timeLimit: number | null;
+    } | null;
+}
+
+interface EnrolledCourseDocument {
+    userId: string;
+    courseId: string;
+}
+
+interface QuizQuestionDocument {
+    courseId: string;
+    question: string;
+    type: "tf" | "mc" | "sa";
+    marks: number;
+    answers?: string[];
+    correctAnswer?: number;
+    active: boolean;
+    stats: {
+        numAttempts: number;
+        totalScore?: number;
+        distribution?: { [key: string]: number };
+    };
+}
+
+interface ReportedCourseDocument { // TODO
+
+}
+
+interface CourseAttemptDocument {
+    userId: string;
+    courseId: string;
+    startTime: firestore.Timestamp;
+    endTime: firestore.Timestamp | null;
+    pass: boolean | null;
+}
+
+interface QuizAttemptDocument {
+    userId: string;
+    courseId: string;
+    courseAttemptId: string;
+    startTime: firestore.Timestamp;
+    endTime: firestore.Timestamp | null;
+    pass: boolean | null;
+}
+
+interface QuizQuestionAttemptDocument {
+    userId: string;
+    courseId: string;
+    courseAttemptId: string;
+    questionId: string;
+    response: string | number;
+    marksAchieved: number | null;
+}
+
+export {
+    DatabaseCollections,
+    UserDocument,
+    CourseDocument,
+    EnrolledCourseDocument,
+    ReportedCourseDocument,
+    QuizQuestionDocument,
+    CourseAttemptDocument,
+    QuizAttemptDocument,
+    QuizQuestionAttemptDocument
+};
