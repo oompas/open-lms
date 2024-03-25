@@ -149,32 +149,34 @@ export default function Insights({ params }: { params: { id: string } }) {
 
 
     return (
-        <main className="w-full h-full pb-4 mb-4">
-            <div className="flex flex-row bg-white w-full p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar mb-4">
-                <div className="flex flex-col">
-                    <div className="text-xl font-bold">{TEMP_COURSE_INFO.name}</div>
-                    <div className="text-md mb-4">{TEMP_COURSE_INFO.description}</div>
-                    <div className="flex flex-row space-x-6">
-                        <div className="flex flex-col items-center">
-                            <div>Learners Enrolled</div>
-                            <div className="text-3xl font-bold">23</div>
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <div>Course Completions</div>
-                            <div className="text-3xl font-bold">12</div>
+        <main className="w-full h-full pb-4">
+            <div className="h-full overflow-y-scroll rounded-2xl sm:no-scrollbar">
+                <div className="flex flex-row bg-white w-full p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar mb-4">
+                    <div className="flex flex-col">
+                        <div className="text-xl font-bold">{TEMP_COURSE_INFO.name}</div>
+                        <div className="text-md mb-4">{TEMP_COURSE_INFO.description}</div>
+                        <div className="flex flex-row space-x-6">
+                            <div className="flex flex-col items-center">
+                                <div>Learners Enrolled</div>
+                                <div className="text-3xl font-bold">23</div>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <div>Course Completions</div>
+                                <div className="text-3xl font-bold">12</div>
+                            </div>
                         </div>
                     </div>
+                    <Button text="Edit Course Details" onClick={() => router.push("/admin/course/"+params.id)} style="ml-auto" />
                 </div>
-                <Button text="Edit Course Details" onClick={() => router.push("/admin/course/"+params.id)} style="ml-auto" />
-            </div>
-            <div className="flex flex-row space-x-6">
-                <div className="flex flex-col bg-white w-1/2 p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar mb-4">
-                    <div className="text-lg mb-2">Enrolled Learners</div>
-                    { getEnrolledLearners() }
-                </div>
-                <div className="flex flex-col bg-white w-1/2 p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar mb-4">
-                    <div className="text-lg mb-2">Quiz Questions</div>
-                    { getQuizQuestions() }
+                <div className="flex flex-row space-x-6">
+                    <div className="flex flex-col bg-white w-1/2 p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar">
+                        <div className="text-lg mb-2">Enrolled Learners</div>
+                        { getEnrolledLearners() }
+                    </div>
+                    <div className="flex flex-col bg-white w-1/2 p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar">
+                        <div className="text-lg mb-2">Quiz Questions</div>
+                        { getQuizQuestions() }
+                    </div>
                 </div>
             </div>
         </main>
