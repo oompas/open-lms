@@ -222,38 +222,43 @@ const getQuizResponses = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
-    if (!request.data.quizAttemptId) {
-        throw new HttpsError("invalid-argument", "Invalid request: 'quizAttemptId' is required");
-    }
+    const schema = object({
+        quizAttemptId: string().required(),
+    }).noUnknown(true);
 
-    const quizAttemptId = request.data;
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    const quizAttemptId = request.data.quizAttemptId;
 
     // Verify the quiz attempt exists
-    const quizAttemptRef = await getCollection(DatabaseCollections.QuizAttempt)
-        .where("quizAttemptId", "==", quizAttemptId)
-        .where("endTime", "==", null)
-        .get();
-
-    // Verify the quiz attempt has been completed
-    if (!quizAttemptRef.empty) {
-        logger.info(`Quiz attempt ${quizAttemptId} is not completed.`)
-        return [];
-    }
+    await getDoc(DatabaseCollections.QuizAttempt, quizAttemptId)
+        .get()
+        .then((doc) => {
+            if (!doc.exists || !doc.data()) {
+                logger.error(`No quiz attempt found with ID ${quizAttemptId}`);
+                throw new HttpsError("not-found", `No quiz attempt found with ID ${quizAttemptId}`);
+            } // @ts-ignore
+            if (doc.data().endTime === null) {
+                logger.error(`Quiz attempt with ID ${quizAttemptId} is still active`);
+                throw new HttpsError("failed-precondition", `Quiz attempt with ID ${quizAttemptId} is still active`);
+            }
+        });
 
     // Retrieve the respective quiz question attempt objects if the quiz attempt is completed
-    const quizQuestionAttempts = await getCollection(DatabaseCollections.QuizQuestionAttempt)
+    return getCollection(DatabaseCollections.QuizQuestionAttempt)
         .where("quizAttemptId", "==", quizAttemptId)
-        .get();
-
-    if (quizQuestionAttempts.empty) {
-        logger.info(`No responses found for quiz attempt ${quizAttemptId}`);
-        return [];
-    } else {
-        return quizQuestionAttempts.docs.map(doc => ({
-            id: doc.id, ...doc.data()
-        }));
-    }
-
+        .get()
+        .then((snapshot) => {
+            if (snapshot.empty) {
+                logger.info(`No responses found for quiz attempt ${quizAttemptId}`);
+                throw new HttpsError("not-found", `No responses found for quiz attempt ${quizAttemptId}`);
+            }
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        });
 });
 
 /**
@@ -304,6 +309,7 @@ const startQuiz = onCall(async (request) => {
             courseAttemptId: attemptId,
             startTime: FieldValue.serverTimestamp(),
             endTime: null,
+            pass: null,
         })
         .then(() => "Successfully started quiz")
         .catch((err) => {
