@@ -1,19 +1,7 @@
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { auth, db } from "./setup";
 import { logger } from "firebase-functions";
-
-// All database collections
-enum DatabaseCollections {
-    User = "User",
-    Course = "Course",
-    EnrolledCourse = "EnrolledCourse",
-    ReportedCourse = "ReportedCourse",
-    QuizQuestion = "QuizQuestion",
-    CourseAttempt = "CourseAttempt",
-    QuizAttempt = "QuizAttempt",
-    QuizQuestionAttempt = "QuizQuestionAttempt",
-    Email = "Email",
-}
+import { DatabaseCollections } from "./database";
 
 // Helpers for getting a doc/collection
 const getCollection = (collection: DatabaseCollections) => db.collection(`/${collection}/`);
