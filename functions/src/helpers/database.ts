@@ -1,6 +1,6 @@
 import { firestore } from "firebase-admin";
 
-// All database collections
+// All database collections (excluding email, use the sendEmail helper function for that)
 enum DatabaseCollections {
     User = "User",
     Course = "Course",
@@ -10,7 +10,6 @@ enum DatabaseCollections {
     CourseAttempt = "CourseAttempt",
     QuizAttempt = "QuizAttempt",
     QuizQuestionAttempt = "QuizQuestionAttempt",
-    Email = "Email",
 }
 
 interface UserDocument {

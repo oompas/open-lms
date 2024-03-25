@@ -27,7 +27,7 @@ const sendEmail = (emailAddress: string, subject: string, html: string, context:
         }
     };
 
-    return getCollection(DatabaseCollections.Email)
+    return db.collection('/Email/')
         .add(email)
         .then((doc) => {
             logger.info(`Email ${doc.id} created for ${emailAddress} (${context})`);
