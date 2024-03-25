@@ -2,6 +2,7 @@ import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { auth, db } from "./setup";
 import { logger } from "firebase-functions";
 import { DatabaseCollections } from "./database";
+import { firestore } from "firebase-admin";
 
 // Helpers for getting a doc/collection
 const getCollection = (collection: DatabaseCollections) => db.collection(`/${collection}/`);
@@ -16,6 +17,13 @@ const verifyIsAuthenticated = (request: CallableRequest) => {
         );
     }
 };
+
+const docExists = (doc: firestore.DocumentSnapshot<firestore.DocumentData>) => {
+    if (!doc.exists) {
+        logger.error(`Document does not exist`);
+        throw new HttpsError('not-found', `Document does not exist`);
+    }
+}
 
 // Adds email doc to db (which gets sent by the 'Trigger Email' extension)
 const sendEmail = (emailAddress: string, subject: string, html: string, context: string) => {
@@ -70,4 +78,4 @@ const shuffleArray = (array: any[]) => {
 const DOCUMENT_ID_LENGTH = 20;
 const USER_UID_LENGTH = 28;
 
-export { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated, sendEmail, verifyIsAdmin, shuffleArray, DOCUMENT_ID_LENGTH, USER_UID_LENGTH };
+export { getCollection, getDoc, verifyIsAuthenticated, docExists, sendEmail, verifyIsAdmin, shuffleArray, DOCUMENT_ID_LENGTH, USER_UID_LENGTH };

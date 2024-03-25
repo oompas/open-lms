@@ -1,6 +1,5 @@
 import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {
-    DatabaseCollections,
     getCollection,
     getDoc,
     sendEmail,
@@ -11,7 +10,7 @@ import {
 import { logger } from "firebase-functions";
 import { boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
-import FieldValue = firestore.FieldValue;
+import { DatabaseCollections } from "../helpers/database";
 
 /**
  * The ID for an enrolled course is the user & course ID concatenated so:
@@ -537,7 +536,7 @@ const startCourse = onCall(async (request) => {
     const courseAttempt = {
         userId: request.auth?.uid,
         courseId: request.data.courseId,
-        startTime: FieldValue.serverTimestamp(),
+        startTime: firestore.FieldValue.serverTimestamp(),
         endTime: null,
         pass: null,
     }
