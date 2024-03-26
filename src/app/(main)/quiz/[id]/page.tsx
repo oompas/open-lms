@@ -6,15 +6,14 @@ import { callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import { MdCheckCircleOutline } from "react-icons/md";
 
-//
-export default function Quiz({ params }: { params: { attemptData: string } }) {
+export default function Quiz({ params }: { params: { id: string } }) {
 
     const router = useRouter();
   
     const [countdown, setCountDown] = useState(0);
 
     const getQuizData = useAsync(() =>
-        callApi("getQuiz", { courseAttemptId: params.attemptData.split('+')[1] })
+        callApi("getQuiz", { courseAttemptId: params.id.split('-')[1] })
             .then((rsp) => {
                 // @ts-ignore
                 setCountDown(Math.floor(rsp.data.startTime + (60 * rsp.data.timeLimit) - (Date.now() / 1000)));
@@ -159,8 +158,8 @@ export default function Quiz({ params }: { params: { attemptData: string } }) {
             }
         }
 
-        await callApi("submitQuiz", { courseAttemptId: params.attemptData.split('+')[1], responses: responses })
-            .then(() => router.push(`/course/${params.attemptData.split('+')[0]}`))
+        await callApi("submitQuiz", { courseAttemptId: params.id.split('-')[1], responses: responses })
+            .then(() => router.push(`/course/${params.id.split('-')[0]}`))
             .catch((err) => console.log(`Error calling submitQuiz: ${err}`));
     }
 

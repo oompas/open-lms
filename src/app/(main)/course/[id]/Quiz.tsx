@@ -8,7 +8,7 @@ export default function Quiz({
     maxAttempts,
     numQuestions,
     minimumScore,
-    inProgress,
+    quizStarted,
     courseAttemptId,
     courseId
 } : {
@@ -16,17 +16,21 @@ export default function Quiz({
     maxAttempts: number
     numQuestions: number
     minimumScore: number
-    inProgress: boolean | null
+    quizStarted: boolean | null
     courseAttemptId: any
     courseId: string
 }) {
 
     const router = useRouter();
 
-    const startQuiz = async () => {
-        await callApi("startQuiz", { courseAttemptId: courseAttemptId })
-            .then(() => router.push(`/quiz/${courseId}+${courseAttemptId}`))
-            .catch((e) => console.log(`Error starting quiz: ${e}`));
+    const goToQuiz = async () => {
+        if (quizStarted) {
+            router.push(`/quiz/${courseId}-${courseAttemptId}`);
+        } else {
+            await callApi("startQuiz", { courseAttemptId: courseAttemptId })
+                .then(() => router.push(`/quiz/${courseId}-${courseAttemptId}`))
+                .catch((e) => console.log(`Error starting quiz: ${e}`));
+        }
     }
 
     return (
@@ -38,7 +42,13 @@ export default function Quiz({
                     {maxAttempts && <div># of attempts allowed: {maxAttempts}</div>}
                     <div>{numQuestions} questions{minimumScore && ` (${minimumScore} required to pass)`}</div>
                 </div>
-                {inProgress !== null && <Button text={inProgress ? "Continue quiz" : "Click to start"} onClick={async () => await startQuiz()} style="mt-2"/>}
+                {quizStarted !== null &&
+                    <Button
+                        text={quizStarted ? "Continue quiz" : "Click to start"}
+                        onClick={async () => await goToQuiz()}
+                        style="mt-2"
+                    />
+                }
             </div>
         </div>
     );

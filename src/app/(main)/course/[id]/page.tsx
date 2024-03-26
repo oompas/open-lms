@@ -5,8 +5,9 @@ import Quiz from "./Quiz"
 import Requirement from "./Requirement";
 import { MdArrowBack } from "react-icons/md";
 import { useAsync } from "react-async-hook";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { callApi } from "@/config/firebase";
+import { bool } from "yup";
 
 export default function Course({ params }: { params: { id: string } }) {
 
@@ -21,6 +22,18 @@ export default function Course({ params }: { params: { id: string } }) {
     const [status, setStatus] = useState(0);
     const [timeDone, setTimeDone] = useState(false);
     const [courseAttemptId, setCourseAttemptId] = useState(null);
+    const [quizStarted, setQuizStarted] = useState<null|boolean>(null);
+
+    useEffect(() => {
+        if (!getCourse.result?.data) {
+            return;
+        }
+
+        setQuizStarted(status <= 2 || !timeDone
+            ? null // @ts-ignore
+            : getCourse.result.data.quizAttempts.find((attempt: any) => !attempt.endTime) !== undefined);
+
+    }, [status, timeDone]);
 
     const renderCourse = () => {
         // @ts-ignore
@@ -60,7 +73,7 @@ export default function Course({ params }: { params: { id: string } }) {
                                 maxAttempts={course.quiz.maxQuizAttempts}
                                 numQuestions={course.quiz.numQuestions}
                                 minimumScore={course.quiz.minScore}
-                                inProgress={status <= 2 || !timeDone ? null : course.quizAttempts.length > 0}
+                                quizStarted={quizStarted}
                                 courseAttemptId={courseAttemptId}
                                 courseId={params.id}
                             />
