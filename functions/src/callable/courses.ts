@@ -13,7 +13,7 @@ import {
     CourseDocument,
     DatabaseCollections, deleteDoc, docExists,
     getCollection,
-    getDocData,
+    getDocData, QuizAttemptDocument,
     updateDoc, UserDocument,
 } from "../helpers/database";
 
@@ -332,7 +332,9 @@ const getCourseInfo = onCall(async (request) => {
         .where("userId", "==", request.auth?.uid)
         .where("courseId", "==", request.data.courseId)
         .get()
-        .then((docs) => docs.docs.map((doc) => doc.data()))
+        .then((docs) => {
+            return docs.docs.map((doc) => ({ id: doc.id, ...doc.data() as QuizAttemptDocument }));
+        })
         .catch((error) => {
             logger.error(`Error getting quiz attempts: ${error}`);
             throw new HttpsError("internal", `Error getting courses, please try again later`);
@@ -377,7 +379,7 @@ const getCourseInfo = onCall(async (request) => {
         quiz: courseInfo.quiz ? { numQuestions: numQuizQuestions, ...courseInfo.quiz } : null,
         status: status,
         startTime: courseAttempt?.startTime.seconds ?? null,
-        quizAttempts: quizAttempts,
+        currentQuiz: quizAttempts.find((attempt) => !attempt.endTime) ?? null,
         courseAttemptId: courseAttempt?.id ?? null,
     };
 });
