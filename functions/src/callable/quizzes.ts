@@ -730,17 +730,16 @@ const getQuizToMark = onCall(async (request) => {
     const attemptData = await Promise.all(allAttempts.map((attempt) => // @ts-ignore
         getDoc(DatabaseCollections.QuizQuestion, attempt.questionId)
             .get()
-            .then((doc) => {
-                if (!doc.exists || !doc.data()) { // @ts-ignore
-                    throw new HttpsError("not-found", `Question with ID ${attempt.questionId} not found`);
-                }
+            .then((doc) => { // @ts-ignore
+                docExists(doc, `Quiz question with ID ${attempt.questionId}`);
                 return {
                     id: attempt.id, // @ts-ignore
                     question: doc.data().question, // @ts-ignore
                     response: attempt.response, // @ts-ignore
                     marks: doc.data().marks, // @ts-ignore
                     marksAchieved: attempt.marksAchieved, // @ts-ignore
-                    type: doc.data().type,
+                    type: doc.data().type, // @ts-ignore
+                    ...(doc.data().type === "mc") && { answers: doc.data().answers },
                 }
             })
             .catch((err) => {
