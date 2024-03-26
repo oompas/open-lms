@@ -529,17 +529,36 @@ const submitQuiz = onCall(async (request) => {
         });
 
     // Check if quiz passed
+    let pass: boolean | null = null;
     if (marksAchieved !== null) {
         // If there's no minimum score, they pass by default. Otherwise, verify their score is at least the threshold
-        const pass = quizRequirements.minScore === null || marksAchieved >= quizRequirements.minScore;
+        pass = quizRequirements.minScore === null || marksAchieved >= quizRequirements.minScore;
 
-        promises.push(getDoc(DatabaseCollections.QuizAttempt, quizAttemptId)
-            .update({ pass: pass })
-            .catch((err) => {
-                logger.info(`Error updating course pass status: ${err}`);
-                throw new HttpsError("internal", `Error updating course pass status: ${err}`);
+        const courseAttempt = await getDoc(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId)
+            .get()
+            .then((doc) => {
+                docExists(doc, `Course attempt with ID ${quizAttempt.courseAttemptId}`);
+                return doc.data() as CourseAttemptDocument;
             })
-        );
+            .catch((err) => {
+                logger.info(`Error getting course attempt data: ${err}`);
+                throw new HttpsError("internal", `Error getting course attempt data: ${err}`);
+            });
+
+        // If this is the first quiz attempt or the user previously failed and now passed, update the pass status of
+        // the course attempt (quiz attempt pass status will also be updated below)
+        if (courseAttempt.pass === null || (courseAttempt.pass === false && pass)) {
+            promises.push(getDoc(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId)
+                .update({ pass: pass })
+                .catch((err) => {
+                    logger.info(`Error updating course pass status: ${err}`);
+                    throw new HttpsError("internal", `Error updating course pass status: ${err}`);
+                })
+            );
+        } else if (courseAttempt.pass === true) {
+            logger.error(`Course attempt with ID ${quizAttempt.courseAttemptId} has already passed, quiz shouldn't be happening`);
+            throw new HttpsError("failed-precondition", `Course attempt with ID ${quizAttempt.courseAttemptId} has already passed`);
+        }
     }
 
     await Promise.all(promises).catch((err) => {
