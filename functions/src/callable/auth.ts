@@ -186,7 +186,7 @@ const getUserProfile = onCall(async (request) => {
     if (request.data.targetUid) {
         await verifyIsAdmin(request); // Only administrators can view other's profiles
     }
-    const user = await getDocData(DatabaseCollections.User, targetUserUid) as UserDocument;
+    const user = await auth.getUser(targetUserUid);
 
     // Query all enrolled courses
     const enrolledCourses = await getCollection(DatabaseCollections.EnrolledCourse)
@@ -218,9 +218,10 @@ const getUserProfile = onCall(async (request) => {
     ));
 
     return {
-        name: user.name,
+        name: user.displayName,
         email: user.email,
-        signUpDate: user.signUpTime,
+        signUpDate: Date.parse(user.metadata.creationTime),
+        lastSignIn: Date.parse(user.metadata.lastSignInTime),
         enrolledCourses: enrolledCourseData,
         completedCourses: completedCourseData,
     };
