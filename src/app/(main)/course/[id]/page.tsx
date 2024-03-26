@@ -32,7 +32,7 @@ export default function Course({ params }: { params: { id: string } }) {
             return;
         }
 
-        setQuizStarted(status <= 2 || !timeDone
+        setQuizStarted(status <= 2 || status === 5 || !timeDone
             ? null // @ts-ignore
             : getCourse.result.data.currentQuiz !== null);
 
