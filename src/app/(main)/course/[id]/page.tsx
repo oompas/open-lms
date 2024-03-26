@@ -12,13 +12,15 @@ export default function Course({ params }: { params: { id: string } }) {
 
     const getCourse = useAsync(() =>
         callApi("getCourseInfo", { courseId: params.id, withQuiz: false })
-            // @ts-ignore
-            .then((result) => { setStatus(result.data.status); return result; }),
-        []);
+            .then((result) => { // @ts-ignore
+                setStatus(result.data.status); // @ts-ignore
+                setCourseAttemptId(result.data.courseAttemptId);
+                return result;
+            }), []);
 
     const [status, setStatus] = useState(0);
     const [timeDone, setTimeDone] = useState(false);
-
+    const [courseAttemptId, setCourseAttemptId] = useState(null);
 
     const renderCourse = () => {
         // @ts-ignore
@@ -40,6 +42,7 @@ export default function Course({ params }: { params: { id: string } }) {
                     setTimeDone={setTimeDone}
                     status={status}
                     setStatus={setStatus}
+                    setCourseAttemptId={setCourseAttemptId}
                 />
 
                 <div className="mt-8 text-2xl">
@@ -58,7 +61,7 @@ export default function Course({ params }: { params: { id: string } }) {
                                 numQuestions={course.quiz.numQuestions}
                                 minimumScore={course.quiz.minScore}
                                 inProgress={status <= 2 || !timeDone ? null : course.quizAttempts.length > 0}
-                                id={course.courseId}
+                                courseAttemptId={courseAttemptId}
                             />
                         </div>
                     </div>

@@ -9,21 +9,21 @@ export default function Quiz({
     numQuestions,
     minimumScore,
     inProgress,
-    id
+    courseAttemptId,
 } : {
     length: string
     maxAttempts: number
     numQuestions: number
     minimumScore: number
     inProgress: boolean | null
-    id: number
+    courseAttemptId: any
 }) {
 
     const router = useRouter();
 
     const startQuiz = async () => {
-        await callApi("startQuiz", { courseId: id })
-            .then(() => router.push(`/quiz/${id}`))
+        await callApi("startQuiz", { courseAttemptId: courseAttemptId })
+            .then(() => router.push(`/quiz/${courseAttemptId}`))
             .catch((e) => console.log(`Error starting quiz: ${e}`));
     }
 

@@ -9,7 +9,7 @@ import { logger } from "firebase-functions";
 import { boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import {
-    addDoc, addDocWithId,
+    addDoc, addDocWithId, CourseAttemptDocument,
     CourseDocument,
     DatabaseCollections, deleteDoc, docExists,
     getCollection,
@@ -308,7 +308,19 @@ const getCourseInfo = onCall(async (request) => {
         .where("userId", "==", request.auth?.uid)
         .where("courseId", "==", request.data.courseId)
         .get()
-        .then((docs) => docs.empty ? null : docs.docs[0].data())
+        .then((docs) => {
+            if (docs.empty) {
+                return null;
+            }
+
+            let latestAttempt = docs.docs[0];
+            for (let i = 1; i < docs.docs.length; ++i) {
+                if (docs.docs[i].data().startTime.toMillis() > latestAttempt.data().startTime.toMillis()) {
+                    latestAttempt = docs.docs[i];
+                }
+            }
+            return { id: latestAttempt.id, ...latestAttempt.data() as CourseAttemptDocument };
+    })
         .catch((error) => {
             logger.error(`Error getting course attempts: ${error}`);
             throw new HttpsError("internal", `Error getting courses, please try again later`);
@@ -364,7 +376,7 @@ const getCourseInfo = onCall(async (request) => {
         minTime: courseInfo.minTime,
         quiz: courseInfo.quiz ? { numQuestions: numQuizQuestions, ...courseInfo.quiz } : null,
         status: status,
-        startTime: courseAttempt?.startTime._seconds ?? null,
+        startTime: courseAttempt?.startTime.seconds ?? null,
         quizAttempts: quizAttempts,
         courseAttemptId: courseAttempt?.id ?? null,
     };

@@ -8,7 +8,8 @@ export default function IDCourse({
     timeDone,
     setTimeDone,
     status,
-    setStatus
+    setStatus,
+    setCourseAttemptId
 } : {
     course: {
         name: string,
@@ -22,7 +23,8 @@ export default function IDCourse({
     timeDone: boolean,
     setTimeDone: any,
     status: number,
-    setStatus: any
+    setStatus: any,
+    setCourseAttemptId: any
 }) {
 
     const startingCountdown = () => {
@@ -63,7 +65,8 @@ export default function IDCourse({
 
     const start = () => {
         return httpsCallable(getFunctions(), "startCourse")({ courseId: course.courseId })
-            .then(() => {
+            .then((result) => {
+                setCourseAttemptId(result.data);
                 setCountDown(60 * course.minTime);
                 course.startTime = new Date().getTime() / 1000;
                 setStatus(3);
