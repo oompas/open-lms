@@ -289,21 +289,30 @@ const startQuiz = onCall(async (request) => {
     const courseId = courseAttempt.courseId;
     const courseData = await getDocData(DatabaseCollections.Course, courseId) as CourseDocument;
 
-    // Verify the user hasn't used all their quiz attempts
-    if (courseData.quiz?.maxAttempts) {
-        await getCollection(DatabaseCollections.QuizAttempt)
-            .where("courseAttemptId", "==", courseAttemptId)
-            .get()
-            .then((snapshot) => {
-                if (courseData.quiz?.maxAttempts && snapshot.size >= courseData.quiz.maxAttempts) {
-                    logger.error(`Max number of quiz attempts reached for course ${courseId}`);
-                    throw new HttpsError("failed-precondition", `Max number of quiz attempts reached for course ${courseId}`);
-                }
-            })
-            .catch((err) => {
-                logger.error(`Error getting quiz attempts: ${err}`);
-                throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
-            });
+    /**
+     * To start a quiz:
+     * 1. The course must be active
+     * 2. The course must have a quiz
+     * 3. There must be an in progress course attempt
+     * 4. The user must have waited the minimum time before starting the quiz (if required)
+     */
+
+    // Verify the course is active
+    if (!courseData.active) {
+        logger.error(`Course ${courseId} is not active`);
+        throw new HttpsError("failed-precondition", `Course ${courseId} is not active`);
+    }
+
+    // Verify the course has a quiz
+    if (courseData.quiz === null) {
+        logger.error(`Course ${courseId} does not have a quiz`);
+        throw new HttpsError("not-found", `Course ${courseId} does not have a quiz`);
+    }
+
+    // Verify the course attempt isn't already completed (passed or failed)
+    if (courseAttempt.pass !== null || courseAttempt.endTime !== null) {
+        logger.error(`Course attempt with ID ${courseAttemptId} has already been completed. Pass: ${courseAttempt.pass} End time: ${courseAttempt.endTime}`);
+        throw new HttpsError("failed-precondition", `Course attempt with ID ${courseAttemptId} has already been completed`);
     }
 
     // Verify the user has waited the minimum time before starting the quiz (if required)
@@ -316,14 +325,13 @@ const startQuiz = onCall(async (request) => {
 
     // Ensure the user doesn't have a quiz attempt in progress
     await getCollection(DatabaseCollections.QuizAttempt)
-        .where("userId", "==", request.auth?.uid)
-        .where("courseId", "==", courseId)
         .where("courseAttemptId", "==", courseAttemptId)
+        .where("endTime", "!=", null)
         .get()
         .then((snapshot) => {
-            if (snapshot.docs.find((doc) => doc.data().endTime === null)) {
+            if (!snapshot.empty) {
                 logger.error(`User has a quiz attempt in progress for course ${courseId}`);
-                throw new HttpsError("failed-precondition", `You have a quiz attempt in progress for course ${courseId}`);
+                throw new HttpsError("failed-precondition", `You have quiz attempt(s) in progress for course ${courseId}`);
             }
         })
         .catch((err) => {
@@ -458,11 +466,40 @@ const submitQuiz = onCall(async (request) => {
 
         const courseAttempt = await getDocData(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId) as CourseAttemptDocument;
 
+        const maxAttempts = courseData.quiz?.maxAttempts ?? null;
+        if (courseData.quiz?.maxAttempts) {
+            const numQuizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
+                .where("courseAttemptId", "==", quizAttempt.courseAttemptId)
+                .get()
+                .then((snapshot) => snapshot.size)
+                .catch((err) => {
+                    logger.info(`Error getting quiz attempts: ${err}`);
+                    throw new HttpsError("internal", `Error getting quiz attempts`);
+                });
+        }
+
+        //
+        if (courseAttempt.pass !== null) { // This shouldn't happen, doing a quiz again after passing
+            logger.error(`Course attempt with ID ${quizAttempt.courseAttemptId} has already passed, quiz shouldn't be happening`);
+            throw new HttpsError("failed-precondition", `Course attempt with ID ${quizAttempt.courseAttemptId} has already passed`);
+        }
+
+        // course already passed: shouldn't happen (you've already passed - can't do quiz again)
+        // course already failed: shouldn't happen (you've already failed - this only happens when all attempts have failed)
+        // no course pass status:
+        //    quiz pass: update course pass status to pass
+        //    quiz waiting marking
+
         // If this is the first quiz attempt or the user previously failed and now passed, update the pass status of
         // the course attempt (quiz attempt pass status will also be updated below)
         if (courseAttempt.pass === null || (!courseAttempt.pass && pass)) {
+            if () {
+                ;
+            } else {
+                ;
+            }
             promises.push(updateDoc(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId, { pass: pass }));
-        } else if (courseAttempt.pass) { // This shouldn't happen, doing a quiz again after passing
+        } else if (courseAttempt.pass !== null) { // This shouldn't happen, doing a quiz again after passing
             logger.error(`Course attempt with ID ${quizAttempt.courseAttemptId} has already passed, quiz shouldn't be happening`);
             throw new HttpsError("failed-precondition", `Course attempt with ID ${quizAttempt.courseAttemptId} has already passed`);
         }
