@@ -555,7 +555,7 @@ const submitQuiz = onCall(async (request) => {
                     throw new HttpsError("internal", `Error updating course pass status: ${err}`);
                 })
             );
-        } else if (courseAttempt.pass === true) {
+        } else if (courseAttempt.pass === true) { // This shouldn't happen, doing a quiz again after passing
             logger.error(`Course attempt with ID ${quizAttempt.courseAttemptId} has already passed, quiz shouldn't be happening`);
             throw new HttpsError("failed-precondition", `Course attempt with ID ${quizAttempt.courseAttemptId} has already passed`);
         }
@@ -607,7 +607,7 @@ const getQuizzesToMark = onCall(async (request) => {
 
     logger.info(`Successfully retrieved ${attemptsToMark.length} quiz attempts with short answer questions to mark`);
 
-    const courseNames = {};
+    const courseNames: { [key: string]: string } = {};
     await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[0]))].map((courseId) =>
         getDoc(DatabaseCollections.Course, courseId)
             .get() // @ts-ignore
@@ -620,11 +620,14 @@ const getQuizzesToMark = onCall(async (request) => {
 
     logger.info(`Successfully retrieved course data for ${Object.keys(courseNames).length} courses`);
 
-    const userNames = {};
+    const userNames: { [key: string]: string } = {};
     await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[1]))].map((userId) =>
         getDoc(DatabaseCollections.User, userId)
-            .get() // @ts-ignore
-            .then((user) => userNames[userId] = user.data().name)
+            .get()
+            .then((user) => {
+                docExists(user, `User with ID ${userId}`); // @ts-ignore
+                userNames[userId] = user.data().name;
+            })
             .catch((err) => {
                 logger.info(`Error getting user data: ${err}`);
                 throw new HttpsError("internal", `Error getting user data: ${err}`);
@@ -633,7 +636,7 @@ const getQuizzesToMark = onCall(async (request) => {
 
     logger.info(`Successfully retrieved user data for ${Object.keys(userNames).length} users`);
 
-    const attemptTimestamps = {};
+    const attemptTimestamps: { [key: string]: firestore.Timestamp } = {};
     await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[2]))].map((quizAttemptId) =>
         getDoc(DatabaseCollections.QuizAttempt, quizAttemptId)
             .get() // @ts-ignore
@@ -651,10 +654,11 @@ const getQuizzesToMark = onCall(async (request) => {
         const [courseId, userId, quizAttemptId] = question.split("|");
 
         return {
-            courseId, // @ts-ignore
+            courseId,
             courseName: courseNames[courseId],
-            userId, // @ts-ignore
-            userName: userNames[userId], // @ts-ignore
+            userId,
+            userName: userNames[userId],
+            quizAttemptId: quizAttemptId,
             timestamp: attemptTimestamps[quizAttemptId].toMillis(),
         };
     });
@@ -671,7 +675,7 @@ const getQuizToMark = onCall(async (request) => {
 
     const schema = object({
         quizAttemptId: string().required(),
-    }).noUnknown(true);
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
