@@ -8,7 +8,14 @@ import {
 import { logger } from "firebase-functions";
 import { boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
-import { DatabaseCollections, getCollection, getDoc } from "../helpers/database";
+import {
+    addDoc, addDocWithId,
+    CourseDocument,
+    DatabaseCollections, deleteDoc, docExists,
+    getCollection,
+    getDocData,
+    updateDoc, UserDocument,
+} from "../helpers/database";
 
 /**
  * The ID for an enrolled course is the user & course ID concatenated so:
@@ -59,19 +66,13 @@ const addCourse = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    return getCollection(DatabaseCollections.Course)
-        .add({ userID: uid, active: false, ...request.data })
-        .then((doc) => doc.id)
-        .catch((err) => {
-            logger.error(`Error adding course: ${err}`);
-            throw new HttpsError("internal", `Error adding course, please try again later (error: ${err})`)
-        });
+    return addDoc(DatabaseCollections.Course, { userID: uid, active: false, ...request.data });
 });
 
 /**
- * Publishes the course with the given ID (set 'active' to true)
+ * Publishes or unpublishes the course with the given ID (set 'active' to true/false)
  */
-const publishCourse = onCall(async (request) => {
+const setCourseVisibility = onCall(async (request) => {
 
         logger.info(`Entering publishCourse for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
@@ -81,6 +82,7 @@ const publishCourse = onCall(async (request) => {
 
         const schema = object({
             courseId: string().required(),
+            active: boolean().required(),
         }).required().noUnknown(true);
 
         await schema.validate(request.data, { strict: true })
@@ -91,39 +93,7 @@ const publishCourse = onCall(async (request) => {
 
         logger.info("Schema verification passed");
 
-        return getDoc(DatabaseCollections.Course, request.data.courseId)
-            .update({ active: true })
-            .then(() => "Course published successfully")
-            .catch((err) => { throw new HttpsError("internal", `Error publishing course: ${err}`) });
-});
-
-/**
- * Unpublishes the course with the given ID (set 'active' to false)
- */
-const unPublishCourse = onCall(async (request) => {
-
-        logger.info(`Entering unPublishCourse for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
-
-        await verifyIsAdmin(request);
-
-        logger.info("Administrative permission verification passed");
-
-        const schema = object({
-            courseId: string().required(),
-        }).required().noUnknown(true);
-
-        await schema.validate(request.data, { strict: true })
-            .catch((err) => {
-                logger.error(`Error validating request: ${err}`);
-                throw new HttpsError('invalid-argument', err);
-            });
-
-        logger.info("Schema verification passed");
-
-        return getDoc(DatabaseCollections.Course, request.data.courseId)
-            .update({ active: false })
-            .then(() => "Course unpublished successfully")
-            .catch((err) => { throw new HttpsError("internal", `Error unpublishing course: ${err}`) });
+        return updateDoc(DatabaseCollections.Course, request.data.courseId, { active: request.data.active });
 });
 
 /**
@@ -161,10 +131,7 @@ const updateCourse = onCall(async (request) => {
 
     const courseId = request.data.courseId;
     delete request.data.courseId; // Don't need id in document
-    return getDoc(DatabaseCollections.Course, courseId)
-        .update(request.data)
-        .then(() => "Course updated successfully")
-        .catch((err) => { throw new HttpsError("internal", `Error updating course: ${err}`) });
+    return updateDoc(DatabaseCollections.Course, courseId, request.data);
 });
 
 /**
@@ -189,10 +156,7 @@ const getAvailableCourses = onCall(async (request) => {
 
             for (let course of courses.docs) {
 
-                const courseEnrolled = await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, course.id))
-                    .get()
-                    .then((doc) => doc.exists)
-                    .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
+                const courseEnrolled = await docExists(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, course.id));
 
                 let courseAttempt = undefined;
                 if (courseEnrolled) {
@@ -238,7 +202,7 @@ const getAvailableCourses = onCall(async (request) => {
                     description: course.data().description,
                     status: status,
                     minTime: course.data().minTime,
-                    maxQuizTime: course.data().quiz !== null ? course.data().quiz.timeLimit : -1
+                    maxQuizTime: course.data().quiz !== null ? course.data().quiz.timeLimit : null
                 };
 
                 allCourses.push(courseData);
@@ -284,148 +248,126 @@ const getCourseInfo = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    return getDoc(DatabaseCollections.Course, request.data.courseId)
+    const courseInfo = await getDocData(DatabaseCollections.Course, request.data.courseId) as CourseDocument;
+
+    /**
+     * withQuiz is for the course editor, so it returns the quiz data (including answers, so admin-only).
+     * Otherwise, it returns the course with the status and start time for the requesting user (course page)
+     */
+    if (request.data.withQuiz) {
+
+        await verifyIsAdmin(request); // This returns quiz answers for course editing, so admin-only
+
+        let quizQuestions = null;
+        if (courseInfo.quiz) {
+            quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
+                .where("courseId", "==", request.data.courseId)
+                .where("active", "==", true)
+                .get()
+                .then((docs) => shuffleArray(docs.docs.map((doc) => {
+                    const data = doc.data();
+                    const question: any = {
+                        id: doc.id,
+                        type: data.type,
+                        question: data.question,
+                        marks: data.marks
+                    };
+                    if (data.type === "mc") {
+                        question["answers"] = data.answers;
+                        question["correctAnswer"] = data.correctAnswer;
+                    }
+                    if (data.type === "tf") {
+                        question["correctAnswer"] = data.correctAnswer;
+                    }
+
+                    return question;
+                })))
+                .catch((error) => {
+                    logger.error(`Error checking if course has quiz questions: ${error}`);
+                    throw new HttpsError('internal', "Error getting course quiz, please try again later");
+                });
+        }
+
+        return {
+            courseId: request.data.courseId,
+            active: courseInfo.active,
+            name: courseInfo.name,
+            description: courseInfo.description,
+            link: courseInfo.link,
+            minTime: courseInfo.minTime,
+            quiz: courseInfo.quiz,
+            quizQuestions: quizQuestions,
+        };
+    }
+
+    if (!courseInfo.active) {
+        throw new HttpsError("invalid-argument", "Cannot view inactive course");
+    }
+
+    const courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
+        .where("userId", "==", request.auth?.uid)
+        .where("courseId", "==", request.data.courseId)
         .get()
-        .then(async (course) => {
-            if (!course.exists) {
-                logger.error(`Error: document '/Course/${request.data.courseId}/' does not exist`);
-                throw new HttpsError("invalid-argument", `Course with ID '${request.data.courseId}' does not exist`);
-            }
-
-            const docData = course.data();
-            if (!docData) {
-                logger.error(`Error: document '/Course/${request.data.courseId}/' exists, but has no data`);
-                throw new HttpsError("internal", "Error: document data corrupted");
-            }
-
-            /**
-             * withQuiz is for the course editor, so it returns the quiz data (including answers, so admin-only)
-             * Otherwise, it returns the course with the status and start time for the requesting user (course page)
-             */
-            if (!request.data.withQuiz) {
-
-                if (!docData.active) {
-                    throw new HttpsError("invalid-argument", "Cannot view inactive course");
-                }
-
-                const courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
-                    .where("userId", "==", request.auth?.uid)
-                    .where("courseId", "==", request.data.courseId)
-                    .get()
-                    .then((docs) => docs.empty ? null : docs.docs[0].data())
-                    .catch((error) => {
-                        logger.error(`Error getting course attempts: ${error}`);
-                        throw new HttpsError("internal", `Error getting courses, please try again later`);
-                    });
-
-                const courseEnrolled = await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
-                    .get()
-                    .then((doc) => doc.exists)
-                    .catch((error) => { throw new HttpsError("internal", `Error getting course enrollment: ${error}`) });
-
-                const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
-                    .where("userId", "==", request.auth?.uid)
-                    .where("courseId", "==", request.data.courseId)
-                    .get()
-                    .then((docs) => docs.docs.map((doc) => doc.data()))
-                    .catch((error) => {
-                        logger.error(`Error getting quiz attempts: ${error}`);
-                        throw new HttpsError("internal", `Error getting courses, please try again later`);
-                    });
-
-                let status;
-                if (!courseEnrolled) { // Status 1: not enrolled in course
-                    status = 1;
-                } else if (courseAttempt === null ) { // Status 2: enrolled, not started
-                    status = 2;
-                } else if (courseAttempt?.pass === null) { // Status 3: in progress
-                    status = 3;
-                } else if (courseAttempt?.pass === false) { // Status 4: completed, failed
-                    status = 4;
-                } else if (courseAttempt?.pass === true) { // Status 5: completed, passed
-                    status = 5;
-                } else {
-                    throw new HttpsError("internal", "Course is in an invalid state - can't get status");
-                }
-
-                let numQuizQuestions;
-                if (docData.quiz) {
-                    numQuizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
-                        .where("courseId", "==", request.data.courseId)
-                        .where("active", "==", true)
-                        .get()
-                        .then((docs) => docs.size)
-                        .catch((error) => {
-                            logger.error(`Error getting number of quiz questions: ${error}`);
-                            throw new HttpsError('internal', "Error getting course quiz, please try again later");
-                        });
-                }
-
-                logger.info("Data queries passed, returning course info...");
-
-                return {
-                    courseId: course.id,
-                    name: docData.name,
-                    description: docData.description,
-                    link: docData.link,
-                    minTime: docData.minTime,
-                    quiz: docData.quiz ? { numQuestions: numQuizQuestions, ...docData.quiz } : null,
-                    status: status,
-                    startTime: courseAttempt?.startTime._seconds ?? null,
-                    quizAttempts: quizAttempts,
-                    courseAttemptId: courseAttempt?.id ?? null,
-                };
-
-            } else {
-
-                await verifyIsAdmin(request); // This returns quiz answers for course editing, so admin-only
-
-                let quizQuestions = null;
-                if (docData.quiz) {
-                    quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
-                        .where("courseId", "==", request.data.courseId)
-                        .where("active", "==", true)
-                        .get()
-                        .then((docs) => shuffleArray(docs.docs.map((doc) => {
-                            const data = doc.data();
-                            const question: any = {
-                                id: doc.id,
-                                type: data.type,
-                                question: data.question,
-                                marks: data.marks
-                            };
-                            if (data.type === "mc") {
-                                question["answers"] = data.answers;
-                                question["correctAnswer"] = data.correctAnswer;
-                            }
-                            if (data.type === "tf") {
-                                question["correctAnswer"] = data.correctAnswer;
-                            }
-
-                            return question;
-                        })))
-                        .catch((error) => {
-                            logger.error(`Error checking if course has quiz questions: ${error}`);
-                            throw new HttpsError('internal', "Error getting course quiz, please try again later");
-                        });
-                }
-
-                return {
-                    courseId: course.id,
-                    active: docData.active,
-                    name: docData.name,
-                    description: docData.description,
-                    link: docData.link,
-                    minTime: docData.minTime,
-                    quiz: docData.quiz,
-                    quizQuestions: quizQuestions,
-                };
-            }
-        })
+        .then((docs) => docs.empty ? null : docs.docs[0].data())
         .catch((error) => {
-            logger.error(`Error getting document '/Course/${request.data.courseId}/': ${error}`);
-            throw new HttpsError("internal", "Error getting course data, please try again later");
+            logger.error(`Error getting course attempts: ${error}`);
+            throw new HttpsError("internal", `Error getting courses, please try again later`);
         });
+
+    const courseEnrolled = await docExists(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId));
+
+    const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
+        .where("userId", "==", request.auth?.uid)
+        .where("courseId", "==", request.data.courseId)
+        .get()
+        .then((docs) => docs.docs.map((doc) => doc.data()))
+        .catch((error) => {
+            logger.error(`Error getting quiz attempts: ${error}`);
+            throw new HttpsError("internal", `Error getting courses, please try again later`);
+        });
+
+    let status;
+    if (!courseEnrolled) { // Status 1: not enrolled in course
+        status = 1;
+    } else if (courseAttempt === null ) { // Status 2: enrolled, not started
+        status = 2;
+    } else if (courseAttempt?.pass === null) { // Status 3: in progress
+        status = 3;
+    } else if (courseAttempt?.pass === false) { // Status 4: completed, failed
+        status = 4;
+    } else if (courseAttempt?.pass === true) { // Status 5: completed, passed
+        status = 5;
+    } else {
+        throw new HttpsError("internal", "Course is in an invalid state - can't get status");
+    }
+
+    let numQuizQuestions;
+    if (courseInfo.quiz) {
+        numQuizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
+            .where("courseId", "==", request.data.courseId)
+            .where("active", "==", true)
+            .get()
+            .then((docs) => docs.size)
+            .catch((error) => {
+                logger.error(`Error getting number of quiz questions: ${error}`);
+                throw new HttpsError('internal', "Error getting course quiz, please try again later");
+            });
+    }
+
+    logger.info("Data queries passed, returning course info...");
+
+    return {
+        courseId: request.data.courseId,
+        name: courseInfo.name,
+        description: courseInfo.description,
+        link: courseInfo.link,
+        minTime: courseInfo.minTime,
+        quiz: courseInfo.quiz ? { numQuestions: numQuizQuestions, ...courseInfo.quiz } : null,
+        status: status,
+        startTime: courseAttempt?.startTime._seconds ?? null,
+        quizAttempts: quizAttempts,
+        courseAttemptId: courseAttempt?.id ?? null,
+    };
 });
 
 /**
@@ -448,25 +390,9 @@ const courseEnroll = onCall(async (request) => {
             throw new HttpsError('invalid-argument', err);
         });
 
-    await getDoc(DatabaseCollections.Course, request.data.courseId).get()
-        .then((doc) => {
-            if (!doc.exists) {
-                logger.error(`Course with ID '${request.data.courseId}' does not exist`);
-                throw new HttpsError('invalid-argument', `Course with ID '${request.data.courseId}' does not exist`);
-            }
-        })
-        .catch((error) => {
-            logger.error(`Error checking if course exists: ${error}`);
-            throw new HttpsError('internal', "Error enrolling in course, please try again later");
-        });
+    await getDocData(DatabaseCollections.Course, request.data.courseId);
 
-    return getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
-        .set({ userId: uid, courseId: request.data.courseId })
-        .then(() => "Successfully enrolled in course")
-        .catch((error) => {
-            logger.error(`Error enrolling in course ${request.data.courseId}: ${error}`);
-            throw new HttpsError("internal", "Error enrolling in course, please try again later");
-        });
+    return addDocWithId(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId), { userId: uid, courseId: request.data.courseId });
 });
 
 /**
@@ -489,13 +415,7 @@ const courseUnenroll = onCall(async (request) => {
             throw new HttpsError('invalid-argument', err);
         });
 
-    return getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
-        .delete()
-        .then(() => "Successfully unenrolled from course")
-        .catch((error) => {
-            logger.error(`Error unenrolling from course ${request.data.courseId}: ${error}`);
-            throw new HttpsError("internal", "Error unenrolling from course, please try again later");
-        });
+    return deleteDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId));
 });
 
 /**
@@ -518,18 +438,8 @@ const startCourse = onCall(async (request) => {
             throw new HttpsError('invalid-argument', err);
         });
 
-    await getDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId))
-        .get()
-        .then((doc) => {
-            if (!doc.exists) { // @ts-ignore
-                logger.error(`No course enrollment with course ID '${request.data.courseId}' and user ID '${request.auth.uid}' exists`);
-                throw new HttpsError('invalid-argument', `You are not enrolled in this course`);
-            }
-        })
-        .catch((error) => {
-            logger.error(`Error checking if user is enrolled in course: ${error}`);
-            throw new HttpsError('internal', "Error starting course, please try again later");
-        });
+    // Verify the user is enrolled in the course
+    await getDocData(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId));
 
     const courseAttempt = {
         userId: request.auth?.uid,
@@ -539,13 +449,7 @@ const startCourse = onCall(async (request) => {
         pass: null,
     }
 
-    return getCollection(DatabaseCollections.CourseAttempt)
-        .add(courseAttempt)
-        .then((result) => result.get().then((doc) => doc?.data()?.startTime._seconds ))
-        .catch((error) => {
-            logger.error(`Error starting course ${request.data.courseId}: ${error}`);
-            throw new HttpsError("internal", "Error enrolling in course, please try again later");
-        });
+    return addDoc(DatabaseCollections.CourseAttempt, courseAttempt);
 });
 
 /**
@@ -563,24 +467,9 @@ const sendBrokenLinkReport = onCall(async (request) => {
         throw new HttpsError('invalid-argument', "Must provide a course ID to enroll in");
     }
 
-    await getDoc(DatabaseCollections.Course, request.data.courseId).get()
-        .then((doc) => {
-            if (!doc.exists) {
-                throw new HttpsError('invalid-argument', `Course with ID '${request.data.courseId}' does not exist`);
-            }
-        })
-        .catch((error) => {
-            logger.error(`Error checking if course exists: ${error}`);
-            throw new HttpsError('internal', "Error enrolling in course, please try again later");
-        });
+    await getDocData(DatabaseCollections.Course, request.data.courseId);
 
-    return getDoc(DatabaseCollections.ReportedCourse, reportedCourseId(uid, request.data.courseId))
-        .set({ userId: uid, courseId: request.data.courseId })
-        .then(() => "Successfully reported the course link as broken")
-        .catch((error) => {
-            logger.error(`Error reporting link as broken in course ${request.data.courseId}: ${error}`);
-            throw new HttpsError("internal", "Error reporting course link, please try again later");
-        });
+    return addDocWithId(DatabaseCollections.ReportedCourse, reportedCourseId(uid, request.data.courseId), { userId: uid, courseId: request.data.courseId });
 });
 
 /**
@@ -592,7 +481,7 @@ const sendCourseFeedback = onCall(async (request) => {
 
     const schema = object({
         courseId: string().required(),
-        feedback: string().required().min(1, "Feedback must be non-empty").max(500, "Feedback can't be over 500 characters long"),
+        feedback: string().required().min(1, "Feedback must be non-empty").max(1000, "Feedback can't be over 1000 characters long"),
     }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
@@ -602,27 +491,18 @@ const sendCourseFeedback = onCall(async (request) => {
         });
 
     // @ts-ignore
-    const userInfo: { name: string, email: string, uid: string } = await getDoc(DatabaseCollections.User, request.auth.uid)
-        .get() // @ts-ignore
-        .then((user) => ({ name: user.data().name, email: user.data().email, uid: user.id }))
-        .catch((error) => { // @ts-ignore
-            logger.error(`Error getting user (${request.auth.uid}): ${error}`);
-            throw new HttpsError("internal", "Error sending course feedback, please try again later");
-        });
+    const uid: string = request.auth.uid;
 
-    const courseInfo = await getDoc(DatabaseCollections.Course, request.data.courseId)
-        .get() // @ts-ignore
-        .then((course) => ({ name: course.data().name, creator: course.data().creator }))
-        .catch((error) => {
-            logger.error(`Error getting course info (${request.data.courseId}): ${error}`);
-            throw new HttpsError("internal", "Error sending course feedback, please try again later");
-        });
+    const userInfo = await getDocData(DatabaseCollections.User, uid) as UserDocument;
+
+    const courseInfo = await getDocData(DatabaseCollections.Course, request.data.courseId) as CourseDocument;
+    const courseCreator = await getDocData(DatabaseCollections.User, courseInfo.userId) as UserDocument;
 
     const subject = `Open LMS user feedback for course ${courseInfo.name}`;
-    const content = `User ${userInfo.name} (${userInfo.email}) has sent the following feedback for the course 
+    const content = `User ${userInfo.name} (email: ${userInfo.email} uid: ${uid}) has sent the following feedback for the course 
                                 ${courseInfo.name}:<br/> ${request.data.feedback}`;
-    return sendEmail(courseInfo.creator, subject, content, "sending course feedback");
+    return sendEmail(courseCreator.email, subject, content, "sending course feedback");
 });
 
-export { addCourse, publishCourse, unPublishCourse, updateCourse, getAvailableCourses, getCourseInfo, courseEnroll,
+export { addCourse, setCourseVisibility, updateCourse, getAvailableCourses, getCourseInfo, courseEnroll,
     courseUnenroll, startCourse, sendBrokenLinkReport, sendCourseFeedback };

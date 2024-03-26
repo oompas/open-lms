@@ -1,6 +1,5 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
-    docExists,
     shuffleArray,
     verifyIsAdmin,
     verifyIsAuthenticated
@@ -13,8 +12,7 @@ import {
     CourseDocument,
     CourseAttemptDocument,
     QuizAttemptDocument,
-    getCollection,
-    getDoc
+    getCollection, getDocData, updateDoc, addDoc, QuizQuestionAttemptDocument, UserDocument,
 } from "../helpers/database";
 
 /**
@@ -94,7 +92,6 @@ const updateQuizQuestions = onCall(async (request) => {
         return update.id ? "update" : "new";
     }
 
-    const dbCollection = getCollection(DatabaseCollections.QuizQuestion);
     const updatePromises: Promise<any>[] = [];
 
     questions.forEach((update: any) => {
@@ -111,8 +108,12 @@ const updateQuizQuestions = onCall(async (request) => {
          * Update question: deactivate old question, add new question
          * Delete question: deactivate question
          */
-        if (updateType === "new" || updateType === "update") updatePromises.push(dbCollection.add({ courseId, ...update, active: true, stats: defaultStats }));
-        if (updateType === "update" || updateType === "delete") updatePromises.push(dbCollection.doc(update.id).update({ active: false }));
+        if (updateType === "new" || updateType === "update") {
+            updatePromises.push(addDoc(DatabaseCollections.QuizQuestion, { courseId, ...update, active: true, stats: defaultStats }));
+        }
+        if (updateType === "update" || updateType === "delete") {
+            updatePromises.push(updateDoc(DatabaseCollections.QuizQuestion, update.id, { active: false }));
+        }
     });
 
     return Promise.all(updatePromises)
@@ -141,21 +142,10 @@ const getQuiz = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const courseData = await getDoc(DatabaseCollections.Course, request.data.courseId)
-        .get()
-        .then((doc) => {
-            if (!doc.exists || !doc.data()) {
-                throw new HttpsError("not-found", `Course with ID ${request.data.courseId} not found`);
-            } // @ts-ignore
-            if (!doc.data().quiz) {
-                throw new HttpsError("not-found", `Course with ID ${request.data.courseId} does not have a quiz`);
-            }
-            return doc.data();
-        })
-        .catch((err) => {
-            logger.info(`Error getting course data: ${err}`);
-            throw new HttpsError("internal", `Error getting course data: ${err}`);
-        });
+    const courseData = await getDocData(DatabaseCollections.Course, request.data.courseId) as CourseDocument;
+    if (!courseData.quiz) {
+        throw new HttpsError("not-found", `Course ${request.data.courseId} does not have a quiz`);
+    }
 
     const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
         .where("courseId", "==", request.data.courseId)
@@ -240,18 +230,11 @@ const getQuizResponses = onCall(async (request) => {
     const quizAttemptId = request.data.quizAttemptId;
 
     // Verify the quiz attempt exists
-    await getDoc(DatabaseCollections.QuizAttempt, quizAttemptId)
-        .get()
-        .then((doc) => {
-            if (!doc.exists || !doc.data()) {
-                logger.error(`No quiz attempt found with ID ${quizAttemptId}`);
-                throw new HttpsError("not-found", `No quiz attempt found with ID ${quizAttemptId}`);
-            } // @ts-ignore
-            if (doc.data().endTime === null) {
-                logger.error(`Quiz attempt with ID ${quizAttemptId} is still active`);
-                throw new HttpsError("failed-precondition", `Quiz attempt with ID ${quizAttemptId} is still active`);
-            }
-        });
+    const quizAttempt = await getDocData(DatabaseCollections.QuizAttempt, quizAttemptId) as QuizAttemptDocument;
+    if (quizAttempt.endTime === null) {
+        logger.error(`Quiz attempt with ID ${quizAttemptId} is still active`);
+        throw new HttpsError("failed-precondition", `Quiz attempt with ID ${quizAttemptId} is still active`);
+    }
 
     // Retrieve the respective quiz question attempt objects if the quiz attempt is completed
     return getCollection(DatabaseCollections.QuizQuestionAttempt)
@@ -287,97 +270,61 @@ const startQuiz = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const { courseAttemptId } = request.data;
-
-    // Verify data is all good
-    const courseAttempt = await getDoc(DatabaseCollections.CourseAttempt, courseAttemptId)
-        .get()
-        .then((doc) => {
-            docExists(doc, `Course attempt with ID ${courseAttemptId}`);
-            return doc.data() as CourseAttemptDocument;
-        })
-        .catch((err) => {
-            logger.error(`Error getting course attempt data: ${err}`);
-            throw new HttpsError("internal", `Error getting course attempt data: ${err}`);
-        });
+    const courseAttemptId = request.data.courseAttemptId;
+    const courseAttempt = await getDocData(DatabaseCollections.CourseAttempt, courseAttemptId) as CourseAttemptDocument;
 
     const courseId = courseAttempt.courseId;
-    await getDoc(DatabaseCollections.Course, courseId)
+    const courseData = await getDocData(DatabaseCollections.Course, courseId) as CourseDocument;
+
+    // Verify the user hasn't used all their quiz attempts
+    if (courseData.quiz?.maxAttempts) {
+        await getCollection(DatabaseCollections.QuizAttempt)
+            .where("courseAttemptId", "==", courseAttemptId)
+            .get()
+            .then((snapshot) => {
+                if (courseData.quiz?.maxAttempts && snapshot.size >= courseData.quiz.maxAttempts) {
+                    logger.error(`Max number of quiz attempts reached for course ${courseId}`);
+                    throw new HttpsError("failed-precondition", `Max number of quiz attempts reached for course ${courseId}`);
+                }
+            })
+            .catch((err) => {
+                logger.error(`Error getting quiz attempts: ${err}`);
+                throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
+            });
+    }
+
+    // Verify the user has waited the minimum time before starting the quiz (if required)
+    if (courseData.minTime !== null) {
+        if (Date.now() < courseAttempt.startTime.toMillis() + courseData.minTime * 60 * 1000) {
+            logger.error(`User has not waited the minimum time (${courseData.minTime}) before starting the quiz`);
+            throw new HttpsError("failed-precondition", `You must wait ${courseData.minTime} minutes before starting the quiz`);
+        }
+    }
+
+    // Ensure the user doesn't have a quiz attempt in progress
+    await getCollection(DatabaseCollections.QuizAttempt)
+        .where("userId", "==", request.auth?.uid)
+        .where("courseId", "==", courseId)
+        .where("courseAttemptId", "==", courseAttemptId)
         .get()
-        .then(async (doc) => {
-            if (!doc.exists || !doc.data()) {
-                logger.error(`Course with ID ${courseId} not found or empty`);
-                throw new HttpsError("not-found", `Course with ID ${courseId} not found`);
+        .then((snapshot) => {
+            if (snapshot.docs.find((doc) => doc.data().endTime === null)) {
+                logger.error(`User has a quiz attempt in progress for course ${courseId}`);
+                throw new HttpsError("failed-precondition", `You have a quiz attempt in progress for course ${courseId}`);
             }
-            const courseData = doc.data() as CourseDocument;
-
-            // Verify the user hasn't used all their quiz attempts
-            if (courseData.quiz?.maxAttempts) {
-                await getCollection(DatabaseCollections.QuizAttempt)
-                    .where("courseAttemptId", "==", courseAttemptId)
-                    .get()
-                    .then((snapshot) => {
-                        if (courseData.quiz?.maxAttempts && snapshot.size >= courseData.quiz.maxAttempts) {
-                            logger.error(`Max number of quiz attempts reached for course ${courseId}`);
-                            throw new HttpsError("failed-precondition", `Max number of quiz attempts reached for course ${courseId}`);
-                        }
-                    })
-                    .catch((err) => {
-                        logger.error(`Error getting quiz attempts: ${err}`);
-                        throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
-                    });
-            }
-
-            // Verify the user has waited the minimum time before starting the quiz (if required)
-            if (courseData.minTime !== null) {
-                await getDoc(DatabaseCollections.CourseAttempt, courseAttemptId)
-                    .get()
-                    .then((doc) => {
-                        docExists(doc, `Course attempt with ID ${courseAttemptId}`);
-
-                        const attempt = doc.data() as CourseAttemptDocument; // @ts-ignore
-                        if (Date.now() < attempt.startTime.toMillis() + courseData.minTime * 60 * 1000) {
-                            logger.error(`User has not waited the minimum time (${courseData.minTime}) before starting the quiz`);
-                            throw new HttpsError("failed-precondition", `You must wait ${courseData.minTime} minutes before starting the quiz`);
-                        }
-                    });
-            }
-
-            // Ensure the user doesn't have a quiz attempt in progress
-            await getCollection(DatabaseCollections.QuizAttempt)
-                .where("userId", "==", request.auth?.uid)
-                .where("courseId", "==", courseId)
-                .where("courseAttemptId", "==", courseAttemptId)
-                .get()
-                .then((snapshot) => {
-                    if (snapshot.docs.find((doc) => doc.data().endTime === null)) {
-                        logger.error(`User has a quiz attempt in progress for course ${courseId}`);
-                        throw new HttpsError("failed-precondition", `You have a quiz attempt in progress for course ${courseId}`);
-                    }
-                })
-                .catch((err) => {
-                    logger.error(`Error getting quiz attempts: ${err}`);
-                    throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
-                });
         })
         .catch((err) => {
-            logger.error(`Error getting course data: ${err}`);
-            throw new HttpsError("internal", `Error getting course data: ${err}`);
+            logger.error(`Error getting quiz attempts: ${err}`);
+            throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
         });
 
-    return getCollection(DatabaseCollections.QuizAttempt)
-        .add({
+    return addDoc(DatabaseCollections.QuizAttempt, {
             userId: request.auth?.uid,
             courseId: courseAttempt.courseId,
             courseAttemptId: courseAttemptId,
             startTime: firestore.FieldValue.serverTimestamp(),
             endTime: null,
             pass: null,
-        })
-        .then(() => "Successfully started quiz")
-        .catch((err) => {
-            logger.error(`Error starting quiz: ${err}`);
-            throw new HttpsError('internal', `Error starting quiz}`);
         });
 });
 
@@ -410,45 +357,16 @@ const submitQuiz = onCall(async (request) => {
 
     const { quizAttemptId, responses } = request.data;
 
-    /**
-     * Verify attempt is valid
-     * -Quiz attempt exists
-     * -Quiz attempt is valid
-     * -Maximum quiz attempts haven't been reached yet
-     */
-
-    const quizAttempt = await getDoc(DatabaseCollections.QuizAttempt, quizAttemptId)
-        .get()
-        .then((doc) => {
-            docExists(doc, `Quiz attempt with ID ${quizAttemptId}`);
-
-            const attempt = doc.data() as QuizAttemptDocument;
-            if (attempt.endTime !== null) {
-                logger.error(`Quiz attempt with ID ${quizAttemptId} is already completed`);
-                throw new HttpsError("failed-precondition", `Quiz attempt with ID ${quizAttemptId} is already completed`);
-            }
-            return attempt;
-        });
-
-    const quizRequirements = await getDoc(DatabaseCollections.Course, quizAttempt.courseId)
-        .get()
-        .then((course) => { // @ts-ignore
-            docExists(course, `Course with ID ${quizAttempt.courseId}`); // @ts-ignore
-            return course.data().quiz as CourseDocument["quiz"];
-        })
-        .catch((err) => {
-            logger.info(`Error getting course data: ${err}`);
-            throw new HttpsError("internal", `Error getting course data: ${err}`);
-        });
-
-    if (!quizRequirements) {
-        logger.error(`No quiz object in course ${quizAttempt.courseId}`);
-        throw new HttpsError("failed-precondition", `No quiz object in course ${quizAttempt.courseId}`);
+    const quizAttempt = await getDocData(DatabaseCollections.QuizAttempt, quizAttemptId) as QuizAttemptDocument;
+    if (quizAttempt.endTime !== null) {
+        logger.error(`Quiz attempt with ID ${quizAttemptId} is already completed`);
+        throw new HttpsError("failed-precondition", `Quiz attempt with ID ${quizAttemptId} is already completed`);
     }
 
-    if (quizRequirements.timeLimit !== null) {
+    const courseData = await getDocData(DatabaseCollections.Course, quizAttempt.courseId) as CourseDocument;
+    if (courseData.quiz?.timeLimit) {
         // Start time + max quiz time + 10 seconds (to account for API call time, etc.), all in milliseconds
-        const maxEndTime = (quizAttempt.startTime.toMillis()) + (quizRequirements.timeLimit * 60 * 1000) + (10 * 1000);
+        const maxEndTime = (quizAttempt.startTime.toMillis()) + (courseData.quiz?.timeLimit * 60 * 1000) + (10 * 1000);
         if (maxEndTime < Date.now()) {
             throw new HttpsError("failed-precondition", `Quiz attempt for course ${quizAttempt.courseId} has expired`);
         }
@@ -500,28 +418,15 @@ const submitQuiz = onCall(async (request) => {
                 };
 
                 // Add question attempt to database
-                promises.push(
-                    getCollection(DatabaseCollections.QuizQuestionAttempt)
-                        .add(markedResponse)
-                        .catch((err) => {
-                            logger.info(`Error adding quiz question attempt: ${err}`);
-                            throw new HttpsError("internal", `Error adding quiz question attempt: ${err}`);
-                        })
-                );
+                promises.push(addDoc(DatabaseCollections.QuizQuestionAttempt, markedResponse));
 
                 // Update question stats
                 if (marks !== null) {
-                    promises.push(
-                        getDoc(DatabaseCollections.QuizQuestion, question.id)
-                            .update({
-                                "stats.numAttempts": firestore.FieldValue.increment(1),
-                                "stats.totalScore": firestore.FieldValue.increment(marks),
-                            })
-                            .catch((err) => {
-                                logger.info(`Error updating question stats: ${err}`);
-                                throw new HttpsError("internal", `Error updating question stats: ${err}`);
-                            })
-                    );
+                    const updateData = {
+                        "stats.numAttempts": firestore.FieldValue.increment(1),
+                        "stats.totalScore": firestore.FieldValue.increment(marks),
+                    };
+                    promises.push(updateDoc(DatabaseCollections.QuizQuestion, question.id, updateData));
                 }
             }
 
@@ -536,30 +441,15 @@ const submitQuiz = onCall(async (request) => {
     let pass: boolean | null = null;
     if (marksAchieved !== null) {
         // If there's no minimum score, they pass by default. Otherwise, verify their score is at least the threshold
-        pass = quizRequirements.minScore === null || marksAchieved >= quizRequirements.minScore;
+        pass = courseData.quiz?.minScore === null || marksAchieved >= (courseData.quiz?.minScore ?? 0);
 
-        const courseAttempt = await getDoc(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId)
-            .get()
-            .then((doc) => {
-                docExists(doc, `Course attempt with ID ${quizAttempt.courseAttemptId}`);
-                return doc.data() as CourseAttemptDocument;
-            })
-            .catch((err) => {
-                logger.info(`Error getting course attempt data: ${err}`);
-                throw new HttpsError("internal", `Error getting course attempt data: ${err}`);
-            });
+        const courseAttempt = await getDocData(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId) as CourseAttemptDocument;
 
         // If this is the first quiz attempt or the user previously failed and now passed, update the pass status of
         // the course attempt (quiz attempt pass status will also be updated below)
-        if (courseAttempt.pass === null || (courseAttempt.pass === false && pass)) {
-            promises.push(getDoc(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId)
-                .update({ pass: pass })
-                .catch((err) => {
-                    logger.info(`Error updating course pass status: ${err}`);
-                    throw new HttpsError("internal", `Error updating course pass status: ${err}`);
-                })
-            );
-        } else if (courseAttempt.pass === true) { // This shouldn't happen, doing a quiz again after passing
+        if (courseAttempt.pass === null || (!courseAttempt.pass && pass)) {
+            promises.push(updateDoc(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId, { pass: pass }));
+        } else if (courseAttempt.pass) { // This shouldn't happen, doing a quiz again after passing
             logger.error(`Course attempt with ID ${quizAttempt.courseAttemptId} has already passed, quiz shouldn't be happening`);
             throw new HttpsError("failed-precondition", `Course attempt with ID ${quizAttempt.courseAttemptId} has already passed`);
         }
@@ -570,14 +460,7 @@ const submitQuiz = onCall(async (request) => {
         throw new HttpsError("internal", `Error adding marked questions: ${err}`);
     });
 
-    // Update quiz attempt
-    return getDoc(DatabaseCollections.QuizAttempt, quizAttemptId)
-        .update({ endTime: firestore.FieldValue.serverTimestamp(), pass: pass })
-        .then(async () => "Successfully submitted quiz")
-        .catch((err) => {
-            logger.info(`Error submitting quiz attempt: ${err}`);
-            throw new HttpsError("internal", `Error submitting quiz attempt: ${err}`);
-        });
+    return updateDoc(DatabaseCollections.QuizAttempt, quizAttemptId, { endTime: firestore.FieldValue.serverTimestamp(), pass: pass });
 });
 
 /**
@@ -613,42 +496,21 @@ const getQuizzesToMark = onCall(async (request) => {
 
     const courseNames: { [key: string]: string } = {};
     await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[0]))].map((courseId) =>
-        getDoc(DatabaseCollections.Course, courseId)
-            .get() // @ts-ignore
-            .then((course) => courseNames[courseId] = course.data().name)
-            .catch((err) => {
-                logger.info(`Error getting course data: ${err}`);
-                throw new HttpsError("internal", `Error getting course data: ${err}`);
-            })
+        getDocData(DatabaseCollections.Course, courseId).then((course) => courseNames[courseId] = course.data().name)
     ));
 
     logger.info(`Successfully retrieved course data for ${Object.keys(courseNames).length} courses`);
 
     const userNames: { [key: string]: string } = {};
     await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[1]))].map((userId) =>
-        getDoc(DatabaseCollections.User, userId)
-            .get()
-            .then((user) => {
-                docExists(user, `User with ID ${userId}`); // @ts-ignore
-                userNames[userId] = user.data().name;
-            })
-            .catch((err) => {
-                logger.info(`Error getting user data: ${err}`);
-                throw new HttpsError("internal", `Error getting user data: ${err}`);
-            })
+        getDocData(DatabaseCollections.User, userId).then((user) => userNames[userId] = user.data().name)
     ));
 
     logger.info(`Successfully retrieved user data for ${Object.keys(userNames).length} users`);
 
     const attemptTimestamps: { [key: string]: firestore.Timestamp } = {};
     await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[2]))].map((quizAttemptId) =>
-        getDoc(DatabaseCollections.QuizAttempt, quizAttemptId)
-            .get() // @ts-ignore
-            .then((attempt) => attemptTimestamps[quizAttemptId] = attempt.data().endTime)
-            .catch((err) => {
-                logger.info(`Error getting quiz attempt data: ${err}`);
-                throw new HttpsError("internal", `Error getting quiz attempt data: ${err}`);
-            })
+        getDocData(DatabaseCollections.QuizAttempt, quizAttemptId).then((attempt) => attemptTimestamps[quizAttemptId] = attempt.data().endTime)
     ));
 
     logger.info(`Successfully retrieved quiz attempt data for ${Object.keys(attemptTimestamps).length} attempts`);
@@ -696,70 +558,36 @@ const getQuizToMark = onCall(async (request) => {
             if (!snapshot.docs.find((doc) => doc.data().marksAchieved === null)) {
                 throw new HttpsError("not-found", `No unmarked short answer quiz questions found for quiz attempt ${request.data.quizAttemptId}`);
             }
-            return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() as QuizQuestionAttemptDocument }));
         })
         .catch((err) => {
             logger.info(`Error getting quiz questions: ${err}`);
             throw new HttpsError("internal", `Error getting quiz questions: ${err}`);
         });
 
-    // @ts-ignore
-    const courseName: string = await getDoc(DatabaseCollections.Course, allAttempts[0].courseId)
-        .get()
-        .then((doc) => {
-            if (!doc.exists || !doc.data()) { // @ts-ignore
-                throw new HttpsError("not-found", `Course with ID ${allAttempts[0].courseId} not found`);
-            } // @ts-ignore
-            return doc.data().name;
-        })
-        .catch((err) => {
-            logger.info(`Error getting course data: ${err}`);
-            throw new HttpsError("internal", `Error getting course data: ${err}`);
-        });
+    const courseInfo = await getDocData(DatabaseCollections.Course, allAttempts[0].courseId) as CourseDocument;
+    const userInfo = await getDocData(DatabaseCollections.User, allAttempts[0].userId) as UserDocument;
 
-    // @ts-ignore
-    const userName: string = await getDoc(DatabaseCollections.User, allAttempts[0].userId)
-        .get()
-        .then((doc) => {
-            if (!doc.exists || !doc.data()) { // @ts-ignore
-                throw new HttpsError("not-found", `User with ID ${allAttempts[0].userId} not found`);
-            } // @ts-ignore
-            return doc.data().name;
-        })
-        .catch((err) => {
-            logger.info(`Error getting user data: ${err}`);
-            throw new HttpsError("internal", `Error getting user data: ${err}`);
-        });
-
-    const attemptData = await Promise.all(allAttempts.map((attempt) => // @ts-ignore
-        getDoc(DatabaseCollections.QuizQuestion, attempt.questionId)
-            .get()
-            .then((doc) => { // @ts-ignore
-                docExists(doc, `Quiz question with ID ${attempt.questionId}`);
-                return {
-                    id: attempt.id, // @ts-ignore
-                    question: doc.data().question, // @ts-ignore
-                    response: attempt.response, // @ts-ignore
-                    marks: doc.data().marks, // @ts-ignore
-                    marksAchieved: attempt.marksAchieved, // @ts-ignore
-                    type: doc.data().type, // @ts-ignore
-                    ...(doc.data().type === "mc") && { answers: doc.data().answers },
-                }
-            })
-            .catch((err) => {
-                logger.info(`Error getting quiz questions: ${err}`);
-                throw new HttpsError("internal", `Error getting quiz questions: ${err}`);
-            })
+    const attemptData = await Promise.all(allAttempts.map((attempt) =>
+        getDocData(DatabaseCollections.QuizQuestion, attempt.questionId)
+            .then((doc) => ({
+                id: attempt.id,
+                question: doc.data().question,
+                response: attempt.response,
+                marks: doc.data().marks,
+                marksAchieved: attempt.marksAchieved,
+                type: doc.data().type,
+                ...(doc.data().type === "mc") && { answers: doc.data().answers },
+            }))
     ))
-        .then((result) => result)
         .catch((err) => {
             logger.info(`Error getting quiz questions: ${err}`);
             throw new HttpsError("internal", `Error getting quiz questions: ${err}`);
         });
 
     return {
-        courseName: courseName,
-        learnerName: userName,
+        courseName: courseInfo.name,
+        learnerName: userInfo.name,
         saQuestions: attemptData.filter((attempt) => attempt.type === "sa"),
         otherQuestions: attemptData.filter((attempt) => attempt.type !== "sa"),
     };

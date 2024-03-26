@@ -4,7 +4,7 @@
 
 import { createAccount, getUserProfile, resetPassword } from "./callable/auth";
 import { beforeSignIn, onUserDelete } from "./triggers/auth";
-import { publishCourse, unPublishCourse, updateCourse, courseEnroll, courseUnenroll, getAvailableCourses, getCourseInfo, addCourse, startCourse, sendCourseFeedback } from "./callable/courses";
+import { updateCourse, setCourseVisibility, courseEnroll, courseUnenroll, getAvailableCourses, getCourseInfo, addCourse, startCourse, sendCourseFeedback } from "./callable/courses";
 import { getQuizResponses, updateQuizQuestions, getQuiz, startQuiz, submitQuiz, getQuizzesToMark, getQuizToMark } from "./callable/quizzes";
 import { getCourseReports, getUserReports } from "./callable/reports";
 import { sendPlatformFeedback } from "./callable/misc";
@@ -15,7 +15,7 @@ import { updateAdminPermissions, onCourseDeleted } from "./triggers/database";
 export {
     createAccount, resetPassword, getUserProfile,
     beforeSignIn, onUserDelete,
-    addCourse, getAvailableCourses, getCourseInfo, publishCourse, unPublishCourse, updateCourse, courseEnroll, courseUnenroll, startCourse, sendCourseFeedback,
+    addCourse, getAvailableCourses, getCourseInfo, setCourseVisibility, updateCourse, courseEnroll, courseUnenroll, startCourse, sendCourseFeedback,
     updateQuizQuestions, getQuiz, getQuizResponses, startQuiz, submitQuiz, getQuizzesToMark, getQuizToMark,
     getCourseReports, getUserReports,
     sendPlatformFeedback,

@@ -1,7 +1,6 @@
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { auth, db } from "./setup";
 import { logger } from "firebase-functions";
-import { firestore } from "firebase-admin";
 
 // Check if the requesting user is authenticated
 const verifyIsAuthenticated = (request: CallableRequest) => {
@@ -12,18 +11,6 @@ const verifyIsAuthenticated = (request: CallableRequest) => {
         );
     }
 };
-
-// Call after querying a document to verify it exists and isn't empty
-const docExists = (doc: firestore.DocumentSnapshot<firestore.DocumentData>, context: string) => {
-    if (!doc.exists) {
-        logger.error(`${context} does not exist`);
-        throw new HttpsError('not-found', `${context} does not exist`);
-    }
-    if (!doc.data()) {
-        logger.error(`${context} has no data`);
-        throw new HttpsError('internal', `${context} has no data`);
-    }
-}
 
 // Adds email doc to db (which gets sent by the 'Trigger Email' extension)
 const sendEmail = (emailAddress: string, subject: string, html: string, context: string) => {
@@ -78,4 +65,4 @@ const shuffleArray = (array: any[]) => {
 const DOCUMENT_ID_LENGTH = 20;
 const USER_UID_LENGTH = 28;
 
-export { verifyIsAuthenticated, docExists, sendEmail, verifyIsAdmin, shuffleArray, DOCUMENT_ID_LENGTH, USER_UID_LENGTH };
+export { verifyIsAuthenticated, sendEmail, verifyIsAdmin, shuffleArray, DOCUMENT_ID_LENGTH, USER_UID_LENGTH };

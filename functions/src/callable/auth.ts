@@ -3,7 +3,13 @@ import { logger } from "firebase-functions";
 import { sendEmail, USER_UID_LENGTH, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 import { auth } from "../helpers/setup";
 import { object, string } from "yup";
-import { DatabaseCollections, getCollection, getDoc, UserDocument } from "../helpers/database";
+import {
+    addDocWithId,
+    DatabaseCollections,
+    getCollection,
+    getDocData,
+    UserDocument
+} from "../helpers/database";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
@@ -56,12 +62,7 @@ const createAccount = onCall(async (request) => {
                 admin: false,
                 signUpTime: new FirebaseFirestore.Timestamp(Date.now() / 1000, 0)
             };
-            await getDoc(DatabaseCollections.User, user.uid)
-                .set(defaultDoc)
-                .catch((err) => {
-                    logger.error(`Error creating default db data for ${user.uid}: ${err}`);
-                    throw new HttpsError('internal', `Error creating default db data for ${user.uid}`);
-                });
+            await addDocWithId(DatabaseCollections.User, user.uid, defaultDoc);
 
             // Create a verification email
             const verifyLink = await auth
@@ -185,13 +186,7 @@ const getUserProfile = onCall(async (request) => {
     if (request.data.targetUid) {
         await verifyIsAdmin(request); // Only administrators can view other's profiles
     }
-    const user = await getDoc(DatabaseCollections.User, targetUserUid)
-        .get()
-        .then((doc) => doc.data() as UserDocument)
-        .catch((error) => {
-            logger.error(`Error querying user data: ${error}`);
-            throw new HttpsError("internal", "Error getting user data, try again later");
-        });
+    const user = await getDocData(DatabaseCollections.User, targetUserUid) as UserDocument;
 
     // Query all enrolled courses
     const enrolledCourses = await getCollection(DatabaseCollections.EnrolledCourse)
@@ -204,13 +199,7 @@ const getUserProfile = onCall(async (request) => {
         });
 
     const enrolledCourseData = await Promise.all(enrolledCourses.map(async (courseId) =>
-        getDoc(DatabaseCollections.Course, courseId)
-            .get() // @ts-ignore
-            .then((course) => ({ id: courseId, name: course.data().name }))
-            .catch((error) => {
-                logger.error(`Error querying enrolled course data: ${error}`);
-                throw new HttpsError("internal", "Error getting user data, try again later");
-            })
+        getDocData(DatabaseCollections.Course, courseId).then((course) => ({ id: courseId, name: course.data().name }))
     ));
 
     // Query course & course attempt data
@@ -225,14 +214,7 @@ const getUserProfile = onCall(async (request) => {
         });
 
     const completedCourseData = await Promise.all(completedCourseIds.map(async (data) =>
-        getDoc(DatabaseCollections.Course, data.id)
-            .get()
-            // @ts-ignore
-            .then((course) => ({ name: course.data().name, link: course.data().link, date: data.date }))
-            .catch((error) => {
-                logger.error(`Error querying completed course data: ${error}`);
-                throw new HttpsError("internal", "Error getting user data, try again later");
-            })
+        getDocData(DatabaseCollections.Course, data.id).then((course) => ({ name: course.data().name, link: course.data().link, date: data.date }))
     ));
 
     return {

@@ -1,7 +1,7 @@
 import { HttpsError } from "firebase-functions/v2/https";
 import * as functions from "firebase-functions";
 import { logger } from "firebase-functions";
-import { getCollection, getDoc, getEmailCollection, DatabaseCollections } from "../helpers/database";
+import { getCollection, getEmailCollection, DatabaseCollections, deleteDoc } from "../helpers/database";
 
 /**
  * Logic run before a user is able to sign in (throw errors here to block sign in):
@@ -26,10 +26,9 @@ const onUserDelete = functions.auth.user().onDelete(async (user) => {
 
     logger.info(`Getting documents for ${user.uid}...`);
 
-    const promises = [];
+    const promises: Promise<any>[] = [];
 
-    const userDoc = getDoc(DatabaseCollections.User, user.uid);
-    promises.push(userDoc.delete());
+    promises.push(deleteDoc(DatabaseCollections.User, user.uid));
 
     const emails = await getEmailCollection()
         .where('to', '==', user.email)
@@ -46,7 +45,7 @@ const onUserDelete = functions.auth.user().onDelete(async (user) => {
             .catch((err) => { throw new HttpsError('internal', `Error getting user courses: ${err}`) });
 
         logger.info(`Queried ${userCourses.length} courses created by the user '${user.uid}'`);
-        promises.concat(userCourses.map((course) => course.ref.delete()));
+        promises.concat(...userCourses.map((course) => course.ref.delete()));
     }
 
     const numDocs = promises.length;

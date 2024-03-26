@@ -46,9 +46,7 @@ const getUserReports = onCall(async (request) => {
     return users.map((user) => {
 
         const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.data().userId === user.id);
-
         const userAttempts = courseAttempts.filter((attempt) => attempt.data().userId === user.id);
-
         const completedAttempts = courseAttempts.filter((attempt) => attempt.data().userId == user.id && attempt.data().pass === true);
 
         return {
