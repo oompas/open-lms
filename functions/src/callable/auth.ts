@@ -223,6 +223,15 @@ const getUserProfile = onCall(async (request) => {
             })
     ));
 
+    const quizAttemptData = await getCollection(DatabaseCollections.QuizAttempt)
+        .where('userId', "==", targetUserUid)
+        .get()
+        .then((result) => result.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
+        .catch((error) => {
+            logger.error(`Error querying quiz attempts: ${error}`);
+            throw new HttpsError("internal", "Error getting user data, try again later");
+        });
+
     return {
         name: userName,
         email: user.email,
@@ -230,6 +239,7 @@ const getUserProfile = onCall(async (request) => {
         lastSignIn: user.metadata.lastRefreshTime ? Date.parse(user.metadata.lastRefreshTime) : -1,
         enrolledCourses: enrolledCourseData,
         completedCourses: completedCourseData,
+        quizAttempts: quizAttemptData
     };
 });
 
