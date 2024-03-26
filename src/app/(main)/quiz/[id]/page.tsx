@@ -13,7 +13,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const [countdown, setCountDown] = useState(0);
 
     const getQuizData = useAsync(() =>
-        callApi("getQuiz", { courseAttemptId: params.id.split('-')[1] })
+        callApi("getQuiz", { quizAttemptId: params.id.split('-')[1] })
             .then((rsp) => {
                 // @ts-ignore
                 setCountDown(Math.floor(rsp.data.startTime + (60 * rsp.data.timeLimit) - (Date.now() / 1000)));
@@ -158,7 +158,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
             }
         }
 
-        await callApi("submitQuiz", { courseAttemptId: params.id.split('-')[1], responses: responses })
+        await callApi("submitQuiz", { quizAttemptId: params.id.split('-')[1], responses: responses })
             .then(() => router.push(`/course/${params.id.split('-')[0]}`))
             .catch((err) => console.log(`Error calling submitQuiz: ${err}`));
     }
