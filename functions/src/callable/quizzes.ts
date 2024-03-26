@@ -131,7 +131,7 @@ const getQuiz = onCall(async (request) => {
     verifyIsAuthenticated(request);
 
     const schema = object({
-        courseAttemptId: string().required(),
+        quizAttemptId: string().required(),
     }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
@@ -142,15 +142,22 @@ const getQuiz = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const courseAttempt = await getDocData(DatabaseCollections.CourseAttempt, request.data.courseAttemptId) as CourseAttemptDocument;
-    if (courseAttempt.endTime !== null) {
-        logger.error(`Course attempt with ID ${request.data.courseAttemptId} is already completed`);
-        throw new HttpsError("failed-precondition", `Course attempt with ID ${request.data.courseAttemptId} is already completed`);
-    }
+    const quizAttempt = await getDocData(DatabaseCollections.QuizAttempt, request.data.quizAttemptId) as QuizAttemptDocument;
+    const courseAttempt = await getDocData(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId) as CourseAttemptDocument;
+    const courseData = await getDocData(DatabaseCollections.Course, quizAttempt.courseId) as CourseDocument;
 
-    const courseData = await getDocData(DatabaseCollections.Course, courseAttempt.courseId) as CourseDocument;
+    // Verify the quiz is still active, the course has valid quiz data and the time limit hasn't been passed
+    if (courseAttempt.endTime !== null) {
+        logger.error(`Course attempt with ID ${quizAttempt.courseAttemptId} is already completed`);
+        throw new HttpsError("failed-precondition", `Course attempt with ID ${quizAttempt.courseAttemptId} is already completed`);
+    }
     if (!courseData.quiz) {
+        logger.error(`Course ${courseAttempt.courseId} does not have a quiz`);
         throw new HttpsError("not-found", `Course ${courseAttempt.courseId} does not have a quiz`);
+    }
+    if (courseData.quiz.timeLimit && Date.now() > quizAttempt.startTime.toMillis() + (courseData.quiz.timeLimit * 60 * 1000)) {
+        logger.error(`Quiz attempt for course ${courseAttempt.courseId} has expired`);
+        throw new HttpsError("failed-precondition", `Quiz attempt for course ${courseAttempt.courseId} has expired`);
     }
 
     const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
