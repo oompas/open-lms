@@ -42,6 +42,9 @@ export default function SignUpPage() {
                             name={name}
                             setName={setName}
                             showName={true}
+                            showEmail={true}
+                            showPassword={true}
+                            showJustName={true}
                         />
                         <Button text="sign up" onClick={signUp} style="mt-4 ml-auto" icon="arrow" filled/>
                     </div>
