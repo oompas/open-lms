@@ -19,12 +19,17 @@ export default function Profile({ params }: { params: { id: string } }) {
 
     const profileData = () => {
         if (user) {
+
+            const unixToString = (unix: number) => new Date(unix).toDateString() + ", " + new Date(unix).toLocaleTimeString();
+
             return (
                 <IDProfile
                     // @ts-ignore
                     name={user.name}
                     // @ts-ignore
-                    signUpDate={user.signUpDate}
+                    signUpDate={unixToString(user.signUpDate)}
+                    // @ts-ignore
+                    lastLoginDate={unixToString(user.lastSignIn)}
                     // @ts-ignore
                     email={user.email}
                 />
