@@ -1,6 +1,6 @@
-import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { DatabaseCollections, getCollection, verifyIsAdmin } from "../helpers/helpers";
-import { logger } from "firebase-functions";
+import {HttpsError, onCall} from "firebase-functions/v2/https";
+import {DatabaseCollections, getCollection, verifyIsAdmin} from "../helpers/helpers";
+import {logger} from "firebase-functions";
 
 /**
  * Returns a list of all learners on the platform with their:
@@ -148,13 +148,13 @@ const getCourseReports = onCall(async (request) => {
  * Returns a list of statistics for the course on the platform:
  * -List of enrolled users
  *      -Status of completion
- *      -Quiz to be marked (Y/N)
+ *      -Quiz to be marked?
  * -Number of enrolled learners
  * -Number of learners who completed the course
  * -Average course completion time (not including quiz attempt(s))
  * -List of question fail rate amongst all the questions for a distribution
  */
-const getCourseReport = onCall(async (request) => {
+const getCourseInsightReport = onCall(async (request) => {
 
     logger.info("Verifying user is an admin...");
 
@@ -162,14 +162,114 @@ const getCourseReport = onCall(async (request) => {
 
     logger.info("User is an admin, querying database for this course's report...");
 
+    const courseId = request.data.courseId;
+
+    if (!courseId) {
+        throw new HttpsError('invalid-argument', "courseId is required");
+    }
+
+    const course = await getCollection(DatabaseCollections.Course)
+        .where("courseId", "==", courseId)
+        .get()
+        .then((result) => result.docs)
+        .catch((error) => {
+            logger.error(`Error querying courses: ${error}`);
+            throw new HttpsError('internal', "Error getting this course insight report, please try again later")
+        });
+
+    // List of enrolled users
+    const enrollments = await getCollection(DatabaseCollections.EnrolledCourse)
+        .where("courseId", "==", courseId)
+        .get()
+        .then((result) => result.docs)
+        .catch((error) => {
+            logger.error(`Error querying enrollments: ${error}`);
+            throw new HttpsError('internal', "Error getting course reports, please try again later");
+        });
+
+    // Status of course completion
+    const courseAttempts = await getCollection(DatabaseCollections.CourseAttempt)
+        .where("courseId", "==", courseId)
+        .get()
+        .then((result) => result.docs)
+        .catch((error) => {
+            logger.error(`Error querying course attempts: ${error}`);
+            throw new HttpsError('internal', "Error getting this course insight report, please try again later")
+        });
+
+    const quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
+        .where("courseId", "==", courseId)
+        .where("active", "==", true)
+        .get()
+        .then((result) => result.docs)
+        .catch((error) => {
+            logger.error(`Error querying quiz questions: ${error}`);
+            throw new HttpsError('internal', "Error getting this course insight report, please try again later")
+        });
+
+    // Quizzes to be marked
+    const quizzesToBeMarked = await getCollection(DatabaseCollections.QuizQuestionAttempt)
+        .where("courseId", "==", courseId)
+        .where("marksAchieved", "==", null)
+        .get()
+        .then((result) => result.docs)
+        .catch((error) => {
+            logger.error(`Error querying quiz question attempts: ${error}`);
+            throw new HttpsError('internal', "Error getting this course insight report, please try again later")
+        });
+
+    logger.info("Successfully queried database collections")
+
+    // Creating a Set of unique QuizAttempt IDs from those QuizQuestionAttempts
+    const quizzesToBeMarkedSet = new Set(quizzesToBeMarked.map((doc) => doc.data().quizAttemptId));
+
+    const enrolledUsers = enrollments.map(enrollment => {
+        const attempt = courseAttempts.find(attempt => attempt.data().userId === enrollment.data().userId);
+
+        const markingStatus = quizzesToBeMarkedSet.has(enrollment.data().quizAttemptId);
+
+        return {
+            userId: enrollment.data().userId,
+            // @ts-ignore
+            completionStatus: attempt.data().pass,
+            quizzesToBeMarked: markingStatus
+        };
+    });
+
+    const completedAttempts = courseAttempts.filter((attempt) => {
+        return attempt.data().courseId === course.id && attempt.data().pass === true;
+    });
+
+    const completionTimes = completedAttempts.map((attempt) => {
+        const milliseconds = attempt.data().endTime.toMillis() - attempt.data().startTime.toMillis();
+        return Math.floor(milliseconds / 1000 / 60); // In minutes
+    });
+    const averageTime = completionTimes.length === 0 ? null : (1 / completionTimes.length) * completionTimes.reduce((a, b) => a + b, 0);
+
+    return {
+        name: course.data().name,
+        numEnrolled: enrollments.length,
+        numComplete: completedAttempts.length,
+        avgTime: averageTime,
+        courseLearners: enrolledUsers,
+    }
+    // Need to account for the course statuses as follows:
+    // Status 1: not enrolled in course [courseEnrolled doesn't exist]
+    // Status 2: enrolled, not started [courseAttempt is null]
+    // Status 3: in progress [pass is null]
+    // Status 4: completed, failed [pass is false]
+    // Status 5: completed, passed [pass is true]
+});
+
+
     // query CourseAttempt's with a specific courseId whose pass is null (i.e. not finished and they're still doing the course)
-    // unsure
+    // query QuizAttempt's for the pass value
     // query QuizQuestionAtempt's with a userId for questions whose marksAchieved is null
     // next 3 are repeats from prior function
     // query QuizQuestions for active questions and get their marks (i.e. max marks attainable)
     // query QuizQuestionAttempt's for both the question average marks and absolute number of question attempts
     // this gives the relative question percentage score and allows a distribution to be built for the front-end
     // to detect if there's an ingrained issue with a specific question
-});
+// });
 
-export { getUserReports, getCourseReports, getCourseReport };
+export { getUserReports, getCourseReports, getCourseInsightReport };
