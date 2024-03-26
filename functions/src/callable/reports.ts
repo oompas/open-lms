@@ -100,22 +100,30 @@ const getCourseReports = onCall(async (request) => {
 
     return courses.map((course) => {
 
-        const courseEnrollments = enrollments.filter((enrollment) => enrollment.courseId === course.id);
+        const courseEnrollments: EnrolledCourseDocument[] = enrollments.filter((enrollment) => enrollment.courseId === course.id);
 
-        const completedAttempts = courseAttempts.filter((attempt) => attempt.courseId === course.id && attempt.pass === true);
+        const completedAttempts: CourseAttemptDocument[] = courseAttempts.filter((attempt) => attempt.courseId === course.id && attempt.pass === true);
 
-        const completionTimes = completedAttempts.map((attempt) => {
+        const completionTimes: number[] = completedAttempts.map((attempt) => {
             const milliseconds = (attempt.endTime?.toMillis() ?? 0) - attempt.startTime.toMillis();
             return Math.floor(milliseconds / 1000 / 60); // In minutes
         });
-        const averageTime = completionTimes.length === 0 ? null : (1 / completionTimes.length) * completionTimes.reduce((a, b) => a + b, 0);
+        let averageTime = null;
+        if (completionTimes.length > 0) {
+            averageTime = completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length;
+        }
 
         const quizScores = quizAttempts
             .filter((attempt) => attempt.courseId === course.id && attempt.pass === true)
-            .map((attempt) => attempt.score);
+            .map((attempt) => {
+                if (attempt.score === null) {
+                    throw new HttpsError('internal', `Completed quiz attempt (${attempt.id}) score is null`);
+                }
+                return attempt.score;
+            });
         let averageScore = null;
-        if (quizScores && quizScores.length > 0) { // @ts-ignore
-            averageScore = (1 / quizScores.length) * quizScores.reduce((a, b) => a + b, 0);
+        if (quizScores.length > 0) {
+            averageScore = quizScores.reduce((a, b) => a + b, 0) / quizScores.length;
         }
 
         return {
