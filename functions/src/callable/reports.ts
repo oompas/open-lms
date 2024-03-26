@@ -113,7 +113,10 @@ const getCourseReports = onCall(async (request) => {
         const quizScores = quizAttempts
             .filter((attempt) => attempt.courseId === course.id && attempt.pass === true)
             .map((attempt) => attempt.score);
-        const averageScore = quizScores.length === 0 ? null : (1 / quizScores.length) * quizScores.reduce((a, b) => a + b, 0);
+        let averageScore = null;
+        if (quizScores && quizScores.length > 0) { // @ts-ignore
+            averageScore = (1 / quizScores.length) * quizScores.reduce((a, b) => a + b, 0);
+        }
 
         return {
             courseId: course.id,
