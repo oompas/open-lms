@@ -164,7 +164,19 @@ const getAvailableCourses = onCall(async (request) => {
                         .where("userId", "==", request.auth?.uid)
                         .where("courseId", "==", course.id)
                         .get()
-                        .then((docs) => docs.empty ? null : docs.docs[0].data())
+                        .then((docs) => {
+                            if (docs.empty) {
+                                return null;
+                            }
+
+                            let latestAttempt = docs.docs[0];
+                            for (let i = 1; i < docs.docs.length; ++i) {
+                                if (docs.docs[i].data().startTime.toMillis() > latestAttempt.data().startTime.toMillis()) {
+                                    latestAttempt = docs.docs[i];
+                                }
+                            }
+                            return { id: latestAttempt.id, ...latestAttempt.data() as CourseAttemptDocument };
+                        })
                         .catch((error) => {
                             logger.error(`Error getting course attempts: ${error}`);
                             throw new HttpsError("internal", `Error getting courses, please try again later`);
@@ -175,9 +187,10 @@ const getAvailableCourses = onCall(async (request) => {
                  * Statuses:
                  * 1 - Not enrolled
                  * 2 - Enrolled, not started
-                 * 3 - In progress
-                 * 4 - Failed
-                 * 5 - Passed
+                 * 3 - In progress (includes if you previously failed a quiz)
+                 * 4 - Quiz awaiting marking
+                 * 5 - Failed
+                 * 6 - Passed
                  *
                  * TODO: Make an enum or something for this (+ on front-end)
                  */
@@ -187,11 +200,22 @@ const getAvailableCourses = onCall(async (request) => {
                 } else if (courseAttempt === null ) {
                     status = 2;
                 } else if (courseAttempt?.pass === null) {
-                    status = 3;
+                    const awaitingMarking = await getCollection(DatabaseCollections.QuizAttempt)
+                        .where("courseAttemptId", "==", courseAttempt.id)
+                        .where("endTime", "!=", null)
+                        .where("pass", "==", null)
+                        .get()
+                        .then((docs) => !docs.empty)
+                        .catch((error) => {
+                            logger.error(`Error checking if quiz is awaiting marking: ${error}`);
+                            throw new HttpsError('internal', "Error getting course quiz, please try again later");
+                        });
+
+                    status = awaitingMarking ? 4 : 3;
                 } else if (courseAttempt?.pass === false) {
-                    status = 4;
-                } else if (courseAttempt?.pass === true) {
                     status = 5;
+                } else if (courseAttempt?.pass === true) {
+                    status = 6;
                 } else {
                     throw new HttpsError("internal", "Course is in an invalid state - can't get status");
                 }
