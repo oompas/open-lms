@@ -326,7 +326,7 @@ const startQuiz = onCall(async (request) => {
     // Ensure the user doesn't have a quiz attempt in progress
     await getCollection(DatabaseCollections.QuizAttempt)
         .where("courseAttemptId", "==", courseAttemptId)
-        .where("endTime", "!=", null)
+        .where("endTime", "==", null)
         .get()
         .then((snapshot) => {
             if (!snapshot.empty) {
