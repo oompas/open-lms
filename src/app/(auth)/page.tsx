@@ -45,6 +45,9 @@ export default function AuthPage() {
                             password={password}
                             setPass={setPass}
                             showName={false}
+                            showEmail={true}
+                            showPassword={true}
+                            showJustName={false}
                             onForgotPassword={handleForgotPassword}
                         />
                         <div className="flex justify-between mt-4">
