@@ -37,7 +37,7 @@ export default function Tools() {
                         title={quiz.courseName}
                         date={new Date(quiz.timestamp).toLocaleDateString()}
                         learner={quiz.userName}
-                        id={key}
+                        id={quiz.quizAttemptId}
                     />
                 ))}
             </div>
