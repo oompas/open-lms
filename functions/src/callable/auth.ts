@@ -232,9 +232,9 @@ const getUserProfile = onCall(async (request) => {
                 id: doc.id,
                 courseId: data.courseId,
                 userId: data.userId,
-                courseAttemptId: data.courseAttemptId, // @ts-ignore
-                startTime: data.startTime._seconds, // @ts-ignore
-                endTime: data.endTime._seconds,
+                courseAttemptId: data.courseAttemptId,
+                startTime: data.startTime.seconds,
+                endTime: data.endTime?.seconds,
             };
         }))
         .catch((error) => {
