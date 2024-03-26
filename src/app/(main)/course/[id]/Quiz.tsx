@@ -10,6 +10,7 @@ export default function Quiz({
     minimumScore,
     inProgress,
     courseAttemptId,
+    courseId
 } : {
     length: string
     maxAttempts: number
@@ -17,13 +18,14 @@ export default function Quiz({
     minimumScore: number
     inProgress: boolean | null
     courseAttemptId: any
+    courseId: string
 }) {
 
     const router = useRouter();
 
     const startQuiz = async () => {
         await callApi("startQuiz", { courseAttemptId: courseAttemptId })
-            .then(() => router.push(`/quiz/${courseAttemptId}`))
+            .then(() => router.push(`/quiz/${courseId}+${courseAttemptId}`))
             .catch((e) => console.log(`Error starting quiz: ${e}`));
     }
 

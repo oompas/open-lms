@@ -131,8 +131,8 @@ const getQuiz = onCall(async (request) => {
     verifyIsAuthenticated(request);
 
     const schema = object({
-        courseId: string().required(),
-    });
+        courseAttemptId: string().required(),
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -142,23 +142,29 @@ const getQuiz = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const courseData = await getDocData(DatabaseCollections.Course, request.data.courseId) as CourseDocument;
+    const courseAttempt = await getDocData(DatabaseCollections.CourseAttempt, request.data.courseAttemptId) as CourseAttemptDocument;
+    if (courseAttempt.endTime !== null) {
+        logger.error(`Course attempt with ID ${request.data.courseAttemptId} is already completed`);
+        throw new HttpsError("failed-precondition", `Course attempt with ID ${request.data.courseAttemptId} is already completed`);
+    }
+
+    const courseData = await getDocData(DatabaseCollections.Course, courseAttempt.courseId) as CourseDocument;
     if (!courseData.quiz) {
-        throw new HttpsError("not-found", `Course ${request.data.courseId} does not have a quiz`);
+        throw new HttpsError("not-found", `Course ${courseAttempt.courseId} does not have a quiz`);
     }
 
     const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
-        .where("courseId", "==", request.data.courseId)
+        .where("courseId", "==", courseAttempt.courseId)
         .where("userId", "==", request.auth?.uid)
         .get()
         .then((snapshot) => {
             if (snapshot.empty) {
-                logger.error(`No quiz attempts found for course ${request.data.courseId}`);
-                throw new HttpsError("not-found", `No quiz attempts found for course ${request.data.courseId}`);
+                logger.error(`No quiz attempts found for course ${courseAttempt.courseId}`);
+                throw new HttpsError("not-found", `No quiz attempts found for course ${courseAttempt.courseId}`);
             }
             if (!snapshot.docs.find((doc) => !doc.data().endTime)) {
-                logger.error(`No active quiz attempts found for course ${request.data.courseId}`);
-                throw new HttpsError("not-found", `No active quiz attempts found for course ${request.data.courseId}`);
+                logger.error(`No active quiz attempts found for course ${courseAttempt.courseId}`);
+                throw new HttpsError("not-found", `No active quiz attempts found for course ${courseAttempt.courseId}`);
             }
             return snapshot.docs;
         })
@@ -168,13 +174,13 @@ const getQuiz = onCall(async (request) => {
         });
 
     return getCollection(DatabaseCollections.QuizQuestion)
-        .where("courseId", "==", request.data.courseId)
+        .where("courseId", "==", courseAttempt.courseId)
         .where("active", "==", true)
         .get()
         .then((snapshot) => {
 
             if (snapshot.empty) {
-                throw new HttpsError("not-found", `No quiz questions found for course ${request.data.courseId}`);
+                throw new HttpsError("not-found", `No quiz questions found for course ${courseAttempt.courseId}`);
             }
 
             const questions = shuffleArray(snapshot.docs.map((doc) => {

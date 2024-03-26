@@ -62,6 +62,7 @@ export default function Course({ params }: { params: { id: string } }) {
                                 minimumScore={course.quiz.minScore}
                                 inProgress={status <= 2 || !timeDone ? null : course.quizAttempts.length > 0}
                                 courseAttemptId={courseAttemptId}
+                                courseId={params.id}
                             />
                         </div>
                     </div>
