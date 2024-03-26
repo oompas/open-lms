@@ -1,6 +1,7 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { DatabaseCollections, getCollection, verifyIsAdmin } from "../helpers/helpers";
+import { verifyIsAdmin } from "../helpers/helpers";
 import { logger } from "firebase-functions";
+import { DatabaseCollections, getCollection } from "../helpers/database";
 
 /**
  * Returns a list of all learners on the platform with their:

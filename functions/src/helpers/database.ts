@@ -1,4 +1,11 @@
 import { firestore } from "firebase-admin";
+import { db } from "./setup";
+
+// Helpers for getting a doc/collection
+const getCollection = (collection: DatabaseCollections) => db.collection(`/${collection}/`);
+const getDoc = (collection: DatabaseCollections, docId: string) => db.doc(`/${collection}/${docId}/`);
+
+const getEmailCollection = () => db.collection(`/Email/`);
 
 // All database collections (excluding email, use the sendEmail helper function for that)
 enum DatabaseCollections {
@@ -85,6 +92,9 @@ interface QuizQuestionAttemptDocument {
 }
 
 export {
+    getCollection,
+    getDoc,
+    getEmailCollection,
     DatabaseCollections,
     UserDocument,
     CourseDocument,

@@ -1,7 +1,7 @@
 import { HttpsError } from "firebase-functions/v2/https";
 import * as functions from "firebase-functions";
 import { logger } from "firebase-functions";
-import { DatabaseCollections, getCollection, getDoc } from "../helpers/helpers";
+import { getCollection, getDoc, getEmailCollection, DatabaseCollections } from "../helpers/database";
 
 /**
  * Logic run before a user is able to sign in (throw errors here to block sign in):
@@ -31,12 +31,12 @@ const onUserDelete = functions.auth.user().onDelete(async (user) => {
     const userDoc = getDoc(DatabaseCollections.User, user.uid);
     promises.push(userDoc.delete());
 
-    const emails = await getCollection(DatabaseCollections.Email)
+    const emails = await getEmailCollection()
         .where('to', '==', user.email)
         .get()
-        .then((result) => result.docs)
-        .catch((err) => { throw new HttpsError('internal', `Error getting user emails: ${err}`) });
-    promises.concat(emails.map((email) => email.ref.delete()));
+        .then((result: { docs: any; }) => result.docs)
+        .catch((err: any) => { throw new HttpsError('internal', `Error getting user emails: ${err}`) });
+    promises.concat(emails.map((email: { ref: { delete: () => any; }; }) => email.ref.delete()));
 
     if (user.customClaims && user.customClaims["admin"] === true) {
         const userCourses = await getCollection(DatabaseCollections.Course)

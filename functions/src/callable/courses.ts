@@ -1,7 +1,5 @@
 import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {
-    getCollection,
-    getDoc,
     sendEmail,
     shuffleArray,
     verifyIsAdmin,
@@ -10,7 +8,7 @@ import {
 import { logger } from "firebase-functions";
 import { boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
-import { DatabaseCollections } from "../helpers/database";
+import { DatabaseCollections, getCollection, getDoc } from "../helpers/database";
 
 /**
  * The ID for an enrolled course is the user & course ID concatenated so:

@@ -1,6 +1,8 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { DatabaseCollections, getDoc, sendEmail, verifyIsAuthenticated } from "../helpers/helpers";
+import { sendEmail, verifyIsAuthenticated } from "../helpers/helpers";
 import { logger } from "firebase-functions";
+import { DatabaseCollections, getDoc } from "../helpers/database";
+import { object } from "yup";
 
 /**
  * Sends an email to the developers with platform-specific feedback
@@ -8,6 +10,15 @@ import { logger } from "firebase-functions";
 const sendPlatformFeedback = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
+
+    const schema = object({
+        feedback: object().required()
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((error) => {
+            throw new HttpsError('invalid-argument', error.errors.join(", "));
+        });
 
     if (!request.data.feedback || typeof request.data.feedback !== 'string') {
         throw new HttpsError('invalid-argument', "Must provide user feedback (string)");

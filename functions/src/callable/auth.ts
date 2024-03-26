@@ -1,14 +1,9 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
-import {
-    DatabaseCollections,
-    getCollection,
-    getDoc, sendEmail, USER_UID_LENGTH, verifyIsAdmin,
-    verifyIsAuthenticated
-} from "../helpers/helpers";
+import { sendEmail, USER_UID_LENGTH, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 import { auth } from "../helpers/setup";
 import { object, string } from "yup";
-import { UserDocument } from "../helpers/database";
+import { DatabaseCollections, getCollection, getDoc, UserDocument } from "../helpers/database";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled

@@ -1,8 +1,6 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
     docExists,
-    getCollection,
-    getDoc,
     shuffleArray,
     verifyIsAdmin,
     verifyIsAuthenticated
@@ -10,8 +8,14 @@ import {
 import { logger } from "firebase-functions";
 import { array, number, object, string } from "yup";
 import { firestore } from "firebase-admin";
-import FieldValue = firestore.FieldValue;
-import { DatabaseCollections, CourseDocument, CourseAttemptDocument, QuizAttemptDocument } from "../helpers/database";
+import {
+    DatabaseCollections,
+    CourseDocument,
+    CourseAttemptDocument,
+    QuizAttemptDocument,
+    getCollection,
+    getDoc
+} from "../helpers/database";
 
 /**
  * Updates the quiz for a given course (add, delete or update)
@@ -366,7 +370,7 @@ const startQuiz = onCall(async (request) => {
             userId: request.auth?.uid,
             courseId: courseAttempt.courseId,
             courseAttemptId: courseAttemptId,
-            startTime: FieldValue.serverTimestamp(),
+            startTime: firestore.FieldValue.serverTimestamp(),
             endTime: null,
             pass: null,
         })
@@ -510,8 +514,8 @@ const submitQuiz = onCall(async (request) => {
                     promises.push(
                         getDoc(DatabaseCollections.QuizQuestion, question.id)
                             .update({
-                                "stats.numAttempts": FieldValue.increment(1),
-                                "stats.totalScore": FieldValue.increment(marks),
+                                "stats.numAttempts": firestore.FieldValue.increment(1),
+                                "stats.totalScore": firestore.FieldValue.increment(marks),
                             })
                             .catch((err) => {
                                 logger.info(`Error updating question stats: ${err}`);
@@ -568,7 +572,7 @@ const submitQuiz = onCall(async (request) => {
 
     // Update quiz attempt
     return getDoc(DatabaseCollections.QuizAttempt, quizAttemptId)
-        .update({ endTime: FieldValue.serverTimestamp(), pass: pass })
+        .update({ endTime: firestore.FieldValue.serverTimestamp(), pass: pass })
         .then(async () => "Successfully submitted quiz")
         .catch((err) => {
             logger.info(`Error submitting quiz attempt: ${err}`);
@@ -585,7 +589,7 @@ const getQuizzesToMark = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
-    const schema = object({}).noUnknown(true);
+    const schema = object({}).required().noUnknown();
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {

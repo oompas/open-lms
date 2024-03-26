@@ -1,12 +1,7 @@
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { auth, db } from "./setup";
 import { logger } from "firebase-functions";
-import { DatabaseCollections } from "./database";
 import { firestore } from "firebase-admin";
-
-// Helpers for getting a doc/collection
-const getCollection = (collection: DatabaseCollections) => db.collection(`/${collection}/`);
-const getDoc = (collection: DatabaseCollections, docId: string) => db.doc(`/${collection}/${docId}/`);
 
 // Check if the requesting user is authenticated
 const verifyIsAuthenticated = (request: CallableRequest) => {
@@ -83,4 +78,4 @@ const shuffleArray = (array: any[]) => {
 const DOCUMENT_ID_LENGTH = 20;
 const USER_UID_LENGTH = 28;
 
-export { getCollection, getDoc, verifyIsAuthenticated, docExists, sendEmail, verifyIsAdmin, shuffleArray, DOCUMENT_ID_LENGTH, USER_UID_LENGTH };
+export { verifyIsAuthenticated, docExists, sendEmail, verifyIsAdmin, shuffleArray, DOCUMENT_ID_LENGTH, USER_UID_LENGTH };

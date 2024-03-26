@@ -3,7 +3,7 @@
  */
 
 import { createAccount, getUserProfile, resetPassword } from "./callable/auth";
-import { beforeCreate, beforeSignIn, onUserDelete, onUserSignup } from "./triggers/auth";
+import { beforeSignIn, onUserDelete } from "./triggers/auth";
 import { publishCourse, unPublishCourse, updateCourse, courseEnroll, courseUnenroll, getAvailableCourses, getCourseInfo, addCourse, startCourse, sendCourseFeedback } from "./callable/courses";
 import { getQuizResponses, updateQuizQuestions, getQuiz, startQuiz, submitQuiz, getQuizzesToMark, getQuizToMark } from "./callable/quizzes";
 import { getCourseReports, getUserReports } from "./callable/reports";
@@ -14,7 +14,7 @@ import { updateAdminPermissions, onCourseDeleted } from "./triggers/database";
 
 export {
     createAccount, resetPassword, getUserProfile,
-    beforeCreate, onUserSignup, beforeSignIn, onUserDelete,
+    beforeSignIn, onUserDelete,
     addCourse, getAvailableCourses, getCourseInfo, publishCourse, unPublishCourse, updateCourse, courseEnroll, courseUnenroll, startCourse, sendCourseFeedback,
     updateQuizQuestions, getQuiz, getQuizResponses, startQuiz, submitQuiz, getQuizzesToMark, getQuizToMark,
     getCourseReports, getUserReports,

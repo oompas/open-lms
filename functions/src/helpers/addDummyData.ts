@@ -1,6 +1,7 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { DatabaseCollections, getCollection, verifyIsAdmin } from "./helpers";
+import { verifyIsAdmin } from "./helpers";
 import { logger } from "firebase-functions";
+import { DatabaseCollections, getCollection } from "./database";
 
 /**
  * Cleans the database (excluding users and emails)
@@ -9,8 +10,7 @@ const cleanDatabase = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
-    const collections = Object.values(DatabaseCollections)
-        .filter((collection) => collection !== DatabaseCollections.User && collection !== DatabaseCollections.Email);
+    const collections = Object.values(DatabaseCollections).filter((collection) => collection !== DatabaseCollections.User);
 
     const promises = [];
     for (let collection of collections) {
