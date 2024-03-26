@@ -540,21 +540,21 @@ const getQuizzesToMark = onCall(async (request) => {
 
     const courseNames: { [key: string]: string } = {};
     await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[0]))].map((courseId) =>
-        getDocData(DatabaseCollections.Course, courseId).then((course) => courseNames[courseId] = course.data().name)
+        getDocData(DatabaseCollections.Course, courseId).then((course) => courseNames[courseId] = course.name)
     ));
 
     logger.info(`Successfully retrieved course data for ${Object.keys(courseNames).length} courses`);
 
     const userNames: { [key: string]: string } = {};
     await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[1]))].map((userId) =>
-        getDocData(DatabaseCollections.User, userId).then((user) => userNames[userId] = user.data().name)
+        getDocData(DatabaseCollections.User, userId).then((user) => userNames[userId] = user.name)
     ));
 
     logger.info(`Successfully retrieved user data for ${Object.keys(userNames).length} users`);
 
     const attemptTimestamps: { [key: string]: firestore.Timestamp } = {};
     await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[2]))].map((quizAttemptId) =>
-        getDocData(DatabaseCollections.QuizAttempt, quizAttemptId).then((attempt) => attemptTimestamps[quizAttemptId] = attempt.data().endTime)
+        getDocData(DatabaseCollections.QuizAttempt, quizAttemptId).then((attempt) => attemptTimestamps[quizAttemptId] = attempt.endTime)
     ));
 
     logger.info(`Successfully retrieved quiz attempt data for ${Object.keys(attemptTimestamps).length} attempts`);
