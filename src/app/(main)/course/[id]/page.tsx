@@ -2,11 +2,11 @@
 import Link from "next/link";
 import IDCourse from "./IDCourse";
 import Quiz from "./Quiz"
-import Requirement from "./Requirement";
 import { MdArrowBack } from "react-icons/md";
 import { useAsync } from "react-async-hook";
 import { useEffect, useState } from "react";
 import { callApi } from "@/config/firebase";
+import Checkbox from "@/components/Checkbox";
 
 export default function Course({ params }: { params: { id: string } }) {
 
@@ -63,16 +63,27 @@ export default function Course({ params }: { params: { id: string } }) {
 
                 <div className="mt-8 text-2xl">
                     <h1 className="mb-4">Required completion verification:</h1>
-                    {course.minTime && <Requirement key={1} text={`Spend at least ${getCourseTimeString()} on the course`} done={timeDone}/>}
-                    {course.quiz && <Requirement key={2} text={"Complete the required quiz"} done={course.status === 5}/>}
-                </div>
+                    {course.minTime &&
+                        <div className="flex flex-row items-center mt-2">
+                            <Checkbox checked={timeDone} setChecked={null} style="mr-3"/>
+                            <div>{`Spend at least ${getCourseTimeString()} on the course`}</div>
+                        </div>
+                    }
+                    {course.quiz &&
+                        <div className="flex flex-row items-center mt-2">
+                            <Checkbox checked={course.status === 6} setChecked={null} style="mr-3"/>
+                            <div>{"Complete the required quiz"}</div>
+                        </div>
+                    }
+            </div>
 
-                {course.quiz &&
-                    <div className="mt-4">
-                        <div className="flex flex-col w-1/2">
-                            <Quiz
-                                key={1}
-                                length={course.quiz.timeLimit}
+    {
+        course.quiz &&
+        <div className="mt-4">
+            <div className="flex flex-col w-1/2">
+                <Quiz
+                    key={1}
+                    length={course.quiz.timeLimit}
                                 maxAttempts={course.quiz.maxQuizAttempts}
                                 numQuestions={course.quiz.numQuestions}
                                 minimumScore={course.quiz.minScore}
