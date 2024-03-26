@@ -5,7 +5,6 @@ import React, { useState, useEffect } from 'react';
 import { callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import { MdCheckCircleOutline } from "react-icons/md";
-import TextField from "@/components/TextField";
 
 export default function Quiz({ params }: { params: { id: string } }) {
 
@@ -14,7 +13,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const [countdown, setCountDown] = useState(0);
 
     const getQuizData = useAsync(() =>
-        callApi("getQuiz", { courseId: params.id })
+        callApi("getQuiz", { quizAttemptId: params.id.split('-')[1] })
             .then((rsp) => {
                 // @ts-ignore
                 setCountDown(Math.floor(rsp.data.startTime + (60 * rsp.data.timeLimit) - (Date.now() / 1000)));
@@ -36,7 +35,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
 
         const interval = setInterval(() => setCountDown(Math.floor(quizData.startTime + (60 * quizData.timeLimit) - (Date.now() / 1000))), 1000);
         return () => clearInterval(interval);
-    }, [countdown]);
+    }, [countdown, quizData]);
 
     const loadingPopup = (
         <div
@@ -159,9 +158,9 @@ export default function Quiz({ params }: { params: { id: string } }) {
             }
         }
 
-        await callApi("submitQuiz", { courseId: params.id, responses: responses })
-            .then(() => router.push(`/course/${params.id}`))
-            .catch((err) => console.log(`Error calling submitquiz: ${err}`));
+        await callApi("submitQuiz", { quizAttemptId: params.id.split('-')[1], responses: responses })
+            .then(() => router.push(`/course/${params.id.split('-')[0]}`))
+            .catch((err) => console.log(`Error calling submitQuiz: ${err}`));
     }
 
     return (
