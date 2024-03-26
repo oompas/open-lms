@@ -175,7 +175,7 @@ const getAvailableCourses = onCall(async (request) => {
                                     latestAttempt = docs.docs[i];
                                 }
                             }
-                            return { id: latestAttempt.id, ...latestAttempt.data() as CourseAttemptDocument };
+                            return { id: latestAttempt.id, ...latestAttempt.data() } as CourseAttemptDocument;
                         })
                         .catch((error) => {
                             logger.error(`Error getting course attempts: ${error}`);
@@ -341,7 +341,7 @@ const getCourseInfo = onCall(async (request) => {
                     latestAttempt = docs.docs[i];
                 }
             }
-            return { id: latestAttempt.id, ...latestAttempt.data() as CourseAttemptDocument };
+            return { id: latestAttempt.id, ...latestAttempt.data() } as CourseAttemptDocument;
     })
         .catch((error) => {
             logger.error(`Error getting course attempts: ${error}`);
@@ -355,7 +355,7 @@ const getCourseInfo = onCall(async (request) => {
         .where("courseId", "==", request.data.courseId)
         .get()
         .then((docs) => {
-            return docs.docs.map((doc) => ({ id: doc.id, ...doc.data() as QuizAttemptDocument }));
+            return docs.docs.map((doc) => ({ id: doc.id, ...doc.data() } as QuizAttemptDocument));
         })
         .catch((error) => {
             logger.error(`Error getting quiz attempts: ${error}`);

@@ -346,6 +346,7 @@ const startQuiz = onCall(async (request) => {
             startTime: firestore.FieldValue.serverTimestamp(),
             endTime: null,
             pass: null,
+            score: null,
         });
 });
 
@@ -504,7 +505,12 @@ const submitQuiz = onCall(async (request) => {
         throw new HttpsError("internal", `Error adding marked questions: ${err}`);
     });
 
-    return updateDoc(DatabaseCollections.QuizAttempt, quizAttemptId, { endTime: firestore.FieldValue.serverTimestamp(), pass: pass });
+    const quizAttemptUpdate = {
+        endTime: firestore.FieldValue.serverTimestamp(),
+        ...(pass !== null && { pass: pass }),
+        ...(pass !== null && { score: marksAchieved }),
+    };
+    return updateDoc(DatabaseCollections.QuizAttempt, quizAttemptId, quizAttemptUpdate);
 });
 
 /**
@@ -531,7 +537,7 @@ const getQuizzesToMark = onCall(async (request) => {
         .where("endTime", "!=", null)
         .where("pass", "==", null)
         .get()
-        .then((snapshot) => snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() as QuizAttemptDocument })))
+        .then((snapshot) => snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as QuizAttemptDocument)))
         .catch((err) => {
             logger.info(`Error getting short answer questions: ${err}`);
             throw new HttpsError("internal", `Error getting short answer questions: ${err}`);
@@ -600,7 +606,7 @@ const getQuizToMark = onCall(async (request) => {
             if (!snapshot.docs.find((doc) => doc.data().marksAchieved === null)) {
                 throw new HttpsError("not-found", `No unmarked short answer quiz questions found for quiz attempt ${request.data.quizAttemptId}`);
             }
-            return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() as QuizQuestionAttemptDocument }));
+            return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as QuizQuestionAttemptDocument));
         })
         .catch((err) => {
             logger.info(`Error getting quiz questions: ${err}`);

@@ -1,7 +1,13 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { verifyIsAdmin } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { DatabaseCollections, getCollection } from "../helpers/database";
+import {
+    CourseAttemptDocument,
+    DatabaseCollections,
+    EnrolledCourseDocument,
+    getCollection,
+    getCollectionDocs, QuizAttemptDocument
+} from "../helpers/database";
 
 /**
  * Returns a list of all learners on the platform with their:
@@ -86,49 +92,27 @@ const getCourseReports = onCall(async (request) => {
             throw new HttpsError('internal', "Error getting course reports, please try again later");
         });
 
-    const enrollments = await getCollection(DatabaseCollections.EnrolledCourse)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying enrollments: ${error}`);
-            throw new HttpsError('internal', "Error getting course reports, please try again later");
-        });
-
-    const courseAttempts = await getCollection(DatabaseCollections.CourseAttempt)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying course attempts: ${error}`);
-            throw new HttpsError('internal', "Error getting course reports, please try again later");
-        });
-
-    const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying quiz attempts: ${error}`);
-            throw new HttpsError('internal', "Error getting course reports, please try again later");
-        });
+    const enrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
+    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
+    const quizAttempts = await getCollectionDocs(DatabaseCollections.QuizAttempt) as QuizAttemptDocument[];
 
     logger.info("Successfully queried database collections");
 
     return courses.map((course) => {
 
-        const courseEnrollments = enrollments.filter((enrollment) => enrollment.data().courseId === course.id);
+        const courseEnrollments = enrollments.filter((enrollment) => enrollment.courseId === course.id);
 
-        const completedAttempts = courseAttempts.filter((attempt) => {
-            return attempt.data().courseId === course.id && attempt.data().pass === true;
-        });
+        const completedAttempts = courseAttempts.filter((attempt) => attempt.courseId === course.id && attempt.pass === true);
 
         const completionTimes = completedAttempts.map((attempt) => {
-            const milliseconds = attempt.data().endTime.toMillis() - attempt.data().startTime.toMillis();
+            const milliseconds = (attempt.endTime?.toMillis() ?? 0) - attempt.startTime.toMillis();
             return Math.floor(milliseconds / 1000 / 60); // In minutes
         });
         const averageTime = completionTimes.length === 0 ? null : (1 / completionTimes.length) * completionTimes.reduce((a, b) => a + b, 0);
 
         const quizScores = quizAttempts
-            .filter((attempt) => attempt.data().courseId === course.id && attempt.data().pass === true)
-            .map((attempt) => attempt.data().score);
+            .filter((attempt) => attempt.courseId === course.id && attempt.pass === true)
+            .map((attempt) => attempt.score);
         const averageScore = quizScores.length === 0 ? null : (1 / quizScores.length) * quizScores.reduce((a, b) => a + b, 0);
 
         return {

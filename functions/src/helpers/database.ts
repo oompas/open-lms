@@ -72,6 +72,16 @@ const getDocData = (collection: DatabaseCollections, docId: string) => {
         });
 }
 
+// Returns all documents (as an object of the document data) in a collection
+const getCollectionDocs = (collection: DatabaseCollections) => {
+    return getCollection(collection).get()
+        .then((result) => result.docs.map(doc => ({ id: doc.id, ...doc.data() })))
+        .catch(err => {
+            logger.error(`Error getting documents from collection '${collection}': ${err}`);
+            throw new HttpsError("internal", `Error getting documents from collection '${collection}'`);
+        });
+}
+
 // Updates a document in the database (error handling included)
 const updateDoc = (collection: DatabaseCollections, docId: string, data: any) => {
     return getDocRef(collection, docId)
@@ -114,6 +124,7 @@ enum DatabaseCollections {
 }
 
 interface UserDocument {
+    id: string;
     email: string;
     name: string;
     admin: boolean;
@@ -121,6 +132,7 @@ interface UserDocument {
 }
 
 interface CourseDocument {
+    id: string;
     name: string;
     description: string;
     link: string;
@@ -136,11 +148,13 @@ interface CourseDocument {
 }
 
 interface EnrolledCourseDocument {
+    id: string;
     userId: string;
     courseId: string;
 }
 
 interface QuizQuestionDocument {
+    id: string;
     courseId: string;
     question: string;
     type: "tf" | "mc" | "sa";
@@ -156,10 +170,11 @@ interface QuizQuestionDocument {
 }
 
 interface ReportedCourseDocument { // TODO
-
+    id: string;
 }
 
 interface CourseAttemptDocument {
+    id: string;
     userId: string;
     courseId: string;
     startTime: firestore.Timestamp;
@@ -168,15 +183,18 @@ interface CourseAttemptDocument {
 }
 
 interface QuizAttemptDocument {
+    id: string;
     userId: string;
     courseId: string;
     courseAttemptId: string;
     startTime: firestore.Timestamp;
     endTime: firestore.Timestamp | null;
     pass: boolean | null;
+    score: number | null;
 }
 
 interface QuizQuestionAttemptDocument {
+    id: string;
     userId: string;
     courseId: string;
     courseAttemptId: string;
@@ -193,6 +211,7 @@ export {
     addDocWithId,
     docExists,
     getDocData,
+    getCollectionDocs,
     updateDoc,
     deleteDoc,
 
