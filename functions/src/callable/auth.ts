@@ -56,7 +56,7 @@ const createAccount = onCall(async (request) => {
         .then(async (user) => {
             logger.info("Successfully created user, adding user document to db & sending verification email...");
 
-            const defaultDoc: UserDocument = {
+            const defaultDoc = {
                 email: email,
                 name: name,
                 admin: false,
