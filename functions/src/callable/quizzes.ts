@@ -620,12 +620,12 @@ const getQuizToMark = onCall(async (request) => {
         getDocData(DatabaseCollections.QuizQuestion, attempt.questionId)
             .then((doc) => ({
                 id: attempt.id,
-                question: doc.data().question,
+                question: doc.question,
                 response: attempt.response,
-                marks: doc.data().marks,
+                marks: doc.marks,
                 marksAchieved: attempt.marksAchieved,
-                type: doc.data().type,
-                ...(doc.data().type === "mc") && { answers: doc.data().answers },
+                type: doc.type,
+                ...(doc.type === "mc") && { answers: doc.answers },
             }))
     ))
         .catch((err) => {
