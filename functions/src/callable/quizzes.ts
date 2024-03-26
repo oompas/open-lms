@@ -573,7 +573,7 @@ const getQuizzesToMark = onCall(async (request) => {
             userId: quizAttempt.userId,
             userName: userNames[quizAttempt.userId],
             quizAttemptId: quizAttempt.id,
-            timestamp: quizAttempt.endTime.toMillis() / 1000,
+            timestamp: Math.floor(quizAttempt.endTime.toMillis() / 1000),
         };
     });
 });
