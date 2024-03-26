@@ -526,11 +526,12 @@ const getQuizzesToMark = onCall(async (request) => {
 
     logger.info("Schema & admin verification passed");
 
-    // Get all quiz attempts that need marking (filter multiple questions from an attempt down to one object)
-    const attemptsToMark = await getCollection(DatabaseCollections.QuizQuestionAttempt)
-        .where("marksAchieved", "==", null)
+    // Get all quiz attempts that need marking
+    const attemptsToMark = await getCollection(DatabaseCollections.QuizAttempt)
+        .where("endTime", "!=", null)
+        .where("pass", "==", null)
         .get()
-        .then((snapshot) => [...new Set(snapshot.docs.map((doc) => `${doc.data().courseId}|${doc.data().userId}|${doc.data().quizAttemptId}`))])
+        .then((snapshot) => snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() as QuizAttemptDocument })))
         .catch((err) => {
             logger.info(`Error getting short answer questions: ${err}`);
             throw new HttpsError("internal", `Error getting short answer questions: ${err}`);
@@ -538,38 +539,35 @@ const getQuizzesToMark = onCall(async (request) => {
 
     logger.info(`Successfully retrieved ${attemptsToMark.length} quiz attempts with short answer questions to mark`);
 
+    // Get all course names (may have duplicates, so use a set to get unique values for efficiency)
     const courseNames: { [key: string]: string } = {};
-    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[0]))].map((courseId) =>
+    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.courseId))].map((courseId) =>
         getDocData(DatabaseCollections.Course, courseId).then((course) => courseNames[courseId] = course.name)
     ));
 
     logger.info(`Successfully retrieved course data for ${Object.keys(courseNames).length} courses`);
 
+    // Get all user names (same as above with possible duplicates)
     const userNames: { [key: string]: string } = {};
-    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[1]))].map((userId) =>
+    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.userId))].map((userId) =>
         getDocData(DatabaseCollections.User, userId).then((user) => userNames[userId] = user.name)
     ));
 
     logger.info(`Successfully retrieved user data for ${Object.keys(userNames).length} users`);
 
-    const attemptTimestamps: { [key: string]: firestore.Timestamp } = {};
-    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.split("|")[2]))].map((quizAttemptId) =>
-        getDocData(DatabaseCollections.QuizAttempt, quizAttemptId).then((attempt) => attemptTimestamps[quizAttemptId] = attempt.endTime)
-    ));
+    return attemptsToMark.map((quizAttempt) => {
 
-    logger.info(`Successfully retrieved quiz attempt data for ${Object.keys(attemptTimestamps).length} attempts`);
-
-    return attemptsToMark.map((question) => {
-
-        const [courseId, userId, quizAttemptId] = question.split("|");
+        if (quizAttempt.endTime === null) {
+            throw new HttpsError("internal", `Quiz attempt ${quizAttempt.id} is still active (no end time)`);
+        }
 
         return {
-            courseId,
-            courseName: courseNames[courseId],
-            userId,
-            userName: userNames[userId],
-            quizAttemptId: quizAttemptId,
-            timestamp: attemptTimestamps[quizAttemptId].toMillis(),
+            courseId: quizAttempt.courseId,
+            courseName: courseNames[quizAttempt.courseId],
+            userId: quizAttempt.userId,
+            userName: userNames[quizAttempt.userId],
+            quizAttemptId: quizAttempt.id,
+            timestamp: quizAttempt.endTime.toMillis() / 1000,
         };
     });
 });
