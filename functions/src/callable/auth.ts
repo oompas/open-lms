@@ -199,7 +199,7 @@ const getUserProfile = onCall(async (request) => {
         });
 
     const enrolledCourseData = await Promise.all(enrolledCourses.map(async (courseId) =>
-        getDocData(DatabaseCollections.Course, courseId).then((course) => ({ id: courseId, name: course.data().name }))
+        getDocData(DatabaseCollections.Course, courseId).then((course) => ({ id: courseId, name: course.name }))
     ));
 
     // Query course & course attempt data
@@ -207,14 +207,19 @@ const getUserProfile = onCall(async (request) => {
         .where('userId', "==", targetUserUid)
         .where("pass", "==", true)
         .get()
-        .then((result) => result.docs.map((doc) => ({id: doc.id, date: doc.data().endTime})))
+        .then((result) => {
+            return result.docs.map((doc) => ({ id: doc.id, courseId: doc.data().courseId, date: doc.data().endTime }));
+        })
         .catch((error) => {
             logger.error(`Error querying completed course attempts: ${error}`);
             throw new HttpsError("internal", "Error getting user data, try again later");
         });
 
     const completedCourseData = await Promise.all(completedCourseIds.map(async (data) =>
-        getDocData(DatabaseCollections.Course, data.id).then((course) => ({ name: course.data().name, link: course.data().link, date: data.date }))
+        getDocData(DatabaseCollections.Course, data.courseId)
+            .then((course) => {
+                return {attemptId: data.id, name: course.data().name, link: course.data().link, date: data.date};
+            })
     ));
 
     return {
