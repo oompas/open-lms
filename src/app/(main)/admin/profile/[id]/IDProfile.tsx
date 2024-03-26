@@ -16,7 +16,7 @@ export default function IDProfile({
             <div className="text-2xl font-bold">{name}</div>
             <div className="flex flex-col items-end">
                 <div className="mr-auto text-lg mb-4">Joined: <i>{signUpDate}</i></div>
-                <div className="mr-auto text-lg mb-4">Last login: <i>{lastLoginDate}</i></div>
+                <div className="mr-auto text-lg mb-4">Last active: <i>{lastLoginDate}</i></div>
                 <div className="mr-auto text-lg">{email}</div>
             </div>
             {/* TODO - implement */}

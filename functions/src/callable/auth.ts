@@ -218,7 +218,7 @@ const getUserProfile = onCall(async (request) => {
     const completedCourseData = await Promise.all(completedCourseIds.map(async (data) =>
         getDocData(DatabaseCollections.Course, data.courseId)
             .then((course) => {
-                return {attemptId: data.id, name: course.data().name, link: course.data().link, date: data.date};
+                return { attemptId: data.id, name: course.name, link: course.link, date: data.date };
             })
     ));
 
@@ -226,7 +226,7 @@ const getUserProfile = onCall(async (request) => {
         name: user.displayName,
         email: user.email,
         signUpDate: Date.parse(user.metadata.creationTime),
-        lastSignIn: Date.parse(user.metadata.lastSignInTime),
+        lastSignIn: user.metadata.lastRefreshTime ? Date.parse(user.metadata.lastRefreshTime) : -1,
         enrolledCourses: enrolledCourseData,
         completedCourses: completedCourseData,
     };

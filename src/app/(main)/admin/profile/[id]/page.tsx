@@ -20,7 +20,13 @@ export default function Profile({ params }: { params: { id: string } }) {
     const profileData = () => {
         if (user) {
 
-            const unixToString = (unix: number) => new Date(unix).toDateString() + ", " + new Date(unix).toLocaleTimeString();
+            const unixToString = (unix: number) => {
+                if (unix === -1) {
+                    return "Never";
+                }
+
+                return new Date(unix).toDateString() + ", " + new Date(unix).toLocaleTimeString();
+            }
 
             return (
                 <IDProfile
