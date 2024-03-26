@@ -464,9 +464,8 @@ const submitQuiz = onCall(async (request) => {
         // If there's no minimum score, they pass by default. Otherwise, verify their score is at least the threshold
         pass = courseData.quiz?.minScore === null || marksAchieved >= (courseData.quiz?.minScore ?? 0);
 
-        const courseAttempt = await getDocData(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId) as CourseAttemptDocument;
-
-        const maxAttempts = courseData.quiz?.maxAttempts ?? null;
+        // If this is the last quiz attempt, we need to update the course attempt's status
+        let lastAttempt = false;
         if (courseData.quiz?.maxAttempts) {
             const numQuizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
                 .where("courseAttemptId", "==", quizAttempt.courseAttemptId)
@@ -476,32 +475,27 @@ const submitQuiz = onCall(async (request) => {
                     logger.info(`Error getting quiz attempts: ${err}`);
                     throw new HttpsError("internal", `Error getting quiz attempts`);
                 });
-        }
 
-        //
-        if (courseAttempt.pass !== null) { // This shouldn't happen, doing a quiz again after passing
-            logger.error(`Course attempt with ID ${quizAttempt.courseAttemptId} has already passed, quiz shouldn't be happening`);
-            throw new HttpsError("failed-precondition", `Course attempt with ID ${quizAttempt.courseAttemptId} has already passed`);
-        }
+            if (numQuizAttempts === courseData.quiz?.maxAttempts) {
+                lastAttempt = true;
 
-        // course already passed: shouldn't happen (you've already passed - can't do quiz again)
-        // course already failed: shouldn't happen (you've already failed - this only happens when all attempts have failed)
-        // no course pass status:
-        //    quiz pass: update course pass status to pass
-        //    quiz waiting marking
-
-        // If this is the first quiz attempt or the user previously failed and now passed, update the pass status of
-        // the course attempt (quiz attempt pass status will also be updated below)
-        if (courseAttempt.pass === null || (!courseAttempt.pass && pass)) {
-            if () {
-                ;
-            } else {
-                ;
+                // The end time is when the last quiz was complete, so even if they're waiting on marking, they're done
+                const update = {
+                    pass: pass,
+                    endTime: firestore.FieldValue.serverTimestamp()
+                };
+                promises.push(updateDoc(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId, update));
             }
-            promises.push(updateDoc(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId, { pass: pass }));
-        } else if (courseAttempt.pass !== null) { // This shouldn't happen, doing a quiz again after passing
-            logger.error(`Course attempt with ID ${quizAttempt.courseAttemptId} has already passed, quiz shouldn't be happening`);
-            throw new HttpsError("failed-precondition", `Course attempt with ID ${quizAttempt.courseAttemptId} has already passed`);
+        }
+
+        // If this is not the last quiz attempt, they are only done the course if they passed the quiz
+        // If they failed, they can try again. If they are awaiting marking, the status is updated once the marking is done
+        if (!lastAttempt && pass) {
+            const update = {
+                pass: pass,
+                endTime: firestore.FieldValue.serverTimestamp()
+            };
+            promises.push(updateDoc(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId, update));
         }
     }
 
