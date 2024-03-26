@@ -7,7 +7,6 @@ import { MdArrowBack } from "react-icons/md";
 import { useAsync } from "react-async-hook";
 import { useEffect, useState } from "react";
 import { callApi } from "@/config/firebase";
-import { bool } from "yup";
 
 export default function Course({ params }: { params: { id: string } }) {
 
@@ -15,13 +14,17 @@ export default function Course({ params }: { params: { id: string } }) {
         callApi("getCourseInfo", { courseId: params.id, withQuiz: false })
             .then((result) => { // @ts-ignore
                 setStatus(result.data.status); // @ts-ignore
-                setCourseAttemptId(result.data.courseAttemptId);
+                setCourseAttemptId(result.data.courseAttemptId); // @ts-ignore
+                if (result.data.currentQuiz) { // @ts-ignore
+                    setQuizAttemptId(result.data.currentQuiz.id);
+                }
                 return result;
             }), []);
 
     const [status, setStatus] = useState(0);
     const [timeDone, setTimeDone] = useState(false);
     const [courseAttemptId, setCourseAttemptId] = useState(null);
+    const [quizAttemptId, setQuizAttemptId] = useState(null);
     const [quizStarted, setQuizStarted] = useState<null|boolean>(null);
 
     useEffect(() => {
@@ -31,7 +34,7 @@ export default function Course({ params }: { params: { id: string } }) {
 
         setQuizStarted(status <= 2 || !timeDone
             ? null // @ts-ignore
-            : getCourse.result.data.quizAttempts.find((attempt: any) => !attempt.endTime) !== undefined);
+            : getCourse.result.data.currentQuiz !== null);
 
     }, [status, timeDone]);
 
@@ -75,6 +78,7 @@ export default function Course({ params }: { params: { id: string } }) {
                                 minimumScore={course.quiz.minScore}
                                 quizStarted={quizStarted}
                                 courseAttemptId={courseAttemptId}
+                                quizAttemptId={quizAttemptId}
                                 courseId={params.id}
                             />
                         </div>

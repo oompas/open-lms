@@ -10,6 +10,7 @@ export default function Quiz({
     minimumScore,
     quizStarted,
     courseAttemptId,
+    quizAttemptId,
     courseId
 } : {
     length: string
@@ -18,6 +19,7 @@ export default function Quiz({
     minimumScore: number
     quizStarted: boolean | null
     courseAttemptId: any
+    quizAttemptId: any
     courseId: string
 }) {
 
@@ -25,10 +27,10 @@ export default function Quiz({
 
     const goToQuiz = async () => {
         if (quizStarted) {
-            router.push(`/quiz/${courseId}-${courseAttemptId}`);
+            router.push(`/quiz/${courseId}-${quizAttemptId}`);
         } else {
             await callApi("startQuiz", { courseAttemptId: courseAttemptId })
-                .then(() => router.push(`/quiz/${courseId}-${courseAttemptId}`))
+                .then((result) => router.push(`/quiz/${courseId}-${result.data}`))
                 .catch((e) => console.log(`Error starting quiz: ${e}`));
         }
     }
