@@ -36,6 +36,9 @@ export default function Profile() {
                         password={password}
                         setPass={setPass}
                         showName={false}
+                        showEmail={true}
+                        showPassword={true}
+                        showJustName={true}
                     />
                     <Button text="Delete Account" onClick={() => router.push('/home')}/>
                     <Button text="Add dummy data (WILL CLEAN DATABASE)" onClick={async () => await generateData()}/>

@@ -6,12 +6,17 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from 'react';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import styles from './DropdownMenu.module.css'
+import AuthForm from '@/components/AuthForm';
 
 export default function LearnerLayout({
    children,
 }: {
     children: React.ReactNode
 }) {
+    const [name, setName] = useState("")
+    const [email, setEmail] = useState("")
+    const [password, setPass] = useState("")
+
     const [isOpen, setIsOpen] = useState(false)
     
     const toggleDropdown = () => setIsOpen(!isOpen)
@@ -61,16 +66,44 @@ export default function LearnerLayout({
         <div className="flex flex-row px-12 h-[13vh] justify-between items-center bg-white rounded-b-2xl shadow-custom">
             <Link href="/home" className="font-bold text-4xl">OpenLMS</Link>
             <div className={styles.dropdown}>
-                <div className="text-2xl">
-                    <button onClick={toggleDropdown}>
-                        {isOpen ? 'Menu =' : 'Menu ='}
+                <div className="flex flex-row justify-between text-2xl mr-[5vh]">
+                    <Link href="/home" className="hover:opacity-50 duration-75 hover:rounded-2xl hover:bg-white">Home</Link>
+                    {isAdmin && <Link href="/admin/tools" className="hover:opacity-50 duration-75 hover:rounded-2xl hover:bg-white">Admin Tools</Link>}
+                    <div className="border-l border-black h-8 mr-[5vh] ml-[5vh]"></div>
+                    <button className="hover:opacity-50" onClick={toggleDropdown}>
+                        {isOpen ? (
+                            <AuthForm 
+                            email={email}
+                            setEmail={setEmail}
+                            password={password}
+                            setPass={setPass}
+                            name={name}
+                            setName={setName}
+                            showName={false}
+                            showEmail={false}
+                            showPassword={false}
+                            showJustName={true}
+                            />
+                            ) : (
+                            <AuthForm 
+                            email={email}
+                            setEmail={setEmail}
+                            password={password}
+                            setPass={setPass}
+                            name={name}
+                            setName={setName}
+                            showName={false}
+                            showEmail={false}
+                            showPassword={false}
+                            showJustName={true}
+                            />
+                            )
+                        }
                     </button>
                     <div className="flex flex-row justify-right">
                         {isOpen && (
                             <div className={styles.menu}>
-                                <Link href="/home" className="hover:opacity-50 duration-75 mb-[1vh] hover:rounded-2xl hover:bg-white p-4" onClick={toggleDropdown}>Home</Link>
-                                {isAdmin && <Link href="/admin/tools" className="hover:opacity-50 duration-75 mb-[1vh] hover:rounded-2xl hover:bg-white p-4" onClick={toggleDropdown}>Admin Tools</Link>}
-                                <Link href="/profile" className="hover:opacity-50 duration-75 mb-[1vh] hover:rounded-2xl hover:bg-white p-4" onClick={toggleDropdown}>View Profile</Link>
+                                <Link href="/profile" className="hover:opacity-50 duration-75 hover:rounded-2xl hover:bg-white p-4" onClick={toggleDropdown}>View Profile</Link>
                                 <div onClick={async () => await logout()} className="cursor-pointer hover:opacity-50 duration-75 hover:rounded-2xl hover:bg-white p-4">Log
                                     Out
                                 </div>
