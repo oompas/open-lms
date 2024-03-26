@@ -7,7 +7,7 @@ import {
     addDocWithId,
     DatabaseCollections,
     getCollection,
-    getDocData,
+    getDocData, QuizAttemptDocument,
     UserDocument
 } from "../helpers/database";
 
@@ -219,14 +219,24 @@ const getUserProfile = onCall(async (request) => {
     const completedCourseData = await Promise.all(completedCourseIds.map(async (data) =>
         getDocData(DatabaseCollections.Course, data.courseId)
             .then((course) => {
-                return { attemptId: data.id, name: course.name, link: course.link, date: data.date };
+                return { attemptId: data.id, name: course.name, link: course.link, date: data.date._seconds };
             })
     ));
 
     const quizAttemptData = await getCollection(DatabaseCollections.QuizAttempt)
         .where('userId', "==", targetUserUid)
         .get()
-        .then((result) => result.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
+        .then((result) => result.docs.map((doc) => {
+            const data = doc.data() as QuizAttemptDocument;
+            return {
+                id: doc.id,
+                courseId: data.courseId,
+                userId: data.userId,
+                courseAttemptId: data.courseAttemptId, // @ts-ignore
+                startTime: data.startTime._seconds, // @ts-ignore
+                endTime: data.endTime._seconds,
+            };
+        }))
         .catch((error) => {
             logger.error(`Error querying quiz attempts: ${error}`);
             throw new HttpsError("internal", "Error getting user data, try again later");
