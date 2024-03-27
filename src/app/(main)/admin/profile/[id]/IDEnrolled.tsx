@@ -1,4 +1,4 @@
-export default function IDCoursesEnrolled({
+export default function IDEnrolled({
     title,
     completionDate,
     id

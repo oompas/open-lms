@@ -2,7 +2,7 @@
 
 import IDProfile from "./IDProfile";
 import IDCourse from "./IDCourse";
-import IDCoursesEnrolled from "./IDEnrolled"
+import IDEnrolled from "./IDEnrolled"
 import { useState } from "react";
 import { callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
@@ -62,7 +62,7 @@ export default function Profile({ params }: { params: { id: string } }) {
         if (user) {
             // @ts-ignore
             return user.completedCourses.map((coursesEnrolled, key) => (
-                <IDCoursesEnrolled 
+                <IDEnrolled 
                     key={key}
                     title={coursesEnrolled.name}
                     completionDate={new Date(coursesEnrolled.date).toLocaleString()}
