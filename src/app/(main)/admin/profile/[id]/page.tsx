@@ -114,7 +114,7 @@ export default function Profile({ params }: { params: { id: string } }) {
             <div
                 className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
                 <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                    <div className="text-lg mb-2">
+                    <div className="text-lg">
                         {userData.loading ? "Loading user data..." : "Error loading user data."}
                     </div>
                 </div>
