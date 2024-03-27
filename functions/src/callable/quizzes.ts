@@ -13,8 +13,9 @@ import {
     CourseDocument,
     CourseAttemptDocument,
     QuizAttemptDocument,
-    getCollection, getDocData, updateDoc, addDoc, QuizQuestionAttemptDocument, UserDocument,
+    getCollection, getDocData, updateDoc, addDoc, QuizQuestionAttemptDocument, UserDocument, QuizQuestionDocument,
 } from "../helpers/database";
+import { updateQuizStatus } from "./helpers";
 
 /**
  * Updates the quiz for a given course (add, delete or update)
@@ -399,124 +400,71 @@ const submitQuiz = onCall(async (request) => {
         }
     }
 
-    const promises: Promise<any>[] = [];
-
     // Mark the quiz and update question stats
-    const marksAchieved = await getCollection(DatabaseCollections.QuizQuestion)
+    const quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
         .where("active", "==", true)
         .where("courseId", "==", quizAttempt.courseId)
         .get()
         .then((snapshot) => {
-
             // Verify questions are valid
-            const questions: any[] = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            const questions: any[] = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as QuizQuestionDocument));
             if (!questions || questions.length === 0) {
                 throw new HttpsError("not-found", `No quiz questions found for course ${request.data.courseId}`);
             }
             if (questions.length !== responses.length) {
                 throw new HttpsError("invalid-argument", `Invalid request: number of responses does not match number of questions`);
             }
-
-            // Mark each question & create promises
-            let totalMarks: number | null = 0;
-            for (const response of responses) {
-                const question = questions.find((q) => q.id === response.questionId);
-                if (!question) {
+            responses.forEach((response: { questionId: string, answer: string }) => {
+                if (!questions.find((q) => q.id === response.questionId)) {
                     throw new HttpsError("not-found", `Question with ID ${response.questionId} not found`);
                 }
+            });
 
-                let marks = null; // Default for short answer (need to be marked)
-                let userResponse = response.answer;
-                if (question.type === "mc" || question.type === "tf") {
-                    userResponse = Number(response.answer);
-                    marks = question.correctAnswer === userResponse ? question.marks : 0;
-                    if (totalMarks !== null) totalMarks += marks;
-                } else {
-                    totalMarks = null;
-                }
-
-                const markedResponse = {
-                    userId: request.auth?.uid,
-                    courseId: quizAttempt.courseId,
-                    questionId: response.questionId,
-                    quizAttemptId: quizAttemptId,
-                    response: userResponse,
-                    marksAchieved: marks,
-                    ...(question.type === "sa" && { maxMarks: question.marks })
-                };
-
-                // Add question attempt to database
-                promises.push(addDoc(DatabaseCollections.QuizQuestionAttempt, markedResponse));
-
-                // Update question stats
-                if (marks !== null) {
-                    const updateData = {
-                        "stats.numAttempts": firestore.FieldValue.increment(1),
-                        "stats.totalScore": firestore.FieldValue.increment(marks),
-                    };
-                    promises.push(updateDoc(DatabaseCollections.QuizQuestion, question.id, updateData));
-                }
-            }
-
-            return totalMarks;
+            return questions;
         })
         .catch((err) => {
             logger.info(`Error getting quiz questions: ${err}`);
             throw new HttpsError("internal", `Error getting quiz questions: ${err}`);
         });
 
-    // Check if quiz passed
-    let pass: boolean | null = null;
-    if (marksAchieved !== null) {
-        // If there's no minimum score, they pass by default. Otherwise, verify their score is at least the threshold
-        pass = courseData.quiz?.minScore === null || marksAchieved >= (courseData.quiz?.minScore ?? 0);
+    const updatePromises: Promise<any>[] = [];
 
-        // If this is the last quiz attempt, we need to update the course attempt's status
-        let lastAttempt = false;
-        if (courseData.quiz?.maxAttempts) {
-            const numQuizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
-                .where("courseAttemptId", "==", quizAttempt.courseAttemptId)
-                .get()
-                .then((snapshot) => snapshot.size)
-                .catch((err) => {
-                    logger.info(`Error getting quiz attempts: ${err}`);
-                    throw new HttpsError("internal", `Error getting quiz attempts`);
-                });
+    // Mark each question & create promises
+    for (const response of responses) {
+        const question = quizQuestions.find((q) => q.id === response.questionId);
 
-            if (numQuizAttempts === courseData.quiz?.maxAttempts) {
-                lastAttempt = true;
-
-                // The end time is when the last quiz was complete, so even if they're waiting on marking, they're done
-                const update = {
-                    pass: pass,
-                    endTime: firestore.FieldValue.serverTimestamp()
-                };
-                promises.push(updateDoc(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId, update));
-            }
+        let marks = null; // Default for short answer (need to be marked)
+        let userResponse = response.answer;
+        if (question.type === "mc" || question.type === "tf") {
+            userResponse = Number(response.answer);
+            marks = question.correctAnswer === userResponse ? question.marks : 0;
         }
 
-        // If this is not the last quiz attempt, they are only done the course if they passed the quiz
-        // If they failed, they can try again. If they are awaiting marking, the status is updated once the marking is done
-        if (!lastAttempt && pass) {
-            const update = {
-                pass: pass,
-                endTime: firestore.FieldValue.serverTimestamp()
+        // Add question attempt to database
+        const markedResponse = {
+            userId: request.auth?.uid,
+            courseId: quizAttempt.courseId,
+            questionId: response.questionId,
+            quizAttemptId: quizAttemptId,
+            response: userResponse,
+            marksAchieved: marks,
+            ...(question.type === "sa" && { maxMarks: question.marks })
+        };
+        updatePromises.push(addDoc(DatabaseCollections.QuizQuestionAttempt, markedResponse));
+
+        // Update question stats
+        if (marks !== null) {
+            const updateData = {
+                "stats.numAttempts": firestore.FieldValue.increment(1),
+                "stats.totalScore": firestore.FieldValue.increment(marks),
             };
-            promises.push(updateDoc(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId, update));
+            updatePromises.push(updateDoc(DatabaseCollections.QuizQuestion, question.id, updateData));
         }
     }
 
-    await Promise.all(promises).catch((err) => {
-        logger.info(`Error adding marked questions: ${err}`);
-        throw new HttpsError("internal", `Error adding marked questions: ${err}`);
-    });
+    await Promise.all(updatePromises);
 
-    const quizAttemptUpdate = {
-        endTime: firestore.FieldValue.serverTimestamp(),
-        ...(pass !== null && { pass: pass }),
-        ...(pass !== null && { score: marksAchieved }),
-    };
-    return updateDoc(DatabaseCollections.QuizAttempt, quizAttemptId, quizAttemptUpdate);
+    return updateQuizStatus(quizAttemptId);
 });
 
 /**

@@ -1,7 +1,15 @@
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
-import { CourseAttemptDocument, DatabaseCollections, docExists, getCollection } from "../helpers/database";
+import {
+    CourseAttemptDocument, CourseDocument,
+    DatabaseCollections,
+    docExists,
+    getCollection,
+    getDocData, QuizQuestionAttemptDocument,
+    updateDoc
+} from "../helpers/database";
 import { DOCUMENT_ID_LENGTH, USER_UID_LENGTH } from "../helpers/helpers";
+import { firestore } from "firebase-admin";
 
 /**
  * The status of a course for a given user
@@ -127,4 +135,72 @@ const getLatestCourseAttempt = async (courseId: string, userId: string) => {
         });
 }
 
-export { enrolledCourseId, reportedCourseId, getCourseStatus, getLatestCourseAttempt };
+/**
+ * After marking quiz questions, call this to update quiz attempt & course attempt status
+ */
+const updateQuizStatus = async (quizAttemptId: string) => {
+
+    const completionTime = firestore.FieldValue.serverTimestamp();
+
+    const quizQuestions = await getCollection(DatabaseCollections.QuizQuestionAttempt)
+        .where("quizAttemptId", "==", quizAttemptId)
+        .get()
+        .then((docs) => docs.docs.map(doc => ({ id: doc.id, ...doc.data() } as QuizQuestionAttemptDocument)))
+        .catch((error) => {
+            logger.error(`Error getting quiz questions: ${error}`);
+            throw new HttpsError('internal', "Error getting quiz questions, please try again later");
+        });
+
+    // If there are unmarked short answer questions, just update the completion time (don't know the score or passed status yet)
+    if (quizQuestions.some((question) => question.marksAchieved === null)) {
+        return updateDoc(DatabaseCollections.QuizAttempt, quizAttemptId, { endTime: completionTime });
+    }
+
+    const courseAttemptId = quizQuestions[0].courseAttemptId;
+    const courseData = await getDocData(DatabaseCollections.Course, quizQuestions[0].courseId) as CourseDocument; // @ts-ignore
+    const marksAchieved = quizQuestions.reduce((total, question) => total + question.marksAchieved, 0);
+
+    // If the quiz has a minimum score, check if the user passed (if no minimum score, they pass automatically)
+    const pass = marksAchieved >= (courseData.quiz?.minScore ?? 0);
+
+    const promises: Promise<any>[] = [];
+
+    // Update the quiz attempt with the final score, completion time and pass status
+    const quizAttemptUpdate = {
+        endTime: completionTime,
+        pass: pass,
+        score: marksAchieved,
+    };
+    promises.push(updateDoc(DatabaseCollections.QuizAttempt, quizAttemptId, quizAttemptUpdate));
+
+    // If this is the last quiz attempt, we need to update the course attempt's status
+    let lastAttempt = false;
+    if (courseData.quiz?.maxAttempts) {
+        const numQuizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
+            .where("courseAttemptId", "==", courseAttemptId)
+            .get()
+            .then((snapshot) => snapshot.size)
+            .catch((err) => {
+                logger.info(`Error getting quiz attempts: ${err}`);
+                throw new HttpsError("internal", `Error getting quiz attempts`);
+            });
+
+        if (numQuizAttempts === courseData.quiz?.maxAttempts) {
+            lastAttempt = true;
+        }
+    }
+
+    // If this is not the last quiz attempt, they are only done the course if they passed the quiz (fail = try again)
+    if (lastAttempt || (!lastAttempt && pass)) {
+        const update = {
+            pass: pass,
+            score: marksAchieved,
+            endTime: completionTime
+        };
+        promises.push(updateDoc(DatabaseCollections.CourseAttempt, courseAttemptId, update));
+    }
+
+    return Promise.all(promises).then(() => `Quiz attempt '${quizAttemptId}' status updated successfully`);
+}
+
+export { enrolledCourseId, reportedCourseId, getCourseStatus, getLatestCourseAttempt, updateQuizStatus };
