@@ -581,7 +581,7 @@ const getQuizzesToMark = onCall(async (request) => {
 /**
  * Gets a specific quiz attempt to mark
  */
-const getQuizToMark = onCall(async (request) => {
+const getQuizAttempt = onCall(async (request) => {
 
     logger.info(`Entering getQuizToMark for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
@@ -603,9 +603,6 @@ const getQuizToMark = onCall(async (request) => {
         .where("quizAttemptId", "==", request.data.quizAttemptId)
         .get()
         .then((snapshot) => {
-            if (!snapshot.docs.find((doc) => doc.data().marksAchieved === null)) {
-                throw new HttpsError("not-found", `No unmarked short answer quiz questions found for quiz attempt ${request.data.quizAttemptId}`);
-            }
             return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as QuizQuestionAttemptDocument));
         })
         .catch((err) => {
@@ -615,6 +612,7 @@ const getQuizToMark = onCall(async (request) => {
 
     const courseInfo = await getDocData(DatabaseCollections.Course, allAttempts[0].courseId) as CourseDocument;
     const userInfo = await getDocData(DatabaseCollections.User, allAttempts[0].userId) as UserDocument;
+    const quizAttemptData = await getDocData(DatabaseCollections.QuizAttempt, request.data.quizAttemptId) as QuizAttemptDocument;
 
     const attemptData = await Promise.all(allAttempts.map((attempt) =>
         getDocData(DatabaseCollections.QuizQuestion, attempt.questionId)
@@ -638,7 +636,8 @@ const getQuizToMark = onCall(async (request) => {
         learnerName: userInfo.name,
         saQuestions: attemptData.filter((attempt) => attempt.type === "sa"),
         otherQuestions: attemptData.filter((attempt) => attempt.type !== "sa"),
+        score: quizAttemptData.score,
     };
 });
 
-export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuizzesToMark, getQuizToMark };
+export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuizzesToMark, getQuizAttempt };
