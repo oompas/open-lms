@@ -61,7 +61,7 @@ const createAccount = onCall(async (request) => {
                 email: email,
                 name: name,
                 admin: false,
-                signUpTime: new firestore.Timestamp(Date.now() / 1000, 0)
+                signUpTime: firestore.FieldValue.serverTimestamp()
             };
             await addDocWithId(DatabaseCollections.User, user.uid, defaultDoc);
 
