@@ -191,7 +191,7 @@ interface QuizAttemptDocument {
     endTime: firestore.Timestamp | null;
     pass: boolean | null;
     score: number | null;
-    invalid?: true; // If the user didn't submit in time, this should be true
+    expired?: true; // If the user didn't submit in time, this should be true
 }
 
 interface QuizQuestionAttemptDocument {

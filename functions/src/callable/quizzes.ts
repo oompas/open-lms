@@ -156,12 +156,12 @@ const getQuiz = onCall(async (request) => {
         logger.error(`Course ${courseAttempt.courseId} does not have a quiz`);
         throw new HttpsError("not-found", `Course ${courseAttempt.courseId} does not have a quiz`);
     }
-    if (quizAttempt.endTime !== null || quizAttempt.invalid) {
+    if (quizAttempt.endTime !== null || quizAttempt.expired) {
         logger.error(`Quiz attempt with ID ${request.data.quizAttemptId} is already completed`);
         throw new HttpsError("failed-precondition", `Quiz attempt with ID ${request.data.quizAttemptId} is already completed`);
     }
     if (courseData.quiz.timeLimit && Date.now() > quizAttempt.startTime.toMillis() + (courseData.quiz.timeLimit * 60 * 1000)) {
-        await updateDoc(DatabaseCollections.QuizAttempt, request.data.quizAttemptId, { invalid: true })
+        await updateDoc(DatabaseCollections.QuizAttempt, request.data.quizAttemptId, { expired: true })
         return "Invalid";
     }
 
