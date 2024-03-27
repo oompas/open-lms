@@ -253,7 +253,7 @@ const getCourseInsightReport = onCall(async (request) => {
             throw new HttpsError('internal', "Error getting course reports, please try again later");
         });
 
-    const courseEnrollments = enrollments.filter((enrollment) => enrollment.data().courseId === course.id);
+    const courseEnrollments = enrollments.filter((enrollment) => enrollment.data().courseId === courseId);
 
     const completedAttempts = courseAttempts.filter((attempt) => {
         return attempt.courseId === courseId && attempt.pass === true;
