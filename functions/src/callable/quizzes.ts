@@ -295,6 +295,18 @@ const startQuiz = onCall(async (request) => {
     const courseId = courseAttempt.courseId;
     const courseData = await getDocData(DatabaseCollections.Course, courseId) as CourseDocument;
 
+    const lastQuizAttempt = await getCollection(DatabaseCollections.QuizAttempt)
+        .where("courseId", "==", courseId)
+        .where("userId", "==", request.auth?.uid)
+        .orderBy("startTime", "desc")
+        .limit(1)
+        .get()
+        .then((snapshot) => ({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as QuizAttemptDocument))
+        .catch((err) => {
+            logger.error(`Error getting quiz attempts: ${err}`);
+            throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
+        });
+
     /**
      * To start a quiz:
      * 1. The course must be active
@@ -329,21 +341,17 @@ const startQuiz = onCall(async (request) => {
         }
     }
 
-    // Ensure the user doesn't have a quiz attempt in progress
-    await getCollection(DatabaseCollections.QuizAttempt)
-        .where("courseAttemptId", "==", courseAttemptId)
-        .where("endTime", "==", null)
-        .get()
-        .then((snapshot) => {
-            if (!snapshot.empty) {
-                logger.error(`User has a quiz attempt in progress for course ${courseId}`);
-                throw new HttpsError("failed-precondition", `You have quiz attempt(s) in progress for course ${courseId}`);
-            }
-        })
-        .catch((err) => {
-            logger.error(`Error getting quiz attempts: ${err}`);
-            throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
-        });
+    // Verify the user doesn't have an active quiz attempt
+    if (lastQuizAttempt.endTime === null) {
+        logger.error(`User has an active quiz attempt for course ${courseId}: ${lastQuizAttempt.id}`);
+        throw new HttpsError("failed-precondition", `You have an active quiz attempt for course ${courseId}`);
+    }
+
+    // Verify the user doesn't have a quiz attempt awaiting marking
+    if (lastQuizAttempt.pass === null) {
+        logger.error(`User has a quiz attempt awaiting marking for course ${courseId}: ${lastQuizAttempt.id}`);
+        throw new HttpsError("failed-precondition", `You have a quiz attempt awaiting marking for course ${courseId}`);
+    }
 
     return addDoc(DatabaseCollections.QuizAttempt, {
             userId: request.auth?.uid,
