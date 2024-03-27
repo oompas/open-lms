@@ -10,8 +10,10 @@ export default function Mark({ params }: { params: { id: string } }) {
 
     const router = useRouter();
 
+    const TEMP_MARKED = true;
+
     const quizQuestions = useAsync(() =>
-        callApi('getQuizToMark', { quizAttemptId: params.id }) // @ts-ignore
+        callApi('getQuizAttempt', { quizAttemptId: params.id }) // @ts-ignore
             .then((rsp) => { setQuestions(rsp.data); return rsp; }),
         []);
 
@@ -20,11 +22,15 @@ export default function Mark({ params }: { params: { id: string } }) {
     const [total, setTotal] = useState(0);
     const [score, setScore] = useState(0);
     const [marked, setMarked] = useState(0);
+    const [viewOnly, setViewOnly] = useState(false);
 
     useEffect(() => {
         if (!questions) {
             return;
         }
+
+        // @ts-ignore
+        const view = questions.score != null
         
         const temp_marks: any[] = [];
         let temp_total = 0;
@@ -43,6 +49,7 @@ export default function Mark({ params }: { params: { id: string } }) {
         setMarks(temp_marks)
         setTotal(temp_total)
         setMarked(temp_score)
+        setViewOnly(view)
     }, [questions])
 
     const handleUpdateMark = (index: number, mark: number) => {
@@ -91,7 +98,7 @@ export default function Mark({ params }: { params: { id: string } }) {
 
                 <div className="flex flex-col">
                     {/* @ts-ignore */}
-                    {questions && questions.saQuestions.map((question, key) => (
+                    {!viewOnly && questions && questions.saQuestions.map((question, key) => (
                         <QuizAnswer
                             key={key}
                             index={key}
@@ -103,12 +110,25 @@ export default function Mark({ params }: { params: { id: string } }) {
                         />
                     ))}
                 </div>
-                <div className="text-center mt-4">Automatically Marked Questions</div>
+                {!viewOnly && <div className="text-center mt-4">Automatically Marked Questions</div> }
                 <div className="flex flex-col mt-4 space-y-4">
+                    {/* @ts-ignore */}
+                    {viewOnly && questions && questions.saQuestions.map((question, key) => (
+                        <div className="flex flex-row bg-white py-4 px-12 rounded-xl">
+                            <div className="flex flex-col w-full">
+                                <div className="text-lg w-full">Q) {question.question}</div>
+                                <div className="text-lg w-full">A) {question.response}</div>
+                            </div>
+                            <div className="text-xl w-16">{question.marksAchieved}/{question.marks}</div>
+                        </div>
+                    ))}
                     {/* @ts-ignore */}
                     {questions && questions.otherQuestions.map((question, key) => (
                         <div className="flex flex-row bg-white py-4 px-12 rounded-xl">
-                            <div className="text-lg w-full">Q) {question.question}</div>
+                            <div className="flex flex-col w-full">
+                                <div className="text-lg w-full">Q) {question.question}</div>
+                                <div className="text-lg w-full">A) {question.type === "tf" ? question.response ? "False" : "True" : question.answers[question.response]}</div>
+                            </div>
                             <div className="text-xl w-16">{question.marksAchieved}/{question.marks}</div>
                         </div>
                     ))}
@@ -118,14 +138,15 @@ export default function Mark({ params }: { params: { id: string } }) {
                 <div className="text-center">Total Score</div>
                 <div className="flex flex-row items-center justify-center text-3xl border py-3 rounded-xl mt-2">
                     <div className="font-bold">
-                        {marked+score}
+                        {/* @ts-ignore */}
+                        {viewOnly ? questions.score : marked+score}
                     </div>
                     <div className="ml-1 text-gray-500">{"/"}</div>
                     <div className="text-gray-500">
                         {total}
                     </div>
                 </div>
-                <Button text="Submit Graded Quiz" onClick={() => handleSubmit()} filled style="mt-auto mx-auto" />
+                {!viewOnly && <Button text="Submit Graded Quiz" onClick={() => handleSubmit()} filled style="mt-auto mx-auto" />}
             </div>
             {loadingPopup()}
         </main>
