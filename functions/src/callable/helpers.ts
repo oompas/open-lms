@@ -127,7 +127,7 @@ const getLatestCourseAttempt = async (courseId: string, userId: string) => {
             if (docs.empty) {
                 return null;
             }
-            return docs.docs[0].data() as CourseAttemptDocument;
+            return { id: docs.docs[0].id, ...docs.docs[0].data() } as CourseAttemptDocument;
         })
         .catch((error) => {
             logger.error(`Error getting latest course attempt: ${error}`);
