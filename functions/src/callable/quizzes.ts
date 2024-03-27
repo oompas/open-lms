@@ -642,13 +642,26 @@ const markQuizAttempt = onCall(async (request) => {
         }
     });
 
-    return Promise.all(responses.map((response: { id: string, marksAchieved: number }) =>
+    // Update the question attempts and question stats
+    const updatePromises: Promise<any>[] = [];
+
+    updatePromises.push(responses.map((response: { id: string, marksAchieved: number }) =>
         updateDoc(DatabaseCollections.QuizQuestionAttempt, response.id, { marksAchieved: response.marksAchieved })
-    ))
-        .then(() => "Successfully marked quiz attempt")
-        .catch((err) => {
-            throw new HttpsError("internal", `Error marking quiz attempt: ${err}`);
-        });
+    ));
+
+    updatePromises.push(responses.map((response: { id: string, marksAchieved: number }) => {
+        const updateData = {
+            "stats.numAttempts": firestore.FieldValue.increment(1),
+        }; // @ts-ignore
+        updateData[`stats.distribution.${response.marksAchieved}`] = firestore.FieldValue.increment(1);
+
+        return updatePromises.push(updateDoc(DatabaseCollections.QuizQuestion, response.id, updateData));
+    }));
+
+    await Promise.all(updatePromises);
+
+    // Update status of the quiz & course attempt
+    return updateQuizStatus(quizAttemptId);
 });
 
 export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt };
