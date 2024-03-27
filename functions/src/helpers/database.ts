@@ -121,8 +121,9 @@ interface UserDocument {
     id: string;
     email: string;
     name: string;
-    admin: boolean;
     signUpTime: firestore.Timestamp;
+    admin?: true;
+    developer?: true;
 }
 
 interface CourseDocument {
