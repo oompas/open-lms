@@ -439,12 +439,13 @@ const submitQuiz = onCall(async (request) => {
             marks = 0;
             userResponse = null;
         } else {
+            // Multiple choice or true/false questions can be automatically marked
             if (question.type === "mc" || question.type === "tf") {
                 userResponse = Number(response.answer);
                 marks = question.correctAnswer === userResponse ? question.marks : 0;
             } else {
                 userResponse = response.answer;
-                marks = null;
+                marks = null; // Short answer questions need to be manually marked
             }
         }
 
@@ -452,7 +453,7 @@ const submitQuiz = onCall(async (request) => {
         const markedResponse = {
             userId: request.auth?.uid,
             courseId: quizAttempt.courseId,
-            questionId: response.questionId,
+            questionId: question.id,
             quizAttemptId: quizAttemptId,
             response: userResponse,
             marksAchieved: marks,
