@@ -4,12 +4,13 @@ import { sendEmail, USER_UID_LENGTH, verifyIsAdmin, verifyIsAuthenticated } from
 import { auth } from "../helpers/setup";
 import { object, string } from "yup";
 import {
-    addDocWithId,
+    addDocWithId, CourseDocument,
     DatabaseCollections,
     getCollection,
     getDocData, QuizAttemptDocument,
     UserDocument
 } from "../helpers/database";
+import { firestore } from "firebase-admin";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
@@ -60,7 +61,7 @@ const createAccount = onCall(async (request) => {
                 email: email,
                 name: name,
                 admin: false,
-                signUpTime: new FirebaseFirestore.Timestamp(Date.now() / 1000, 0)
+                signUpTime: new firestore.Timestamp(Date.now() / 1000, 0)
             };
             await addDocWithId(DatabaseCollections.User, user.uid, defaultDoc);
 
@@ -200,8 +201,8 @@ const getUserProfile = onCall(async (request) => {
         });
 
     const courseNames: { [key: string]: string } = {};
-    await Promise.all(enrolledCourses.map(async (courseId) =>
-        getDocData(DatabaseCollections.Course, courseId).then((course) => courseNames[courseId] = course.name)
+    await Promise.all(enrolledCourses.map(async (courseId) => // @ts-ignore
+        getDocData(DatabaseCollections.Course, courseId).then((course: CourseDocument) => courseNames[courseId] = course.name)
     ));
 
     // Query course & course attempt data
@@ -218,8 +219,8 @@ const getUserProfile = onCall(async (request) => {
         });
 
     const completedCourseData = await Promise.all(completedCourseIds.map(async (data) =>
-        getDocData(DatabaseCollections.Course, data.courseId)
-            .then((course) => {
+        getDocData(DatabaseCollections.Course, data.courseId) // @ts-ignore
+            .then((course: CourseDocument) => {
                 return { attemptId: data.id, name: course.name, link: course.link, date: data.date._seconds };
             })
     ));
