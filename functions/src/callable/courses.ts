@@ -1,4 +1,4 @@
-import {HttpsError, onCall} from "firebase-functions/v2/https";
+import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
     sendEmail,
     shuffleArray,
@@ -9,27 +9,18 @@ import { logger } from "firebase-functions";
 import { boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import {
-    addDoc, addDocWithId, CourseAttemptDocument,
-    CourseDocument,
-    DatabaseCollections, deleteDoc, docExists,
+    addDoc,
+    addDocWithId,
+    deleteDoc,
     getCollection,
-    getDocData, QuizAttemptDocument,
-    updateDoc, UserDocument,
+    getDocData,
+    updateDoc,
+    CourseDocument,
+    DatabaseCollections,
+    QuizAttemptDocument,
+    UserDocument,
 } from "../helpers/database";
-
-/**
- * The ID for an enrolled course is the user & course ID concatenated so:
- * -No query is needed to check it, can just get the document through an ID
- * -No duplicate enrollments are possible
- * The enrollment document will also have these IDs in the document if individual queries are needed
- */
-const enrolledCourseId = (userId: string, courseId: string) => `${userId}|${courseId}`;
-
-/**
- * The ID for a course reported by a user to have a broken platform link is the user & course ID concatenated so:
- * - No duplicate reports from the same user
- */
-const reportedCourseId = (userId: string, courseId: string) => `${userId}|${courseId}`;
+import { enrolledCourseId, getCourseStatus, getLatestCourseAttempt, reportedCourseId } from "./helpers";
 
 /**
  * Adds a course to the database. Includes both metadata and quiz questions
@@ -156,67 +147,7 @@ const getAvailableCourses = onCall(async (request) => {
 
             for (let course of courses.docs) {
 
-                const courseEnrolled = await docExists(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, course.id));
-
-                let courseAttempt = undefined;
-                if (courseEnrolled) {
-                    courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
-                        .where("userId", "==", request.auth?.uid)
-                        .where("courseId", "==", course.id)
-                        .get()
-                        .then((docs) => {
-                            if (docs.empty) {
-                                return null;
-                            }
-
-                            let latestAttempt = docs.docs[0];
-                            for (let i = 1; i < docs.docs.length; ++i) {
-                                if (docs.docs[i].data().startTime.toMillis() > latestAttempt.data().startTime.toMillis()) {
-                                    latestAttempt = docs.docs[i];
-                                }
-                            }
-                            return { id: latestAttempt.id, ...latestAttempt.data() } as CourseAttemptDocument;
-                        })
-                        .catch((error) => {
-                            logger.error(`Error getting course attempts: ${error}`);
-                            throw new HttpsError("internal", `Error getting courses, please try again later`);
-                        });
-                }
-
-                /*
-                 * Statuses:
-                 * 1 - Not enrolled
-                 * 2 - Enrolled, not started
-                 * 3 - In progress (includes if you previously failed a quiz)
-                 * 4 - Quiz awaiting marking
-                 * 5 - Failed
-                 * 6 - Passed
-                 */
-                let status;
-                if (!courseEnrolled) {
-                    status = 1;
-                } else if (courseAttempt === null ) {
-                    status = 2;
-                } else if (courseAttempt?.pass === null) {
-                    const awaitingMarking = await getCollection(DatabaseCollections.QuizAttempt)
-                        .where("courseAttemptId", "==", courseAttempt.id)
-                        .where("endTime", "!=", null)
-                        .where("pass", "==", null)
-                        .get()
-                        .then((docs) => !docs.empty)
-                        .catch((error) => {
-                            logger.error(`Error checking if quiz is awaiting marking: ${error}`);
-                            throw new HttpsError('internal', "Error getting course quiz, please try again later");
-                        });
-
-                    status = awaitingMarking ? 4 : 3;
-                } else if (courseAttempt?.pass === false) {
-                    status = 5;
-                } else if (courseAttempt?.pass === true) {
-                    status = 6;
-                } else {
-                    throw new HttpsError("internal", "Course is in an invalid state - can't get status");
-                }
+                const status = await getCourseStatus(course.id, uid);
 
                 const courseData = {
                     id: course.id,
@@ -326,29 +257,7 @@ const getCourseInfo = onCall(async (request) => {
         throw new HttpsError("invalid-argument", "Cannot view inactive course");
     }
 
-    const courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
-        .where("userId", "==", request.auth?.uid)
-        .where("courseId", "==", request.data.courseId)
-        .get()
-        .then((docs) => {
-            if (docs.empty) {
-                return null;
-            }
-
-            let latestAttempt = docs.docs[0];
-            for (let i = 1; i < docs.docs.length; ++i) {
-                if (docs.docs[i].data().startTime.toMillis() > latestAttempt.data().startTime.toMillis()) {
-                    latestAttempt = docs.docs[i];
-                }
-            }
-            return { id: latestAttempt.id, ...latestAttempt.data() } as CourseAttemptDocument;
-    })
-        .catch((error) => {
-            logger.error(`Error getting course attempts: ${error}`);
-            throw new HttpsError("internal", `Error getting courses, please try again later`);
-        });
-
-    const courseEnrolled = await docExists(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId));
+    const courseAttempt = await getLatestCourseAttempt(request.data.courseId, uid);
 
     const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
         .where("userId", "==", request.auth?.uid)
@@ -362,42 +271,7 @@ const getCourseInfo = onCall(async (request) => {
             throw new HttpsError("internal", `Error getting courses, please try again later`);
         });
 
-    /*
-     * Statuses:
-     * 1 - Not enrolled
-     * 2 - Enrolled, not started
-     * 3 - In progress (includes if you previously failed a quiz)
-     * 4 - Quiz awaiting marking
-     * 5 - Failed
-     * 6 - Passed
-     *
-     * TODO: Make this a helper and use enums (getAvailableCourses has the same statuses)
-     */
-    let status;
-    if (!courseEnrolled) {
-        status = 1;
-    } else if (courseAttempt === null ) {
-        status = 2;
-    } else if (courseAttempt?.pass === null) {
-        const awaitingMarking = await getCollection(DatabaseCollections.QuizAttempt)
-            .where("courseAttemptId", "==", courseAttempt.id)
-            .where("endTime", "!=", null)
-            .where("pass", "==", null)
-            .get()
-            .then((docs) => !docs.empty)
-            .catch((error) => {
-                logger.error(`Error checking if quiz is awaiting marking: ${error}`);
-                throw new HttpsError('internal', "Error getting course quiz, please try again later");
-            });
-
-        status = awaitingMarking ? 4 : 3;
-    } else if (courseAttempt?.pass === false) {
-        status = 5;
-    } else if (courseAttempt?.pass === true) {
-        status = 6;
-    } else {
-        throw new HttpsError("internal", "Course is in an invalid state - can't get status");
-    }
+    const status = await getCourseStatus(courseInfo.id, uid);
 
     let numQuizQuestions;
     if (courseInfo.quiz) {
@@ -423,7 +297,7 @@ const getCourseInfo = onCall(async (request) => {
         quiz: courseInfo.quiz ? { numQuestions: numQuizQuestions, ...courseInfo.quiz } : null,
         status: status,
         startTime: courseAttempt?.startTime.seconds ?? null,
-        currentQuiz: quizAttempts.find((attempt) => !attempt.endTime) ?? null,
+        currentQuiz: quizAttempts.find((attempt) => !attempt.endTime && !attempt.expired) ?? null,
         courseAttemptId: courseAttempt?.id ?? null,
     };
 });

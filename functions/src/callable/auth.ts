@@ -199,8 +199,9 @@ const getUserProfile = onCall(async (request) => {
             throw new HttpsError("internal", "Error getting user data, try again later");
         });
 
-    const enrolledCourseData = await Promise.all(enrolledCourses.map(async (courseId) =>
-        getDocData(DatabaseCollections.Course, courseId).then((course) => ({ id: courseId, name: course.name }))
+    const courseNames: { [key: string]: string } = {};
+    await Promise.all(enrolledCourses.map(async (courseId) =>
+        getDocData(DatabaseCollections.Course, courseId).then((course) => courseNames[courseId] = course.name)
     ));
 
     // Query course & course attempt data
@@ -231,10 +232,12 @@ const getUserProfile = onCall(async (request) => {
             return {
                 id: doc.id,
                 courseId: data.courseId,
+                courseName: courseNames[data.courseId],
                 userId: data.userId,
                 courseAttemptId: data.courseAttemptId,
                 startTime: data.startTime.seconds,
                 endTime: data.endTime?.seconds,
+                score: data.score,
             };
         }))
         .catch((error) => {
@@ -247,7 +250,7 @@ const getUserProfile = onCall(async (request) => {
         email: user.email,
         signUpDate: Date.parse(user.metadata.creationTime),
         lastSignIn: user.metadata.lastRefreshTime ? Date.parse(user.metadata.lastRefreshTime) : -1,
-        enrolledCourses: enrolledCourseData,
+        enrolledCourses: enrolledCourses.map((courseId) => ({ id: courseId, name: courseNames[courseId] })),
         completedCourses: completedCourseData,
         quizAttempts: quizAttemptData
     };

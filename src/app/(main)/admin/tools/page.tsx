@@ -158,7 +158,7 @@ export default function Tools() {
                         <div className="text-lg -mb-1">Learner Insights</div>
                         <p className="mr-2 text-gray-500">Click on a user to view individual data.</p>
                     </div>
-                    <Button text="Invite a Learner" onClick={() => router.push('/home')}/>
+                    <Button text="Invite new Learners" onClick={() => router.push('/home')}/>
                     <Button text="Download User Reports" onClick={() => router.push('/home')} style="ml-4"/>
                 </div>
                 {getLearnerInsights()}

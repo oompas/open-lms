@@ -1,6 +1,7 @@
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
-import { auth, db } from "./setup";
+import { auth } from "./setup";
 import { logger } from "firebase-functions";
+import { getEmailCollection } from "./database";
 
 // Check if the requesting user is authenticated
 const verifyIsAuthenticated = (request: CallableRequest) => {
@@ -22,7 +23,7 @@ const sendEmail = (emailAddress: string, subject: string, html: string, context:
         }
     };
 
-    return db.collection('/Email/')
+    return getEmailCollection()
         .add(email)
         .then((doc) => {
             logger.info(`Email ${doc.id} created for ${emailAddress} (${context})`);
