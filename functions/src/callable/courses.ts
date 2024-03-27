@@ -423,7 +423,7 @@ const getCourseInfo = onCall(async (request) => {
         quiz: courseInfo.quiz ? { numQuestions: numQuizQuestions, ...courseInfo.quiz } : null,
         status: status,
         startTime: courseAttempt?.startTime.seconds ?? null,
-        currentQuiz: quizAttempts.find((attempt) => !attempt.endTime) ?? null,
+        currentQuiz: quizAttempts.find((attempt) => !attempt.endTime && !attempt.expired) ?? null,
         courseAttemptId: courseAttempt?.id ?? null,
     };
 });
