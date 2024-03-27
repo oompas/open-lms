@@ -6,48 +6,12 @@ import {
     DatabaseCollections,
     EnrolledCourseDocument,
     getCollection,
-    getCollectionDocs, QuizAttemptDocument
+    getCollectionDocs,
+    QuizAttemptDocument,
+    QuizQuestionDocument,
+    QuizQuestionAttemptDocument,
+    UserDocument, getDocData, CourseDocument,
 } from "../helpers/database";
-
-interface CourseAttempt {
-    courseId: string;
-    endTime: Date;
-    pass: boolean | null;
-    startTime: Date;
-    userId: string;
-}
-
-interface QuizQuestionAttempt {
-    courseId: string;
-    marksAchieved: boolean;
-    questionId: string;
-    quizAttemptId: string;
-    response: string;
-    userId: string;
-}
-
-interface QuizQuestion {
-    active: boolean;
-    courseId: string;
-    marks: number;
-    question: string;
-    stats: {
-        numAttempts: number,
-        totalScore: number,
-    };
-    type: string;
-}
-
-interface EnrolledCourse {
-    courseId: string;
-    userId: string;
-}
-
-type courseLearner = {
-    name: string;
-    completionStatus: boolean;
-    markingStatus: boolean;
-};
 
 /**
  * Returns a list of all learners on the platform with their:
@@ -92,9 +56,7 @@ const getUserReports = onCall(async (request) => {
     return users.map((user) => {
 
         const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.data().userId === user.id);
-
         const userAttempts = courseAttempts.filter((attempt) => attempt.data().userId === user.id);
-
         const completedAttempts = courseAttempts.filter((attempt) => attempt.data().userId == user.id && attempt.data().pass === true);
 
         return {
@@ -134,50 +96,39 @@ const getCourseReports = onCall(async (request) => {
             throw new HttpsError('internal', "Error getting course reports, please try again later");
         });
 
-    const enrollments = await getCollection(DatabaseCollections.EnrolledCourse)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying enrollments: ${error}`);
-            throw new HttpsError('internal', "Error getting course reports, please try again later");
-        });
-
-    const courseAttempts = await getCollection(DatabaseCollections.CourseAttempt)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying course attempts: ${error}`);
-            throw new HttpsError('internal', "Error getting course reports, please try again later");
-        });
-
-    const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying quiz attempts: ${error}`);
-            throw new HttpsError('internal', "Error getting course reports, please try again later");
-        });
+    const enrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
+    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
+    const quizAttempts = await getCollectionDocs(DatabaseCollections.QuizAttempt) as QuizAttemptDocument[];
 
     logger.info("Successfully queried database collections");
 
     return courses.map((course) => {
 
-        const courseEnrollments = enrollments.filter((enrollment) => enrollment.data().courseId === course.id);
+        const courseEnrollments: EnrolledCourseDocument[] = enrollments.filter((enrollment) => enrollment.courseId === course.id);
 
-        const completedAttempts = courseAttempts.filter((attempt) => {
-            return attempt.data().courseId === course.id && attempt.data().pass === true;
-        });
+        const completedAttempts: CourseAttemptDocument[] = courseAttempts.filter((attempt) => attempt.courseId === course.id && attempt.pass === true);
 
-        const completionTimes = completedAttempts.map((attempt) => {
-            const milliseconds = attempt.data().endTime.toMillis() - attempt.data().startTime.toMillis();
+        const completionTimes: number[] = completedAttempts.map((attempt) => {
+            const milliseconds = (attempt.endTime?.toMillis() ?? 0) - attempt.startTime.toMillis();
             return Math.floor(milliseconds / 1000 / 60); // In minutes
         });
-        const averageTime = completionTimes.length === 0 ? null : (1 / completionTimes.length) * completionTimes.reduce((a, b) => a + b, 0);
+        let averageTime = null;
+        if (completionTimes.length > 0) {
+            averageTime = completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length;
+        }
 
         const quizScores = quizAttempts
-            .filter((attempt) => attempt.data().courseId === course.id && attempt.data().pass === true)
-            .map((attempt) => attempt.data().score);
-        const averageScore = quizScores.length === 0 ? null : (1 / quizScores.length) * quizScores.reduce((a, b) => a + b, 0);
+            .filter((attempt) => attempt.courseId === course.id && attempt.pass === true)
+            .map((attempt) => {
+                if (attempt.score === null) {
+                    throw new HttpsError('internal', `Completed quiz attempt (${attempt.id}) score is null`);
+                }
+                return attempt.score;
+            });
+        let averageScore = null;
+        if (quizScores.length > 0) {
+            averageScore = quizScores.reduce((a, b) => a + b, 0) / quizScores.length;
+        }
 
         return {
             courseId: course.id,
@@ -189,7 +140,6 @@ const getCourseReports = onCall(async (request) => {
         };
     }).sort((a, b) => b.numEnrolled - a.numEnrolled);
 });
-
 
 /**
  * Returns a list of statistics for the course on the platform:
@@ -215,17 +165,19 @@ const getCourseInsightReport = onCall(async (request) => {
         throw new HttpsError('invalid-argument', "courseId is required");
     }
 
-    const courseAttempts: CourseAttempt[] = await getCollection(DatabaseCollections.CourseAttempt)
+    const courseData = await getDocData(DatabaseCollections.Course, courseId) as CourseDocument;
+
+    const courseAttempts: CourseAttemptDocument[] = await getCollection(DatabaseCollections.CourseAttempt)
         .where("courseId", "==", courseId)
         .get()
-        .then((result) => result.docs.map(doc => doc.data() as CourseAttempt))
+        .then((result) => result.docs.map(doc => doc.data() as CourseAttemptDocument))
         .catch((error) => {
             logger.error(`Error querying course attempts: ${error}`);
             throw new HttpsError('internal', "Error getting this course insight report, please try again later")
         });
 
     // Use a Map to track the latest attempt for each userId
-    const latestAttemptsByUser: Map<string, CourseAttempt> = new Map();
+    const latestAttemptsByUser: Map<string, CourseAttemptDocument> = new Map();
 
     courseAttempts.forEach((attempt) => {
         const existingAttempt = latestAttemptsByUser.get(attempt.userId);
@@ -235,16 +187,16 @@ const getCourseInsightReport = onCall(async (request) => {
     });
 
     // Convert the Map values back to an array
-    const filteredAttempts: CourseAttempt[] = Array.from(latestAttemptsByUser.values());
+    const filteredAttempts: CourseAttemptDocument[] = Array.from(latestAttemptsByUser.values());
 
     // Fetch quiz attempts that need marking
     const markingStatusMap: Map<string, boolean> = new Map();
 
     // Fetch all QuizQuestionAttempts for the course
-    const quizQuestionAttempts: QuizQuestionAttempt[] = await getCollection(DatabaseCollections.QuizQuestionAttempt)
+    const quizQuestionAttempts: QuizQuestionAttemptDocument[] = await getCollection(DatabaseCollections.QuizQuestionAttempt)
         .where("courseId", "==", courseId)
         .get()
-        .then((result) => result.docs.map(doc => doc.data() as QuizQuestionAttempt));
+        .then((result) => result.docs.map(doc => doc.data() as QuizQuestionAttemptDocument));
 
     quizQuestionAttempts.forEach((attempt) => {
         if (attempt.marksAchieved === null) {
@@ -254,27 +206,28 @@ const getCourseInsightReport = onCall(async (request) => {
 
     // Fetch user details
     const userDetails: Map<string, { name: string }> = new Map();
-    const users = await getCollection(DatabaseCollections.User).get()
+    // @ts-ignore
+    const users: UserDocument[] = await getCollection(DatabaseCollections.User)
+        .get()
         .then((result) => result.docs.forEach(doc => {
             userDetails.set(doc.id, { name: doc.data().name });
         }));
 
     // Fetch active QuizQuestions for the course
-    const quizQuestions: QuizQuestion[] = await getCollection(DatabaseCollections.QuizQuestion)
+    const quizQuestions: QuizQuestionDocument[] = await getCollection(DatabaseCollections.QuizQuestion)
         .where("courseId", "==", courseId)
         .where("active", "==", true)
         .get()
-        .then(result => result.docs.map(doc => doc.data() as QuizQuestion));
+        .then(result => result.docs.map(doc => doc.data() as QuizQuestionDocument));
 
     // Map to store question texts
     let questionTexts: string[] = quizQuestions.map(question => question.question);
 
     // Prepare to calculate average marks and match responses
-    let questionStats: { [questionId: string]: { marks: number, averageMarksAchieved: number, numAttempts: number, totalScore: number } } = {};
+    let questionStats: { [key: string]: { marks: number, averageMarksAchieved: number, numAttempts: number, totalScore: number } } = {};
     quizQuestions.forEach(question => {
-        questionStats[question.questionId] = { marks: question.marks, averageMarksAchieved: 0, numAttempts: 0, totalScore: 0 };
+        questionStats[question.id] = { marks: question.marks, averageMarksAchieved: 0, numAttempts: 0, totalScore: 0 };
     });
-    // TODO: ^ how would I get the questionId (aka doc id) for the QuizQuestion?
 
     // Process quiz question attempts
     quizQuestionAttempts.forEach(attempt => {
@@ -302,13 +255,13 @@ const getCourseInsightReport = onCall(async (request) => {
 
     const courseEnrollments = enrollments.filter((enrollment) => enrollment.data().courseId === course.id);
 
-    // TODO: need to figure out the .data() error on the completedAttempts and completionTimes consts
     const completedAttempts = courseAttempts.filter((attempt) => {
-        return attempt.data().courseId === courseId && attempt.data().pass === true;
+        return attempt.courseId === courseId && attempt.pass === true;
     });
 
     const completionTimes = completedAttempts.map((attempt) => {
-        const milliseconds = attempt.data().endTime.toMillis() - attempt.data().startTime.toMillis();
+        // @ts-ignore
+        const milliseconds = attempt.endTime.toMillis() - attempt.startTime.toMillis();
         return Math.floor(milliseconds / 1000 / 60); // In minutes
     });
     const averageTime = completionTimes.length === 0 ? null : (1 / completionTimes.length) * completionTimes.reduce((a, b) => a + b, 0);
@@ -326,28 +279,20 @@ const getCourseInsightReport = onCall(async (request) => {
         };
     });
 
-    // Combine all stats into the finalReport array
-    const finalReport = {
+    // Combine all stats for the return array
+    return {
+        courseName: courseData.name,
+        courseId: courseData.id,
         learners: courseLearners,
         questions: questionTexts,
         questionStats: Object.values(questionStats).map(stat => ({
             marks: stat.marks,
-            averageMarksAchieved: stat.averageMarksAchieved.toFixed(2)
+            averageMarksAchieved: stat.averageMarksAchieved.toFixed(2),
         })),
         numEnrolled: courseEnrollments.length,
         numComplete: completedAttempts.length,
         avgTime: averageTime
     };
-    // TODO: add in
-
-    return finalReport;
-
-    // Need to account for the course statuses as follows:
-    // Status 1: not enrolled in course [courseEnrolled doesn't exist]
-    // Status 2: enrolled, not started [courseAttempt is null]
-    // Status 3: in progress [pass is null]
-    // Status 4: completed, failed [pass is false]
-    // Status 5: completed, passed [pass is true]
 });
 
 export { getUserReports, getCourseReports, getCourseInsightReport };
