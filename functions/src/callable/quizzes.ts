@@ -400,7 +400,7 @@ const submitQuiz = onCall(async (request) => {
         }
     }
 
-    // Mark the quiz and update question stats
+    // Get all quiz questions for this quiz
     const quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
         .where("active", "==", true)
         .where("courseId", "==", quizAttempt.courseId)
@@ -411,8 +411,8 @@ const submitQuiz = onCall(async (request) => {
             if (!questions || questions.length === 0) {
                 throw new HttpsError("not-found", `No quiz questions found for course ${request.data.courseId}`);
             }
-            if (questions.length !== responses.length) {
-                throw new HttpsError("invalid-argument", `Invalid request: number of responses does not match number of questions`);
+            if (responses.length > questions.length) {
+                throw new HttpsError("invalid-argument", `Invalid request: more responses than questions (${responses.length} > ${questions.length})`);
             }
             responses.forEach((response: { questionId: string, answer: string }) => {
                 if (!questions.find((q) => q.id === response.questionId)) {
@@ -430,21 +430,30 @@ const submitQuiz = onCall(async (request) => {
     const updatePromises: Promise<any>[] = [];
 
     // Mark each question & create promises
-    for (const response of responses) {
-        const question = quizQuestions.find((q) => q.id === response.questionId);
+    for (const question of quizQuestions) {
+        const response: { questionId: string, answer: string } | undefined = responses.find((r: any) => r.questionId === question.id);
 
-        let marks = null; // Default for short answer (need to be marked)
-        let userResponse = response.answer;
-        if (question.type === "mc" || question.type === "tf") {
-            userResponse = Number(response.answer);
-            marks = question.correctAnswer === userResponse ? question.marks : 0;
+        let userResponse;
+        let marks;
+        if (response === undefined) { // User didn't answer the question: no response & default score of zero
+            marks = 0;
+            userResponse = null;
+        } else {
+            // Multiple choice or true/false questions can be automatically marked
+            if (question.type === "mc" || question.type === "tf") {
+                userResponse = Number(response.answer);
+                marks = question.correctAnswer === userResponse ? question.marks : 0;
+            } else {
+                userResponse = response.answer;
+                marks = null; // Short answer questions need to be manually marked
+            }
         }
 
         // Add question attempt to database
         const markedResponse = {
             userId: request.auth?.uid,
             courseId: quizAttempt.courseId,
-            questionId: response.questionId,
+            questionId: question.id,
             quizAttemptId: quizAttemptId,
             response: userResponse,
             marksAchieved: marks,
@@ -501,16 +510,16 @@ const getQuizzesToMark = onCall(async (request) => {
 
     // Get all course names (may have duplicates, so use a set to get unique values for efficiency)
     const courseNames: { [key: string]: string } = {};
-    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.courseId))].map((courseId) =>
-        getDocData(DatabaseCollections.Course, courseId).then((course) => courseNames[courseId] = course.name)
+    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.courseId))].map((courseId) => // @ts-ignore
+        getDocData(DatabaseCollections.Course, courseId).then((course: CourseDocument) => courseNames[courseId] = course.name)
     ));
 
     logger.info(`Successfully retrieved course data for ${Object.keys(courseNames).length} courses`);
 
     // Get all usernames (same as above with possible duplicates)
     const userNames: { [key: string]: string } = {};
-    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.userId))].map((userId) =>
-        getDocData(DatabaseCollections.User, userId).then((user) => userNames[userId] = user.name)
+    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.userId))].map((userId) => // @ts-ignore
+        getDocData(DatabaseCollections.User, userId).then((user: UserDocument) => userNames[userId] = user.name)
     ));
 
     logger.info(`Successfully retrieved user data for ${Object.keys(userNames).length} users`);
@@ -569,8 +578,8 @@ const getQuizAttempt = onCall(async (request) => {
     const quizAttemptData = await getDocData(DatabaseCollections.QuizAttempt, request.data.quizAttemptId) as QuizAttemptDocument;
 
     const attemptData = await Promise.all(allAttempts.map((attempt) =>
-        getDocData(DatabaseCollections.QuizQuestion, attempt.questionId)
-            .then((doc) => ({
+        getDocData(DatabaseCollections.QuizQuestion, attempt.questionId) // @ts-ignore
+            .then((doc: QuizQuestionDocument) => ({
                 id: attempt.id,
                 question: doc.question,
                 response: attempt.response,

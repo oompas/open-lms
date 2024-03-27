@@ -58,7 +58,7 @@ const getDocData = (collection: DatabaseCollections, docId: string) => {
                 logger.error(`Document '${docId}' in collection '${collection}' has no data (value: ${docData})`);
                 throw new HttpsError("internal", `Document '${docId}' in collection '${collection}' has no data`);
             }
-            return docData;
+            return { id: doc.id, ...docData };
         })
         .catch(err => {
             logger.error(`Error getting document '${docId}' from collection '${collection}': ${err}`);
@@ -80,9 +80,7 @@ const getCollectionDocs = (collection: DatabaseCollections) => {
 const updateDoc = (collection: DatabaseCollections, docId: string, data: any) => {
     return getDocRef(collection, docId)
         .update(data)
-        .then(() => {
-            return "Document updated successfully";
-        })
+        .then(() => "Document updated successfully")
         .catch(err => {
             logger.error(`Error updating document '${docId}' in collection '${collection}': ${err}`);
             throw new HttpsError("internal", `Error updating document '${docId}' in collection '${collection}'`);
@@ -92,9 +90,7 @@ const updateDoc = (collection: DatabaseCollections, docId: string, data: any) =>
 const deleteDoc = (collection: DatabaseCollections, docId: string) => {
     return getDocRef(collection, docId)
         .delete()
-        .then(() => {
-            return "Document deleted successfully";
-        })
+        .then(() => "Document deleted successfully")
         .catch(err => {
             logger.error(`Error deleting document '${docId}' in collection '${collection}': ${err}`);
             throw new HttpsError("internal", `Error deleting document '${docId}' in collection '${collection}'`);
@@ -121,8 +117,9 @@ interface UserDocument {
     id: string;
     email: string;
     name: string;
-    admin: boolean;
     signUpTime: firestore.Timestamp;
+    admin?: true;
+    developer?: true;
 }
 
 interface CourseDocument {

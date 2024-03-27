@@ -12,6 +12,7 @@ import {
     QuizQuestionAttemptDocument,
     UserDocument, getDocData, CourseDocument,
 } from "../helpers/database";
+import { object } from "yup";
 
 /**
  * Returns a list of all learners on the platform with their:
@@ -27,42 +28,22 @@ const getUserReports = onCall(async (request) => {
 
     logger.info("User is an admin, querying database for user reports...");
 
-    const users = await getCollection(DatabaseCollections.User)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying users: ${error}`);
-            throw new HttpsError('internal', "Error getting user reports, please try again later");
-        });
-
-    const courseEnrollments = await getCollection(DatabaseCollections.EnrolledCourse)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying course enrollments: ${error}`);
-            throw new HttpsError('internal', "Error getting user reports, please try again later");
-        });
-
-    const courseAttempts = await getCollection(DatabaseCollections.CourseAttempt)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying course attempts: ${error}`);
-            throw new HttpsError('internal', "Error getting user reports, please try again later");
-        });
+    const users = await getCollectionDocs(DatabaseCollections.User) as UserDocument[];
+    const courseEnrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
+    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
 
     logger.info("Successfully queried database data, translating to user data...");
 
     return users.map((user) => {
 
-        const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.data().userId === user.id);
-        const userAttempts = courseAttempts.filter((attempt) => attempt.data().userId === user.id);
-        const completedAttempts = courseAttempts.filter((attempt) => attempt.data().userId == user.id && attempt.data().pass === true);
+        const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.userId === user.id);
+        const userAttempts = courseAttempts.filter((attempt) => attempt.userId === user.id);
+        const completedAttempts = courseAttempts.filter((attempt) => attempt.userId == user.id && attempt.pass === true);
 
         return {
             uid: user.id,
-            name: user.data().name,
-            email: user.data().email,
+            name: user.name,
+            email: user.email,
             coursesEnrolled: userEnrollments.length,
             coursesAttempted: userAttempts.length,
             coursesComplete: completedAttempts.length,
@@ -159,11 +140,17 @@ const getCourseInsightReport = onCall(async (request) => {
 
     logger.info("User is an admin, querying database for this course's report...");
 
-    const courseId = request.data.courseId;
+    const schema = object({
+        courseId: object().required(),
+    }).required().noUnknown(true);
 
-    if (!courseId) {
-        throw new HttpsError('invalid-argument', "courseId is required");
-    }
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    const { courseId } = request.data;
 
     const courseData = await getDocData(DatabaseCollections.Course, courseId) as CourseDocument;
 
@@ -245,15 +232,9 @@ const getCourseInsightReport = onCall(async (request) => {
         stat.averageMarksAchieved = stat.numAttempts > 0 ? (stat.totalScore / stat.numAttempts) * stat.marks : 0;
     });
 
-    const enrollments = await getCollection(DatabaseCollections.EnrolledCourse)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying enrollments: ${error}`);
-            throw new HttpsError('internal', "Error getting course reports, please try again later");
-        });
+    const enrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
 
-    const courseEnrollments = enrollments.filter((enrollment) => enrollment.data().courseId === courseId);
+    const courseEnrollments = enrollments.filter((enrollment) => enrollment.courseId === courseId);
 
     const completedAttempts = courseAttempts.filter((attempt) => {
         return attempt.courseId === courseId && attempt.pass === true;

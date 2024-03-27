@@ -8,7 +8,6 @@ import {
     getDocData, QuizQuestionAttemptDocument,
     updateDoc
 } from "../helpers/database";
-import { DOCUMENT_ID_LENGTH, USER_UID_LENGTH } from "../helpers/helpers";
 import { firestore } from "firebase-admin";
 
 /**
@@ -51,8 +50,11 @@ const reportedCourseId = (userId: string, courseId: string) => {
  * Throws an error if a given string is not a valid document ID (20 alphanumeric characters long)
  */
 const validDocumentId = (docId: string) => {
+    if (!docId || typeof docId !== "string") {
+        throw new HttpsError("invalid-argument", `Invalid document id '${docId}' - must be a valid string (value: ${JSON.stringify(docId)})`);
+    }
     if (!docId.match(/^[a-zA-Z0-9]{20}$/)) {
-        throw new HttpsError("invalid-argument", `Invalid document id '${docId}' - must be a 20 character alphanumeric string`);
+        throw new HttpsError("invalid-argument", `Invalid document id '${docId}' - must be a 20 character alphanumeric string (value: ${JSON.stringify(docId)})`);
     }
 }
 
@@ -60,8 +62,11 @@ const validDocumentId = (docId: string) => {
  * Throws an error if a given string is not a valid user ID (28 alphanumeric characters long)
  */
 const validUserId = (userId: string) => {
+    if (!userId || typeof userId !== "string") {
+        throw new HttpsError("invalid-argument", `Invalid user id '${userId}' - must be a valid string (value: ${JSON.stringify(userId)})`);
+    }
     if (!userId.match(/^[a-zA-Z0-9]{28}$/)) {
-        throw new HttpsError("invalid-argument", `Invalid user id '${userId}' - must be a 28 character alphanumeric string`);
+        throw new HttpsError("invalid-argument", `Invalid user id '${userId}' - must be a 28 character alphanumeric string (value: ${JSON.stringify(userId)})`);
     }
 }
 
@@ -70,8 +75,12 @@ const validUserId = (userId: string) => {
  */
 const getCourseStatus = async (courseId: string, userId: string) => {
 
+    validDocumentId(courseId);
+    validUserId(userId);
+
+    // Save a query if the course isn't enrolled
     const courseEnrolled: boolean = await docExists(DatabaseCollections.EnrolledCourse, enrolledCourseId(userId, courseId));
-    if (!courseEnrolled) { // Save a query if the course isn't enrolled
+    if (!courseEnrolled) {
         return CourseStatus.NotEnrolled;
     }
 
@@ -106,16 +115,8 @@ const getCourseStatus = async (courseId: string, userId: string) => {
  */
 const getLatestCourseAttempt = async (courseId: string, userId: string) => {
 
-    // Validate params
-    if (!courseId || !userId) {
-        throw new HttpsError("invalid-argument", "Invalid course or user id in getLatestCourseAttempt");
-    }
-    if (courseId.length !== DOCUMENT_ID_LENGTH) {
-        throw new HttpsError("invalid-argument", "Invalid course id in getLatestCourseAttempt - must be a 20 character string");
-    }
-    if (userId.length !== USER_UID_LENGTH) {
-        throw new HttpsError("invalid-argument", "Invalid user id in getLatestCourseAttempt - must be a 28 character string");
-    }
+    validDocumentId(courseId);
+    validUserId(userId);
 
     return getCollection(DatabaseCollections.CourseAttempt)
         .where("courseId", "==", courseId)
@@ -127,7 +128,7 @@ const getLatestCourseAttempt = async (courseId: string, userId: string) => {
             if (docs.empty) {
                 return null;
             }
-            return docs.docs[0].data() as CourseAttemptDocument;
+            return { id: docs.docs[0].id, ...docs.docs[0].data() } as CourseAttemptDocument;
         })
         .catch((error) => {
             logger.error(`Error getting latest course attempt: ${error}`);
