@@ -2,23 +2,41 @@
 import Link from "next/link";
 import IDCourse from "./IDCourse";
 import Quiz from "./Quiz"
-import Requirement from "./Requirement";
 import { MdArrowBack } from "react-icons/md";
 import { useAsync } from "react-async-hook";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { callApi } from "@/config/firebase";
+import Checkbox from "@/components/Checkbox";
 
 export default function Course({ params }: { params: { id: string } }) {
 
     const getCourse = useAsync(() =>
-        callApi("getCourseInfo")({ courseId: params.id, withQuiz: false })
-            // @ts-ignore
-            .then((result) => { setStatus(result.data.status); return result; }),
-        []);
+        callApi("getCourseInfo", { courseId: params.id, withQuiz: false })
+            .then((result) => { // @ts-ignore
+                setStatus(result.data.status); // @ts-ignore
+                setCourseAttemptId(result.data.courseAttemptId); // @ts-ignore
+                if (result.data.currentQuiz) { // @ts-ignore
+                    setQuizAttemptId(result.data.currentQuiz.id);
+                }
+                return result;
+            }), []);
 
     const [status, setStatus] = useState(0);
     const [timeDone, setTimeDone] = useState(false);
+    const [courseAttemptId, setCourseAttemptId] = useState(null);
+    const [quizAttemptId, setQuizAttemptId] = useState(null);
+    const [quizStarted, setQuizStarted] = useState<null|boolean>(null);
 
+    useEffect(() => {
+        if (!getCourse.result?.data) {
+            return;
+        }
+
+        setQuizStarted(status <= 2 || status === 6 || !timeDone
+            ? null // @ts-ignore
+            : getCourse.result.data.currentQuiz !== null);
+
+    }, [status, timeDone]);
 
     const renderCourse = () => {
         // @ts-ignore
@@ -40,25 +58,39 @@ export default function Course({ params }: { params: { id: string } }) {
                     setTimeDone={setTimeDone}
                     status={status}
                     setStatus={setStatus}
+                    setCourseAttemptId={setCourseAttemptId}
                 />
 
                 <div className="mt-8 text-2xl">
                     <h1 className="mb-4">Required completion verification:</h1>
-                    {course.minTime && <Requirement key={1} text={`Spend at least ${getCourseTimeString()} on the course`} done={timeDone}/>}
-                    {course.quiz && <Requirement key={2} text={"Complete the required quiz"} done={course.status === 5}/>}
-                </div>
+                    {course.minTime &&
+                        <div className="flex flex-row items-center mt-2">
+                            <Checkbox checked={timeDone} setChecked={null} style="mr-3"/>
+                            <div>{`Spend at least ${getCourseTimeString()} on the course`}</div>
+                        </div>
+                    }
+                    {course.quiz &&
+                        <div className="flex flex-row items-center mt-2">
+                            <Checkbox checked={course.status === 6} setChecked={null} style="mr-3"/>
+                            <div>{"Complete the required quiz"}</div>
+                        </div>
+                    }
+            </div>
 
-                {course.quiz &&
-                    <div className="mt-4">
-                        <div className="flex flex-col w-1/2">
-                            <Quiz
-                                key={1}
-                                length={course.quiz.timeLimit}
+    {
+        course.quiz &&
+        <div className="mt-4">
+            <div className="flex flex-col w-1/2">
+                <Quiz
+                    key={1}
+                    length={course.quiz.timeLimit}
                                 maxAttempts={course.quiz.maxQuizAttempts}
                                 numQuestions={course.quiz.numQuestions}
                                 minimumScore={course.quiz.minScore}
-                                inProgress={status <= 2 || !timeDone ? null : course.quizAttempts.length > 0}
-                                id={course.courseId}
+                                quizStarted={quizStarted}
+                                courseAttemptId={courseAttemptId}
+                                quizAttemptId={quizAttemptId}
+                                courseId={params.id}
                             />
                         </div>
                     </div>

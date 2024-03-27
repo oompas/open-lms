@@ -18,6 +18,6 @@ initializeApp(firebaseConfig);
 
 const auth = getAuth();
 
-const callApi = (name: string) => httpsCallable(getFunctions(), name);
+const callApi = (name: string, payload: object) => httpsCallable(getFunctions(), name)(payload);
 
 export { auth, callApi };

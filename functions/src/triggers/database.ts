@@ -1,8 +1,8 @@
 import { onDocumentDeleted, onDocumentUpdated } from "firebase-functions/v2/firestore";
-import { DatabaseCollections, getCollection } from "../helpers/helpers";
 import { auth } from "../helpers/setup";
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
+import { DatabaseCollections, getCollection } from "../helpers/database";
 
 /**
  * Admin permissions are updated by a developer editing the user document in firestore
@@ -34,6 +34,7 @@ const onCourseDeleted = onDocumentDeleted(`${DatabaseCollections.Course}/{course
         DatabaseCollections.EnrolledCourse,
         DatabaseCollections.CourseAttempt,
         DatabaseCollections.QuizAttempt,
+        DatabaseCollections.QuizQuestionAttempt
     ];
 
     for (const collection of collectionsToDelete) {

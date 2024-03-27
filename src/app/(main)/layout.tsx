@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 import '../globals.css';
-import { auth } from '@/config/firebase';
+import { auth, callApi } from '@/config/firebase';
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from 'react';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -22,27 +22,21 @@ export default function LearnerLayout({
     const toggleDropdown = () => setIsOpen(!isOpen)
 
     const router = useRouter();
+    const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
     const logout = async () => {
-        await auth.signOut();
-        router.push('/');
+        await auth.signOut()
+            .then(() => router.push('/'));
     }
 
-    const useAdminStatus = () => {
-        const [isAdmin, setIsAdmin] = useState(false);
-        useEffect(() => {
+    // Takes time to detect if the user is logged in; if so, check if they're an admin
+    auth.onAuthStateChanged((user) => {
+        if (user) {
             auth.currentUser?.getIdTokenResult()
-                .then((idTokenResult) => {
-                    // Confirm the user is an Admin.
-                    setIsAdmin(!!idTokenResult.claims.admin);
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
-        }, []);
-        return isAdmin;
-    };
-    const isAdmin = useAdminStatus();
+                .then((idTokenResult) => setIsAdmin(!!idTokenResult.claims.admin))
+                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
+        }
+    });
 
     const [feedback, setFeedback] = useState('');
     const [feedbackSent, setFeedbackSent] = useState(false);
@@ -52,7 +46,7 @@ export default function LearnerLayout({
     const handleSubmitFeedback = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
-            await httpsCallable(getFunctions(), 'sendPlatformFeedback')({ feedback });
+            await callApi('sendPlatformFeedback', { feedback });
             setFeedback('');
             setFeedbackSent(true);
         } catch (error) {
@@ -139,6 +133,9 @@ export default function LearnerLayout({
                 {feedbackSent && <p className="text-green-500">Feedback sent successfully!</p>}
             </form>
             <span className="text-white p-4">&copy; {new Date().getFullYear()} OpenLMS. All rights reserved.</span>
+            <div className="flex flex-col items-left">
+                <Link href="/empty.pdf" className="text-1xl text-white">Access Platform User Guide</Link>
+            </div>
         </footer>
         </body>
         </html>

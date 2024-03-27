@@ -12,34 +12,36 @@ import TextField from "@/components/TextField";
 
 export default function Tools() {
 
-    const [quizzesToMark, setQuizzesToMark] = useState([]);
-    const courses = useAsync(callApi('getAvailableCourses'), []);
-    const learnerInsights = useAsync(callApi('getUserReports'), []);
-    const courseInsights = useAsync(callApi('getCourseReports'), []);
+    const quizzesToMark = useAsync(() => callApi('getQuizzesToMark', {}), []);
+    const courses = useAsync(() => callApi('getAvailableCourses', {}), []);
+    const learnerInsights = useAsync(() => callApi('getUserReports', {}), []);
+    const courseInsights = useAsync(() => callApi('getCourseReports', {}), []);
 
     const router = useRouter();
     const [search, setSearch] = useState("");
 
-    const getCourses = () => {
-        if (courses.loading) {
+    const getQuizzesToMark = () => {
+        if (quizzesToMark.loading) {
             return <div>Loading...</div>;
         }
-        if (courses.error) {
-            return <div>Error loading courses</div>;
+        if (quizzesToMark.error) {
+            return <div>Error loading quizzes to mark</div>;
         }
 
-        // @ts-ignore
-        return courses.result.data
-            .filter((course: any) => course.name.toLowerCase().includes(search.toLowerCase())
-                || course.description.toLowerCase().includes(search.toLowerCase()))
-            .map((course: any, key: number) => (
-                <ManageCourse
-                    key={key}
-                    title={course.name}
-                    description={course.description}
-                    id={course.id}
-                />
-            ));
+        return (
+            <div className="flex flex-wrap w-full justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
+                { /* @ts-ignore */ }
+                {quizzesToMark.result?.data && quizzesToMark.result.data.map((quiz, key) => (
+                    <QuizToMark
+                        key={key}
+                        title={quiz.courseName}
+                        date={new Date(quiz.timestamp).toLocaleString()}
+                        learner={quiz.userName}
+                        id={quiz.quizAttemptId}
+                    />
+                ))}
+            </div>
+        );
     }
 
     const getLearnerInsights = () => {
@@ -117,15 +119,6 @@ export default function Tools() {
         );
     }
 
-    const getQuizzesToMark = async () => {
-        await callApi("getQuestionsToMark")({})
-            .then((data) => {
-                // @ts-ignore
-                setQuizzesToMark(data.data);
-            })
-            .catch((err) => console.log(err));
-    }
-
     return (
         <main className="flex-col w-full justify-center items-center">
             {/* Quizzes to mark section */}
@@ -136,16 +129,7 @@ export default function Tools() {
                     </div>
                 </div>
                 <div className="flex flex-wrap justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
-                    {!quizzesToMark.length && <Button text="Get quizzes to mark" onClick={async () => await getQuizzesToMark()}/>}
-                    {quizzesToMark.map((quiz, key) => (
-                        <QuizToMark
-                            key={key}
-                            title={"title"}
-                            course={"course"}
-                            learner={"learner"}
-                            id={key}
-                        />
-                    ))}
+                    {getQuizzesToMark()}
                 </div>
             </div>
 

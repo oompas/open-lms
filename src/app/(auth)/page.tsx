@@ -7,27 +7,32 @@ import AuthForm from '@/components/AuthForm';
 import AuthButton from './AuthButton';
 import { auth } from "@/config/firebase";
 import { signInWithEmailAndPassword } from "@firebase/auth";
-import { redirect } from "next/navigation";
 
 export default function AuthPage() {
 
-    console.log(`Auth current user: ${auth.currentUser}`);
-    if (auth.currentUser) {
-        redirect('/home');
-    }
+    const router = useRouter();
 
-    const router = useRouter()
+    // If a user logs in, closes the app, then re-opens it, they're still logged in, so redirect them to the home page
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            router.push('/home');
+        }
+    });
+
     const [email, setEmail] = useState("")
     const [password, setPass] = useState("")
+    const [error, setError] = useState(null);
 
     // function called on "log in" button press
     const submitLogin = async () => {
-        await signInWithEmailAndPassword(auth, email, password)
-            .then(() => console.log("Signed in!"))
-            .catch((err) => console.log(`Error signing in: ${err}`));
-
-        router.push('/home');
-    }
+        try {
+            setError(null);
+            await signInWithEmailAndPassword(auth, email, password);
+            router.push('/home');
+        } catch (error: any) {
+            setError(error.code);
+        }
+    };
 
     const handleForgotPassword = () => {
         router.push('/forgotpassword');
@@ -56,6 +61,16 @@ export default function AuthPage() {
                             <Button text="log in" onClick={async () => await submitLogin()} style="ml-4" icon="arrow"
                                     filled/>
                         </div>
+                        {error && (
+                            <p className="text-red-500 mt-2">
+                                {error === "auth/invalid-credential" && "Invalid credentials. Please check your email and password."}
+                                {error === "auth/invalid-email" && "Invalid email format. Please enter a valid email address."}
+                                {error === "auth/user-not-found" && "User not found. Please check your credentials or sign up."}
+                                {error === "auth/wrong-password" && "Invalid password. Please enter your correct password."}
+                                {error === "auth/internal-error" && "Email address not verified. Please check your inbox and verify your address."}
+                                {error === "auth/missing-password" && "Missing password. Please enter a password."}
+                            </p>
+                        )}
                     </div>
                     <div>or</div>
                     <AuthButton text={"continue with Google"} icon="google" onClick={() => router.push('/home')}/>

@@ -3,85 +3,94 @@
 import IDProfile from "./IDProfile";
 import IDCourse from "./IDCourse";
 import IDCoursesEnrolled from "./IDEnrolled"
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { callApi } from "@/config/firebase";
+import { useAsync } from "react-async-hook";
 
 
-export default function Profile() {
+export default function Profile({ params }: { params: { id: string } }) {
 
-    const TEMP_PROFILE_DATA = [
-        { name: "Jennie Kim", dateMonth: "November", dateDay: "11", dateYear: "2024", email: "jenniekim@gmail.com", link:"yes", id: 1 },
-    ]
+    const userData = useAsync(() =>
+        callApi('getUserProfile', { targetUid: params.id }) // @ts-ignore
+            .then((rsp) => { setUser(rsp.data); return rsp; }),
+        []);
 
-    const TEMP_COURSE_DATA = [
-        { title: "CISC 498", grade: 22, completion: 10, link: "no", id: 1 },
-        { title: "ANAT 100", grade: 22, completion: 10, link: "no", id: 1 },
-        { title: "CISC 101", grade: 22, completion: 10, link: "no", id: 1 },
-        { title: "CISC 121", grade: 22, completion: 10, link: "no", id: 1 },
-        { title: "CISC 271", grade: 22, completion: 10, link: "no", id: 1 },
-        { title: "CISC 235", grade: 22, completion: 10, link: "no", id: 1 },
-        { title: "CISC 324", grade: 22, completion: 10, link: "no", id: 1 },
-        { title: "CISC 251", grade: 22, completion: 10, link: "no", id: 1 },
-        { title: "CISC 110", grade: 22, completion: 10, link: "no", id: 1 },
-    ]
-
-    const TEMP_COMPLETED_DATA = [
-        { title: "CISC 423", completionDate: "Jan 1, 2023", link: "no", id: 1 },
-        { title: "CISC 365", completionDate: "Jan 2, 2023", link: "no", id: 1 },
-        { title: "CISC 422", completionDate: "Jan 3, 2023", link: "no", id: 1 },
-        { title: "CISC 322", completionDate: "Jan 4, 2023", link: "no", id: 1 },
-    ]
+    const [user, setUser] = useState()
 
     const profileData = () => {
-        return ( TEMP_PROFILE_DATA.map((profile,key) => (
-            <IDProfile
-                key={key}
-                name={profile.name}
-                dateMonth={profile.dateMonth}
-                dateDay={profile.dateDay}
-                dateYear={profile.dateYear}
-                email={profile.email}
-                link={profile.link}
-                id={profile.id}
-            />
-        )))
+        if (user) {
+
+            const unixToString = (unix: number) => {
+                if (unix === -1) {
+                    return "Never";
+                }
+
+                return new Date(unix).toDateString() + ", " + new Date(unix).toLocaleTimeString();
+            }
+
+            return (
+                <IDProfile
+                    // @ts-ignore
+                    name={user.name}
+                    // @ts-ignore
+                    signUpDate={unixToString(user.signUpDate)}
+                    // @ts-ignore
+                    lastLoginDate={unixToString(user.lastSignIn)}
+                    // @ts-ignore
+                    email={user.email}
+                />
+            )
+        }
     }
 
     const coursesEnrolledData = () => {
-        return (
-            <>
-                {TEMP_COURSE_DATA.map((course,key) => (
-                    <IDCourse
-                        key={key}
-                        title={course.title}
-                        grade={course.grade}
-                        completion={course.completion}
-                        link={course.link}
-                        id={course.id}
+        if (user) {
+            // @ts-ignore
+            return user.enrolledCourses.map((course, key) => (
+                <IDCourse
+                    key={key}
+                    title={course.name}
+                    id={course.id}
                 />
-                ))}
-            </>
-        )
+            ))
+        }
     }
 
     const courseData = () => {
-        return (
-            <>
-                {TEMP_COMPLETED_DATA.map((coursesEnrolled,key) => (
-                    <IDCoursesEnrolled
-                        key={key}
-                        title={coursesEnrolled.title}
-                        completionDate={coursesEnrolled.completionDate}
-                        link={coursesEnrolled.link}
-                        id={coursesEnrolled.id}
+        if (user) {
+            // @ts-ignore
+            return user.completedCourses.map((coursesEnrolled, key) => (
+                // @ts-ignore
+                <IDCoursesEnrolled
+                    key={key}
+                    title={coursesEnrolled.name}
+                    id={coursesEnrolled.id}
                 />
-                ))}
-            </>
-        )
+            ))
+        }
+    }
+
+    const loadingPopup = () => {
+        if (userData.result?.data) {
+            return <></>;
+        }
+
+        return (
+            <div
+                className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                    <div className="text-lg mb-2">
+                        {userData.loading ? "Loading user data..." : "Error loading user data."}
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <main className="flex-col justify-center items-center">
-            <div className="flex flex-row mb-0">
+        <main className="flex flex-col w-full h-full overflow-y-scroll sm:no-scrollbar mb-4">
+
+            <div className="flex flex-row w-full mb-0">
                     {/* Account Details section */}
                     <div className="flex flex-col bg-white w-[50%] h-[50vh] p-12 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar mb-4">
                         <div className="text-lg mb-2">Account Details</div>
@@ -112,10 +121,12 @@ export default function Profile() {
                 <div className="flex flex-row justify-end items-center mb-4">
                     <div className="text-lg mb-2 mr-auto">Enrolled Courses</div>
                 </div>
-                <div className="flex flex-row flex-wrap justify-between gap-4 overflow-y-scroll sm:no-scrollbar">
+                <div className="flex flex-row flex-wrap gap-4 overflow-y-scroll sm:no-scrollbar">
                     {coursesEnrolledData()} 
                 </div>
             </div>
+
+            { loadingPopup() }
 
         </main>  
     );
