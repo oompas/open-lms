@@ -454,6 +454,7 @@ const submitQuiz = onCall(async (request) => {
             userId: request.auth?.uid,
             courseId: quizAttempt.courseId,
             questionId: question.id,
+            courseAttemptId: quizAttempt.courseAttemptId,
             quizAttemptId: quizAttemptId,
             response: userResponse,
             marksAchieved: marks,
@@ -668,6 +669,8 @@ const markQuizAttempt = onCall(async (request) => {
     }));
 
     await Promise.all(updatePromises);
+
+    logger.info(`Successfully marked ${responses.length} questions for quiz attempt ${quizAttemptId}`);
 
     // Update status of the quiz & course attempt
     return updateQuizStatus(quizAttemptId);

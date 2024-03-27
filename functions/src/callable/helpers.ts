@@ -141,6 +141,8 @@ const getLatestCourseAttempt = async (courseId: string, userId: string) => {
  */
 const updateQuizStatus = async (quizAttemptId: string) => {
 
+    logger.info(`Updating quiz status for quiz attempt ${quizAttemptId}...`);
+
     const completionTime = firestore.FieldValue.serverTimestamp();
 
     const quizQuestions = await getCollection(DatabaseCollections.QuizQuestionAttempt)
@@ -154,6 +156,7 @@ const updateQuizStatus = async (quizAttemptId: string) => {
 
     // If there are unmarked short answer questions, just update the completion time (don't know the score or passed status yet)
     if (quizQuestions.some((question) => question.marksAchieved === null)) {
+        logger.info(`Short answer questions exist; updating quiz attempt with completion time only...`);
         return updateDoc(DatabaseCollections.QuizAttempt, quizAttemptId, { endTime: completionTime });
     }
 
