@@ -33,7 +33,10 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const [userAnswers, setUserAnswers] = useState({});
 
     useEffect(() => {
-        if (countdown <= 0 || !quizData || quizData == "Invalid") {
+        if (countdown === 0 && quizData && quizData !== "Invalid") { // Automatically submit quiz when time runs out
+            handleSubmit();
+        }
+        if (countdown < 0 || !quizData || quizData == "Invalid") {
             return;
         }
 
