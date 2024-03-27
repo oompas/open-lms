@@ -1,168 +1,134 @@
 "use client"
 
 import Button from "@/components/Button"
+import { callApi } from "@/config/firebase";
 import Link from "next/link";
 import { useRouter } from "next/navigation"
 import { useState } from "react";
+import { useAsync } from "react-async-hook";
 import { LuExternalLink } from "react-icons/lu";
 
 
 export default function Insights({ params }: { params: { id: string } }) {
 
+    // const userData = useAsync(() =>
+    //     callApi('getUserProfile', { targetUid: params.id }) // @ts-ignore
+    //         .then((rsp) => { setUser(rsp.data); return rsp; }),
+    //     []);
+
+    // const [user, setUser] = useState()
+
     const router = useRouter();
 
-    const TEMP_COURSE_INFO = {
-        "courseId": "C0B2T3zhONVZj7ptVMSZ",
-        "active": true,
-        "name": "Queen's Ergonomics training",
-        "description": "Learn how to create a comfortable and efficient work environment",
-        "link": "https://www.queensu.ca/risk/safety/general/ergonomics",
-        "minTime": null,
-        "quiz": {
-            "timeLimit": 45,
-            "maxAttempts": null,
-            "preserveOrder": false,
-            "minScore": null
-        },
-        "quizQuestions": [
-            {
-                "id": "7CCvrC339QFVbdqNb5ar",
-                "type": "sa",
-                "question": "why is canda best country in world",
-                "marks": 2
-            },
-            {
-                "id": "7H2e8723VsHjgFPrf3ch",
-                "type": "tf",
-                "question": "The capital of Quebec is Montreal",
-                "marks": 2,
-                "correctAnswer": 1
-            },
-            {
-                "id": "paq7CGhvzvcaOMhsGKKB",
-                "type": "sa",
-                "question": "What sets Canada apart from the United states culturally?",
-                "marks": 5
-            },
-            {
-                "id": "bxZ0YZpfOeL9hvy8IyJH",
-                "type": "mc",
-                "question": "What is the smallest province in Canada by area?",
-                "marks": 1,
-                "answers": [
-                    "Ontario",
-                    "Quebec",
-                    "British Columbia",
-                    "Prince Edward Island"
-                ],
-                "correctAnswer": 3
-            },
-            {
-                "id": "qWczG9jz2fUKFHaB2m6s",
-                "type": "mc",
-                "question": "What is the capital of Canada?",
-                "marks": 1,
-                "answers": [
-                    "Ottawa",
-                    "Toronto",
-                    "Montreal",
-                    "Vancouver"
-                ],
-                "correctAnswer": 0
-            }
-        ],
-        "learners": [
-            {
-                "id": "6Be5XyxekDWILqyWaJmJLJ6aQbH3",
-                "name": "Reid Moffat",
-                "status": "In Progress",
-                "quiz": "idk"
-            }
-        ]
-    }
+    const courseData = useAsync(() =>
+        callApi('getCourseInsightReport', { courseId: params.id})  // @ts-ignore
+            .then((rsp) => { setData(rsp.data); console.log(rsp); return rsp; }),
+        []);
 
-    const [data, setData] = useState(TEMP_COURSE_INFO);
+    const [data, setData] = useState();
 
     const getEnrolledLearners = () => {
-        return (
-            <div className="flex flex-wrap w-full justify-start overflow-y-scroll sm:no-scrollbar">
-                <table className="w-full">
-                    <thead>
-                        <tr className="border-b-2 border-black text-left">
-                            <th className="py-1">Name</th>
-                            <th className="py-1">Status</th>
-                            <th className="py-1">Quiz</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        { /* @ts-ignore */}
-                        { data.learners.map((learner: any, key: number) => (
-                            <tr key={key} className="border">
-                                <td className="border p-2">
-                                    <Link href={"/admin/profile/"+learner.id} className="flex flex-row items-center hover:opacity-60">
-                                        {learner.name}
-                                        <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
-                                    </Link>
-                                </td>
-                                <td className="border p-2">
-                                    {learner.status}
-                                </td>
-                                <td className="border p-2">
-                                    {learner.quiz}
-                                </td>
+        if (data) {
+            return (
+                <div className="flex flex-wrap w-full justify-start overflow-y-scroll sm:no-scrollbar">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b-2 border-black text-left">
+                                <th className="py-1">Name</th>
+                                <th className="py-1">Status</th>
+                                <th className="py-1">Quiz</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        );
+                        </thead>
+                        <tbody>
+                            { /* @ts-ignore */}
+                            { data.learners.map((learner: any, key: number) => (
+                                <tr key={key} className="border">
+                                    <td className="border p-2">
+                                        <Link href={"/admin/profile/0"} className="flex flex-row items-center hover:opacity-60">
+                                            {learner.name}
+                                            <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
+                                        </Link>
+                                    </td>
+                                    <td className="border p-2">
+                                        { learner.completionStatus ? learner.markingStatus ? "Complete" : "Awaiting Marking" : "In Progress" }
+                                    </td>
+                                    <td className="border p-2">
+                                        aoaoaoa
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            );
+        }
     }
 
     const getQuizQuestions = () => {
-        return (
-            <div className="flex flex-wrap w-full justify-start overflow-y-scroll sm:no-scrollbar">
-                <table className="w-full">
-                    <thead>
-                        <tr className="border-b-2 border-black text-left">
-                            <th className="py-1">Question</th>
-                            <th className="py-1">%Correct</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        { /* @ts-ignore */}
-                        { data.quizQuestions.map((question: any, key: number) => (
-                            <tr key={key} className="border">
-                                <td className="border p-2">
-                                    {question.question}
-                                </td>
-                                <td className="border p-2">
-                                    {/* TODO - insert correct % */}
-                                    75%
-                                </td>
+        if (data) {
+            return (
+                <div className="flex flex-wrap w-full justify-start overflow-y-scroll sm:no-scrollbar">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b-2 border-black text-left">
+                                <th className="py-1">Question</th>
+                                <th className="py-1">%Correct</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            { /* @ts-ignore */}
+                            { data.questions.map((question: any, key: number) => (
+                                <tr key={key} className="border">
+                                    <td className="border p-2">
+                                        {question}
+                                    </td>
+                                    <td className="border p-2">
+                                        {/* TODO - insert correct % */}
+                                        75%
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            );
+        }
+    }
+
+    const loadingPopup = () => {
+        if (courseData.result?.data) {
+            return <></>;
+        }
+
+        return (
+            <div
+                className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                    <div className="text-lg">
+                        {courseData.loading ? "Loading user data..." : "Error loading user data."}
+                    </div>
+                </div>
             </div>
         );
     }
-
 
     return (
         <main className="w-full h-full pb-4">
             <div className="h-full overflow-y-scroll rounded-2xl sm:no-scrollbar">
                 <div className="flex flex-row bg-white w-full p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar mb-4">
                     <div className="flex flex-col">
-                        <div className="text-xl font-bold">{TEMP_COURSE_INFO.name}</div>
-                        <div className="text-md mb-4">{TEMP_COURSE_INFO.description}</div>
+                        {/* @ts-ignore */}
+                        <div className="text-xl font-bold mb-4">{data ? data.courseName : ""}</div>
                         <div className="flex flex-row space-x-6">
                             <div className="flex flex-col items-center">
                                 <div>Learners Enrolled</div>
-                                <div className="text-3xl font-bold">23</div>
+                                {/* @ts-ignore */}
+                                <div className="text-3xl font-bold">{data ? data.numEnrolled : ""}</div>
                             </div>
                             <div className="flex flex-col items-center">
                                 <div>Course Completions</div>
-                                <div className="text-3xl font-bold">12</div>
+                                {/* @ts-ignore */}
+                                <div className="text-3xl font-bold">{data ? data.numComplete : ""}</div>
                             </div>
                         </div>
                     </div>
@@ -179,6 +145,8 @@ export default function Insights({ params }: { params: { id: string } }) {
                     </div>
                 </div>
             </div>
+
+            { loadingPopup() }
         </main>
     )
 }
