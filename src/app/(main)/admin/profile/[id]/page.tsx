@@ -82,8 +82,13 @@ export default function Profile({ params }: { params: { id: string } }) {
                             <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
                         </Link>
                     </td>
-                    <td className="border p-2">{quiz.courseId}</td>
-                    <td className="border p-2">unmarked</td>
+                    <td className="border p-2">
+                        <Link href={"/admin/course/"+quiz.courseId+"/insights"} className="flex flex-row items-center hover:opacity-60">
+                            {quiz.courseName}
+                            <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
+                        </Link>
+                    </td>
+                    <td className="border p-2">{quiz.score ? quiz.score : "unmarked"}</td>
                 </tr>
             ))
         }
