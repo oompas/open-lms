@@ -6,6 +6,8 @@ import IDCoursesEnrolled from "./IDEnrolled"
 import { useState } from "react";
 import { callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
+import Link from "next/link";
+import { LuExternalLink } from "react-icons/lu";
 
 
 export default function Profile({ params }: { params: { id: string } }) {
@@ -60,12 +62,29 @@ export default function Profile({ params }: { params: { id: string } }) {
         if (user) {
             // @ts-ignore
             return user.completedCourses.map((coursesEnrolled, key) => (
-                // @ts-ignore
-                <IDCoursesEnrolled
+                <IDCoursesEnrolled 
                     key={key}
                     title={coursesEnrolled.name}
-                    id={coursesEnrolled.id}
+                    completionDate={new Date(coursesEnrolled.date).toLocaleString()}
                 />
+            ))
+        }
+    }
+
+    const quizAttempts = () => {
+        if (user) {
+            // @ts-ignore
+            return user.quizAttempts.map((quiz, key) => (
+                <tr className="border">
+                    <td className="border p-2">
+                        <Link href={"/admin/mark/"+quiz.id} className="flex flex-row items-center hover:opacity-60">
+                            {new Date(quiz.endTime).toLocaleString()}
+                            <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
+                        </Link>
+                    </td>
+                    <td className="border p-2">{quiz.courseId}</td>
+                    <td className="border p-2">unmarked</td>
+                </tr>
             ))
         }
     }
@@ -90,9 +109,9 @@ export default function Profile({ params }: { params: { id: string } }) {
     return (
         <main className="flex flex-col w-full h-full overflow-y-scroll sm:no-scrollbar mb-4">
 
-            <div className="flex flex-row w-full mb-0">
+            <div className="flex flex-row w-full mb-4">
                     {/* Account Details section */}
-                    <div className="flex flex-col bg-white w-[50%] h-[50vh] p-12 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar mb-4">
+                    <div className="flex flex-col bg-white w-[50%] h-[50vh] p-12 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar">
                         <div className="text-lg mb-2">Account Details</div>
                         { profileData() }
                     </div>
@@ -100,29 +119,48 @@ export default function Profile({ params }: { params: { id: string } }) {
                     <div className="flex flex-col h-[50vh] bg-white w-[50%] p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar">
                         {/* Completed Courses section */}
                         <div className="text-lg mb-4">Completed Courses</div>
-                        <div className="overflow-y-scroll">
-                            <div className="flex flex-col mr-auto text-lg w-[100%]">
-                                <table className="flex-col border-collapse border w-full">
-                                        <thead>
-                                        <tr className="bg-gray-200">
-                                            <th className="border p-2">Name</th>
-                                            <th className="border p-2">Date of Completion</th>
-                                        </tr>
-                                        </thead>
-                                </table>
-                            </div>
-                            {courseData()}
+                        <div className="flex flex-col mr-auto text-lg w-[100%]">
+                            <table className="flex-col border-collapse border w-full">
+                                <thead>
+                                    <tr className="bg-gray-200 text-left">
+                                        <th className="border p-2">Name</th>
+                                        <th className="border p-2">Date of Completion</th>
+                                    </tr>
+                                </thead>
+                                { courseData() }
+                            </table>
                         </div>
                     </div>
             </div>
 
             {/* Enrolled Courses Section */}
-            <div className="flex flex-col h-[60vh] bg-white p-12 rounded-2xl shadow-custom mb-8">
+            <div className="flex flex-col h-[60vh] bg-white p-12 rounded-2xl shadow-custom mb-4">
                 <div className="flex flex-row justify-end items-center mb-4">
                     <div className="text-lg mb-2 mr-auto">Enrolled Courses</div>
                 </div>
-                <div className="flex flex-row flex-wrap gap-4 overflow-y-scroll sm:no-scrollbar">
+                <div className="flex flex-row w-full flex-wrap justify-between gap-y-4 overflow-y-scroll sm:no-scrollbar">
                     {coursesEnrolledData()} 
+                </div>
+            </div>
+
+            {/* Quiz Attempts Section */}
+            <div className="flex flex-col max-h-full bg-white p-12 rounded-2xl shadow-custom mb-4">
+                <div className="flex flex-row justify-end items-center mb-4">
+                    <div className="text-lg mb-2 mr-auto">Quiz Attempts</div>
+                </div>
+                <div className="max-h-full overflow-y-scroll sm:no-scrollbar">
+                    <table className="border w-full sm:no-scrollbar">
+                        <thead>
+                            <tr className="bg-gray-200 text-left">
+                                <th className="border p-2">Submission Date</th>
+                                <th className="border p-2">Course Name</th>
+                                <th className="border p-2">Mark</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            { quizAttempts() }
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
