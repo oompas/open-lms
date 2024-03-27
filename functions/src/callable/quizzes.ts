@@ -400,7 +400,7 @@ const submitQuiz = onCall(async (request) => {
         }
     }
 
-    // Mark the quiz and update question stats
+    // Get all quiz questions for this quiz
     const quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
         .where("active", "==", true)
         .where("courseId", "==", quizAttempt.courseId)
@@ -411,8 +411,8 @@ const submitQuiz = onCall(async (request) => {
             if (!questions || questions.length === 0) {
                 throw new HttpsError("not-found", `No quiz questions found for course ${request.data.courseId}`);
             }
-            if (questions.length !== responses.length) {
-                throw new HttpsError("invalid-argument", `Invalid request: number of responses does not match number of questions`);
+            if (responses.length > questions.length) {
+                throw new HttpsError("invalid-argument", `Invalid request: more responses than questions (${responses.length} > ${questions.length})`);
             }
             responses.forEach((response: { questionId: string, answer: string }) => {
                 if (!questions.find((q) => q.id === response.questionId)) {
@@ -430,14 +430,22 @@ const submitQuiz = onCall(async (request) => {
     const updatePromises: Promise<any>[] = [];
 
     // Mark each question & create promises
-    for (const response of responses) {
-        const question = quizQuestions.find((q) => q.id === response.questionId);
+    for (const question of quizQuestions) {
+        const response: { questionId: string, answer: string } | undefined = responses.find((r: any) => r.questionId === question.id);
 
-        let marks = null; // Default for short answer (need to be marked)
-        let userResponse = response.answer;
-        if (question.type === "mc" || question.type === "tf") {
-            userResponse = Number(response.answer);
-            marks = question.correctAnswer === userResponse ? question.marks : 0;
+        let userResponse;
+        let marks;
+        if (response === undefined) { // User didn't answer the question: no response & default score of zero
+            marks = 0;
+            userResponse = null;
+        } else {
+            if (question.type === "mc" || question.type === "tf") {
+                userResponse = Number(response.answer);
+                marks = question.correctAnswer === userResponse ? question.marks : 0;
+            } else {
+                userResponse = response.answer;
+                marks = null;
+            }
         }
 
         // Add question attempt to database
