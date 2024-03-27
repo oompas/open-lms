@@ -9,28 +9,14 @@ import { logger } from "firebase-functions";
 import { boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import {
-    addDoc, addDocWithId, CourseAttemptDocument,
+    addDoc, addDocWithId,
     CourseDocument,
-    DatabaseCollections, deleteDoc, docExists,
+    DatabaseCollections, deleteDoc,
     getCollection,
     getDocData, QuizAttemptDocument,
     updateDoc, UserDocument,
 } from "../helpers/database";
-import { getCourseStatus } from "./helpers";
-
-/**
- * The ID for an enrolled course is the user & course ID concatenated so:
- * -No query is needed to check it, can just get the document through an ID
- * -No duplicate enrollments are possible
- * The enrollment document will also have these IDs in the document if individual queries are needed
- */
-const enrolledCourseId = (userId: string, courseId: string) => `${userId}|${courseId}`;
-
-/**
- * The ID for a course reported by a user to have a broken platform link is the user & course ID concatenated so:
- * - No duplicate reports from the same user
- */
-const reportedCourseId = (userId: string, courseId: string) => `${userId}|${courseId}`;
+import { enrolledCourseId, getCourseStatus, getLatestCourseAttempt, reportedCourseId } from "./helpers";
 
 /**
  * Adds a course to the database. Includes both metadata and quiz questions
@@ -157,34 +143,7 @@ const getAvailableCourses = onCall(async (request) => {
 
             for (let course of courses.docs) {
 
-                const courseEnrolled = await docExists(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, course.id));
-
-                let courseAttempt = null;
-                if (courseEnrolled) {
-                    courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
-                        .where("userId", "==", request.auth?.uid)
-                        .where("courseId", "==", course.id)
-                        .get()
-                        .then((docs) => {
-                            if (docs.empty) {
-                                return null;
-                            }
-
-                            let latestAttempt = docs.docs[0];
-                            for (let i = 1; i < docs.docs.length; ++i) {
-                                if (docs.docs[i].data().startTime.toMillis() > latestAttempt.data().startTime.toMillis()) {
-                                    latestAttempt = docs.docs[i];
-                                }
-                            }
-                            return { id: latestAttempt.id, ...latestAttempt.data() } as CourseAttemptDocument;
-                        })
-                        .catch((error) => {
-                            logger.error(`Error getting course attempts: ${error}`);
-                            throw new HttpsError("internal", `Error getting courses, please try again later`);
-                        });
-                }
-
-                const status = await getCourseStatus(courseEnrolled, courseAttempt);
+                const status = await getCourseStatus(course.id, uid);
 
                 const courseData = {
                     id: course.id,
@@ -294,27 +253,7 @@ const getCourseInfo = onCall(async (request) => {
         throw new HttpsError("invalid-argument", "Cannot view inactive course");
     }
 
-    const courseAttempt = await getCollection(DatabaseCollections.CourseAttempt)
-        .where("userId", "==", request.auth?.uid)
-        .where("courseId", "==", request.data.courseId)
-        .get()
-        .then((docs) => {
-            if (docs.empty) {
-                return null;
-            }
-
-            let latestAttempt = docs.docs[0];
-            for (let i = 1; i < docs.docs.length; ++i) {
-                if (docs.docs[i].data().startTime.toMillis() > latestAttempt.data().startTime.toMillis()) {
-                    latestAttempt = docs.docs[i];
-                }
-            }
-            return { id: latestAttempt.id, ...latestAttempt.data() } as CourseAttemptDocument;
-    })
-        .catch((error) => {
-            logger.error(`Error getting course attempts: ${error}`);
-            throw new HttpsError("internal", `Error getting courses, please try again later`);
-        });
+    const courseAttempt = await getLatestCourseAttempt(request.data.courseId, uid);
 
     const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
         .where("userId", "==", request.auth?.uid)
@@ -328,8 +267,7 @@ const getCourseInfo = onCall(async (request) => {
             throw new HttpsError("internal", `Error getting courses, please try again later`);
         });
 
-    const courseEnrolled = await docExists(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId));
-    const status = await getCourseStatus(courseEnrolled, courseAttempt);
+    const status = await getCourseStatus(courseInfo.id, uid);
 
     let numQuizQuestions;
     if (courseInfo.quiz) {
