@@ -103,7 +103,7 @@ const updateQuizQuestions = onCall(async (request) => {
         // Each question has statistics - score for tf/mc, distribution for sa (since partial marks are possible)
         const defaultStats = { numAttempts: 0 }; // @ts-ignore
         if (update.type === "mc" || update.type === "tf") defaultStats["totalScore"] = 0; // @ts-ignore
-        if (update.type === "sa") defaultStats["distribution"] = new Array(update.marks + 1).fill(0);
+        if (update.type === "sa") defaultStats["distribution"] = Object.assign({}, new Array(update.marks + 1).fill(0));
 
         /**
          * New question: add to the collection
