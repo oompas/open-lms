@@ -17,9 +17,7 @@ const getEmailCollection = () => db.collection(`/Email/`);
 // Adds a document to a given collection (random id given)
 const addDoc = (collection: DatabaseCollections, data: any) => {
     return getCollection(collection).add(data)
-        .then((docRef) => {
-            return docRef.id;
-        })
+        .then((docRef) => docRef.id)
         .catch(err => {
             logger.error(`Error adding document to collection '${collection}': ${err}`);
             throw new HttpsError("internal", `Error adding document to collection '${collection}'`);
@@ -30,9 +28,7 @@ const addDoc = (collection: DatabaseCollections, data: any) => {
 const addDocWithId = (collection: DatabaseCollections, docId: string, data: any) => {
     return getDocRef(collection, docId)
         .set(data)
-        .then(() => {
-            return "Document added successfully";
-        })
+        .then(() => "Document added successfully")
         .catch(err => {
             logger.error(`Error adding document '${docId}' to collection '${collection}': ${err}`);
             throw new HttpsError("internal", `Error adding document '${docId}' to collection '${collection}'`);

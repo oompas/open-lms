@@ -1,4 +1,4 @@
-import {HttpsError, onCall} from "firebase-functions/v2/https";
+import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
     sendEmail,
     shuffleArray,
@@ -9,12 +9,16 @@ import { logger } from "firebase-functions";
 import { boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import {
-    addDoc, addDocWithId,
-    CourseDocument,
-    DatabaseCollections, deleteDoc,
+    addDoc,
+    addDocWithId,
+    deleteDoc,
     getCollection,
-    getDocData, QuizAttemptDocument,
-    updateDoc, UserDocument,
+    getDocData,
+    updateDoc,
+    CourseDocument,
+    DatabaseCollections,
+    QuizAttemptDocument,
+    UserDocument,
 } from "../helpers/database";
 import { enrolledCourseId, getCourseStatus, getLatestCourseAttempt, reportedCourseId } from "./helpers";
 

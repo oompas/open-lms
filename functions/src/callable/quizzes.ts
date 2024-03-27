@@ -559,7 +559,7 @@ const getQuizzesToMark = onCall(async (request) => {
 
     logger.info(`Successfully retrieved course data for ${Object.keys(courseNames).length} courses`);
 
-    // Get all user names (same as above with possible duplicates)
+    // Get all usernames (same as above with possible duplicates)
     const userNames: { [key: string]: string } = {};
     await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.userId))].map((userId) =>
         getDocData(DatabaseCollections.User, userId).then((user) => userNames[userId] = user.name)
