@@ -42,9 +42,7 @@ const addDocWithId = (collection: DatabaseCollections, docId: string, data: any)
 // Checks if a document exists in a collection
 const docExists = async (collection: DatabaseCollections, docId: string) => {
     return getDocRef(collection, docId).get()
-        .then((doc) => {
-            return doc.exists && doc.data();
-        })
+        .then((doc) => doc.exists)
         .catch(err => {
             logger.error(`Error checking if document '${docId}' exists in collection '${collection}': ${err}`);
             throw new HttpsError("internal", `Error checking if document '${docId}' exists in collection '${collection}'`);
