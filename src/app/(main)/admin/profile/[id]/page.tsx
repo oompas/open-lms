@@ -48,7 +48,18 @@ export default function Profile({ params }: { params: { id: string } }) {
     const coursesEnrolledData = () => {
         if (user) {
             // @ts-ignore
-            return user.enrolledCourses.map((course, key) => (
+            var temp_courses = [...user.enrolledCourses]
+            if ( temp_courses.length % 4 == 1 ) {
+                temp_courses.push({"name": "_placeholder", "id": 0})
+                temp_courses.push({"name": "_placeholder", "id": 0})
+                temp_courses.push({"name": "_placeholder", "id": 0})
+            } else if ( temp_courses.length % 4 == 2 ) {
+                temp_courses.push({"name": "_placeholder", "id": 0})
+                temp_courses.push({"name": "_placeholder", "id": 0})
+            } else if ( temp_courses.length % 4 == 3 ) {
+                temp_courses.push({"name": "_placeholder", "id": 0})
+            }
+            return temp_courses.map((course, key) => (
                 <IDCourse
                     key={key}
                     title={course.name}
@@ -58,7 +69,7 @@ export default function Profile({ params }: { params: { id: string } }) {
         }
     }
 
-    const courseData = () => {
+    const courseCompletedData = () => {
         if (user) {
             // @ts-ignore
             return user.completedCourses.map((coursesEnrolled, key) => (
@@ -125,14 +136,14 @@ export default function Profile({ params }: { params: { id: string } }) {
                         {/* Completed Courses section */}
                         <div className="text-lg mb-4">Completed Courses</div>
                         <div className="flex flex-col mr-auto text-lg w-[100%]">
-                            <table className="flex-col border-collapse border w-full">
+                            <table className="flex-col border-collapse w-full">
                                 <thead>
-                                    <tr className="bg-gray-200 text-left">
-                                        <th className="border p-2">Name</th>
-                                        <th className="border p-2">Date of Completion</th>
+                                    <tr className="border-b-2 border-black text-left">
+                                        <th className="p-2">Name</th>
+                                        <th className="p-2">Date of Completion</th>
                                     </tr>
                                 </thead>
-                                { courseData() }
+                                { courseCompletedData() }
                             </table>
                         </div>
                     </div>
@@ -150,16 +161,16 @@ export default function Profile({ params }: { params: { id: string } }) {
 
             {/* Quiz Attempts Section */}
             <div className="flex flex-col max-h-full bg-white p-12 rounded-2xl shadow-custom mb-4">
-                <div className="flex flex-row justify-end items-center mb-4">
-                    <div className="text-lg mb-2 mr-auto">Quiz Attempts</div>
+                <div className="flex flex-row justify-end items-center mb-2">
+                    <div className="text-lg mr-auto">Quiz Attempts</div>
                 </div>
                 <div className="max-h-full overflow-y-scroll sm:no-scrollbar">
-                    <table className="border w-full sm:no-scrollbar">
+                    <table className="w-full sm:no-scrollbar">
                         <thead>
-                            <tr className="bg-gray-200 text-left">
-                                <th className="border p-2">Submission Date</th>
-                                <th className="border p-2">Course Name</th>
-                                <th className="border p-2">Mark</th>
+                            <tr className="border-b-2 border-black text-left">
+                                <th className="p-2">Submission Date</th>
+                                <th className="p-2">Course Name</th>
+                                <th className="p-2">Mark</th>
                             </tr>
                         </thead>
                         <tbody>

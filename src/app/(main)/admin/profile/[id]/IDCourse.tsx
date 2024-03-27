@@ -1,6 +1,5 @@
-import Button from "@/components/Button";
+// import Button from "@/components/Button";
 import Link from "next/link";
-import {useRouter} from "next/navigation";
 import { LuExternalLink } from "react-icons/lu";
 
 export default function IDCourse({
@@ -11,7 +10,9 @@ export default function IDCourse({
     id: number
 }) {
 
-  return (
+  return ( title === "_placeholder" ?
+    <div className="flex flex-col border-2 w-[24%] items-center justify-center p-6 rounded-2xl opacity-0"></div>
+    :
     <div className="flex flex-col border-2 w-[24%] items-center justify-center p-6 rounded-2xl">
       <Link href={"/course/"+id} className="flex flex-row items-center hover:opacity-60 text-xl text-center">
           {title}
