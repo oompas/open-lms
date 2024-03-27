@@ -6,7 +6,7 @@ import {
     DatabaseCollections,
     EnrolledCourseDocument,
     getCollection,
-    getCollectionDocs, QuizAttemptDocument
+    getCollectionDocs, QuizAttemptDocument, UserDocument
 } from "../helpers/database";
 
 /**
@@ -23,42 +23,22 @@ const getUserReports = onCall(async (request) => {
 
     logger.info("User is an admin, querying database for user reports...");
 
-    const users = await getCollection(DatabaseCollections.User)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying users: ${error}`);
-            throw new HttpsError('internal', "Error getting user reports, please try again later");
-        });
-
-    const courseEnrollments = await getCollection(DatabaseCollections.EnrolledCourse)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying course enrollments: ${error}`);
-            throw new HttpsError('internal', "Error getting user reports, please try again later");
-        });
-
-    const courseAttempts = await getCollection(DatabaseCollections.CourseAttempt)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying course attempts: ${error}`);
-            throw new HttpsError('internal', "Error getting user reports, please try again later");
-        });
+    const users = await getCollectionDocs(DatabaseCollections.User) as UserDocument[];
+    const courseEnrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
+    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
 
     logger.info("Successfully queried database data, translating to user data...");
 
     return users.map((user) => {
 
-        const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.data().userId === user.id);
-        const userAttempts = courseAttempts.filter((attempt) => attempt.data().userId === user.id);
-        const completedAttempts = courseAttempts.filter((attempt) => attempt.data().userId == user.id && attempt.data().pass === true);
+        const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.userId === user.id);
+        const userAttempts = courseAttempts.filter((attempt) => attempt.userId === user.id);
+        const completedAttempts = courseAttempts.filter((attempt) => attempt.userId == user.id && attempt.pass === true);
 
         return {
             uid: user.id,
-            name: user.data().name,
-            email: user.data().email,
+            name: user.name,
+            email: user.email,
             coursesEnrolled: userEnrollments.length,
             coursesAttempted: userAttempts.length,
             coursesComplete: completedAttempts.length,
