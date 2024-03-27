@@ -15,6 +15,10 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const getQuizData = useAsync(() =>
         callApi("getQuiz", { quizAttemptId: params.id.split('-')[1] })
             .then((rsp) => {
+                if (rsp.data === "Invalid") {
+                    return rsp;
+                }
+
                 // @ts-ignore
                 setCountDown(Math.floor(rsp.data.startTime + (60 * rsp.data.timeLimit) - (Date.now() / 1000)));
                 // @ts-ignore
@@ -24,12 +28,12 @@ export default function Quiz({ params }: { params: { id: string } }) {
         []);
 
     // @ts-ignore
-    const quizData: undefined | { questions: any[], timeLimit: number, courseName: number, numAttempts: number, maxAttempts: number, startTime: number }
+    const quizData: undefined | "Invalid" | { questions: any[], timeLimit: number, courseName: number, numAttempts: number, maxAttempts: number, startTime: number }
         = getQuizData.result?.data;
     const [userAnswers, setUserAnswers] = useState({});
 
     useEffect(() => {
-        if (countdown <= 0 || !quizData) {
+        if (countdown <= 0 || !quizData || quizData == "Invalid") {
             return;
         }
 
@@ -37,26 +41,48 @@ export default function Quiz({ params }: { params: { id: string } }) {
         return () => clearInterval(interval);
     }, [countdown, quizData]);
 
-    const loadingPopup = (
-        <div
-            className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
-            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                <div className="text-lg mb-2">
-                    {getQuizData.loading ? "Loading quiz..." : "Error loading quiz"}
+    const loadingPopup = () => {
+        let text;
+        if (getQuizData.loading) {
+            text = "Loading quiz...";
+        } else if (quizData === "Invalid") {
+            text = "You did not submit this quiz in time, so it has expired";
+        } else {
+            text = "Error loading quiz";
+        }
+
+        return (
+            <div
+                className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                    <div className="text-lg mb-2">
+                        {text}
+                        {quizData === "Invalid" &&
+                            <>
+                                <br/>
+                                <button
+                                    onClick={() => router.push(`/course/${params.id.split('-')[0]}`)}
+                                    className={"mt-4 bg-blue-500 text-white rounded-xl p-2"}
+                                >
+                                    Return to course
+                                </button>
+                            </>
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
-    )
+        );
+    }
 
     const renderQuestions = () => {
         return (
             <div>
-                {quizData && quizData.questions.map((question, key) => {
+                {quizData && quizData !== "Invalid" && quizData.questions.map((question, key) => {
                     const answers = question.type === "mc"
                         ? question.answers
                         : question.type === "tf"
-                        ? ["True", "False"]
-                        : [];
+                            ? ["True", "False"]
+                            : [];
 
                     return (
                         <div className="flex mt-4 mb-4">
@@ -95,7 +121,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
             return <></>;
         }
 
-        if (!quizData || !quizData.timeLimit) {
+        if (!quizData || quizData === "Invalid" || !quizData.timeLimit) {
             return (
                 <div className="flex flex-col text-2xl space-y-8 w-[30rem]">
                     <i>No time limit</i>
@@ -121,7 +147,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const renderProgress = () => {
         return (
             <>
-                {quizData && quizData.questions.map((question: any, key: number) => (
+                {quizData && quizData !== "Invalid" && quizData.questions.map((question: any, key: number) => (
                     <div className="flex mt-2">
                         <div className="flex-grow border-[1px] border-gray-300 px-4 py-2 rounded-2xl duration-100 flex items-center justify-center">
                             <div className="text-lg">Q{key + 1}</div>
@@ -148,6 +174,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                 return;
             }
 
+            // @ts-ignore
             const questionData = quizData?.questions.find((question) => question.id === key);
             if (questionData.type === "sa") {
                 responses.push({ questionId: key, answer: value });
@@ -168,9 +195,9 @@ export default function Quiz({ params }: { params: { id: string } }) {
             <div className="flex flex-col w-[75%] h-full overflow-y-scroll sm:no-scrollbar rounded-2xl">
                 <div className="flex">
                     <div className="flex flex-col w-full bg-white p-12 rounded-2xl shadow-custom">
-                        <div className="text-lg font-bold mb-0">{quizData && quizData.courseName}</div>
+                        <div className="text-lg font-bold mb-0">{quizData && quizData !== "Invalid" && quizData.courseName}</div>
                         <div className="flex flex-col text-md space-y-8 w-[30rem]">
-                            Attempt {quizData && quizData.numAttempts}{quizData && quizData.maxAttempts && `/${quizData.maxAttempts}`}
+                            Attempt {quizData && quizData !== "Invalid" && quizData.numAttempts}{quizData && quizData !== "Invalid" && quizData.maxAttempts && `/${quizData.maxAttempts}`}
                         </div>
                     </div>
                 </div>
@@ -187,7 +214,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     <Button text="Submit Quiz" onClick={async () => await handleSubmit() } filled style="mx-auto mt-auto"/>
                 </div>
             </div>
-            {!quizData && loadingPopup}
+            {(!quizData || quizData === "Invalid") && loadingPopup()}
         </main>
     )
 }
