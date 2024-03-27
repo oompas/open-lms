@@ -26,6 +26,18 @@ interface QuizQuestionAttempt {
     userId: string;
 }
 
+interface QuizQuestion {
+    active: boolean;
+    courseId: string;
+    marks: number;
+    question: string;
+    stats: {
+        numAttempts: number,
+        totalScore: number,
+    };
+    type: string;
+}
+
 interface EnrolledCourse {
     courseId: string;
     userId: string;
@@ -227,6 +239,8 @@ const getCourseInsightReport = onCall(async (request) => {
 
     // Fetch quiz attempts that need marking
     const markingStatusMap: Map<string, boolean> = new Map();
+
+    // Fetch all QuizQuestionAttempts for the course
     const quizQuestionAttempts: QuizQuestionAttempt[] = await getCollection(DatabaseCollections.QuizQuestionAttempt)
         .where("courseId", "==", courseId)
         .get()
@@ -245,8 +259,62 @@ const getCourseInsightReport = onCall(async (request) => {
             userDetails.set(doc.id, { name: doc.data().name });
         }));
 
+    // Fetch active QuizQuestions for the course
+    const quizQuestions: QuizQuestion[] = await getCollection(DatabaseCollections.QuizQuestion)
+        .where("courseId", "==", courseId)
+        .where("active", "==", true)
+        .get()
+        .then(result => result.docs.map(doc => doc.data() as QuizQuestion));
+
+    // Map to store question texts
+    let questionTexts: string[] = quizQuestions.map(question => question.question);
+
+    // Prepare to calculate average marks and match responses
+    let questionStats: { [questionId: string]: { marks: number, averageMarksAchieved: number, numAttempts: number, totalScore: number } } = {};
+    quizQuestions.forEach(question => {
+        questionStats[question.questionId] = { marks: question.marks, averageMarksAchieved: 0, numAttempts: 0, totalScore: 0 };
+    });
+    // TODO: ^ how would I get the questionId (aka doc id) for the QuizQuestion?
+
+    // Process quiz question attempts
+    quizQuestionAttempts.forEach(attempt => {
+        if (questionStats[attempt.questionId]) {
+            questionStats[attempt.questionId].numAttempts += 1;
+            if (attempt.marksAchieved !== null) {
+                questionStats[attempt.questionId].totalScore += attempt.marksAchieved ? 1 : 0;
+            }
+        }
+    });
+
+    // Calculate averages
+    Object.keys(questionStats).forEach(questionId => {
+        const stat = questionStats[questionId];
+        stat.averageMarksAchieved = stat.numAttempts > 0 ? (stat.totalScore / stat.numAttempts) * stat.marks : 0;
+    });
+
+    const enrollments = await getCollection(DatabaseCollections.EnrolledCourse)
+        .get()
+        .then((result) => result.docs)
+        .catch((error) => {
+            logger.error(`Error querying enrollments: ${error}`);
+            throw new HttpsError('internal', "Error getting course reports, please try again later");
+        });
+
+    const courseEnrollments = enrollments.filter((enrollment) => enrollment.data().courseId === course.id);
+
+    // TODO: need to figure out the .data() error on the completedAttempts and completionTimes consts
+    const completedAttempts = courseAttempts.filter((attempt) => {
+        return attempt.data().courseId === courseId && attempt.data().pass === true;
+    });
+
+    const completionTimes = completedAttempts.map((attempt) => {
+        const milliseconds = attempt.data().endTime.toMillis() - attempt.data().startTime.toMillis();
+        return Math.floor(milliseconds / 1000 / 60); // In minutes
+    });
+    const averageTime = completionTimes.length === 0 ? null : (1 / completionTimes.length) * completionTimes.reduce((a, b) => a + b, 0);
+
     // Combine data to create the courseLearners array
-    const finalReport = filteredAttempts.map((attempt) => {
+    const courseLearners = filteredAttempts.map((attempt) => {
         const completionStatus = attempt.pass;
         const markingStatus = markingStatusMap.get(attempt.userId) || false;
         const userName = userDetails.get(attempt.userId)?.name || "Unknown User";
@@ -258,93 +326,22 @@ const getCourseInsightReport = onCall(async (request) => {
         };
     });
 
+    // Combine all stats into the finalReport array
+    const finalReport = {
+        learners: courseLearners,
+        questions: questionTexts,
+        questionStats: Object.values(questionStats).map(stat => ({
+            marks: stat.marks,
+            averageMarksAchieved: stat.averageMarksAchieved.toFixed(2)
+        })),
+        numEnrolled: courseEnrollments.length,
+        numComplete: completedAttempts.length,
+        avgTime: averageTime
+    };
+    // TODO: add in
+
     return finalReport;
 
-    // const course = await getCollection(DatabaseCollections.Course)
-    //     .where("courseId", "==", courseId)
-    //     .get()
-    //     .then((result) => result.docs)
-    //     .catch((error) => {
-    //         logger.error(`Error querying courses: ${error}`);
-    //         throw new HttpsError('internal', "Error getting this course insight report, please try again later")
-    //     });
-    //
-    // // List of enrolled users
-    // const enrollments = await getCollection(DatabaseCollections.EnrolledCourse)
-    //     .where("courseId", "==", courseId)
-    //     .get()
-    //     .then((result) => result.docs)
-    //     .catch((error) => {
-    //         logger.error(`Error querying enrollments: ${error}`);
-    //         throw new HttpsError('internal', "Error getting course reports, please try again later");
-    //     });
-    //
-    // // Status of course completion
-    // const courseAttempts = await getCollection(DatabaseCollections.CourseAttempt)
-    //     .where("courseId", "==", courseId)
-    //     .get()
-    //     .then((result) => result.docs)
-    //     .catch((error) => {
-    //         logger.error(`Error querying course attempts: ${error}`);
-    //         throw new HttpsError('internal', "Error getting this course insight report, please try again later")
-    //     });
-    //
-    // const quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
-    //     .where("courseId", "==", courseId)
-    //     .where("active", "==", true)
-    //     .get()
-    //     .then((result) => result.docs)
-    //     .catch((error) => {
-    //         logger.error(`Error querying quiz questions: ${error}`);
-    //         throw new HttpsError('internal', "Error getting this course insight report, please try again later")
-    //     });
-    //
-    // // Quizzes to be marked
-    // const quizzesToBeMarked = await getCollection(DatabaseCollections.QuizQuestionAttempt)
-    //     .where("courseId", "==", courseId)
-    //     .where("marksAchieved", "==", null)
-    //     .get()
-    //     .then((result) => result.docs)
-    //     .catch((error) => {
-    //         logger.error(`Error querying quiz question attempts: ${error}`);
-    //         throw new HttpsError('internal', "Error getting this course insight report, please try again later")
-    //     });
-    //
-    // logger.info("Successfully queried database collections")
-    //
-    // // Creating a Set of unique QuizAttempt IDs from those QuizQuestionAttempts
-    // const quizzesToBeMarkedSet = new Set(quizzesToBeMarked.map((doc) => doc.data().quizAttemptId));
-    //
-    // const enrolledUsers = enrollments.map(enrollment => {
-    //     const attempt = courseAttempts.find(attempt => attempt.data().userId === enrollment.data().userId);
-    //
-    //     const markingStatus = quizzesToBeMarkedSet.has(enrollment.data().quizAttemptId);
-    //
-    //     return {
-    //         userId: enrollment.data().userId,
-    //         // @ts-ignore
-    //         completionStatus: attempt.data().pass,
-    //         quizzesToBeMarked: markingStatus
-    //     };
-    // });
-    //
-    // const completedAttempts = courseAttempts.filter((attempt) => {
-    //     return attempt.data().courseId === course.id && attempt.data().pass === true;
-    // });
-    //
-    // const completionTimes = completedAttempts.map((attempt) => {
-    //     const milliseconds = attempt.data().endTime.toMillis() - attempt.data().startTime.toMillis();
-    //     return Math.floor(milliseconds / 1000 / 60); // In minutes
-    // });
-    // const averageTime = completionTimes.length === 0 ? null : (1 / completionTimes.length) * completionTimes.reduce((a, b) => a + b, 0);
-    //
-    // return {
-    //     name: course.data().name,
-    //     numEnrolled: enrollments.length,
-    //     numComplete: completedAttempts.length,
-    //     avgTime: averageTime,
-    //     courseLearners: enrolledUsers,
-    // }
     // Need to account for the course statuses as follows:
     // Status 1: not enrolled in course [courseEnrolled doesn't exist]
     // Status 2: enrolled, not started [courseAttempt is null]
@@ -352,16 +349,5 @@ const getCourseInsightReport = onCall(async (request) => {
     // Status 4: completed, failed [pass is false]
     // Status 5: completed, passed [pass is true]
 });
-
-
-    // query CourseAttempt's with a specific courseId whose pass is null (i.e. not finished and they're still doing the course)
-    // query QuizAttempt's for the pass value
-    // query QuizQuestionAtempt's with a userId for questions whose marksAchieved is null
-    // next 3 are repeats from prior function
-    // query QuizQuestions for active questions and get their marks (i.e. max marks attainable)
-    // query QuizQuestionAttempt's for both the question average marks and absolute number of question attempts
-    // this gives the relative question percentage score and allows a distribution to be built for the front-end
-    // to detect if there's an ingrained issue with a specific question
-// });
 
 export { getUserReports, getCourseReports, getCourseInsightReport };
