@@ -510,16 +510,16 @@ const getQuizzesToMark = onCall(async (request) => {
 
     // Get all course names (may have duplicates, so use a set to get unique values for efficiency)
     const courseNames: { [key: string]: string } = {};
-    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.courseId))].map((courseId) =>
-        getDocData(DatabaseCollections.Course, courseId).then((course) => courseNames[courseId] = course.name)
+    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.courseId))].map((courseId) => // @ts-ignore
+        getDocData(DatabaseCollections.Course, courseId).then((course: CourseDocument) => courseNames[courseId] = course.name)
     ));
 
     logger.info(`Successfully retrieved course data for ${Object.keys(courseNames).length} courses`);
 
     // Get all usernames (same as above with possible duplicates)
     const userNames: { [key: string]: string } = {};
-    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.userId))].map((userId) =>
-        getDocData(DatabaseCollections.User, userId).then((user) => userNames[userId] = user.name)
+    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.userId))].map((userId) => // @ts-ignore
+        getDocData(DatabaseCollections.User, userId).then((user: UserDocument) => userNames[userId] = user.name)
     ));
 
     logger.info(`Successfully retrieved user data for ${Object.keys(userNames).length} users`);
@@ -578,8 +578,8 @@ const getQuizAttempt = onCall(async (request) => {
     const quizAttemptData = await getDocData(DatabaseCollections.QuizAttempt, request.data.quizAttemptId) as QuizAttemptDocument;
 
     const attemptData = await Promise.all(allAttempts.map((attempt) =>
-        getDocData(DatabaseCollections.QuizQuestion, attempt.questionId)
-            .then((doc) => ({
+        getDocData(DatabaseCollections.QuizQuestion, attempt.questionId) // @ts-ignore
+            .then((doc: QuizQuestionDocument) => ({
                 id: attempt.id,
                 question: doc.question,
                 response: attempt.response,
