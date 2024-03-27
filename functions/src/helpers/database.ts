@@ -193,6 +193,7 @@ interface QuizQuestionAttemptDocument {
     userId: string;
     courseId: string;
     courseAttemptId: string;
+    quizAttemptId: string;
     questionId: string;
     response: string | number;
     marksAchieved: number | null;
