@@ -1,5 +1,6 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
+    DOCUMENT_ID_LENGTH,
     shuffleArray,
     verifyIsAdmin,
     verifyIsAuthenticated
@@ -640,4 +641,61 @@ const getQuizAttempt = onCall(async (request) => {
     };
 });
 
-export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuizzesToMark, getQuizAttempt };
+/**
+ * Marks a quiz attempt's short answer questions
+ */
+const markQuizAttempt = onCall(async (request) => {
+
+    await verifyIsAdmin(request);
+
+    const schema = object({
+        quizAttemptId: string().length(DOCUMENT_ID_LENGTH).required(),
+        responses: array().of(
+            object({
+                id: string().length(DOCUMENT_ID_LENGTH).required(),
+                marksAchieved: number().min(0).max(20).required(),
+            }).required().noUnknown(true)
+        ).required().min(1),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    const { quizAttemptId, responses } = request.data;
+
+    const questionAttempts: QuizQuestionAttemptDocument[] = await getCollection(DatabaseCollections.QuizQuestionAttempt)
+        .where("quizAttemptId", "==", quizAttemptId)
+        .where("marksAchieved", "==", null)
+        .get()
+        .then((snapshot) => snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as QuizQuestionAttemptDocument)))
+        .catch((err) => {
+            throw new HttpsError("internal", `Error getting quiz question attempts: ${err}`);
+        });
+
+    // Verify input response ids match with the required questions to mark
+    if (questionAttempts.length !== responses.length) {
+        throw new HttpsError("invalid-argument", `Number of responses (${responses.length}) does not match number of questions ${questionAttempts.length}`);
+    }
+
+    responses.forEach((response: { id: string, marksAchieved: number }) => {
+        const questionData = questionAttempts.find((qa) => qa.id === response.id);
+        if (!questionData) {
+            throw new HttpsError("not-found", `Question attempt with ID ${response.id} not found`);
+        } // @ts-ignore
+        if (response.marksAchieved > questionData.maxMarks) {
+            throw new HttpsError("invalid-argument", `Marks achieved (${response.marksAchieved}) exceeds maximum marks (${questionData.maxMarks})`);
+        }
+    });
+
+    return Promise.all(responses.map((response: { id: string, marksAchieved: number }) =>
+        updateDoc(DatabaseCollections.QuizQuestionAttempt, response.id, { marksAchieved: response.marksAchieved })
+    ))
+        .then(() => "Successfully marked quiz attempt")
+        .catch((err) => {
+            throw new HttpsError("internal", `Error marking quiz attempt: ${err}`);
+        });
+});
+
+export { updateQuizQuestions, getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt };

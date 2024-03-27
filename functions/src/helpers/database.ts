@@ -202,6 +202,7 @@ interface QuizQuestionAttemptDocument {
     questionId: string;
     response: string | number;
     marksAchieved: number | null;
+    maxMarks?: number;
 }
 
 export {
