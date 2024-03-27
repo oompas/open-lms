@@ -17,7 +17,7 @@ export default function CourseInsight({
     return (
         <tr key={courseData.courseId} className="border">
             <td className="border p-2">
-                <Link href={"/admin/course/"+courseData.courseId} className="flex flex-row items-center hover:opacity-60">
+                <Link href={"/admin/course/"+courseData.courseId+"/insights"} className="flex flex-row items-center hover:opacity-60">
                     {courseData.name}
                     <LuExternalLink className="ml-1" color="rgb(153 27 27" />
                 </Link>

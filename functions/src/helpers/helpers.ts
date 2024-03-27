@@ -2,23 +2,6 @@ import { CallableRequest, HttpsError } from "firebase-functions/v2/https";
 import { auth, db } from "./setup";
 import { logger } from "firebase-functions";
 
-// All database collections
-enum DatabaseCollections {
-    User = "User",
-    Course = "Course",
-    EnrolledCourse = "EnrolledCourse",
-    ReportedCourse = "ReportedCourse",
-    QuizQuestion = "QuizQuestion",
-    CourseAttempt = "CourseAttempt",
-    QuizAttempt = "QuizAttempt",
-    QuizQuestionAttempt = "QuizQuestionAttempt",
-    Email = "Email",
-}
-
-// Helpers for getting a doc/collection
-const getCollection = (collection: DatabaseCollections) => db.collection(`/${collection}/`);
-const getDoc = (collection: DatabaseCollections, docId: string) => db.doc(`/${collection}/${docId}/`);
-
 // Check if the requesting user is authenticated
 const verifyIsAuthenticated = (request: CallableRequest) => {
     if (!request.auth || !request.auth.uid) {
@@ -39,14 +22,15 @@ const sendEmail = (emailAddress: string, subject: string, html: string, context:
         }
     };
 
-    return getCollection(DatabaseCollections.Email)
+    return db.collection('/Email/')
         .add(email)
         .then((doc) => {
             logger.info(`Email ${doc.id} created for ${emailAddress} (${context})`);
             return "Email created successfully";
         })
         .catch((err) => {
-            throw new HttpsError('internal', `Error creating ${context} email for ${emailAddress}: ${err}`);
+            logger.error(`Error creating ${context} email for ${emailAddress}: ${err}`);
+            throw new HttpsError('internal', `Error creating ${context} email for ${emailAddress}`);
         });
 };
 
@@ -78,4 +62,7 @@ const shuffleArray = (array: any[]) => {
     return array;
 }
 
-export { DatabaseCollections, getCollection, getDoc, verifyIsAuthenticated, sendEmail, verifyIsAdmin, shuffleArray };
+const DOCUMENT_ID_LENGTH = 20;
+const USER_UID_LENGTH = 28;
+
+export { verifyIsAuthenticated, sendEmail, verifyIsAdmin, shuffleArray, DOCUMENT_ID_LENGTH, USER_UID_LENGTH };

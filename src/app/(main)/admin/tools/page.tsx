@@ -29,15 +29,15 @@ export default function Tools() {
         }
 
         return (
-            <div className="flex flex-wrap justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
+            <div className="flex flex-wrap w-full justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
                 { /* @ts-ignore */ }
                 {quizzesToMark.result?.data && quizzesToMark.result.data.map((quiz, key) => (
                     <QuizToMark
                         key={key}
                         title={quiz.courseName}
-                        date={new Date(quiz.timestamp).toLocaleDateString()}
+                        date={new Date(quiz.timestamp).toLocaleString()}
                         learner={quiz.userName}
-                        id={key}
+                        id={quiz.quizAttemptId}
                     />
                 ))}
             </div>

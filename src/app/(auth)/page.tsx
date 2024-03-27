@@ -21,13 +21,18 @@ export default function AuthPage() {
 
     const [email, setEmail] = useState("")
     const [password, setPass] = useState("")
+    const [error, setError] = useState(null);
 
     // function called on "log in" button press
     const submitLogin = async () => {
-        await signInWithEmailAndPassword(auth, email, password)
-            .then(() => router.push('/home'))
-            .catch((err) => console.log(`Error signing in: ${err}`));
-    }
+        try {
+            setError(null);
+            await signInWithEmailAndPassword(auth, email, password);
+            router.push('/home');
+        } catch (error: any) {
+            setError(error.code);
+        }
+    };
 
     const handleForgotPassword = () => {
         router.push('/forgotpassword');
@@ -53,6 +58,16 @@ export default function AuthPage() {
                             <Button text="log in" onClick={async () => await submitLogin()} style="ml-4" icon="arrow"
                                     filled/>
                         </div>
+                        {error && (
+                            <p className="text-red-500 mt-2">
+                                {error === "auth/invalid-credential" && "Invalid credentials. Please check your email and password."}
+                                {error === "auth/invalid-email" && "Invalid email format. Please enter a valid email address."}
+                                {error === "auth/user-not-found" && "User not found. Please check your credentials or sign up."}
+                                {error === "auth/wrong-password" && "Invalid password. Please enter your correct password."}
+                                {error === "auth/internal-error" && "Email address not verified. Please check your inbox and verify your address."}
+                                {error === "auth/missing-password" && "Missing password. Please enter a password."}
+                            </p>
+                        )}
                     </div>
                     <div>or</div>
                     <AuthButton text={"continue with Google"} icon="google" onClick={() => router.push('/home')}/>

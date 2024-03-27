@@ -179,18 +179,9 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     }
 
     const handlePublish = async () => {
-        if (active) {
-            await callApi("unPublishCourse", { courseId: params.id })
-                .then(() => setActive(false))
-                .catch((err) => console.log(`Error unpublishing course: ${err}`));
-        } else {
-            await callApi("publishCourse", { courseId: params.id })
-                .then(() => setActive(true))
-                .catch((err) => console.log(`Error publishing course: ${err}`));
-        }
-
-        setActive(!active);
-        setActivatePopup(false);
+        await callApi("setCourseVisibility", { courseId: params.id, active })
+            .then(() => { setActive(!active); setActivatePopup(false); })
+            .catch((err) => console.log(`Error unpublishing course: ${err}`));
     }
 
     const activationPopup = (

@@ -1,13 +1,15 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
-import {
-    DatabaseCollections,
-    getCollection,
-    getDoc,
-    verifyIsAuthenticated
-} from "../helpers/helpers";
+import { sendEmail, USER_UID_LENGTH, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 import { auth } from "../helpers/setup";
 import { object, string } from "yup";
+import {
+    addDocWithId,
+    DatabaseCollections,
+    getCollection,
+    getDocData, QuizAttemptDocument,
+    UserDocument
+} from "../helpers/database";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
@@ -20,7 +22,7 @@ const createAccount = onCall(async (request) => {
         name: string().required().min(1, "Name must be at least one character long"),
         email: string().required().email(),
         password: string().required().min(10, "Password must be at least ten characters long"),
-    });
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -30,8 +32,7 @@ const createAccount = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const email = request.data.email;
-    const password = request.data.password;
+    const { email, password, name } = request.data;
 
     const hasUpperCase = /[A-Z]/;
     const hasLowerCase = /[a-z]/;
@@ -47,12 +48,41 @@ const createAccount = onCall(async (request) => {
     return auth
         .createUser({
             email: email,
-            emailVerified: false,
             password: password,
-            disabled: false,
+            displayName: name,
+            emailVerified: false,
+            disabled: false
         })
-        .then((user) => {
-            logger.log(`Successfully created new user ${user.uid} (${email})`);
+        .then(async (user) => {
+            logger.info("Successfully created user, adding user document to db & sending verification email...");
+
+            const defaultDoc = {
+                email: email,
+                name: name,
+                admin: false,
+                signUpTime: new FirebaseFirestore.Timestamp(Date.now() / 1000, 0)
+            };
+            await addDocWithId(DatabaseCollections.User, user.uid, defaultDoc);
+
+            // Create a verification email
+            const verifyLink = await auth
+                .generateEmailVerificationLink(email)
+                .then((link) => link)
+                .catch((err) => {
+                    logger.error(`Error generating verification link: ${err}`)
+                    throw new HttpsError('internal', `Error generating verification link, please try again later`);
+                });
+
+            const emailHtml =
+                `<p style="font-size: 16px;">Thanks for signing up!</p>
+                 <p style="font-size: 16px;">Verify your account here: ${verifyLink}</p>
+                 <p style="font-size: 12px;">If you didn't sign up, please disregard this email</p>
+                 <p style="font-size: 12px;">Best Regards,</p>
+                 <p style="font-size: 12px;">-The OpenLMS Team</p>`;
+
+            await sendEmail(email, 'Verify your email for OpenLMS', emailHtml, 'email address verification');
+
+            logger.info(`Verification email sent and user document created`);
             return user.uid;
         })
         .catch((error) => {
@@ -81,7 +111,9 @@ const resetPassword = onCall(async (request) => {
 
     logger.info(`Entering resetPassword with payload ${JSON.stringify(request.data)} (user: ${request.auth?.uid})`);
 
-    const schema = object({ email: string().required().email() });
+    const schema = object({
+        email: string().required().email()
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -94,15 +126,14 @@ const resetPassword = onCall(async (request) => {
     const email = request.data.email;
 
     const link: string = await auth.generatePasswordResetLink(email)
-        .catch(() => { throw new HttpsError('invalid-argument', "Email does not exist or an error occurred") });
+        .catch((err) => {
+            logger.error(`Error generating password reset link: ${err}`);
+            throw new HttpsError('invalid-argument', "Email does not exist or an error occurred")
+        });
 
     logger.info(`Generated password reset link for ${email}: ${link}`);
 
-    const emailData = {
-        to: email,
-        message: {
-            subject: 'Reset Your Password for OpenLMS',
-            html: `
+    const emailHtml =  `
         <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ccc; padding: 20px;">
             <header style="text-align: center; margin-bottom: 20px;">
                 <img src="LOGO_URL" alt="OpenLMS Logo" style="max-width: 200px;">
@@ -124,21 +155,9 @@ const resetPassword = onCall(async (request) => {
                 <p><a href="https://github.com/oompas/open-lms" style="color: #0066CC;">Platform Readme</a> | 
                 <a href="https://github.com/oompas/open-lms/blob/main/LICENSE" style="color: #0066CC;">Platform License</a></p>
             </footer>
-        </div>
-        `,
-        }
-    };
+        </div>`;
 
-    return getCollection(DatabaseCollections.Email)
-        .add(emailData)
-        .then(() => {
-            logger.log(`Password reset email created for ${email}`);
-            return `Password reset email created for ${email}`;
-        })
-        .catch((err) => {
-            logger.log(`Error creating password reset email for ${email}`);
-            return `Error creating password reset email for ${email}`;
-        });
+    return sendEmail(email, 'Reset Your Password for OpenLMS', emailHtml, 'password reset');
 });
 
 /**
@@ -151,8 +170,8 @@ const getUserProfile = onCall(async (request) => {
     verifyIsAuthenticated(request);
 
     const schema = object({
-        targetUid: string().length(28).optional(),
-    }).noUnknown(true);
+        targetUid: string().length(USER_UID_LENGTH).optional(),
+    }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((err) => {
@@ -163,39 +182,16 @@ const getUserProfile = onCall(async (request) => {
     logger.info("Schema verification passed");
 
     // @ts-ignore
-    let user = await auth.getUser(request.auth.uid)
-        .then((userRecord) => userRecord)
-        .catch((error) => {
-            logger.error(`Can't get UserRecord object for requesting object: ${error}`);
-            throw new HttpsError('internal', "Error getting user data, try again later")
-        });
-
-    // Only administrators can view other's profiles
+    const targetUserUid = request.data.targetUid ?? request.auth.uid;
     if (request.data.targetUid) {
-        // @ts-ignore
-        if (!user.customClaims['admin']) {
-            logger.error(`Non-admin user '${user.email}' is trying to request this endpoint`);
-            throw new HttpsError('permission-denied', "You must be an administrator to perform this action");
-        }
-
-        user = await auth.getUser(request.data.targetUid)
-            .then((user) => user)
-            .catch((error) => {
-                logger.error(`Error getting UserRecord object: ${error}`);
-                throw new HttpsError("internal", "Error getting user data, try again later");
-            });
+        await verifyIsAdmin(request); // Only administrators can view other's profiles
     }
+    const user = await auth.getUser(targetUserUid);
+    const userName = (await getDocData(DatabaseCollections.User, targetUserUid) as UserDocument).name;
 
-    const userName = await getDoc(DatabaseCollections.User, user.uid)
-        .get() // @ts-ignore
-        .then((doc) => doc.data().name)
-        .catch((error) => {
-            logger.error(`Error querying user data: ${error}`);
-            throw new HttpsError("internal", "Error getting user data, try again later");
-        });
-
+    // Query all enrolled courses
     const enrolledCourses = await getCollection(DatabaseCollections.EnrolledCourse)
-        .where('userId', "==", user.uid)
+        .where('userId', "==", targetUserUid)
         .get()
         .then((result) => result.docs.map((doc) => doc.data().courseId))
         .catch((error) => {
@@ -204,43 +200,56 @@ const getUserProfile = onCall(async (request) => {
         });
 
     const enrolledCourseData = await Promise.all(enrolledCourses.map(async (courseId) =>
-        getDoc(DatabaseCollections.Course, courseId)
-            .get() // @ts-ignore
-            .then((course) => ({ id: courseId, name: course.data().name }))
-            .catch((error) => {
-                logger.error(`Error querying enrolled course data: ${error}`);
-                throw new HttpsError("internal", "Error getting user data, try again later");
-            })
+        getDocData(DatabaseCollections.Course, courseId).then((course) => ({ id: courseId, name: course.name }))
     ));
 
     // Query course & course attempt data
     const completedCourseIds = await getCollection(DatabaseCollections.CourseAttempt)
-        .where('userId', "==", user.uid)
+        .where('userId', "==", targetUserUid)
         .where("pass", "==", true)
         .get()
-        .then((result) => result.docs.map((doc) => ({id: doc.id, date: doc.data().endTime})))
+        .then((result) => {
+            return result.docs.map((doc) => ({ id: doc.id, courseId: doc.data().courseId, date: doc.data().endTime }));
+        })
         .catch((error) => {
             logger.error(`Error querying completed course attempts: ${error}`);
             throw new HttpsError("internal", "Error getting user data, try again later");
         });
 
     const completedCourseData = await Promise.all(completedCourseIds.map(async (data) =>
-        getDoc(DatabaseCollections.Course, data.id)
-            .get()
-            // @ts-ignore
-            .then((course) => ({ name: course.data().name, link: course.data().link, date: data.date }))
-            .catch((error) => {
-                logger.error(`Error querying completed course data: ${error}`);
-                throw new HttpsError("internal", "Error getting user data, try again later");
+        getDocData(DatabaseCollections.Course, data.courseId)
+            .then((course) => {
+                return { attemptId: data.id, name: course.name, link: course.link, date: data.date._seconds };
             })
     ));
+
+    const quizAttemptData = await getCollection(DatabaseCollections.QuizAttempt)
+        .where('userId', "==", targetUserUid)
+        .get()
+        .then((result) => result.docs.map((doc) => {
+            const data = doc.data() as QuizAttemptDocument;
+            return {
+                id: doc.id,
+                courseId: data.courseId,
+                userId: data.userId,
+                courseAttemptId: data.courseAttemptId,
+                startTime: data.startTime.seconds,
+                endTime: data.endTime?.seconds,
+            };
+        }))
+        .catch((error) => {
+            logger.error(`Error querying quiz attempts: ${error}`);
+            throw new HttpsError("internal", "Error getting user data, try again later");
+        });
 
     return {
         name: userName,
         email: user.email,
-        signUpDate: user.metadata.creationTime,
+        signUpDate: Date.parse(user.metadata.creationTime),
+        lastSignIn: user.metadata.lastRefreshTime ? Date.parse(user.metadata.lastRefreshTime) : -1,
         enrolledCourses: enrolledCourseData,
         completedCourses: completedCourseData,
+        quizAttempts: quizAttemptData
     };
 });
 
