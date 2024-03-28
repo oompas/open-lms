@@ -8,7 +8,6 @@ import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
 import { callApi } from "@/config/firebase";
 import { useRouter } from "next/navigation"; // @ts-ignore
-import _ from "lodash";
 
 export default function AdminCourse({ params }: { params: { id: string } }) {
 
@@ -17,7 +16,6 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
     const [loading, setLoading] = useState(!newCourse);
     const [activatePopup, setActivatePopup] = useState(false);
-    const [originalData, setOriginalData] = useState<any>(null);
 
     const [active, setActive] = useState(false);
     const [name, setName] = useState("");
@@ -107,8 +105,6 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     setQuizQuestions(data.quizQuestions);
                 }
 
-                setOriginalData(data);
-
                 setLoading(false);
             })
             .catch((err) => console.log(`Error fetching course data: ${err}`));
@@ -122,6 +118,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const addCourse = async () => {
 
         const courseData = {
+            ...(!newCourse && { previousVersionId: params.id }),
             name: name,
             description: desc,
             link: link,
@@ -132,7 +129,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 timeLimit: toNumber(quizMaxTime),
                 preserveOrder: preserveOrder,
             },
-            quizQuestions: !quizQuestions.length ? null : quizQuestions
+            quizQuestions: !quizQuestions.length ? null : quizQuestions.map(({ id, ...rest }) => rest)
         }
 
         await callApi("addCourse", courseData).then((result) => router.push(`/admin/course/${result.data}`));
