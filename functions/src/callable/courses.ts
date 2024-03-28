@@ -173,44 +173,6 @@ const setCourseVisibility = onCall(async (request) => {
 });
 
 /**
- * Updating a course will create a new version of the course with the updated information, disabling the old version
- */
-const updateCourse = onCall(async (request) => {
-
-    logger.info(`Entering updateCourse for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
-
-    await verifyIsAdmin(request);
-
-    logger.info("Administrative permission verification passed");
-
-    const schema = object({
-        courseId: string().required(),
-        name: string().optional().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
-        description: string().optional().min(1, "Description must be non-empty").max(500, "Description can't be over 500 characters long"),
-        link: string().url().optional(),
-        minTime: number().integer().positive().optional(),
-        quiz: object({
-            minScore: number().integer().positive().optional(),
-            maxAttempts: number().integer().positive().optional(),
-            timeLimit: number().integer().positive().optional(),
-            preserveOrder: boolean().optional(),
-        }).optional().noUnknown(true)
-    }).required().noUnknown(true);
-
-    await schema.validate(request.data, { strict: true })
-        .catch((err) => {
-            logger.error(`Error validating request: ${err}`);
-            throw new HttpsError('invalid-argument', err);
-        });
-
-    logger.info("Schema verification passed");
-
-    const courseId = request.data.courseId;
-    delete request.data.courseId; // Don't need id in document
-    return updateDoc(DatabaseCollections.Course, courseId, request.data);
-});
-
-/**
  * Gets a list of all active courses the user hasn't completed, with their:
  * -name
  * -description
@@ -521,5 +483,5 @@ const sendCourseFeedback = onCall(async (request) => {
     return sendEmail(courseCreator.email, subject, content, "sending course feedback");
 });
 
-export { addCourse, setCourseVisibility, updateCourse, getAvailableCourses, getCourseInfo, courseEnroll,
-    courseUnenroll, startCourse, sendBrokenLinkReport, sendCourseFeedback };
+export { addCourse, setCourseVisibility, getAvailableCourses, getCourseInfo, courseEnroll, courseUnenroll, startCourse,
+    sendBrokenLinkReport, sendCourseFeedback };
