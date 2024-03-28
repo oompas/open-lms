@@ -505,9 +505,31 @@ const sendCourseFeedback = onCall(async (request) => {
     const courseInfo = await getDocData(DatabaseCollections.Course, request.data.courseId) as CourseDocument;
     const courseCreator = await getDocData(DatabaseCollections.User, courseInfo.userId) as UserDocument;
 
-    const subject = `Open LMS user feedback for course ${courseInfo.name}`;
-    const content = `User ${userInfo.name} (email: ${userInfo.email} uid: ${uid}) has sent the following feedback for the course 
-                                ${courseInfo.name}:<br/> ${request.data.feedback}`;
+    const subject = `Open LMS User Feedback For Course ${courseInfo.name}`;
+    const content = `
+        <style>
+            body { background-color: #f9f9f9; }
+        </style>
+        <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; max-width: 600px; margin: auto; 
+        background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 20px;">
+            <header style="text-align: center; margin-bottom: 20px;">
+                <img src="public/openlms.png" alt="OpenLMS Logo" style="max-width: 200px;">
+            </header>
+            <section style="margin-bottom: 20px;">
+                <h2 style="font-size: 24px; color: #333333;">OpenLMS Course Feedback</h2>
+                <p style="font-size: 16px; color: #444444;">Hi there,</p>
+                <p style="font-size: 16px; color: #444444;">A user submitted the feedback form for the course ${courseInfo.name}:</p>
+                <p style="font-size: 16px; color: #444444;">Name: ${userInfo.name}<br/>Email: ${userInfo.email}
+                <br/>Uid: ${uid}<br/>Feedback: ${request.data.feedback}</p>
+            </section>
+            <footer style="font-size: 12px; color: #666666; text-align: center;">
+                <p>Best Regards,</p>
+                <p>The OpenLMS Team</p>
+                <p><a href="https://github.com/oompas/open-lms" style="color: #007bff;">Platform Readme</a> | 
+                <a href="https://github.com/oompas/open-lms/blob/main/LICENSE" style="color: #007bff;">Platform License</a></p>
+            </footer>
+        </div>`;
+
     return sendEmail(courseCreator.email, subject, content, "sending course feedback");
 });
 
