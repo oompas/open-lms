@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import AuthForm from "@/components/AuthForm";
 import CompletedCourse from "./CompletedCourse";
 import Button from "@/components/Button";
 import { generateDummyData } from "@/app/(main)/admin/tools/generateData";

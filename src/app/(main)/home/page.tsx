@@ -5,8 +5,6 @@ import { useAsync } from 'react-async-hook';
 import { getFunctions, httpsCallable } from "firebase/functions";
 import "../../../config/firebase";
 import { useState } from "react";
-import Link from "next/link"
-import TextField from "@/components/TextField";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 
@@ -15,7 +13,6 @@ export default function Home() {
     const router = useRouter();
 
     const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
-    const [search, setSearch] = useState("");
 
     const TEMP_NOTIFICATION_DATA = [
         { title: "CISC 423", description: "Jan 1, 2023", urgency: "URGENT", link: "no", id: 1 },
@@ -49,29 +46,35 @@ export default function Home() {
         if (courses.result?.data.filter((course: any) => course.status !== 1).length === 0) {
             return <div className="text-gray-600 text-center">Enroll in courses to get started!</div>
         }
+        // @ts-ignore
+        var temp_courses = [...courses.result.data.filter((course: any) => course.status !== 1)]
+        if (temp_courses.length % 3 === 2) {
+            temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
+            temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
+        } else if (temp_courses.length % 3 === 1) {
+            temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
+        }
 
         // @ts-ignore
-        return courses.result.data
-            .filter((course: any) => course.status !== 1)
-            .map((course: any, key: number) => {
+        return temp_courses.map((course: any, key: number) => {
 
                 let time = "";
                 if (course.minTime) {
                     if (course.minTime >= 60) {
-                        time += `${Math.floor(course.minTime / 60)}h `;
+                        time += `${Math.floor(course.minTime / 60)}hr `;
                     }
                     if (course.minTime % 60 !== 0) {
-                        time += `${course.minTime % 60}m`;
+                        time += `${course.minTime % 60}min`;
                     }
-                    time += " course ";
+                    time += " learning ";
                 }
                 if (course.maxQuizTime) {
                     time += time.length > 0 ? " + " : "";
                     if (course.maxQuizTime >= 60) {
-                        time += `${Math.floor(course.maxQuizTime / 60)}h `;
+                        time += `${Math.floor(course.maxQuizTime / 60)}hr `;
                     }
                     if (course.maxQuizTime % 60 !== 0) {
-                        time += `${course.maxQuizTime % 60}m`;
+                        time += `${course.maxQuizTime % 60}min`;
                     }
                     time += " quiz";
                 }
@@ -96,7 +99,7 @@ export default function Home() {
                     <div className="text-lg">My Enrolled Courses</div>
                     <Button text="Browse Available Courses" onClick={() => router.push("/course_search")} style="ml-auto" />
                 </div>
-                <div className="flex flex-row flex-wrap justify-between overflow-y-scroll sm:no-scrollbar">
+                <div className="flex flex-row flex-wrap justify-between mt-4 overflow-y-scroll sm:no-scrollbar">
                     {enrolledCourses()}
                 </div>
             </div>

@@ -37,18 +37,16 @@ export default function Quiz({
 
     return (
         <div className="border-4 mb-8 p-6 rounded-2xl">
-            <div className="text-2xl mb-2">Quiz</div>
-            <div className="flex flex-row items-end">
+            <div className="flex flex-row items-center">
                 <div className="flex flex-col mr-auto text-lg">
-                    {length && <div>Quiz Length: {length} minutes</div>}
-                    {maxAttempts && <div># of attempts allowed: {maxAttempts}</div>}
+                    {length && <div>{length} minute time limit</div>}
+                    {maxAttempts && <div>{maxAttempts} attempts allowed</div>}
                     <div>{numQuestions} questions{minimumScore && ` (${minimumScore} required to pass)`}</div>
                 </div>
                 {quizStarted !== null &&
                     <Button
                         text={quizStarted ? "Continue quiz" : "Click to start"}
                         onClick={async () => await goToQuiz()}
-                        style="mt-2"
                     />
                 }
             </div>

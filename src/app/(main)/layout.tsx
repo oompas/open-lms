@@ -11,11 +11,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
     const [userName, setUserName] = useState<string | null>(null);
 
-    const logout = async () => {
-        await auth.signOut()
-            .then(() => router.push('/'));
-    }
-
     // Takes time to detect if the user is logged in; if so, check if they're an admin
     auth.onAuthStateChanged((user) => {
         if (user) {
@@ -53,9 +48,11 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 <Link href="/profile" className="hover:opacity-50 duration-75">View Profile</Link>
             </div>
         </div>
+        
         <div className='flex h-[85vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar'>
             {children}
         </div>
+
         <footer className="flex flex-col justify-between items-center bg-gray-800 rounded-t-2xl shadow-custom">
             <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-center items-center p-4">
                 <label htmlFor="feedback" className="text-white">
