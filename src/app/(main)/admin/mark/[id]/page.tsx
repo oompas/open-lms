@@ -80,8 +80,14 @@ export default function Mark({ params }: { params: { id: string } }) {
         );
     }
 
-    const handleSubmit = () => {
-        router.push('/admin/tools');
+    const handleSubmit = async () => {
+        const responses = []
+        questions.saQuestions.map((q, key) => (
+            responses.push({id: q.id, marksAchieved: marks[key]})
+        ))
+ 
+        callApi('markQuizAttempt', {quizAttemptId: params.id, responses: responses})
+            .then(() => router.replace("/admin/tools"));
     }
 
     return (
