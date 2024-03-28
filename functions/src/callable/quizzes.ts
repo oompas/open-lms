@@ -90,7 +90,7 @@ const getQuiz = onCall(async (request) => {
                 throw new HttpsError("not-found", `No quiz questions found for course ${courseAttempt.courseId}`);
             }
 
-            const questions = shuffleArray(snapshot.docs.map((doc) => {
+            const questions = snapshot.docs.map((doc) => {
                 const question = {
                     id: doc.id,
                     type: doc.data().type,
@@ -104,7 +104,13 @@ const getQuiz = onCall(async (request) => {
                 }
 
                 return question;
-            }));
+            });
+
+            if (questions[0].order) {
+                questions.sort((a, b) => a.order - b.order);
+            } else {
+                shuffleArray(questions);
+            }
 
             // @ts-ignore
             const startTime = Math.floor(quizAttempts.find((doc) => !doc.data().endTime).data().startTime.toMillis() / 1000);
