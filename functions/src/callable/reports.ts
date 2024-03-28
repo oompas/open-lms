@@ -274,7 +274,7 @@ const getCourseInsightReport = onCall(async (request) => {
         distributionValues.forEach((key: string) => { // @ts-ignore
             totalScore += question.stats.distribution[key] * Number(key);
         }); // @ts-ignore
-        question["stats.totalScore"] = totalScore;
+        question.stats.totalScore = totalScore;
         return question;
     });
 
