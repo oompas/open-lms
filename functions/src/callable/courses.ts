@@ -107,13 +107,20 @@ const addCourse = onCall(async (request) => {
 
     await addDoc(DatabaseCollections.Course, { userID: uid, active: false, ...request.data });
 
-    return Promise.all(quizQuestions.map((question: any) => {
+    return Promise.all(quizQuestions.map((question: any, index: number) => {
         // Each question has statistics - score for tf/mc, distribution for sa (since partial marks are possible)
         const defaultStats = { numAttempts: 0 }; // @ts-ignore
         if (update.type === "mc" || update.type === "tf") defaultStats["totalScore"] = 0; // @ts-ignore
-        if (update.type === "sa") defaultStats["distribution"] = Object.assign({}, new Array(update.marks + 1).fill(0));
+        if (update.type === "sa") defaultStats["distribution"] = Object.assign({}, new Array(question.marks + 1).fill(0));
 
-        return addDoc(DatabaseCollections.QuizQuestion, { courseId: request.data.courseId, active: true, stats: defaultStats, ...question });
+        const questionDoc = {
+            courseId: request.data.courseId,
+            stats: defaultStats,
+            ...(request.data.quiz.preserveOrder && { order: index }), // If the quiz is ordered, store the order of the questions
+            ...question
+        }
+
+        return addDoc(DatabaseCollections.QuizQuestion, questionDoc);
     }));
 });
 

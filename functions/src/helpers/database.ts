@@ -154,7 +154,7 @@ interface QuizQuestionDocument extends DatabaseDocument {
     marks: number;
     answers?: string[];
     correctAnswer?: number;
-    active: boolean;
+    order?: number,
     stats: {
         numAttempts: number;
         totalScore?: number;

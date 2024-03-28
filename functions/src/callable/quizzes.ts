@@ -96,6 +96,7 @@ const getQuiz = onCall(async (request) => {
                     type: doc.data().type,
                     question: doc.data().question,
                     marks: doc.data().marks,
+                    order: doc.data().order,
                 };
 
                 if (doc.data().type === "mc") { // @ts-ignore
