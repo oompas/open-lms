@@ -41,19 +41,19 @@ const addCourse = onCall(async (request) => {
         name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
         description: string().required().min(1, "Description must be non-empty").max(500, "Description can't be over 500 characters long"),
         link: string().url().required(),
-        minTime: number().integer().positive().nullable(),
+        minTime: number().integer().positive().nullable().required(),
         quiz: object({
             minScore: number().integer().positive().required(),
-            maxAttempts: number().integer().positive().nullable(),
-            timeLimit: number().integer().positive().nullable(),
+            maxAttempts: number().integer().positive().nullable().required(),
+            timeLimit: number().integer().positive().nullable().required(),
             preserveOrder: boolean().required(),
-        }).nullable().noUnknown(true),
+        }).nullable().required().noUnknown(true),
         quizQuestions: array().of(
             object({
                 question: string().min(1).max(500).required(),
                 type: string().oneOf(["mc", "tf", "sa"]).required(),
-                answers: array().of(string()).min(2).optional(),
                 marks: number().required().min(1).max(20),
+                answers: array().of(string()).min(2).max(5).optional(),
                 correctAnswer: number().optional(),
             }).noUnknown(true)
         ).optional(),
@@ -73,7 +73,7 @@ const addCourse = onCall(async (request) => {
         throw new HttpsError('invalid-argument', "Quiz questions must be provided with quiz metadata");
     }
 
-    const totalMarks = quizQuestions.reduce((total: number, question: { marks: number }) => total + question.marks, 0);
+    const totalMarks: number = !quizQuestions ? 0 : quizQuestions.reduce((total: number, question: { marks: number }) => total + question.marks, 0);
     if (quiz?.minScore) {
         if (quiz.minScore > totalMarks) {
             throw new HttpsError('invalid-argument', `Minimum score (${request.data.quiz.minScore}) must be less than or equal to the total` +
@@ -114,7 +114,9 @@ const addCourse = onCall(async (request) => {
         await updateDoc(DatabaseCollections.Course, request.data.previousVersionId, { retired: firestore.FieldValue.serverTimestamp() });
     }
 
-    quiz["totalMarks"] = totalMarks;
+    if (quiz) {
+        quiz["totalMarks"] = totalMarks;
+    }
     const courseData = {
         userId: uid,
         active: false,
