@@ -31,7 +31,7 @@ export default function EnrolledCourse({
 
     return (
         <Link 
-            className="border-4 w-[32%] m-2 mb-8 p-6 rounded-2xl cursor-pointer hover:opacity-60 duration-100"
+            className="border-4 w-[32%] mb-8 p-6 rounded-2xl cursor-pointer hover:opacity-60 duration-100"
             style={{ borderColor: statusColors[status] }}
             href={"/course/"+id}
         >
