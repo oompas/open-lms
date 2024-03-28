@@ -60,9 +60,9 @@ export default function AuthPage() {
                             onForgotPassword={handleForgotPassword}
                         />
                         <div className="flex justify-between mt-4">
-                            <Button text="sign up" onClick={() => router.push('/signup')}
+                            <Button text="Sign Up" onClick={() => router.push('/signup')}
                                     style="border-[3px] border-red-800" filled={false}/>
-                            <Button text="log in" onClick={async () => await submitLogin()} style="ml-4" icon="arrow"
+                            <Button text="Log In" onClick={async () => await submitLogin()} style="ml-4" icon="arrow"
                                     filled/>
                         </div>
                         {error && (
@@ -78,7 +78,7 @@ export default function AuthPage() {
                     </div>
                     {/* sso integration buttons */}
                     <div>or</div>
-                    <AuthButton text={"continue with Google"} icon="google" onClick={() => submitGoogleLogin()}/>
+                    <AuthButton text={"Continue with Google"} icon="google" onClick={() => submitGoogleLogin()}/>
                     {/* <AuthButton text={"continue with another SSO"} icon="sso" onClick={() => router.push('/home')}/> */}
                 </div>
                 <div className="flex-col h-full w-2/5 ml-10 space-y-4">

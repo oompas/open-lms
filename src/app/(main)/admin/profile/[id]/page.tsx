@@ -76,7 +76,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                 <IDEnrolled 
                     key={key}
                     title={coursesEnrolled.name}
-                    completionDate={new Date(coursesEnrolled.date).toLocaleString()}
+                    completionDate={new Date(coursesEnrolled.date*1000).toLocaleString()}
                 />
             ))
         }
@@ -89,7 +89,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                 <tr className="border">
                     <td className="border p-2">
                         <Link href={"/admin/mark/"+quiz.id} className="flex flex-row items-center hover:opacity-60">
-                            {new Date(quiz.endTime).toLocaleString()}
+                            {new Date(quiz.endTime*1000).toLocaleString()}
                             <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
                         </Link>
                     </td>
