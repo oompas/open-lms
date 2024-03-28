@@ -180,7 +180,7 @@ interface QuizAttemptDocument extends DatabaseDocument {
     startTime: firestore.Timestamp;
     endTime: firestore.Timestamp | null;
     pass: boolean | null;
-    score: number | null;
+    score: string | null;
     expired?: true; // If the user didn't submit in time, this should be true
 }
 
