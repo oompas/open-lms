@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import { MdCheckCircleOutline } from "react-icons/md";
+import { RiCheckboxCircleFill, RiCheckboxBlankCircleLine } from "react-icons/ri";
 
 export default function Quiz({ params }: { params: { id: string } }) {
 
@@ -93,14 +94,14 @@ export default function Quiz({ params }: { params: { id: string } }) {
                                 <div className="text-xl mb-4">Q{key + 1}: {question.question} <div className="text-sm"><i>{question.marks} mark{question.marks === 1 ? "" : "s"}</i></div></div>
                                 <div className="flex flex-col space-y-2">
                                     {answers.length ? answers.map((answer: string, index: number) => (
-                                            <div key={index} className="flex items-center">
-                                                <input
-                                                    type="radio"
-                                                    id={index + 1 + ""}
-                                                    name={`question${key + 1}`}
-                                                    value={answer}
-                                                    onChange={(e) => setUserAnswers({ ...userAnswers, [question.id]: e.target.value })}
-                                                />
+                                            <div
+                                                key={index}
+                                                className="flex items-center"
+                                                onClick={(e) => setUserAnswers({ ...userAnswers, [question.id]: answers[index] })}
+                                            > { /* @ts-ignore */ }
+                                                {userAnswers[question.id] === answer
+                                                    ? <RiCheckboxCircleFill size={24} className=""/>
+                                                    : <RiCheckboxBlankCircleLine size={24} className=""/>}
                                                 <label htmlFor={`option${index}`} className="ml-2">{answer}</label>
                                             </div>
                                         ))
