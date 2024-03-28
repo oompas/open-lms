@@ -458,6 +458,7 @@ const getQuizAttempt = onCall(async (request) => {
                 questionAttemptId: attempt.id,
                 question: doc.question,
                 response: attempt.response,
+                correctAnswer: doc.correctAnswer,
                 marks: doc.marks,
                 marksAchieved: attempt.marksAchieved,
                 type: doc.type,

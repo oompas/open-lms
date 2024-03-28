@@ -100,8 +100,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
                                                 onClick={(e) => setUserAnswers({ ...userAnswers, [question.id]: answers[index] })}
                                             > { /* @ts-ignore */ }
                                                 {userAnswers[question.id] === answer
-                                                    ? <RiCheckboxCircleFill size={24} className=""/>
-                                                    : <RiCheckboxBlankCircleLine size={24} className=""/>}
+                                                    ? <RiCheckboxCircleFill size={24}/>
+                                                    : <RiCheckboxBlankCircleLine size={24}/>}
                                                 <label htmlFor={`option${index}`} className="ml-2">{answer}</label>
                                             </div>
                                         ))
