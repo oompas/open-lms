@@ -27,7 +27,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const [minCourseTime, setMinCourseTime] = useState<null | number>(null);
 
     const [useQuiz, setUseQuiz] = useState(true)
-    const [quizMinScore, setQuizMinScore] = useState<string | number>(1);
+    const [quizMinScore, setQuizMinScore] = useState<string | number>(0);
     const [quizAttempts, setQuizAttempts] = useState<null | number>(null);
     const [quizMaxTime, setQuizMaxTime] = useState<null | number>(null);
     const [preserveOrder, setPreserveOrder] = useState<boolean>(true);
@@ -47,14 +47,17 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         else
             temp.push(data);
 
-        setQuizTotalScore(quizTotalScore+Number(data.marks));
+        var temp_score = 0;
+        temp.map((q) => (
+            temp_score += q.marks
+        ))
+        setQuizTotalScore(temp_score);
         setQuizQuestions(temp);
         setEditQuesiton(-1);
         setShowCreateQuestion(false);
     }
 
     const handleEditQuestion = (num: number) => {
-        setQuizTotalScore(quizTotalScore-Number(quizQuestions[num-1].marks));
         setEditQuesiton(num - 1)
     }
 

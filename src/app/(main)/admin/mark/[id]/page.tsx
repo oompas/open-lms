@@ -83,7 +83,7 @@ export default function Mark({ params }: { params: { id: string } }) {
     const handleSubmit = async () => {
         const responses = []
         questions.saQuestions.map((q, key) => (
-            responses.push({id: q.id, marksAchieved: marks[key]})
+            responses.push({questionAttemptId: q.questionAttemptId, marksAchieved: marks[key]})
         ))
  
         callApi('markQuizAttempt', {quizAttemptId: params.id, responses: responses})
