@@ -106,24 +106,25 @@ const addCourse = onCall(async (request) => {
         }
     });
 
+    let version = 1;
+    if (request.data.previousVersionId) {
+        const previousVersion = await getDocData(DatabaseCollections.Course, request.data.previousVersionId) as CourseDocument;
+        version = previousVersion.version + 1;
+
+        await updateDoc(DatabaseCollections.Course, request.data.previousVersionId, { retired: firestore.FieldValue.serverTimestamp() });
+    }
+
     quiz["totalMarks"] = totalMarks;
     const courseData = {
         userId: uid,
         active: false,
+        version: version,
         name: request.data.name,
         description: request.data.description,
         link: request.data.link,
         minTime: request.data.minTime,
         quiz: quiz,
     };
-
-    if (request.data.previousVersionId) {
-        const previousVersion = await getDocData(DatabaseCollections.Course, request.data.previousVersionId) as CourseDocument;
-        if (previousVersion.active) {
-            throw new HttpsError("invalid-argument", "Cannot update an active course; please create a new version");
-        }
-        courseData["previousVersionId"] = request.data.previousVersionId;
-    }
 
     await addDoc(DatabaseCollections.Course, courseData);
 

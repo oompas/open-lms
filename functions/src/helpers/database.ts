@@ -139,9 +139,10 @@ interface CourseDocument extends DatabaseDocument {
         minScore: number | null;
         preserveOrder: boolean;
         timeLimit: number | null;
+        totalMarks: number;
     } | null;
     retired?: firestore.Timestamp;
-    version?: number;
+    version: number;
 }
 
 interface EnrolledCourseDocument extends DatabaseDocument {
@@ -182,7 +183,7 @@ interface QuizAttemptDocument extends DatabaseDocument {
     startTime: firestore.Timestamp;
     endTime: firestore.Timestamp | null;
     pass: boolean | null;
-    score: string | null;
+    score: number | null;
     expired?: true; // If the user didn't submit in time, this should be true
 }
 
