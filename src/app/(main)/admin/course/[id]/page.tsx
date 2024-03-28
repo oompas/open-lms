@@ -104,6 +104,8 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     setQuizAttempts(data.quiz.maxAttempts);
                     setQuizMaxTime(data.quiz.timeLimit);
 
+                    setQuizTotalScore(data.quizQuestions.reduce((acc: number, q: any) => acc + q.marks, 0));
+
                     setQuizQuestions(data.quizQuestions);
                 }
 
@@ -320,12 +322,20 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                             <div className="flex flex-row space-x-2 items-center mt-2">
                                                 <TextField
                                                     text={quizMinScore}
-                                                    onChange={ (text: string) => 
-                                                        Number(text) > quizTotalScore ? 
-                                                            setQuizMinScore(quizTotalScore) : 
-                                                        Number(text) < 0 ? 
-                                                            setQuizMinScore(0) : setQuizMinScore(text)
-                                                    }
+                                                    onChange={(text: string) => {
+                                                        if (text === "") {
+                                                            setQuizMinScore(0);
+                                                            return;
+                                                        }
+                                                        if (!(/^[0-9]+$/).test(text)) {
+                                                            return;
+                                                        }
+                                                        if (Number(text) > quizTotalScore) {
+                                                            setQuizMinScore(quizTotalScore);
+                                                            return;
+                                                        }
+                                                        return setQuizMinScore(Number(text));
+                                                    }}
                                                     style="w-24 text-right"
                                                 />
                                                 <div className="text-lg">
