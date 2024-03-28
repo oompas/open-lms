@@ -135,6 +135,96 @@ const exampleQuestions = [
         question: "The capital of Alberta is Calgary",
         type: "tf",
         correctAnswer: 1,
+    },
+    {
+        question: "The capital of Saskatchewan is Regina",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Manitoba is Winnipeg",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Nova Scotia is Halifax",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of New Brunswick is Fredericton",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Prince Edward Island is Charlottetown",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Newfoundland and Labrador is St. John's",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Yukon is Whitehorse",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Northwest Territories is Yellowknife",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Nunavut is Iqaluit",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Canada is Toronto",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Montreal",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Vancouver",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Calgary",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Regina",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Winnipeg",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Halifax",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Fredericton",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Charlottetown",
+        type: "tf",
+        correctAnswer: 1,
     }
 ]
 
@@ -175,35 +265,25 @@ const generateDummyData = async () => {
         .catch((error) => { throw new Error(`Error cleaning database data: ${error}`); });
 
     // Add all the courses
-    const courseQuizQuestions: any[] = [];
+    const courseIds: string[] = [];
     await Promise.all(courses.map(async (course) => {
-        // @ts-ignore
-        const { quizQuestions, ...courseData } = course;
-        return callApi('addCourse', courseData)
+        return callApi('addCourse', course)
             .then((id) => {
                 if (typeof id.data !== 'string') {
                     throw new Error(`Error: saveCourse should return a course ID string. Returned value: ${id}`);
                 }
-                courseQuizQuestions.push({ id: id.data, quizQuestions });
+                courseIds.push(id.data);
             })
             .catch((error) => { throw new Error(`Error adding course (name: ${course.name}): ${error}`); });
     }));
 
     const promises: Promise<any>[] = [];
 
-    courseQuizQuestions.forEach((course) => {
-        if (course.quizQuestions) {
-            promises.push(
-                callApi('updateQuizQuestions', { courseId: course.id, questions: course.quizQuestions })
-                    .then(() => console.log(`Successfully added quiz questions for course ${course.id}`))
-                    .catch((error) => { throw new Error(`Error adding quiz questions for course ${course.id}: ${error}`); })
-            );
-        }
-
+    courseIds.forEach((id) => {
         promises.push(
-            callApi('publishCourse', { courseId: course.id })
-                .then(() => console.log(`Successfully published course ${course.id}`))
-                .catch((error) => { throw new Error(`Error publishing course ${course.id}: ${error}`); })
+            callApi('publishCourse', { courseId: id })
+                .then(() => console.log(`Successfully published course ${id}`))
+                .catch((error) => { throw new Error(`Error publishing course ${id}: ${error}`); })
         );
     });
 
