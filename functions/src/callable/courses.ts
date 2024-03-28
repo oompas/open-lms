@@ -18,7 +18,7 @@ import {
     CourseDocument,
     DatabaseCollections,
     QuizAttemptDocument,
-    UserDocument,
+    UserDocument, docExists, ReportedCourseDocument,
 } from "../helpers/database";
 import { enrolledCourseId, getCourseStatus, getLatestCourseAttempt, reportedCourseId } from "./helpers";
 
@@ -442,17 +442,27 @@ const sendBrokenLinkReport = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
+    const schema = object({
+        courseId: string().required(),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
     // @ts-ignore
     const uid: string = request.auth?.uid;
 
-    // Ensure a valid course ID is passed in
-    if (!request.data.courseId) {
-        throw new HttpsError('invalid-argument', "Must provide a course ID to enroll in");
+    const { courseId } = request.data;
+
+    const courseExists: boolean = await docExists(DatabaseCollections.Course, courseId);
+    if (!courseExists) {
+        throw new HttpsError('not-found', `Course ${courseId} does not exist`);
     }
 
-    await getDocData(DatabaseCollections.Course, request.data.courseId);
-
-    return addDocWithId(DatabaseCollections.ReportedCourse, reportedCourseId(uid, request.data.courseId), { userId: uid, courseId: request.data.courseId });
+    return addDocWithId(DatabaseCollections.ReportedCourse, reportedCourseId(uid, courseId), { userId: uid, courseId: courseId } as ReportedCourseDocument);
 });
 
 /**
