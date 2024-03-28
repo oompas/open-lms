@@ -282,7 +282,7 @@ const generateDummyData = async () => {
 
     courseIds.forEach((id) => {
         promises.push(
-            callApi('publishCourse', { courseId: id })
+            callApi('setCourseVisibility', { courseId: id, active: true })
                 .then(() => console.log(`Successfully published course ${id}`))
                 .catch((error) => { throw new Error(`Error publishing course ${id}: ${error}`); })
         );
