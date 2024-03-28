@@ -101,6 +101,8 @@ export default function Mark({ params }: { params: { id: string } }) {
                         <div className="text-2xl font-bold mb-2">{questions && questions.courseName}</div>
                         {/* @ts-ignore */}
                         <div className="flex flex-col text-lg space-y-8 w-[30rem]">Learner: {questions && questions.learnerName}</div>
+                        {/* @ts-ignore */}
+                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Completion date: {questions && new Date(questions.completionTime * 1000).toLocaleString()}</div>
                     </div>
                 </div>
 

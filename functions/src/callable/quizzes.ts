@@ -513,7 +513,7 @@ const getQuizAttempt = onCall(async (request) => {
     return {
         courseName: courseInfo.name,
         learnerName: userInfo.name,
-        completionTime: quizAttemptData.endTime,
+        completionTime: quizAttemptData.endTime?.seconds,
         saQuestions: attemptData.filter((attempt) => attempt.type === "sa"),
         otherQuestions: attemptData.filter((attempt) => attempt.type !== "sa"),
         score: quizAttemptData.score,
