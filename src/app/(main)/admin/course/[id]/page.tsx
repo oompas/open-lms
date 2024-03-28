@@ -153,14 +153,14 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
                 <div className="text-lg mb-2">
                     {active
-                        ? "Pressing \"Unpublish Course\" removes users' access to the course\n without deleting any" +
-                        " data. You can re-publish the course to restore access at any time."
-                        : "\"Publish Course\" will allow users of the platform to view, without deleting any data." +
-                        " You can re-publish the course to restore access at any time. enroll, and complete this" +
-                        " course. You can unpublish at any time to remove users' access to the course without losing any data"
+                        ? "Pressing \"Unpublish Course\" makes the course hidden to learners, but does not change" +
+                        " any course related data (user's course attempts are kept). You can still view the course," +
+                        " or re-publish it at any time to restore access."
+                        : "\"Publish Course\" will make this course visible to learners so they may view and complete" +
+                        " the course. This does not change any other course-related data, and you may unpublish it" +
+                        " at any time."
                     }
                 </div>
-                {!active && <div>Any subsequent changes saved will be directly visible to users.</div>}
                 <div className="flex flex-row space-x-4 mt-6">
                     <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
                     <Button
