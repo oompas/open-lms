@@ -229,7 +229,7 @@ const getCourseInsightReport = onCall(async (request) => {
     const quizAttempts: QuizAttemptDocument[] = await getCollection(DatabaseCollections.QuizAttempt)
         .where("courseId", "==", courseId)
         .get()
-        .then((result) => result.docs.map(doc => doc.data() as QuizAttemptDocument));
+        .then((result) => result.docs.map(doc => ({ id: doc.id, ...doc.data() }) as QuizAttemptDocument));
 
     // Combine data to create the courseLearners array
     const courseLearners = filteredAttempts.map((courseAttempt) => {
@@ -257,11 +257,9 @@ const getCourseInsightReport = onCall(async (request) => {
             name: userName,
             userId: userId,
             completionStatus: completionStatus,
-            markingStatus: markingStatus,
-            // @ts-ignore
-            quizAttemptId: latestQuizAttempt.id,
-            // @ts-ignore
-            quizAttemptTime: latestQuizAttempt.endTime,
+            markingStatus: markingStatus, // @ts-ignore
+            quizAttemptId: latestQuizAttempt.id, // @ts-ignore
+            quizAttemptTime: latestQuizAttempt.endTime.seconds,
         };
     });
 
