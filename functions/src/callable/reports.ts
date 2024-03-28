@@ -12,7 +12,7 @@ import {
     QuizQuestionAttemptDocument,
     UserDocument, getDocData, CourseDocument,
 } from "../helpers/database";
-import { object } from "yup";
+import { object, string } from "yup";
 
 /**
  * Returns a list of all learners on the platform with their:
@@ -141,7 +141,7 @@ const getCourseInsightReport = onCall(async (request) => {
     logger.info("User is an admin, querying database for this course's report...");
 
     const schema = object({
-        courseId: object().required(),
+        courseId: string().required(),
     }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
