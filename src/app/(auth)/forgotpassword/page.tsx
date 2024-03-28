@@ -32,9 +32,9 @@ export default function ForgotPasswordPage() {
                         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                                className="border rounded-md px-3 py-2"/>
                     </div>
-                    <Button text="send reset email" onClick={sendResetEmail} filled={true} style="mt-4"/>
+                    <Button text="Send Reset Email" onClick={sendResetEmail} filled={true} style="mt-4"/>
                     {isSent && <p>Password reset email was sent.</p>}
-                    <Button text="back to login" onClick={() => router.push('/')} style="border-[3px] border-red-800 mt-4" filled={false}/>
+                    <Button text="Back to Login" onClick={() => router.push('/')} style="border-[3px] border-red-800 mt-4" filled={false}/>
                 </div>
             </div>
         </main>
