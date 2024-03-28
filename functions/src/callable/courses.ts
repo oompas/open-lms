@@ -6,7 +6,7 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { boolean, number, object, string } from 'yup';
+import { array, boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import {
     addDoc,
@@ -42,11 +42,20 @@ const addCourse = onCall(async (request) => {
         link: string().url().required(),
         minTime: number().integer().positive().nullable(),
         quiz: object({
-            minScore: number().integer().positive().nullable(),
+            minScore: number().integer().positive().required(),
             maxAttempts: number().integer().positive().nullable(),
             timeLimit: number().integer().positive().nullable(),
-            preserveOrder: boolean().nullable(),
+            preserveOrder: boolean().required(),
         }).nullable().noUnknown(true),
+        quizQuestions: array().of(
+            object({
+                question: string().min(1).max(500).required(),
+                type: string().oneOf(["mc", "tf", "sa"]).required(),
+                answers: array().of(string()).min(2).optional(),
+                marks: number().required().min(1).max(20),
+                correctAnswer: number().optional(),
+            }).noUnknown(true)
+        ).optional(),
     }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
@@ -56,6 +65,18 @@ const addCourse = onCall(async (request) => {
         });
 
     logger.info("Schema verification passed");
+
+    if ((request.data.quiz && !request.data.quizQuestions) || (!request.data.quiz && request.data.quizQuestions)) {
+        throw new HttpsError('invalid-argument', "Quiz questions must be provided with quiz metadata");
+    }
+
+    if (request.data.quiz?.minScore) {
+        const totalMarks = request.data.quizQuestions.reduce((total: number, question: { marks: number }) => total + question.marks, 0);
+        if (request.data.quiz.minScore > totalMarks) {
+            throw new HttpsError('invalid-argument', `Minimum score (${request.data.quiz.minScore}) must be less than or equal to the total` +
+                ` marks available (${totalMarks})`);
+        }
+    }
 
     return addDoc(DatabaseCollections.Course, { userID: uid, active: false, ...request.data });
 });
