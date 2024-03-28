@@ -12,8 +12,6 @@ export default function Mark({ params }: { params: { id: string } }) {
 
     const router = useRouter();
 
-    const TEMP_MARKED = true;
-
     const quizQuestions = useAsync(() =>
         callApi('getQuizAttempt', { quizAttemptId: params.id }) // @ts-ignore
             .then((rsp) => { setQuestions(rsp.data); return rsp; }),
@@ -55,8 +53,8 @@ export default function Mark({ params }: { params: { id: string } }) {
     }, [questions])
 
     const handleUpdateMark = (index: number, mark: number) => {
-        var temp_marks = [...marks]
-        var temp_sum = 0
+        const temp_marks = [...marks]
+        let temp_sum = 0
         temp_marks[index] = mark
         temp_marks.map((n) => {
             temp_sum += n
