@@ -140,6 +140,8 @@ interface CourseDocument extends DatabaseDocument {
         preserveOrder: boolean;
         timeLimit: number | null;
     } | null;
+    retired?: firestore.Timestamp;
+    version?: number;
 }
 
 interface EnrolledCourseDocument extends DatabaseDocument {

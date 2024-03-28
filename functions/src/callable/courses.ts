@@ -37,6 +37,7 @@ const addCourse = onCall(async (request) => {
     logger.info("Administrative permission verification passed");
 
     const schema = object({
+        previousVersionId: string().optional(),
         name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
         description: string().required().min(1, "Description must be non-empty").max(500, "Description can't be over 500 characters long"),
         link: string().url().required(),
@@ -116,6 +117,14 @@ const addCourse = onCall(async (request) => {
         quiz: quiz,
     };
 
+    if (request.data.previousVersionId) {
+        const previousVersion = await getDocData(DatabaseCollections.Course, request.data.previousVersionId) as CourseDocument;
+        if (previousVersion.active) {
+            throw new HttpsError("invalid-argument", "Cannot update an active course; please create a new version");
+        }
+        courseData["previousVersionId"] = request.data.previousVersionId;
+    }
+
     await addDoc(DatabaseCollections.Course, courseData);
 
     return Promise.all(quizQuestions.map((question: any, index: number) => {
@@ -163,7 +172,7 @@ const setCourseVisibility = onCall(async (request) => {
 });
 
 /**
- * Updates an existing course's data (excluding quiz questions)
+ * Updating a course will create a new version of the course with the updated information, disabling the old version
  */
 const updateCourse = onCall(async (request) => {
 
