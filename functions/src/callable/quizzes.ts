@@ -202,7 +202,15 @@ const startQuiz = onCall(async (request) => {
         .orderBy("startTime", "desc")
         .limit(1)
         .get()
-        .then((snapshot) => ({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as QuizAttemptDocument))
+        .then((snapshot) => {
+            if (snapshot.empty) {
+                return null;
+            }
+            return {
+                id: snapshot.docs[0].id,
+                ...snapshot.docs[0].data()
+            };
+        })
         .catch((err) => {
             logger.error(`Error getting quiz attempts: ${err}`);
             throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
@@ -243,13 +251,13 @@ const startQuiz = onCall(async (request) => {
     }
 
     // Verify the user doesn't have an active quiz attempt
-    if (lastQuizAttempt.endTime === null) {
+    if (lastQuizAttempt && lastQuizAttempt.endTime === null) {
         logger.error(`User has an active quiz attempt for course ${courseId}: ${lastQuizAttempt.id}`);
         throw new HttpsError("failed-precondition", `You have an active quiz attempt for course ${courseId}`);
     }
 
     // Verify the user doesn't have a quiz attempt awaiting marking
-    if (lastQuizAttempt.pass === null) {
+    if (lastQuizAttempt && lastQuizAttempt.pass === null) {
         logger.error(`User has a quiz attempt awaiting marking for course ${courseId}: ${lastQuizAttempt.id}`);
         throw new HttpsError("failed-precondition", `You have a quiz attempt awaiting marking for course ${courseId}`);
     }
