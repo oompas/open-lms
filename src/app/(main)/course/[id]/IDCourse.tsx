@@ -1,7 +1,7 @@
 "use client"
 import Button from "@/components/Button"
-import { getFunctions, httpsCallable } from "firebase/functions";
 import { useEffect, useState } from "react";
+import { callApi } from "@/config/firebase";
 
 export default function IDCourse({
     course,
@@ -52,19 +52,19 @@ export default function IDCourse({
     }, [countdown]);
 
     const enroll = () => {
-        return httpsCallable(getFunctions(), "courseEnroll")({ courseId: course.courseId })
+        return callApi("courseEnroll", { courseId: course.courseId })
             .then(() => setStatus(2))
             .catch((err) => { throw new Error(`Error enrolling in course: ${err}`) });
     };
 
     const unEnroll = () => {
-        return httpsCallable(getFunctions(), "courseUnenroll")({ courseId: course.courseId })
+        return callApi("courseUnenroll", { courseId: course.courseId })
             .then(() => setStatus(1))
             .catch((err) => { throw new Error(`Error unenrolling in course: ${err}`) });
     };
 
     const start = () => {
-        return httpsCallable(getFunctions(), "startCourse")({ courseId: course.courseId })
+        return callApi("startCourse", { courseId: course.courseId })
             .then((result) => {
                 setCourseAttemptId(result.data);
                 setCountDown(60 * course.minTime);
@@ -76,10 +76,8 @@ export default function IDCourse({
 
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const reportBrokenLink = () => {
-        return httpsCallable(getFunctions(), "sendBrokenLinkReport")({ courseId: course.courseId })
-            .then(() => {
-                setShowSuccessMessage(true);
-            })
+        return callApi("sendBrokenLinkReport", { courseId: course.courseId })
+            .then(() => setShowSuccessMessage(true))
             .catch((err) => {
                 console.error(err);
                 throw new Error(`Error reporting broken link: ${err}`)
