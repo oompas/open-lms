@@ -131,8 +131,8 @@ const addCourse = onCall(async (request) => {
     return Promise.all(quizQuestions.map((question: any, index: number) => {
         // Each question has statistics - score for tf/mc, distribution for sa (since partial marks are possible)
         const defaultStats = { numAttempts: 0 }; // @ts-ignore
-        if (update.type === "mc" || update.type === "tf") defaultStats["totalScore"] = 0; // @ts-ignore
-        if (update.type === "sa") defaultStats["distribution"] = Object.assign({}, new Array(question.marks + 1).fill(0));
+        if (question.type === "mc" || question.type === "tf") defaultStats["totalScore"] = 0; // @ts-ignore
+        if (question.type === "sa") defaultStats["distribution"] = Object.assign({}, new Array(question.marks + 1).fill(0));
 
         const questionDoc = {
             courseId: request.data.courseId,

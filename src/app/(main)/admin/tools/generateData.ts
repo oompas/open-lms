@@ -235,23 +235,21 @@ const courses = rawCourseData.map((course) => {
 
     if (randomChance(0.7)) { // @ts-ignore
         course["minTime"] = Math.random() < 0.7 ? randomInt(1, 3) * 15 : randomInt(1, 12) * 60;
-    }
-    let hasQuiz = false; // @ts-ignore
+    } // @ts-ignore
     if (!course["minTime"] || randomChance(0.6)) {
-        hasQuiz = true; // @ts-ignore
-        course["quiz"] = {
-            minScore: randomChance(0.5) ? randomInt(1, 2) : null,
-            maxAttempts: randomChance(0.5) ? randomInt(1, 10) : null,
-            timeLimit: randomChance(0.5) ? (randomChance(0.7) ? randomInt(1, 3) * 15 : randomInt(1, 4)) : null,
-            preserveOrder: randomChance(0.5)
-        };
-    }
-
-    if (hasQuiz) { // @ts-ignore
+        // @ts-ignore
         course["quizQuestions"] = exampleQuestions.sort(() => Math.random() - 0.5).slice(0, randomInt(2, 6)).map((question) => {
             const marks = question.type === "sa" ? randomInt(2, 5) : randomInt(1, 2);
             return { ...question, marks: marks };
         });
+
+        // @ts-ignore
+        course["quiz"] = { // @ts-ignore
+            minScore: randomInt(1, course["quizQuestions"].reduce((a, b) => a + b.marks, 0)),
+            maxAttempts: randomChance(0.5) ? randomInt(1, 10) : null,
+            timeLimit: randomChance(0.5) ? (randomChance(0.7) ? randomInt(1, 3) * 15 : randomInt(1, 4)) : null,
+            preserveOrder: randomChance(0.5)
+        };
     }
 
     return course;
