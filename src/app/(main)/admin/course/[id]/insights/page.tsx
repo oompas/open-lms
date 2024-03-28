@@ -21,7 +21,7 @@ export default function Insights({ params }: { params: { id: string } }) {
     const router = useRouter();
 
     const courseData = useAsync(() =>
-        callApi('getCourseInsightReport', { courseId: params.id})  // @ts-ignore
+        callApi('getCourseInsightReport', {courseId: params.id})  // @ts-ignore
             .then((rsp) => { setData(rsp.data); console.log(rsp); return rsp; }),
         []);
 
