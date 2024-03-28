@@ -81,11 +81,13 @@ export default function Mark({ params }: { params: { id: string } }) {
     }
 
     const handleSubmit = async () => {
+        // @ts-ignore
         const responses = []
+        // @ts-ignore
         questions.saQuestions.map((q, key) => (
             responses.push({questionAttemptId: q.questionAttemptId, marksAchieved: marks[key]})
         ))
- 
+        // @ts-ignore
         callApi('markQuizAttempt', {quizAttemptId: params.id, responses: responses})
             .then(() => router.replace("/admin/tools"));
     }
@@ -122,7 +124,7 @@ export default function Mark({ params }: { params: { id: string } }) {
                     {viewOnly && questions && questions.saQuestions.map((question, key) => (
                         <div className="flex flex-row bg-white py-4 px-12 rounded-xl">
                             <div className="flex flex-col w-full">
-                                <div className="text-lg w-full">Q) {question.question}</div>
+                                <div className="text-lg w-full mb-2">{question.question}</div>
                                 <div className="text-lg w-full">A) {question.response}</div>
                             </div>
                             <div className="text-xl w-16">{question.marksAchieved}/{question.marks}</div>
@@ -130,10 +132,29 @@ export default function Mark({ params }: { params: { id: string } }) {
                     ))}
                     {/* @ts-ignore */}
                     {questions && questions.otherQuestions.map((question, key) => (
-                        <div className="flex flex-row bg-white py-4 px-12 rounded-xl">
+                        <div className="flex flex-row items-center bg-white py-4 px-12 rounded-xl">
                             <div className="flex flex-col w-full">
-                                <div className="text-lg w-full">Q) {question.question}</div>
-                                <div className="text-lg w-full">A) {question.type === "tf" ? question.response ? "False" : "True" : question.answers[question.response]}</div>
+                                <div className="text-lg w-full mb-2">{question.question}</div>
+                                <div>
+                                    {question.type === "tf" ? question.response ?
+                                        <div className="text-lg w-full">A) False
+                                            <div>True</div>
+                                        </div>
+                                        :
+                                        <div className="text-lg w-full">A) True
+                                            <div>False</div>
+                                        </div>
+                                    : 
+                                        <div className="text-lg w-full">A) {question.answers[question.response]}
+                                            {/* @ts-ignore */}
+                                            { question.answers.map((ans, key) => {
+                                                if (ans != question.answers[question.response]) {
+                                                    return (<div key={key}>{ans}</div>)
+                                                }
+                                            })}
+                                        </div>
+                                    }
+                                </div>
                             </div>
                             <div className="text-xl w-16">{question.marksAchieved}/{question.marks}</div>
                         </div>
