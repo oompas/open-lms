@@ -66,19 +66,55 @@ const addCourse = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    if ((request.data.quiz && !request.data.quizQuestions) || (!request.data.quiz && request.data.quizQuestions)) {
+    const { quiz, quizQuestions } = request.data;
+
+    if ((quiz && !quizQuestions) || (!quiz && quizQuestions)) {
         throw new HttpsError('invalid-argument', "Quiz questions must be provided with quiz metadata");
     }
 
-    if (request.data.quiz?.minScore) {
-        const totalMarks = request.data.quizQuestions.reduce((total: number, question: { marks: number }) => total + question.marks, 0);
-        if (request.data.quiz.minScore > totalMarks) {
+    if (quiz?.minScore) {
+        const totalMarks = quizQuestions.reduce((total: number, question: { marks: number }) => total + question.marks, 0);
+        if (quiz.minScore > totalMarks) {
             throw new HttpsError('invalid-argument', `Minimum score (${request.data.quiz.minScore}) must be less than or equal to the total` +
                 ` marks available (${totalMarks})`);
         }
     }
 
-    return addDoc(DatabaseCollections.Course, { userID: uid, active: false, ...request.data });
+    // Validate quiz questions
+    quizQuestions.forEach((question: any) => {
+        let keys;
+        if (question.type === "mc") {
+            keys = ["question", "type", "answers", "correctAnswer", "marks"];
+        } else if (question.type === "tf") {
+            keys = ["question", "type", "correctAnswer", "marks"];
+        } else if (question.type === "sa") {
+            keys = ["question", "type", "marks"];
+        } else {
+            throw new HttpsError(
+                "invalid-argument",
+                `Invalid request: question ${JSON.stringify(question)} is invalid; 'type' must be one of 'mc', 'tf', or 'sa'`
+            );
+        }
+
+        const properties = Object.keys(question);
+        if (!keys.every((key) => properties.includes(key)) || properties.length !== keys.length) {
+            throw new HttpsError(
+                "invalid-argument",
+                `Invalid request: question ${JSON.stringify(question)} is invalid; must include the following keys: ${keys.join(", ")}`
+            );
+        }
+    });
+
+    await addDoc(DatabaseCollections.Course, { userID: uid, active: false, ...request.data });
+
+    return Promise.all(quizQuestions.map((question: any) => {
+        // Each question has statistics - score for tf/mc, distribution for sa (since partial marks are possible)
+        const defaultStats = { numAttempts: 0 }; // @ts-ignore
+        if (update.type === "mc" || update.type === "tf") defaultStats["totalScore"] = 0; // @ts-ignore
+        if (update.type === "sa") defaultStats["distribution"] = Object.assign({}, new Array(update.marks + 1).fill(0));
+
+        return addDoc(DatabaseCollections.QuizQuestion, { courseId: request.data.courseId, active: true, stats: defaultStats, ...question });
+    }));
 });
 
 /**

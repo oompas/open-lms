@@ -5,7 +5,7 @@
 import { createAccount, getUserProfile, resetPassword } from "./callable/auth";
 import { beforeSignIn, onUserDelete } from "./triggers/auth";
 import { updateCourse, setCourseVisibility, courseEnroll, courseUnenroll, getAvailableCourses, getCourseInfo, addCourse, startCourse, sendCourseFeedback } from "./callable/courses";
-import { getQuizResponses, updateQuizQuestions, getQuiz, startQuiz, submitQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt } from "./callable/quizzes";
+import { getQuizResponses, getQuiz, startQuiz, submitQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt } from "./callable/quizzes";
 import { getCourseReports, getUserReports, getCourseInsightReport } from "./callable/reports";
 import { sendPlatformFeedback, inviteLearner } from "./callable/misc";
 import { cleanDatabase } from "./helpers/addDummyData";
@@ -16,7 +16,7 @@ export {
     createAccount, resetPassword, getUserProfile,
     beforeSignIn, onUserDelete,
     addCourse, getAvailableCourses, getCourseInfo, setCourseVisibility, updateCourse, courseEnroll, courseUnenroll, startCourse, sendCourseFeedback,
-    updateQuizQuestions, getQuiz, getQuizResponses, startQuiz, submitQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt,
+    getQuiz, getQuizResponses, startQuiz, submitQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt,
     getCourseReports, getUserReports, getCourseInsightReport,
     sendPlatformFeedback, inviteLearner,
     cleanDatabase,
