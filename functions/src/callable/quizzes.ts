@@ -128,47 +128,6 @@ const getQuiz = onCall(async (request) => {
 });
 
 /**
- * Gets the responses for each question for a specific quiz attempt
- */
-const getQuizResponses = onCall(async (request) => {
-
-    logger.info(`Retrieving quiz responses for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
-
-    await verifyIsAdmin(request);
-
-    const schema = object({
-        quizAttemptId: string().required(),
-    }).noUnknown(true);
-
-    await schema.validate(request.data, { strict: true })
-        .catch((err) => {
-            logger.error(`Error validating request: ${err}`);
-            throw new HttpsError('invalid-argument', err);
-        });
-
-    const quizAttemptId = request.data.quizAttemptId;
-
-    // Verify the quiz attempt exists
-    const quizAttempt = await getDocData(DatabaseCollections.QuizAttempt, quizAttemptId) as QuizAttemptDocument;
-    if (quizAttempt.endTime === null) {
-        logger.error(`Quiz attempt with ID ${quizAttemptId} is still active`);
-        throw new HttpsError("failed-precondition", `Quiz attempt with ID ${quizAttemptId} is still active`);
-    }
-
-    // Retrieve the respective quiz question attempt objects if the quiz attempt is completed
-    return getCollection(DatabaseCollections.QuizQuestionAttempt)
-        .where("quizAttemptId", "==", quizAttemptId)
-        .get()
-        .then((snapshot) => {
-            if (snapshot.empty) {
-                logger.info(`No responses found for quiz attempt ${quizAttemptId}`);
-                throw new HttpsError("not-found", `No responses found for quiz attempt ${quizAttemptId}`);
-            }
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        });
-});
-
-/**
  * Returns the quiz data and starts the quiz timer
  */
 const startQuiz = onCall(async (request) => {
@@ -593,4 +552,4 @@ const markQuizAttempt = onCall(async (request) => {
     return updateQuizStatus(quizAttemptId);
 });
 
-export { getQuizResponses, startQuiz, submitQuiz, getQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt };
+export { startQuiz, submitQuiz, getQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt };
