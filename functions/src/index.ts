@@ -6,7 +6,7 @@ import { createAccount, getUserProfile, resetPassword } from "./callable/auth";
 import { beforeSignIn, onUserDelete } from "./triggers/auth";
 import { setCourseVisibility, courseEnroll, courseUnenroll, getAvailableCourses, getCourseInfo, addCourse, startCourse, sendCourseFeedback, deleteCourse, sendBrokenLinkReport } from "./callable/courses";
 import { getQuiz, startQuiz, submitQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt } from "./callable/quizzes";
-import { getCourseReports, getUserReports, getCourseInsightReport } from "./callable/reports";
+import { getCourseInsights, getUserInsights, getCourseInsightReport } from "./callable/reports";
 import { sendPlatformFeedback, inviteLearner } from "./callable/misc";
 import { cleanDatabase } from "./helpers/addDummyData";
 import { purgeExpiredEmails, purgeUnverifiedUsers } from "./triggers/cron";
@@ -17,7 +17,7 @@ export {
     beforeSignIn, onUserDelete,
     addCourse, getAvailableCourses, getCourseInfo, setCourseVisibility, courseEnroll, courseUnenroll, startCourse, sendCourseFeedback, deleteCourse, sendBrokenLinkReport,
     getQuiz, startQuiz, submitQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt,
-    getCourseReports, getUserReports, getCourseInsightReport,
+    getCourseInsights, getUserInsights, getCourseInsightReport,
     sendPlatformFeedback, inviteLearner,
     cleanDatabase,
     purgeUnverifiedUsers, purgeExpiredEmails,

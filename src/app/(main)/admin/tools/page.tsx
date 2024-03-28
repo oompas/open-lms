@@ -1,6 +1,5 @@
 "use client"
 import QuizToMark from "@/app/(main)/admin/tools/QuizToMark";
-import ManageCourse from "@/app/(main)/admin/tools/ManageCourse";
 import LearnerInsight from "@/app/(main)/admin/tools/LearnerInsight";
 import CourseInsight from "@/app/(main)/admin/tools/CourseInsight";
 import Button from "@/components/Button";
@@ -13,9 +12,8 @@ import TextField from "@/components/TextField";
 export default function Tools() {
 
     const quizzesToMark = useAsync(() => callApi('getQuizzesToMark', {}), []);
-    const courses = useAsync(() => callApi('getAvailableCourses', {}), []);
-    const learnerInsights = useAsync(() => callApi('getUserReports', {}), []);
-    const courseInsights = useAsync(() => callApi('getCourseReports', {}), []);
+    const courseInsights = useAsync(() => callApi('getCourseInsights', {}), []);
+    const learnerInsights = useAsync(() => callApi('getUserInsights', {}), []);
 
     const router = useRouter();
     const [search, setSearch] = useState("");

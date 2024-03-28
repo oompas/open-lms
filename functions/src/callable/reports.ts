@@ -16,52 +16,10 @@ import { object, string } from "yup";
 import { getCourseStatus } from "./helpers";
 
 /**
- * Returns a list of all learners on the platform with their:
- * -uid
- * -name
- * -Number of courses completed
+ * Returns a list of all courses on the platform with their name, enrolled & completed users and average course/quiz
+ * time
  */
-const getUserReports = onCall(async (request) => {
-
-    logger.info("Verifying user is an admin...");
-
-    await verifyIsAdmin(request);
-
-    logger.info("User is an admin, querying database for user reports...");
-
-    const users = await getCollectionDocs(DatabaseCollections.User) as UserDocument[];
-    const courseEnrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
-    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
-
-    logger.info("Successfully queried database data, translating to user data...");
-
-    return users.map((user) => {
-
-        const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.userId === user.id);
-        const userAttempts = courseAttempts.filter((attempt) => attempt.userId === user.id);
-        const completedAttempts = courseAttempts.filter((attempt) => attempt.userId == user.id && attempt.pass === true);
-
-        return {
-            uid: user.id,
-            name: user.name,
-            email: user.email,
-            coursesEnrolled: userEnrollments.length,
-            coursesAttempted: userAttempts.length,
-            coursesComplete: completedAttempts.length,
-        };
-    }).sort((a, b) => b.coursesEnrolled - a.coursesEnrolled);
-});
-
-/**
- * Returns a list of all courses on the platform with their:
- * -course ID
- * -name
- * -active status
- * -Number of enrolled learners
- * -Number of learners who completed the course
- * -Average course completion time (not including quiz attempt(s))
- */
-const getCourseReports = onCall(async (request) => {
+const getCourseInsights = onCall(async (request) => {
 
     logger.info("Verifying user is an admin...");
 
@@ -127,7 +85,42 @@ const getCourseReports = onCall(async (request) => {
 });
 
 /**
- * Returns a list of statistics for the course on the platform:
+ * Returns a list of all learners on the platform with their name, email and course statistics (# enrolled, started,
+ * completed)
+ */
+const getUserInsights = onCall(async (request) => {
+
+    logger.info("Verifying user is an admin...");
+
+    await verifyIsAdmin(request);
+
+    logger.info("User is an admin, querying database for user reports...");
+
+    const users = await getCollectionDocs(DatabaseCollections.User) as UserDocument[];
+    const courseEnrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
+    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
+
+    logger.info("Successfully queried database data, translating to user data...");
+
+    return users.map((user) => {
+
+        const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.userId === user.id);
+        const userAttempts = courseAttempts.filter((attempt) => attempt.userId === user.id);
+        const completedAttempts = courseAttempts.filter((attempt) => attempt.userId == user.id && attempt.pass === true);
+
+        return {
+            uid: user.id,
+            name: user.name,
+            email: user.email,
+            coursesEnrolled: userEnrollments.length,
+            coursesAttempted: userAttempts.length,
+            coursesComplete: completedAttempts.length,
+        };
+    }).sort((a, b) => b.coursesEnrolled - a.coursesEnrolled);
+});
+
+/**
+ * Returns a list of statistics for a specific course on the platform:
  * -List of enrolled users
  *      -Status of completion
  *      -Quiz to be marked?
@@ -294,4 +287,4 @@ const getCourseInsightReport = onCall(async (request) => {
     };
 });
 
-export { getUserReports, getCourseReports, getCourseInsightReport };
+export { getCourseInsights, getUserInsights, getCourseInsightReport };
