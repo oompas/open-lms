@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { MdAdd } from "react-icons/md";
 import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import { useRouter } from "next/navigation"; // @ts-ignore
 
 export default function AdminCourse({ params }: { params: { id: string } }) {
@@ -88,7 +88,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     useEffect(() => {
         if (!loading || newCourse) return;
 
-        callApi("getCourseInfo", { courseId: params.id, withQuiz: true })
+        callApi(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: true })
             .then((result) => {
                 const data: any = result.data;
 
@@ -137,17 +137,17 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             quizQuestions: !quizQuestions.length ? null : quizQuestions.map(({ id, ...rest }) => rest)
         }
 
-        await callApi("addCourse", courseData).then((result) => router.push(`/admin/course/${result.data}`));
+        await callApi(ApiEndpoints.AddCourse, courseData).then((result) => router.push(`/admin/course/${result.data}`));
     }
 
     const handlePublish = async () => {
-        await callApi("setCourseVisibility", { courseId: params.id, active: !active })
+        await callApi(ApiEndpoints.SetCourseVisibility, { courseId: params.id, active: !active })
             .then(() => { setActive(!active); setActivatePopup(false); })
             .catch((err) => console.log(`Error unpublishing course: ${err}`));
     }
 
     const handleDelete = async () => {
-        await callApi("deleteCourse", { courseId: params.id })
+        await callApi(ApiEndpoints.DeleteCourse, { courseId: params.id })
             .then(() => router.push("/admin/tools"))
             .catch((err) => console.log(`Error deleting course: ${err}`));
     }

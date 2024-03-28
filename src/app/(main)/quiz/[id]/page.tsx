@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import React, { useState, useEffect } from 'react';
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import { MdCheckCircleOutline } from "react-icons/md";
 import { RiCheckboxCircleFill, RiCheckboxBlankCircleLine } from "react-icons/ri";
@@ -14,7 +14,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const [countdown, setCountDown] = useState(0);
 
     const getQuizData = useAsync(() =>
-        callApi("getQuiz", { quizAttemptId: params.id.split('-')[1] })
+        callApi(ApiEndpoints.GetQuiz, { quizAttemptId: params.id.split('-')[1] })
             .then((rsp) => {
                 if (rsp.data === "Invalid") {
                     return rsp;
@@ -189,7 +189,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
             }
         }
 
-        await callApi("submitQuiz", { quizAttemptId: params.id.split('-')[1], responses: responses })
+        await callApi(ApiEndpoints.SubmitQuiz, { quizAttemptId: params.id.split('-')[1], responses: responses })
             .then(() => router.push(`/course/${params.id.split('-')[0]}`))
             .catch((err) => console.log(`Error calling submitQuiz: ${err}`));
     }

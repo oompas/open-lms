@@ -5,13 +5,13 @@ import Quiz from "./Quiz"
 import { MdArrowBack } from "react-icons/md";
 import { useAsync } from "react-async-hook";
 import { useEffect, useState } from "react";
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import Checkbox from "@/components/Checkbox";
 
 export default function Course({ params }: { params: { id: string } }) {
 
     const getCourse = useAsync(() =>
-        callApi("getCourseInfo", { courseId: params.id, withQuiz: false })
+        callApi(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: false })
             .then((result) => { // @ts-ignore
                 setStatus(result.data.status); // @ts-ignore
                 setCourseAttemptId(result.data.courseAttemptId); // @ts-ignore

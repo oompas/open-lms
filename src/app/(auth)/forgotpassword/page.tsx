@@ -1,7 +1,7 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import Button from "@/components/Button";
 
 export default function ForgotPasswordPage() {
@@ -11,7 +11,7 @@ export default function ForgotPasswordPage() {
 
     const sendResetEmail = async () => {
         try {
-            const response = await callApi('resetPassword', { email: email });
+            const response = await callApi(ApiEndpoints.ResetPassword, { email: email });
             if (response && response.data) {
                 setIsSent(true);
             } else {

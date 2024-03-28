@@ -1,10 +1,9 @@
 "use client"
-
 import IDProfile from "./IDProfile";
 import IDCourse from "./IDCourse";
 import IDEnrolled from "./IDEnrolled"
 import { useState } from "react";
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import Link from "next/link";
 import { LuExternalLink } from "react-icons/lu";
@@ -13,7 +12,7 @@ import { LuExternalLink } from "react-icons/lu";
 export default function Profile({ params }: { params: { id: string } }) {
 
     const userData = useAsync(() =>
-        callApi('getUserProfile', { targetUid: params.id }) // @ts-ignore
+        callApi(ApiEndpoints.GetUserProfile, { targetUid: params.id }) // @ts-ignore
             .then((rsp) => { setUser(rsp.data); return rsp; }),
         []);
 

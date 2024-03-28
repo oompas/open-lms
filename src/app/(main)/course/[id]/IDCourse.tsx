@@ -1,7 +1,7 @@
 "use client"
 import Button from "@/components/Button"
 import { useEffect, useState } from "react";
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 
 export default function IDCourse({
     course,
@@ -52,19 +52,19 @@ export default function IDCourse({
     }, [countdown]);
 
     const enroll = () => {
-        return callApi("courseEnroll", { courseId: course.courseId })
+        return callApi(ApiEndpoints.CourseEnroll, { courseId: course.courseId })
             .then(() => setStatus(2))
             .catch((err) => { throw new Error(`Error enrolling in course: ${err}`) });
     };
 
     const unEnroll = () => {
-        return callApi("courseUnenroll", { courseId: course.courseId })
+        return callApi(ApiEndpoints.CourseUnenroll, { courseId: course.courseId })
             .then(() => setStatus(1))
             .catch((err) => { throw new Error(`Error unenrolling in course: ${err}`) });
     };
 
     const start = () => {
-        return callApi("startCourse", { courseId: course.courseId })
+        return callApi(ApiEndpoints.StartCourse, { courseId: course.courseId })
             .then((result) => {
                 setCourseAttemptId(result.data);
                 setCountDown(60 * course.minTime);
@@ -76,7 +76,7 @@ export default function IDCourse({
 
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const reportBrokenLink = () => {
-        return callApi("sendBrokenLinkReport", { courseId: course.courseId })
+        return callApi(ApiEndpoints.SendBrokenLinkReport, { courseId: course.courseId })
             .then(() => setShowSuccessMessage(true))
             .catch((err) => {
                 console.error(err);

@@ -4,7 +4,7 @@ import QuizAnswer from "@/app/(main)/admin/mark/[id]/QuizAnswer";
 import Button from "@/components/Button";
 import React, { useEffect, useState } from "react";
 import { useAsync } from "react-async-hook";
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import { RiCheckboxBlankCircleLine, RiCheckboxCircleFill } from "react-icons/ri";
 import { FaRegTimesCircle } from "react-icons/fa";
 
@@ -13,7 +13,7 @@ export default function Mark({ params }: { params: { id: string } }) {
     const router = useRouter();
 
     const quizQuestions = useAsync(() =>
-        callApi('getQuizAttempt', { quizAttemptId: params.id }) // @ts-ignore
+        callApi(ApiEndpoints.GetQuizAttempt, { quizAttemptId: params.id }) // @ts-ignore
             .then((rsp) => { setQuestions(rsp.data); return rsp; }),
         []);
 
