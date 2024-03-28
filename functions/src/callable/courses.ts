@@ -466,6 +466,38 @@ const sendBrokenLinkReport = onCall(async (request) => {
 });
 
 /**
+ * Permanently deletes a course, triggering a deletion of all associated data (quiz questions & all attempts)
+ */
+const deleteCourse = onCall(async (request) => {
+
+    logger.info(`Entering deleteCourse for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
+    await verifyIsAdmin(request);
+
+    const schema = object({
+        courseId: string().required(),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
+
+    const courseInfo = await getDocData(DatabaseCollections.Course, request.data.courseId) as CourseDocument;
+
+    if (courseInfo.userId !== request.auth?.uid) {
+        throw new HttpsError('permission-denied', "You can't delete a course you didn't create");
+    }
+
+    logger.info("Course exists and user is the creator, deleting...");
+
+    return deleteDoc(DatabaseCollections.Course, request.data.courseId);
+});
+
+/**
  * Sends feedback for a course to the course creator
  */
 const sendCourseFeedback = onCall(async (request) => {
@@ -520,4 +552,4 @@ const sendCourseFeedback = onCall(async (request) => {
 });
 
 export { addCourse, setCourseVisibility, getAvailableCourses, getCourseInfo, courseEnroll, courseUnenroll, startCourse,
-    sendBrokenLinkReport, sendCourseFeedback };
+    sendBrokenLinkReport, deleteCourse, sendCourseFeedback };
