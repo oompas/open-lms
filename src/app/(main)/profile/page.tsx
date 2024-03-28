@@ -74,7 +74,7 @@ export default function Profile() {
                             key={key}
                             title={course.name}
                             date={course.date}
-                            id={course.attemptId}
+                            id={course.courseId}
                         />
                     ))}
                 </div>
