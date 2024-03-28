@@ -18,6 +18,14 @@ export default function Insights({ params }: { params: { id: string } }) {
 
     // const [user, setUser] = useState()
 
+    const statusNames = {
+        2: "To do",
+        3: "In progress",
+        4: "Awaiting marking",
+        5: "Failed",
+        6: "Completed",
+    }
+
     const router = useRouter();
 
     const courseData = useAsync(() =>
@@ -50,8 +58,8 @@ export default function Insights({ params }: { params: { id: string } }) {
                                         </Link>
                                     </td>
                                     <td className="border p-2">
-                                        {/* TODO */}
-                                        { learner.completionStatus }
+                                        {/* @ts-ignore */}
+                                        {statusNames[learner.completionStatus]}
                                     </td>
                                     <td className="border p-2">
                                         <Link href={"/admin/mark/"+learner.quizAttemptId} className="flex flex-row items-center hover:opacity-60">
@@ -113,14 +121,6 @@ export default function Insights({ params }: { params: { id: string } }) {
                 </div>
             </div>
         );
-    }
-
-    const statusNames = {
-        2: "To do",
-        3: "In progress",
-        4: "Awaiting marking",
-        5: "Failed",
-        6: "Completed",
     }
 
     return (
