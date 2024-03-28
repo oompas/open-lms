@@ -27,21 +27,35 @@ export default function Tools() {
         if (quizzesToMark.error) {
             return <div>Error loading quizzes to mark</div>;
         }
-
-        return (
-            <div className="flex flex-wrap w-full justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
-                { /* @ts-ignore */ }
-                {quizzesToMark.result?.data && quizzesToMark.result.data.map((quiz, key) => (
-                    <QuizToMark
-                        key={key}
-                        title={quiz.courseName}
-                        date={new Date(quiz.timestamp).toLocaleString()}
-                        learner={quiz.userName}
-                        id={quiz.quizAttemptId}
-                    />
-                ))}
-            </div>
-        );
+        if (quizzesToMark.result) {
+            // @ts-ignore
+            var temp_quizzes = [...quizzesToMark.result.data]
+            if (temp_quizzes.length % 4 === 1) {
+                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+            } else if (temp_quizzes.length % 4 === 2) {
+                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+            } else if (temp_quizzes.length % 4 === 3) {
+                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+            }
+            console.log(temp_quizzes)
+            return (
+                <div className="flex flex-wrap w-full justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
+                    { /* @ts-ignore */ }
+                    {temp_quizzes.map((quiz, key) => (
+                        <QuizToMark
+                            key={key}
+                            title={quiz.courseName}
+                            date={new Date(quiz.timestamp).toLocaleString()}
+                            learner={quiz.userName}
+                            id={quiz.quizAttemptId}
+                        />
+                    ))}
+                </div>
+            );
+        }
     }
 
     const getLearnerInsights = () => {

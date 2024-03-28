@@ -72,7 +72,7 @@ export default function Insights({ params }: { params: { id: string } }) {
                         <thead>
                             <tr className="border-b-2 border-black text-left">
                                 <th className="py-1">Question</th>
-                                <th className="py-1">%Correct</th>
+                                <th className="py-1">User Attempts</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -80,11 +80,10 @@ export default function Insights({ params }: { params: { id: string } }) {
                             { data.questions.map((question: any, key: number) => (
                                 <tr key={key} className="border">
                                     <td className="border p-2">
-                                        {question}
+                                        {question.question}
                                     </td>
                                     <td className="border p-2">
-                                        {/* TODO - insert correct % */}
-                                        75%
+                                        {question.stats.numAttempts}
                                     </td>
                                 </tr>
                             ))}
