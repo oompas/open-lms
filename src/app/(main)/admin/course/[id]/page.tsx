@@ -17,6 +17,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const [loading, setLoading] = useState(!newCourse);
     const [activatePopup, setActivatePopup] = useState(false);
     const [showDeletePopup, setShowDeletePopup] = useState(false);
+    const [showSavePopup, setShowSavePopup] = useState(false);
     const [deletePopupConfirm, setDeletePopupConfirm] = useState("");
 
     const [active, setActive] = useState(false);
@@ -119,7 +120,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             setShowCreateQuestion(true)
     }, [editQuestion]);
 
-    const addCourse = async () => {
+    const saveCourse = async () => {
 
         const courseData = {
             ...(!newCourse && { previousVersionId: params.id }),
@@ -214,6 +215,35 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         </div>
     );
 
+    const savePopup = (
+        <div
+            className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    <b>{newCourse ? "Add course" : "Update course"}</b>
+                    <p className="mt-2">
+                        {newCourse
+                            ? <>Adding a new course will create a new course with the specified details, but <b>it will
+                                not be visible to users yet</b>. Once added, you need to publish the course using the
+                                button that will appear on the top menu</>
+                            : <>To avoid issues with course stats and data, updating a course will <b>create a new course
+                                and retire the old course</b>. The old course cannot be attempted again, but data for
+                                the old course is still kept so users can still see they're completed the old version</>
+                        }
+                    </p>
+                </div>
+                <div className="flex flex-row space-x-4 mt-6">
+                    <Button text="Cancel" onClick={() => setShowSavePopup(false)} style="ml-auto"/>
+                    <Button
+                        text={newCourse ? "Add course" : "Update course"}
+                        onClick={async () => await saveCourse()}
+                        filled
+                    />
+                </div>
+            </div>
+        </div>
+    );
+
     const loadingPopup = (
         <div
             className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
@@ -246,7 +276,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 />
                 <Button
                     text={newCourse ? "Create course" : "Update course"}
-                    onClick={async () => await addCourse()}
+                    onClick={async () => setShowSavePopup(true)}
                     filled
                 />
             </div>
@@ -443,6 +473,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
                 {activatePopup && activationPopup}
                 {showDeletePopup && deletePopup}
+                {showSavePopup && savePopup}
                 {loading && loadingPopup}
                 {showCreateQuestion &&
                     <CreateQuestion
