@@ -131,61 +131,15 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 maxAttempts: toNumber(quizAttempts),
                 timeLimit: toNumber(quizMaxTime),
                 preserveOrder: preserveOrder,
-            }
+            },
+            quizQuestions: !quizQuestions.length ? null : quizQuestions
         }
 
-        const courseId = await callApi("addCourse", courseData).then((result) => result.data);
-
-        if (quizQuestions.length > 0) {
-            await callApi("updateQuizQuestions", { courseId: courseId, questions: quizQuestions.map((q) => ({ ...q })) });;
-        }
-
-        router.push(`/admin/course/${courseId}`);
-    }
-
-    const updateCourse = async () => {
-
-        // For updating, only send the changed data
-        const courseData = {}; // @ts-ignore
-        if (originalData.name !== name) courseData["name"] = name; // @ts-ignore
-        if (originalData.description !== desc) courseData["description"] = toNumber(desc); // @ts-ignore
-        if (originalData.link !== link) courseData["link"] = link; // @ts-ignore
-        if (originalData.minTime !== toNumber(minCourseTime)) courseData["minTime"] = toNumber(minCourseTime); // @ts-ignore
-
-        // If quiz is being added or removed
-        if (originalData.quiz === null && useQuiz) { // @ts-ignore
-            courseData["quiz"] = { minScore: null, maxAttempts: null, timeLimit: null };
-        } else if (originalData.quiz !== null && !useQuiz) { // @ts-ignore
-            courseData["quiz"] = null;
-        }
-
-        // Quiz metadata
-        if (useQuiz) { // @ts-ignore
-            if (originalData.quiz?.minScore !== toNumber(quizMinScore)) courseData["quiz"]["minScore"] = toNumber(quizMinScore); // @ts-ignore
-            if (originalData.quiz?.maxAttempts !== toNumber(quizAttempts)) courseData["quiz"]["maxAttempts"] = toNumber(quizAttempts); // @ts-ignore
-            if (originalData.quiz?.timeLimit !== toNumber(quizMaxTime)) courseData["quiz"]["timeLimit"] = toNumber(quizMaxTime); // @ts-ignore
-            if (originalData.quiz?.preserveOrder !== preserveOrder) courseData["quiz"]["preserveOrder"] = preserveOrder;
-        }
-
-        if (_.isEqual(courseData, {})) return;
-
-        // @ts-ignore
-        courseData["courseId"] = params.id;
-
-        await callApi("updateCourse", courseData);
-
-        if (!_.isEqual(quizQuestions, originalData.quizQuestions)) {
-            const quizData = {
-                courseId: params.id,
-                questions: quizQuestions,
-            }
-
-            await callApi("updateQuiz", quizData);
-        }
+        await callApi("addCourse", courseData).then((result) => router.push(`/admin/course/${result.data}`));
     }
 
     const handlePublish = async () => {
-        await callApi("setCourseVisibility", { courseId: params.id, active })
+        await callApi("setCourseVisibility", { courseId: params.id, active: !active })
             .then(() => { setActive(!active); setActivatePopup(false); })
             .catch((err) => console.log(`Error unpublishing course: ${err}`));
     }
@@ -248,7 +202,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 />
                 <Button
                     text={newCourse ? "Create course" : "Update course"}
-                    onClick={async () => newCourse ? await addCourse() : await updateCourse()}
+                    onClick={async () => await addCourse()}
                     filled
                 />
             </div>

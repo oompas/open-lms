@@ -232,6 +232,7 @@ const getCourseInsightReport = onCall(async (request) => {
         .get()
         .then((result) => result.docs.map(doc => ({ id: doc.id, ...doc.data() }) as QuizAttemptDocument));
 
+    // Store the status of each course attempt
     const courseAttemptStatuses: { [key: string]: number } = {};
     await Promise.all(filteredAttempts.map(async (courseAttempt) => {
         getCourseStatus(courseAttempt.courseId, courseAttempt.userId).then((status) => { courseAttemptStatuses[courseAttempt.userId] = status });
