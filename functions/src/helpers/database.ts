@@ -160,8 +160,8 @@ interface QuizQuestionDocument extends DatabaseDocument {
     order?: number,
     stats: {
         numAttempts: number;
-        totalScore?: number;
-        distribution?: { [key: string]: number };
+        numCorrect?: number; // Only for tf & mc
+        distribution?: { [key: string]: number }; // Only for sa
     };
 }
 

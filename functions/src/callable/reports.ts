@@ -13,6 +13,7 @@ import {
     UserDocument, getDocData, CourseDocument,
 } from "../helpers/database";
 import { object, string } from "yup";
+import { getCourseStatus } from "./helpers";
 
 /**
  * Returns a list of all learners on the platform with their:
@@ -233,10 +234,8 @@ const getCourseInsightReport = onCall(async (request) => {
 
     // Combine data to create the courseLearners array
     const courseLearners = filteredAttempts.map((courseAttempt) => {
-        const completionStatus = courseAttempt.pass;
         const markingStatus = markingStatusMap.get(courseAttempt.userId) || false;
         const userName = userDetails.get(courseAttempt.userId)?.name || "Unknown User";
-        const userId = userDetails.get(courseAttempt.userId);
 
         const courseAttemptQuizzes = quizAttempts.filter((quizAttempt) => quizAttempt.courseAttemptId == courseAttempt.id);
 
@@ -255,19 +254,35 @@ const getCourseInsightReport = onCall(async (request) => {
 
         return {
             name: userName,
-            userId: userId,
-            completionStatus: completionStatus,
+            userId: courseAttempt.userId,
+            completionStatus: getCourseStatus(courseAttempt.courseId, courseAttempt.userId),
             markingStatus: markingStatus, // @ts-ignore
             quizAttemptId: latestQuizAttempt.id, // @ts-ignore
             quizAttemptTime: latestQuizAttempt.endTime.seconds,
         };
     });
 
+    // Add total marks for short answers for front-end convenience
+    const questionsWithStats = quizQuestions.map((question) => {
+        if (question.type !== "sa") {
+            return question;
+        }
+
+        // @ts-ignore
+        const distributionValues = Object.keys(question.stats.distribution);
+        let totalScore = 0;
+        distributionValues.forEach((key: string) => { // @ts-ignore
+            totalScore += question.stats.distribution[key] * Number(key);
+        }); // @ts-ignore
+        question["stats.totalScore"] = totalScore;
+        return question;
+    });
+
     // Combine all stats for the return array
     return {
         courseName: courseData.name,
         learners: courseLearners,
-        questions: quizQuestions,
+        questions: questionsWithStats,
         numEnrolled: courseEnrollments.length,
         numComplete: completedAttempts.length,
         avgTime: averageTime
