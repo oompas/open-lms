@@ -426,6 +426,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                         deleteData={handleDeleteQuestion}
                                         moveUp={handleMoveUp}
                                         moveDown={handleMoveDown}
+                                        preserveOrder={preserveOrder}
                                     />
                                 ))}
                                 <button
