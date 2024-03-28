@@ -126,7 +126,7 @@ const addCourse = onCall(async (request) => {
         quiz: quiz,
     };
 
-    await addDoc(DatabaseCollections.Course, courseData);
+    const courseId = await addDoc(DatabaseCollections.Course, courseData);
 
     return Promise.all(quizQuestions.map((question: any, index: number) => {
         // Each question has statistics - score for tf/mc, distribution for sa (since partial marks are possible)
@@ -135,7 +135,7 @@ const addCourse = onCall(async (request) => {
         if (question.type === "sa") defaultStats["distribution"] = Object.assign({}, new Array(question.marks + 1).fill(0));
 
         const questionDoc = {
-            courseId: request.data.courseId,
+            courseId: courseId,
             stats: defaultStats,
             ...(request.data.quiz.preserveOrder && { order: index }), // If the quiz is ordered, store the order of the questions
             ...question

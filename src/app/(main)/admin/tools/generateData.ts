@@ -233,6 +233,9 @@ const randomChance = (chance: number) => Math.random() < chance;
 
 const courses = rawCourseData.map((course) => {
 
+    // @ts-ignore
+    course["minTime"] = null; // @ts-ignore
+    course["quiz"] = null;
     if (randomChance(0.7)) { // @ts-ignore
         course["minTime"] = Math.random() < 0.7 ? randomInt(1, 3) * 15 : randomInt(1, 12) * 60;
     } // @ts-ignore
