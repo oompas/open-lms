@@ -209,7 +209,7 @@ const startQuiz = onCall(async (request) => {
             return {
                 id: snapshot.docs[0].id,
                 ...snapshot.docs[0].data()
-            };
+            } as QuizAttemptDocument;
         })
         .catch((err) => {
             logger.error(`Error getting quiz attempts: ${err}`);
