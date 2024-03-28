@@ -589,7 +589,7 @@ const getQuizAttempt = onCall(async (request) => {
     const attemptData = await Promise.all(allAttempts.map((attempt) =>
         getDocData(DatabaseCollections.QuizQuestion, attempt.questionId) // @ts-ignore
             .then((doc: QuizQuestionDocument) => ({
-                id: attempt.id,
+                questionAttemptId: attempt.id,
                 question: doc.question,
                 response: attempt.response,
                 marks: doc.marks,
@@ -623,7 +623,7 @@ const markQuizAttempt = onCall(async (request) => {
         quizAttemptId: string().length(DOCUMENT_ID_LENGTH).required(),
         responses: array().of(
             object({
-                id: string().length(DOCUMENT_ID_LENGTH).required(),
+                questionAttemptId: string().length(DOCUMENT_ID_LENGTH).required(),
                 marksAchieved: number().min(0).max(20).required(),
             }).required().noUnknown(true)
         ).required().min(1),
@@ -650,10 +650,10 @@ const markQuizAttempt = onCall(async (request) => {
         throw new HttpsError("invalid-argument", `Number of responses (${responses.length}) does not match number of questions ${questionAttempts.length}`);
     }
 
-    responses.forEach((response: { id: string, marksAchieved: number }) => {
-        const questionData = questionAttempts.find((qa) => qa.id === response.id);
+    responses.forEach((response: { questionAttemptId: string, marksAchieved: number }) => {
+        const questionData = questionAttempts.find((qa) => qa.id === response.questionAttemptId);
         if (!questionData) {
-            throw new HttpsError("not-found", `Question attempt with ID ${response.id} not found`);
+            throw new HttpsError("not-found", `Question attempt with ID ${response.questionAttemptId} not found`);
         } // @ts-ignore
         if (response.marksAchieved > questionData.maxMarks) {
             throw new HttpsError("invalid-argument", `Marks achieved (${response.marksAchieved}) exceeds maximum marks (${questionData.maxMarks})`);
@@ -663,8 +663,8 @@ const markQuizAttempt = onCall(async (request) => {
     // Update the question attempts and question stats
     const updatePromises: Promise<any>[] = [];
 
-    updatePromises.push(responses.map((response: { id: string, marksAchieved: number }) =>
-        updateDoc(DatabaseCollections.QuizQuestionAttempt, response.id, { marksAchieved: response.marksAchieved })
+    updatePromises.push(responses.map((response: { questionAttemptId: string, marksAchieved: number }) =>
+        updateDoc(DatabaseCollections.QuizQuestionAttempt, response.questionAttemptId, { marksAchieved: response.marksAchieved })
     ));
 
     updatePromises.push(responses.map((response: { id: string, marksAchieved: number }) => {
