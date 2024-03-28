@@ -2,22 +2,27 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { sendEmail, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 import { DatabaseCollections, getDocData, UserDocument } from "../helpers/database";
 import { array, object, string } from "yup";
+import { logger } from "firebase-functions";
 
 /**
  * Sends an email to the developers with platform-specific feedback
  */
 const sendPlatformFeedback = onCall(async (request) => {
 
+    logger.info(`Entering sendPlatformFeedback for user ${request.auth?.uid} with data: ${JSON.stringify(request.data)}`);
+
     verifyIsAuthenticated(request);
 
     const schema = object({
-        feedback: object().required()
+        feedback: string().required()
     }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
         .catch((error) => {
             throw new HttpsError('invalid-argument', error.errors.join(", "));
         });
+
+    logger.info("Schema verification passed");
 
     const devEmail = "18rem8@queensu.ca";
 
