@@ -234,7 +234,6 @@ const getCourseInsightReport = onCall(async (request) => {
 
     // Combine data to create the courseLearners array
     const courseLearners = filteredAttempts.map(async (courseAttempt) => {
-        const markingStatus = markingStatusMap.get(courseAttempt.userId) || false;
         const userName = userDetails.get(courseAttempt.userId)?.name || "Unknown User";
 
         const courseAttemptQuizzes = quizAttempts.filter((quizAttempt) => quizAttempt.courseAttemptId == courseAttempt.id);
