@@ -44,7 +44,7 @@ export default function Insights({ params }: { params: { id: string } }) {
                             { data.learners.map((learner: any, key: number) => (
                                 <tr key={key} className="border">
                                     <td className="border p-2">
-                                        <Link href={"/admin/profile/0"} className="flex flex-row items-center hover:opacity-60">
+                                        <Link href={"/admin/profile/"+learner.userId} className="flex flex-row items-center hover:opacity-60">
                                             {learner.name}
                                             <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
                                         </Link>
@@ -53,7 +53,10 @@ export default function Insights({ params }: { params: { id: string } }) {
                                         { learner.completionStatus ? learner.markingStatus ? "Complete" : "Awaiting Marking" : "In Progress" }
                                     </td>
                                     <td className="border p-2">
-                                        aoaoaoa
+                                        <Link href={"/admin/mark/"+learner.quizAttemptId} className="flex flex-row items-center hover:opacity-60">
+                                            {new Date(learner.quizAttemptTime*1000).toLocaleString()}
+                                            <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
+                                        </Link>
                                     </td>
                                 </tr>
                             ))}
@@ -72,7 +75,7 @@ export default function Insights({ params }: { params: { id: string } }) {
                         <thead>
                             <tr className="border-b-2 border-black text-left">
                                 <th className="py-1">Question</th>
-                                <th className="py-1">User Attempts</th>
+                                <th className="py-1"><div className="w-max">% Correct</div></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -83,7 +86,7 @@ export default function Insights({ params }: { params: { id: string } }) {
                                         {question.question}
                                     </td>
                                     <td className="border p-2">
-                                        {question.stats.numAttempts}
+                                        {question.stats.totalScore ? (question.stats.totalScore/(question.stats.numAttempts*question.marks)) : null}
                                     </td>
                                 </tr>
                             ))}
@@ -104,7 +107,7 @@ export default function Insights({ params }: { params: { id: string } }) {
                 className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
                 <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
                     <div className="text-lg">
-                        {courseData.loading ? "Loading user data..." : "Error loading user data."}
+                        {courseData.loading ? "Loading course data..." : "Error loading course data."}
                     </div>
                 </div>
             </div>
