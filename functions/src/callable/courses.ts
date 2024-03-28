@@ -56,7 +56,7 @@ const addCourse = onCall(async (request) => {
                 answers: array().of(string()).min(2).max(5).optional(),
                 correctAnswer: number().optional(),
             }).noUnknown(true)
-        ).optional(),
+        ).nullable(),
     }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
