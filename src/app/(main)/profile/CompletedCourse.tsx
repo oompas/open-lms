@@ -6,7 +6,7 @@ export default function CompletedCourse({
     id
 } : {
     title: string,
-    date: string,
+    date: number,
     id: number
 }) {
     return (
@@ -16,7 +16,7 @@ export default function CompletedCourse({
             href={"/course/"+id}
         >
             <div className="text-2xl">{title}</div>
-            <div className="mt-1 text-lg">Completed {new Date(date).toLocaleString()}</div>
+            <div className="mt-1 text-lg">Completed {new Date(date * 1000).toLocaleString()}</div>
         </Link>
     )
 }
