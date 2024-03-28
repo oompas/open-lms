@@ -667,13 +667,14 @@ const markQuizAttempt = onCall(async (request) => {
         updateDoc(DatabaseCollections.QuizQuestionAttempt, response.questionAttemptId, { marksAchieved: response.marksAchieved })
     ));
 
-    updatePromises.push(responses.map((response: { id: string, marksAchieved: number }) => {
+    updatePromises.push(responses.map((response: { questionAttemptId: string, marksAchieved: number }) => {
         const updateData = {
             "stats.numAttempts": firestore.FieldValue.increment(1),
         }; // @ts-ignore
         updateData[`stats.distribution.${response.marksAchieved}`] = firestore.FieldValue.increment(1);
 
-        return updatePromises.push(updateDoc(DatabaseCollections.QuizQuestion, response.id, updateData));
+        const questionData = questionAttempts.find((qa) => qa.id === response.questionAttemptId); // @ts-ignore
+        return updatePromises.push(updateDoc(DatabaseCollections.QuizQuestion, questionData.id, updateData));
     }));
 
     await Promise.all(updatePromises);
