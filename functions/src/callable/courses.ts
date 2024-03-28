@@ -72,8 +72,8 @@ const addCourse = onCall(async (request) => {
         throw new HttpsError('invalid-argument', "Quiz questions must be provided with quiz metadata");
     }
 
+    const totalMarks = quizQuestions.reduce((total: number, question: { marks: number }) => total + question.marks, 0);
     if (quiz?.minScore) {
-        const totalMarks = quizQuestions.reduce((total: number, question: { marks: number }) => total + question.marks, 0);
         if (quiz.minScore > totalMarks) {
             throw new HttpsError('invalid-argument', `Minimum score (${request.data.quiz.minScore}) must be less than or equal to the total` +
                 ` marks available (${totalMarks})`);
@@ -105,7 +105,18 @@ const addCourse = onCall(async (request) => {
         }
     });
 
-    await addDoc(DatabaseCollections.Course, { userID: uid, active: false, ...request.data });
+    quiz["totalMarks"] = totalMarks;
+    const courseData = {
+        userId: uid,
+        active: false,
+        name: request.data.name,
+        description: request.data.description,
+        link: request.data.link,
+        minTime: request.data.minTime,
+        quiz: quiz,
+    };
+
+    await addDoc(DatabaseCollections.Course, courseData);
 
     return Promise.all(quizQuestions.map((question: any, index: number) => {
         // Each question has statistics - score for tf/mc, distribution for sa (since partial marks are possible)

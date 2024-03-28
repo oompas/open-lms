@@ -172,8 +172,8 @@ const updateQuizStatus = async (quizAttemptId: string) => {
     // Update the quiz attempt with the final score, completion time and pass status
     const quizAttemptUpdate = {
         endTime: completionTime,
-        pass: pass,
-        score: marksAchieved,
+        pass: pass, // @ts-ignore
+        score: `${marksAchieved}/${courseData.quiz?.totalMarks}`,
     };
     promises.push(updateDoc(DatabaseCollections.QuizAttempt, quizAttemptId, quizAttemptUpdate));
 
@@ -198,7 +198,6 @@ const updateQuizStatus = async (quizAttemptId: string) => {
     if (lastAttempt || (!lastAttempt && pass)) {
         const update = {
             pass: pass,
-            score: marksAchieved,
             endTime: completionTime
         };
         promises.push(updateDoc(DatabaseCollections.CourseAttempt, courseAttemptId, update));

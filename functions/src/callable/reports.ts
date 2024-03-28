@@ -95,7 +95,7 @@ const getCourseReports = onCall(async (request) => {
         });
         let averageTime = null;
         if (completionTimes.length > 0) {
-            averageTime = completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length;
+            averageTime = Math.round(completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length * 10) / 10;
         }
 
         const quizScores = quizAttempts
