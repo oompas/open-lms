@@ -7,6 +7,7 @@ import AuthForm from '@/components/AuthForm';
 import AuthButton from './AuthButton';
 import { auth } from "@/config/firebase";
 import { signInWithEmailAndPassword } from "@firebase/auth";
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 export default function AuthPage() {
 
@@ -33,6 +34,12 @@ export default function AuthPage() {
             setError(error.code);
         }
     };
+
+    const submitGoogleLogin = async () => {
+        await signInWithPopup(auth, new GoogleAuthProvider())
+            .then(() => router.push('/home'))
+            .catch((error: any) => setError(error.code));
+    }
 
     const handleForgotPassword = () => {
         router.push('/forgotpassword');
@@ -69,14 +76,15 @@ export default function AuthPage() {
                             </p>
                         )}
                     </div>
+                    {/* sso integration buttons */}
                     <div>or</div>
-                    <AuthButton text={"Continue with Google"} icon="google" onClick={() => router.push('/home')}/>
-                    <AuthButton text={"continue with another SSO"} icon="sso" onClick={() => router.push('/home')}/>
+                    <AuthButton text={"Continue with Google"} icon="google" onClick={() => submitGoogleLogin()}/>
+                    {/* <AuthButton text={"continue with another SSO"} icon="sso" onClick={() => router.push('/home')}/> */}
                 </div>
                 <div className="flex-col h-full w-2/5 ml-10 space-y-4">
                     <div className="text-2xl">Welcome to <b>OpenLMS</b></div>
                     <div>OpenLMS is a generic open-source education platform. Log in with your account to get started.</div>
-                    <div>Created at Queen’s University in Kingston Ontario.</div>
+                    <div>Created at Queen’s University in Kingston Ontario, Canada.</div>
                 </div>
             </div>
         </main>

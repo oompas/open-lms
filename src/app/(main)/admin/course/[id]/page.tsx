@@ -27,13 +27,14 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const [minCourseTime, setMinCourseTime] = useState<null | number>(null);
 
     const [useQuiz, setUseQuiz] = useState(true)
-    const [quizMinScore, setQuizMinScore] = useState<null | number>(null);
+    const [quizMinScore, setQuizMinScore] = useState<string | number>(0);
     const [quizAttempts, setQuizAttempts] = useState<null | number>(null);
     const [quizMaxTime, setQuizMaxTime] = useState<null | number>(null);
     const [preserveOrder, setPreserveOrder] = useState<boolean>(true);
 
     const [showCreateQuestion, setShowCreateQuestion] = useState(false);
     const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
+    const [quizTotalScore, setQuizTotalScore] = useState(0);
     const [editQuestion, setEditQuesiton] = useState(-1);
 
     const toNumber = (val: string | number | null) => val === null ? null : Number(val);
@@ -46,6 +47,11 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         else
             temp.push(data);
 
+        var temp_score = 0;
+        temp.map((q) => (
+            temp_score += q.marks
+        ))
+        setQuizTotalScore(temp_score);
         setQuizQuestions(temp);
         setEditQuesiton(-1);
         setShowCreateQuestion(false);
@@ -125,61 +131,15 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 maxAttempts: toNumber(quizAttempts),
                 timeLimit: toNumber(quizMaxTime),
                 preserveOrder: preserveOrder,
-            }
+            },
+            quizQuestions: !quizQuestions.length ? null : quizQuestions
         }
 
-        const courseId = await callApi("addCourse", courseData).then((result) => result.data);
-
-        if (quizQuestions.length > 0) {
-            await callApi("updateQuizQuestions", { courseId: courseId, questions: quizQuestions.map((q) => ({ ...q })) });;
-        }
-
-        router.push(`/admin/course/${courseId}`);
-    }
-
-    const updateCourse = async () => {
-
-        // For updating, only send the changed data
-        const courseData = {}; // @ts-ignore
-        if (originalData.name !== name) courseData["name"] = name; // @ts-ignore
-        if (originalData.description !== desc) courseData["description"] = toNumber(desc); // @ts-ignore
-        if (originalData.link !== link) courseData["link"] = link; // @ts-ignore
-        if (originalData.minTime !== toNumber(minCourseTime)) courseData["minTime"] = toNumber(minCourseTime); // @ts-ignore
-
-        // If quiz is being added or removed
-        if (originalData.quiz === null && useQuiz) { // @ts-ignore
-            courseData["quiz"] = { minScore: null, maxAttempts: null, timeLimit: null };
-        } else if (originalData.quiz !== null && !useQuiz) { // @ts-ignore
-            courseData["quiz"] = null;
-        }
-
-        // Quiz metadata
-        if (useQuiz) { // @ts-ignore
-            if (originalData.quiz?.minScore !== toNumber(quizMinScore)) courseData["quiz"]["minScore"] = toNumber(quizMinScore); // @ts-ignore
-            if (originalData.quiz?.maxAttempts !== toNumber(quizAttempts)) courseData["quiz"]["maxAttempts"] = toNumber(quizAttempts); // @ts-ignore
-            if (originalData.quiz?.timeLimit !== toNumber(quizMaxTime)) courseData["quiz"]["timeLimit"] = toNumber(quizMaxTime); // @ts-ignore
-            if (originalData.quiz?.preserveOrder !== preserveOrder) courseData["quiz"]["preserveOrder"] = preserveOrder;
-        }
-
-        if (_.isEqual(courseData, {})) return;
-
-        // @ts-ignore
-        courseData["courseId"] = params.id;
-
-        await callApi("updateCourse", courseData);
-
-        if (!_.isEqual(quizQuestions, originalData.quizQuestions)) {
-            const quizData = {
-                courseId: params.id,
-                questions: quizQuestions,
-            }
-
-            await callApi("updateQuiz", quizData);
-        }
+        await callApi("addCourse", courseData).then((result) => router.push(`/admin/course/${result.data}`));
     }
 
     const handlePublish = async () => {
-        await callApi("setCourseVisibility", { courseId: params.id, active })
+        await callApi("setCourseVisibility", { courseId: params.id, active: !active })
             .then(() => { setActive(!active); setActivatePopup(false); })
             .catch((err) => console.log(`Error unpublishing course: ${err}`));
     }
@@ -242,7 +202,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 />
                 <Button
                     text={newCourse ? "Create course" : "Update course"}
-                    onClick={async () => newCourse ? await addCourse() : await updateCourse()}
+                    onClick={async () => await addCourse()}
                     filled
                 />
             </div>
@@ -313,24 +273,23 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                 <div>
                                     { /* Min score */}
                                     <div className="flex items-start space-x-4 mt-4">
-                                        <Checkbox
-                                            checked={quizMinScore !== null}
-                                            setChecked={() => setQuizMinScore(quizMinScore === null ? 1 : null)}
-                                        />
                                         <div className="flex flex-col">
                                             <div className="text-lg">Minimum quiz score</div>
-                                            {quizMinScore !== null &&
-                                                <div className="flex flex-row space-x-2 items-center mt-2">
-                                                    <TextField
-                                                        text={quizMinScore}
-                                                        onChange={setQuizMinScore}
-                                                        style="w-24 text-right"
-                                                    />
-                                                    <div className="text-lg">
-                                                        correct
-                                                    </div>
+                                            <div className="flex flex-row space-x-2 items-center mt-2">
+                                                <TextField
+                                                    text={quizMinScore}
+                                                    onChange={ (text: string) => 
+                                                        Number(text) > quizTotalScore ? 
+                                                            setQuizMinScore(quizTotalScore) : 
+                                                        Number(text) < 0 ? 
+                                                            setQuizMinScore(0) : setQuizMinScore(text)
+                                                    }
+                                                    style="w-24 text-right"
+                                                />
+                                                <div className="text-lg">
+                                                    / {quizTotalScore}
                                                 </div>
-                                            }
+                                            </div>
                                         </div>
                                     </div>
 

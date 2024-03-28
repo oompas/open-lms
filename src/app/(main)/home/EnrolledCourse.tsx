@@ -15,9 +15,9 @@ export default function EnrolledCourse({
 }) {
 
     const statusValues = {
-        2: "To do",
-        3: "In progress",
-        4: "Awaiting marking",
+        2: "To Do",
+        3: "In Progress",
+        4: "Awaiting Marking",
         5: "Failed",
         6: "Completed",
     }
@@ -29,9 +29,13 @@ export default function EnrolledCourse({
         6: "#47AD63",
     }
 
-    return (
+    return ( title === "_placeholder" ?
+        <div 
+            className="border-4 w-[32%] mb-8 p-6 rounded-2xl opacity-0"
+        />
+        :
         <Link 
-            className="border-4 w-[32%] m-2 mb-8 p-6 rounded-2xl cursor-pointer hover:opacity-60 duration-100"
+            className="border-4 w-[32%] mb-8 p-6 rounded-2xl cursor-pointer hover:opacity-60 duration-100"
             style={{ borderColor: statusColors[status] }}
             href={"/course/"+id}
         >

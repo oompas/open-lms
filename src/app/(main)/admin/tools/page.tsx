@@ -19,6 +19,8 @@ export default function Tools() {
 
     const router = useRouter();
     const [search, setSearch] = useState("");
+    const [showInvite, setShowInvite] = useState(false);
+    const [inviteEmail, setInviteEmail] = useState("");
 
     const getQuizzesToMark = () => {
         if (quizzesToMark.loading) {
@@ -48,7 +50,7 @@ export default function Tools() {
                         <QuizToMark
                             key={key}
                             title={quiz.courseName}
-                            date={new Date(quiz.timestamp).toLocaleString()}
+                            date={new Date(quiz.timestamp*1000).toLocaleString()}
                             learner={quiz.userName}
                             id={quiz.quizAttemptId}
                         />
@@ -133,6 +135,25 @@ export default function Tools() {
         );
     }
 
+    const handleInvite = async () => {
+        callApi("inviteLearner", { emails: [inviteEmail]})
+            .then(() => alert("user invited!"))
+            .then(() => setShowInvite(false))
+    }
+
+    const invitePopup = (
+        <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 z-50 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">Enter the user's email address:</div>
+                <TextField text={inviteEmail} onChange={setInviteEmail} placeholder="john@email.com" />
+                <div className="flex flex-row mt-4">
+                    <Button text="Cancel" onClick={() => setShowInvite(false)} style="ml-auto" />
+                    <Button text="Invite" onClick={() => handleInvite()} style="ml-4" filled />
+                </div>
+            </div>
+        </div>
+    )
+
     return (
         <main className="flex-col w-full justify-center items-center">
             {/* Quizzes to mark section */}
@@ -160,7 +181,7 @@ export default function Tools() {
                         onChange={setSearch}
                     />
                     <Button text="Create a Course" onClick={() => router.push('/admin/course/new')} filled />
-                    <Button text="Download Course Reports" onClick={() => router.push('/home')}/>
+                    <Button text="Download Course Reports" onClick={() => alert("TODO: download course reports")}/>
                 </div>
                 {getCourseInsights()}
             </div>
@@ -172,13 +193,16 @@ export default function Tools() {
                         <div className="text-lg -mb-1">Learner Insights</div>
                         <p className="mr-2 text-gray-500">Click on a user to view individual data.</p>
                     </div>
-                    <Button text="Invite new Learners" onClick={() => router.push('/home')}/>
-                    <Button text="Download User Reports" onClick={() => router.push('/home')} style="ml-4"/>
+                    <Button text="Invite New Learners" onClick={() => setShowInvite(true)}/>
+                    <Button text="Download User Reports" onClick={() => alert("TODO: download user reports")} style="ml-4"/>
                 </div>
                 {getLearnerInsights()}
             </div>
 
             <div className="h-4" />
+
+            { showInvite && invitePopup }
+
         </main>
     )
 }

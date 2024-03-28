@@ -16,7 +16,7 @@ export default function CompletedCourse({
             href={"/course/"+id}
         >
             <div className="text-2xl">{title}</div>
-            <div className="mt-1 text-lg">{date}</div>
+            <div className="mt-1 text-lg">Completed {new Date(date).toLocaleString()}</div>
         </Link>
     )
 }

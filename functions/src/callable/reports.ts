@@ -12,6 +12,8 @@ import {
     QuizQuestionAttemptDocument,
     UserDocument, getDocData, CourseDocument,
 } from "../helpers/database";
+import { object, string } from "yup";
+import { getCourseStatus } from "./helpers";
 
 /**
  * Returns a list of all learners on the platform with their:
@@ -27,42 +29,22 @@ const getUserReports = onCall(async (request) => {
 
     logger.info("User is an admin, querying database for user reports...");
 
-    const users = await getCollection(DatabaseCollections.User)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying users: ${error}`);
-            throw new HttpsError('internal', "Error getting user reports, please try again later");
-        });
-
-    const courseEnrollments = await getCollection(DatabaseCollections.EnrolledCourse)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying course enrollments: ${error}`);
-            throw new HttpsError('internal', "Error getting user reports, please try again later");
-        });
-
-    const courseAttempts = await getCollection(DatabaseCollections.CourseAttempt)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying course attempts: ${error}`);
-            throw new HttpsError('internal', "Error getting user reports, please try again later");
-        });
+    const users = await getCollectionDocs(DatabaseCollections.User) as UserDocument[];
+    const courseEnrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
+    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
 
     logger.info("Successfully queried database data, translating to user data...");
 
     return users.map((user) => {
 
-        const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.data().userId === user.id);
-        const userAttempts = courseAttempts.filter((attempt) => attempt.data().userId === user.id);
-        const completedAttempts = courseAttempts.filter((attempt) => attempt.data().userId == user.id && attempt.data().pass === true);
+        const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.userId === user.id);
+        const userAttempts = courseAttempts.filter((attempt) => attempt.userId === user.id);
+        const completedAttempts = courseAttempts.filter((attempt) => attempt.userId == user.id && attempt.pass === true);
 
         return {
             uid: user.id,
-            name: user.data().name,
-            email: user.data().email,
+            name: user.name,
+            email: user.email,
             coursesEnrolled: userEnrollments.length,
             coursesAttempted: userAttempts.length,
             coursesComplete: completedAttempts.length,
@@ -114,10 +96,10 @@ const getCourseReports = onCall(async (request) => {
         });
         let averageTime = null;
         if (completionTimes.length > 0) {
-            averageTime = completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length;
+            averageTime = Math.round(completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length * 10) / 10;
         }
 
-        const quizScores = quizAttempts
+        const quizScores: number[] = quizAttempts
             .filter((attempt) => attempt.courseId === course.id && attempt.pass === true)
             .map((attempt) => {
                 if (attempt.score === null) {
@@ -127,7 +109,10 @@ const getCourseReports = onCall(async (request) => {
             });
         let averageScore = null;
         if (quizScores.length > 0) {
-            averageScore = quizScores.reduce((a, b) => a + b, 0) / quizScores.length;
+            const totalQuizMarks = course.data().quiz.totalMarks;
+            const totalScore = quizScores.reduce((total, curr) => total + curr, 0);
+
+            averageScore = Math.round((totalScore / quizScores.length / totalQuizMarks) * 100 * 10) / 10;
         }
 
         return {
@@ -159,18 +144,24 @@ const getCourseInsightReport = onCall(async (request) => {
 
     logger.info("User is an admin, querying database for this course's report...");
 
-    const courseId = request.data.courseId;
+    const schema = object({
+        courseId: string().required(),
+    }).required().noUnknown(true);
 
-    if (!courseId) {
-        throw new HttpsError('invalid-argument', "courseId is required");
-    }
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    const { courseId } = request.data;
 
     const courseData = await getDocData(DatabaseCollections.Course, courseId) as CourseDocument;
 
     const courseAttempts: CourseAttemptDocument[] = await getCollection(DatabaseCollections.CourseAttempt)
         .where("courseId", "==", courseId)
         .get()
-        .then((result) => result.docs.map(doc => doc.data() as CourseAttemptDocument))
+        .then((result) => result.docs.map(doc => ({ id: doc.id, ...doc.data() }) as CourseAttemptDocument))
         .catch((error) => {
             logger.error(`Error querying course attempts: ${error}`);
             throw new HttpsError('internal', "Error getting this course insight report, please try again later")
@@ -216,44 +207,12 @@ const getCourseInsightReport = onCall(async (request) => {
     // Fetch active QuizQuestions for the course
     const quizQuestions: QuizQuestionDocument[] = await getCollection(DatabaseCollections.QuizQuestion)
         .where("courseId", "==", courseId)
-        .where("active", "==", true)
         .get()
-        .then(result => result.docs.map(doc => doc.data() as QuizQuestionDocument));
+        .then(result => result.docs.map(doc => ({ id: doc.id, ...doc.data() }) as QuizQuestionDocument));
 
-    // Map to store question texts
-    let questionTexts: string[] = quizQuestions.map(question => question.question);
+    const enrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
 
-    // Prepare to calculate average marks and match responses
-    let questionStats: { [key: string]: { marks: number, averageMarksAchieved: number, numAttempts: number, totalScore: number } } = {};
-    quizQuestions.forEach(question => {
-        questionStats[question.id] = { marks: question.marks, averageMarksAchieved: 0, numAttempts: 0, totalScore: 0 };
-    });
-
-    // Process quiz question attempts
-    quizQuestionAttempts.forEach(attempt => {
-        if (questionStats[attempt.questionId]) {
-            questionStats[attempt.questionId].numAttempts += 1;
-            if (attempt.marksAchieved !== null) {
-                questionStats[attempt.questionId].totalScore += attempt.marksAchieved ? 1 : 0;
-            }
-        }
-    });
-
-    // Calculate averages
-    Object.keys(questionStats).forEach(questionId => {
-        const stat = questionStats[questionId];
-        stat.averageMarksAchieved = stat.numAttempts > 0 ? (stat.totalScore / stat.numAttempts) * stat.marks : 0;
-    });
-
-    const enrollments = await getCollection(DatabaseCollections.EnrolledCourse)
-        .get()
-        .then((result) => result.docs)
-        .catch((error) => {
-            logger.error(`Error querying enrollments: ${error}`);
-            throw new HttpsError('internal', "Error getting course reports, please try again later");
-        });
-
-    const courseEnrollments = enrollments.filter((enrollment) => enrollment.data().courseId === courseId);
+    const courseEnrollments = enrollments.filter((enrollment) => enrollment.courseId === courseId);
 
     const completedAttempts = courseAttempts.filter((attempt) => {
         return attempt.courseId === courseId && attempt.pass === true;
@@ -266,29 +225,68 @@ const getCourseInsightReport = onCall(async (request) => {
     });
     const averageTime = completionTimes.length === 0 ? null : (1 / completionTimes.length) * completionTimes.reduce((a, b) => a + b, 0);
 
+
+    // Fetch all QuizAttempts for the course
+    const quizAttempts: QuizAttemptDocument[] = await getCollection(DatabaseCollections.QuizAttempt)
+        .where("courseId", "==", courseId)
+        .get()
+        .then((result) => result.docs.map(doc => ({ id: doc.id, ...doc.data() }) as QuizAttemptDocument));
+
+    // Store the status of each course attempt
+    const courseAttemptStatuses: { [key: string]: number } = {};
+    await Promise.all(filteredAttempts.map(async (courseAttempt) => {
+        getCourseStatus(courseAttempt.courseId, courseAttempt.userId).then((status) => { courseAttemptStatuses[courseAttempt.userId] = status });
+    }));
+
     // Combine data to create the courseLearners array
-    const courseLearners = filteredAttempts.map((attempt) => {
-        const completionStatus = attempt.pass;
-        const markingStatus = markingStatusMap.get(attempt.userId) || false;
-        const userName = userDetails.get(attempt.userId)?.name || "Unknown User";
+    const courseLearners = filteredAttempts.map(async (courseAttempt) => {
+        const userName = userDetails.get(courseAttempt.userId)?.name || "Unknown User";
+
+        const courseAttemptQuizzes = quizAttempts.filter((quizAttempt) => quizAttempt.courseAttemptId == courseAttempt.id);
+
+        let latestQuizAttempt = courseAttemptQuizzes.reduce<QuizAttemptDocument | undefined>((latest, current) => {
+            // If latest is null or undefined, or current has no endTime, current becomes the latest
+            if (!latest || !current.endTime) {
+                return current;
+            }
+            // If latest has no endTime, it remains as the latest
+            if (!latest.endTime) {
+                return latest;
+            }
+            // Compare endTime of latest and current to determine the latest
+            return current.endTime > latest.endTime ? current : latest;
+        }, undefined); // Start with undefined to ensure the first element is evaluated
 
         return {
             name: userName,
-            completionStatus: completionStatus,
-            markingStatus: markingStatus,
+            userId: courseAttempt.userId,
+            completionStatus: courseAttemptStatuses[courseAttempt.userId], // @ts-ignore
+            quizAttemptId: latestQuizAttempt.id, // @ts-ignore
+            quizAttemptTime: latestQuizAttempt.endTime.seconds,
         };
+    });
+
+    // Add total marks for short answers for front-end convenience
+    const questionsWithStats = quizQuestions.map((question) => {
+        if (question.type !== "sa") {
+            return question;
+        }
+
+        // @ts-ignore
+        const distributionValues = Object.keys(question.stats.distribution);
+        let totalScore = 0;
+        distributionValues.forEach((key: string) => { // @ts-ignore
+            totalScore += question.stats.distribution[key] * Number(key);
+        }); // @ts-ignore
+        question.stats.totalScore = totalScore;
+        return question;
     });
 
     // Combine all stats for the return array
     return {
         courseName: courseData.name,
-        courseId: courseData.id,
         learners: courseLearners,
-        questions: questionTexts,
-        questionStats: Object.values(questionStats).map(stat => ({
-            marks: stat.marks,
-            averageMarksAchieved: stat.averageMarksAchieved.toFixed(2),
-        })),
+        questions: questionsWithStats,
         numEnrolled: courseEnrollments.length,
         numComplete: completedAttempts.length,
         avgTime: averageTime

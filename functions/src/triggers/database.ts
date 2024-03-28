@@ -11,7 +11,10 @@ const updateAdminPermissions = onDocumentUpdated(`${DatabaseCollections.User}/{u
 
     // @ts-ignore
     const docAfter = event.data.after.data();
-    const permissions: {} | { admin: true } = ("admin" in docAfter && docAfter.admin === true) ? { admin: true } : {};
+    const permissions: { admin?: true, developer?: true } = {
+        ...("admin" in docAfter && docAfter.admin === true && { admin: true }),
+        ...("developer" in docAfter && docAfter.developer === true && { developer: true }),
+    };
 
     const userId = event.params.userId;
     return auth.setCustomUserClaims(userId, permissions)

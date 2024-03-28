@@ -135,6 +135,96 @@ const exampleQuestions = [
         question: "The capital of Alberta is Calgary",
         type: "tf",
         correctAnswer: 1,
+    },
+    {
+        question: "The capital of Saskatchewan is Regina",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Manitoba is Winnipeg",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Nova Scotia is Halifax",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of New Brunswick is Fredericton",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Prince Edward Island is Charlottetown",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Newfoundland and Labrador is St. John's",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Yukon is Whitehorse",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Northwest Territories is Yellowknife",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Nunavut is Iqaluit",
+        type: "tf",
+        correctAnswer: 0,
+    },
+    {
+        question: "The capital of Canada is Toronto",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Montreal",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Vancouver",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Calgary",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Regina",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Winnipeg",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Halifax",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Fredericton",
+        type: "tf",
+        correctAnswer: 1,
+    },
+    {
+        question: "The capital of Canada is Charlottetown",
+        type: "tf",
+        correctAnswer: 1,
     }
 ]
 
@@ -143,25 +233,26 @@ const randomChance = (chance: number) => Math.random() < chance;
 
 const courses = rawCourseData.map((course) => {
 
+    // @ts-ignore
+    course["minTime"] = null; // @ts-ignore
+    course["quiz"] = null;
     if (randomChance(0.7)) { // @ts-ignore
         course["minTime"] = Math.random() < 0.7 ? randomInt(1, 3) * 15 : randomInt(1, 12) * 60;
-    }
-    let hasQuiz = false; // @ts-ignore
+    } // @ts-ignore
     if (!course["minTime"] || randomChance(0.6)) {
-        hasQuiz = true; // @ts-ignore
-        course["quiz"] = {
-            minScore: randomChance(0.5) ? randomInt(1, 2) : null,
-            maxAttempts: randomChance(0.5) ? randomInt(1, 10) : null,
-            timeLimit: randomChance(0.5) ? (randomChance(0.7) ? randomInt(1, 3) * 15 : randomInt(1, 4)) : null,
-            preserveOrder: randomChance(0.5)
-        };
-    }
-
-    if (hasQuiz) { // @ts-ignore
+        // @ts-ignore
         course["quizQuestions"] = exampleQuestions.sort(() => Math.random() - 0.5).slice(0, randomInt(2, 6)).map((question) => {
             const marks = question.type === "sa" ? randomInt(2, 5) : randomInt(1, 2);
             return { ...question, marks: marks };
         });
+
+        // @ts-ignore
+        course["quiz"] = { // @ts-ignore
+            minScore: randomInt(1, course["quizQuestions"].reduce((a, b) => a + b.marks, 0)),
+            maxAttempts: randomChance(0.5) ? randomInt(1, 10) : null,
+            timeLimit: randomChance(0.5) ? (randomChance(0.7) ? randomInt(1, 3) * 15 : randomInt(1, 4)) : null,
+            preserveOrder: randomChance(0.5)
+        };
     }
 
     return course;
@@ -175,35 +266,25 @@ const generateDummyData = async () => {
         .catch((error) => { throw new Error(`Error cleaning database data: ${error}`); });
 
     // Add all the courses
-    const courseQuizQuestions: any[] = [];
+    const courseIds: string[] = [];
     await Promise.all(courses.map(async (course) => {
-        // @ts-ignore
-        const { quizQuestions, ...courseData } = course;
-        return callApi('addCourse', courseData)
+        return callApi('addCourse', course)
             .then((id) => {
                 if (typeof id.data !== 'string') {
                     throw new Error(`Error: saveCourse should return a course ID string. Returned value: ${id}`);
                 }
-                courseQuizQuestions.push({ id: id.data, quizQuestions });
+                courseIds.push(id.data);
             })
             .catch((error) => { throw new Error(`Error adding course (name: ${course.name}): ${error}`); });
     }));
 
     const promises: Promise<any>[] = [];
 
-    courseQuizQuestions.forEach((course) => {
-        if (course.quizQuestions) {
-            promises.push(
-                callApi('updateQuizQuestions', { courseId: course.id, questions: course.quizQuestions })
-                    .then(() => console.log(`Successfully added quiz questions for course ${course.id}`))
-                    .catch((error) => { throw new Error(`Error adding quiz questions for course ${course.id}: ${error}`); })
-            );
-        }
-
+    courseIds.forEach((id) => {
         promises.push(
-            callApi('publishCourse', { courseId: course.id })
-                .then(() => console.log(`Successfully published course ${course.id}`))
-                .catch((error) => { throw new Error(`Error publishing course ${course.id}: ${error}`); })
+            callApi('setCourseVisibility', { courseId: id, active: true })
+                .then(() => console.log(`Successfully published course ${id}`))
+                .catch((error) => { throw new Error(`Error publishing course ${id}: ${error}`); })
         );
     });
 

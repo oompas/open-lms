@@ -95,11 +95,19 @@ export default function IDCourse({
     }
 
     const statusNames = {
+        1: "Not enrolled",
         2: "To do",
         3: "In progress",
         4: "Awaiting marking",
         5: "Failed",
         6: "Completed",
+    }
+    const statusColors = {
+        2: "#468DF0",
+        3: "#EEBD31",
+        4: "#0fa9bb",
+        5: "#ab0303",
+        6: "#47AD63",
     }
 
     const getTime = () => {
@@ -114,7 +122,7 @@ export default function IDCourse({
 
     return (
         <main>
-            <div className="flex flex-row border-4 rounded-2xl p-8">
+            <div className="flex flex-row border rounded-2xl p-8">
                 <div className="flex flex-col">
                     <div className="text-2xl font-bold">{course.name}</div>
                     <div className="mt-2 text-2xl">{course.description}</div>
@@ -122,21 +130,19 @@ export default function IDCourse({
                         {renderButton()}
                     </div>
                 </div>
-                <div
-                    className="flex flex-col justify-center items-center ml-auto border-2 rounded-xl px-10 py-4 shadow-lg">
+                {/* @ts-ignore */}
+                <div className="flex flex-col justify-center items-center ml-auto border-4 rounded-xl px-10 py-4 shadow-lg" style={{borderColor: statusColors[status]}}>
                     <div className="text-sm -mb-1">status:</div>
                     { /* @ts-ignore */ }
-                    <div className="text-2xl">{statusNames[status]}</div>
-                    {
-                        course.minTime && (
-                            <>
-                                <div className="text-sm mt-2">{status === 1 ? "Minimum" : "Required"} time:</div>
-                                <div className="text-3xl">
-                                    {countdown > 0 || status < 3 ? getTime() : "Completed"}
-                                </div>
-                            </>
-                        )
-                    }
+                    <div className="text-2xl text-center">{statusNames[status]}</div>
+                    {course.minTime && (
+                        <>
+                            <div className="text-sm mt-2">{status === 1 ? "Minimum" : "Required"} time:</div>
+                            <div className="text-3xl">
+                                {countdown > 0 || status < 3 ? getTime() : "Completed"}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </main>

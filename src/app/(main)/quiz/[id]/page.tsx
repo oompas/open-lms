@@ -126,7 +126,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
 
         if (!quizData || quizData === "Invalid" || !quizData.timeLimit) {
             return (
-                <div className="flex flex-col text-2xl space-y-8 w-[30rem]">
+                <div className="flex flex-col text-2xl text-center space-y-8 mb-4">
                     <i>No time limit</i>
                 </div>
             );
