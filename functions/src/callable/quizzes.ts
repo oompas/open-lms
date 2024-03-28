@@ -381,7 +381,7 @@ const submitQuiz = onCall(async (request) => {
         if (marks !== null) {
             const updateData = {
                 "stats.numAttempts": firestore.FieldValue.increment(1),
-                "stats.totalScore": firestore.FieldValue.increment(marks),
+                "stats.numCorrect": firestore.FieldValue.increment(marks > 0 ? 1 : 0),
             };
             updatePromises.push(updateDoc(DatabaseCollections.QuizQuestion, question.id, updateData));
         }
