@@ -255,8 +255,7 @@ const getCourseInsightReport = onCall(async (request) => {
         return {
             name: userName,
             userId: courseAttempt.userId,
-            completionStatus: await getCourseStatus(courseAttempt.courseId, courseAttempt.userId),
-            markingStatus: markingStatus, // @ts-ignore
+            completionStatus: await getCourseStatus(courseAttempt.courseId, courseAttempt.userId), // @ts-ignore
             quizAttemptId: latestQuizAttempt.id, // @ts-ignore
             quizAttemptTime: latestQuizAttempt.endTime.seconds,
         };
