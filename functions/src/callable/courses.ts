@@ -41,13 +41,13 @@ const addCourse = onCall(async (request) => {
         name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
         description: string().required().min(1, "Description must be non-empty").max(500, "Description can't be over 500 characters long"),
         link: string().url().required(),
-        minTime: number().integer().positive().nullable().required(),
+        minTime: number().integer().positive().nullable(),
         quiz: object({
             minScore: number().integer().positive().required(),
-            maxAttempts: number().integer().positive().nullable().required(),
-            timeLimit: number().integer().positive().nullable().required(),
+            maxAttempts: number().integer().positive().nullable(),
+            timeLimit: number().integer().positive().nullable(),
             preserveOrder: boolean().required(),
-        }).nullable().required().noUnknown(true),
+        }).nullable().noUnknown(true),
         quizQuestions: array().of(
             object({
                 question: string().min(1).max(500).required(),
@@ -82,7 +82,7 @@ const addCourse = onCall(async (request) => {
     }
 
     // Validate quiz questions
-    quizQuestions.forEach((question: any) => {
+    quizQuestions && quizQuestions.forEach((question: any) => {
         let keys;
         if (question.type === "mc") {
             keys = ["question", "type", "answers", "correctAnswer", "marks"];
@@ -130,6 +130,10 @@ const addCourse = onCall(async (request) => {
 
     const courseId = await addDoc(DatabaseCollections.Course, courseData);
 
+    if (!quizQuestions) {
+        return courseId;
+    }
+
     return Promise.all(quizQuestions.map((question: any, index: number) => {
         // Each question has statistics - score for tf/mc, distribution for sa (since partial marks are possible)
         const defaultStats = { numAttempts: 0 }; // @ts-ignore
@@ -144,7 +148,7 @@ const addCourse = onCall(async (request) => {
         }
 
         return addDoc(DatabaseCollections.QuizQuestion, questionDoc);
-    }));
+    })).then(() => courseId);
 });
 
 /**
