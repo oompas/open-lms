@@ -95,6 +95,7 @@ export default function IDCourse({
     }
 
     const statusNames = {
+        1: "Not enrolled",
         2: "To do",
         3: "In progress",
         4: "Awaiting marking",
