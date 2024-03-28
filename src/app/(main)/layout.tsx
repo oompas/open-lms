@@ -51,9 +51,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
             <div className="flex ml-auto space-x-10 text-2xl">
                 {isAdmin && <Link href="/admin/tools" className="hover:opacity-50 duration-75">Admin Tools</Link>}
                 <Link href="/profile" className="hover:opacity-50 duration-75">View Profile</Link>
-                <div onClick={async () => await logout()} className="cursor-pointer hover:opacity-50 duration-75">
-                    Log Out
-                </div>
             </div>
         </div>
         <div className='flex h-[85vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar'>
