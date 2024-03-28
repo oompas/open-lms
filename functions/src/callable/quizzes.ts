@@ -82,7 +82,6 @@ const getQuiz = onCall(async (request) => {
 
     return getCollection(DatabaseCollections.QuizQuestion)
         .where("courseId", "==", courseAttempt.courseId)
-        .where("active", "==", true)
         .get()
         .then((snapshot) => {
 
@@ -319,7 +318,6 @@ const submitQuiz = onCall(async (request) => {
 
     // Get all quiz questions for this quiz
     const quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
-        .where("active", "==", true)
         .where("courseId", "==", quizAttempt.courseId)
         .get()
         .then((snapshot) => {

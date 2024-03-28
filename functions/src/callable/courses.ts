@@ -268,7 +268,6 @@ const getCourseInfo = onCall(async (request) => {
         if (courseInfo.quiz) {
             quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
                 .where("courseId", "==", request.data.courseId)
-                .where("active", "==", true)
                 .get()
                 .then((docs) => shuffleArray(docs.docs.map((doc) => {
                     const data = doc.data();
@@ -330,7 +329,6 @@ const getCourseInfo = onCall(async (request) => {
     if (courseInfo.quiz) {
         numQuizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
             .where("courseId", "==", request.data.courseId)
-            .where("active", "==", true)
             .get()
             .then((docs) => docs.size)
             .catch((error) => {
