@@ -513,6 +513,7 @@ const getQuizAttempt = onCall(async (request) => {
     return {
         courseName: courseInfo.name,
         learnerName: userInfo.name,
+        completionTime: quizAttemptData.endTime,
         saQuestions: attemptData.filter((attempt) => attempt.type === "sa"),
         otherQuestions: attemptData.filter((attempt) => attempt.type !== "sa"),
         score: quizAttemptData.score,
@@ -581,7 +582,7 @@ const markQuizAttempt = onCall(async (request) => {
         updateData[`stats.distribution.${response.marksAchieved}`] = firestore.FieldValue.increment(1);
 
         const questionData = questionAttempts.find((qa) => qa.id === response.questionAttemptId); // @ts-ignore
-        return updatePromises.push(updateDoc(DatabaseCollections.QuizQuestion, questionData.id, updateData));
+        return updatePromises.push(updateDoc(DatabaseCollections.QuizQuestion, questionData?.questionId, updateData));
     }));
 
     await Promise.all(updatePromises);
