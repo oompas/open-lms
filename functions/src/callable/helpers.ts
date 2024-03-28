@@ -198,7 +198,6 @@ const updateQuizStatus = async (quizAttemptId: string) => {
     if (lastAttempt || (!lastAttempt && pass)) {
         const update = {
             pass: pass,
-            score: marksAchieved,
             endTime: completionTime
         };
         promises.push(updateDoc(DatabaseCollections.CourseAttempt, courseAttemptId, update));

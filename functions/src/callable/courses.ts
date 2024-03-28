@@ -6,7 +6,7 @@ import {
     verifyIsAuthenticated
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
-import { boolean, number, object, string } from 'yup';
+import { array, boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
 import {
     addDoc,
@@ -37,16 +37,26 @@ const addCourse = onCall(async (request) => {
     logger.info("Administrative permission verification passed");
 
     const schema = object({
+        previousVersionId: string().optional(),
         name: string().required().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
         description: string().required().min(1, "Description must be non-empty").max(500, "Description can't be over 500 characters long"),
         link: string().url().required(),
         minTime: number().integer().positive().nullable(),
         quiz: object({
-            minScore: number().integer().positive().nullable(),
+            minScore: number().integer().positive().required(),
             maxAttempts: number().integer().positive().nullable(),
             timeLimit: number().integer().positive().nullable(),
-            preserveOrder: boolean().nullable(),
+            preserveOrder: boolean().required(),
         }).nullable().noUnknown(true),
+        quizQuestions: array().of(
+            object({
+                question: string().min(1).max(500).required(),
+                type: string().oneOf(["mc", "tf", "sa"]).required(),
+                marks: number().required().min(1).max(20),
+                answers: array().of(string()).min(2).max(5).optional(),
+                correctAnswer: number().optional(),
+            }).noUnknown(true)
+        ).optional(),
     }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
@@ -57,7 +67,88 @@ const addCourse = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    return addDoc(DatabaseCollections.Course, { userID: uid, active: false, ...request.data });
+    const { quiz, quizQuestions } = request.data;
+
+    if ((quiz && !quizQuestions) || (!quiz && quizQuestions)) {
+        throw new HttpsError('invalid-argument', "Quiz questions must be provided with quiz metadata");
+    }
+
+    const totalMarks: number = !quizQuestions ? 0 : quizQuestions.reduce((total: number, question: { marks: number }) => total + question.marks, 0);
+    if (quiz?.minScore) {
+        if (quiz.minScore > totalMarks) {
+            throw new HttpsError('invalid-argument', `Minimum score (${request.data.quiz.minScore}) must be less than or equal to the total` +
+                ` marks available (${totalMarks})`);
+        }
+    }
+
+    // Validate quiz questions
+    quizQuestions && quizQuestions.forEach((question: any) => {
+        let keys;
+        if (question.type === "mc") {
+            keys = ["question", "type", "answers", "correctAnswer", "marks"];
+        } else if (question.type === "tf") {
+            keys = ["question", "type", "correctAnswer", "marks"];
+        } else if (question.type === "sa") {
+            keys = ["question", "type", "marks"];
+        } else {
+            throw new HttpsError(
+                "invalid-argument",
+                `Invalid request: question ${JSON.stringify(question)} is invalid; 'type' must be one of 'mc', 'tf', or 'sa'`
+            );
+        }
+
+        const properties = Object.keys(question);
+        if (!keys.every((key) => properties.includes(key)) || properties.length !== keys.length) {
+            throw new HttpsError(
+                "invalid-argument",
+                `Invalid request: question ${JSON.stringify(question)} is invalid; must include the following keys: ${keys.join(", ")}`
+            );
+        }
+    });
+
+    let version = 1;
+    if (request.data.previousVersionId) {
+        const previousVersion = await getDocData(DatabaseCollections.Course, request.data.previousVersionId) as CourseDocument;
+        version = previousVersion.version + 1;
+
+        await updateDoc(DatabaseCollections.Course, request.data.previousVersionId, { retired: firestore.FieldValue.serverTimestamp() });
+    }
+
+    if (quiz) {
+        quiz["totalMarks"] = totalMarks;
+    }
+    const courseData = {
+        userId: uid,
+        active: false,
+        version: version,
+        name: request.data.name,
+        description: request.data.description,
+        link: request.data.link,
+        minTime: request.data.minTime,
+        quiz: quiz,
+    };
+
+    const courseId = await addDoc(DatabaseCollections.Course, courseData);
+
+    if (!quizQuestions) {
+        return courseId;
+    }
+
+    return Promise.all(quizQuestions.map((question: any, index: number) => {
+        // Each question has statistics - score for tf/mc, distribution for sa (since partial marks are possible)
+        const defaultStats = { numAttempts: 0 }; // @ts-ignore
+        if (question.type === "mc" || question.type === "tf") defaultStats["totalScore"] = 0; // @ts-ignore
+        if (question.type === "sa") defaultStats["distribution"] = Object.assign({}, new Array(question.marks + 1).fill(0));
+
+        const questionDoc = {
+            courseId: courseId,
+            stats: defaultStats,
+            ...(request.data.quiz.preserveOrder && { order: index }), // If the quiz is ordered, store the order of the questions
+            ...question
+        }
+
+        return addDoc(DatabaseCollections.QuizQuestion, questionDoc);
+    })).then(() => courseId);
 });
 
 /**
@@ -85,44 +176,6 @@ const setCourseVisibility = onCall(async (request) => {
         logger.info("Schema verification passed");
 
         return updateDoc(DatabaseCollections.Course, request.data.courseId, { active: request.data.active });
-});
-
-/**
- * Updates an existing course's data (excluding quiz questions)
- */
-const updateCourse = onCall(async (request) => {
-
-    logger.info(`Entering updateCourse for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
-
-    await verifyIsAdmin(request);
-
-    logger.info("Administrative permission verification passed");
-
-    const schema = object({
-        courseId: string().required(),
-        name: string().optional().min(1, "Name must be non-empty").max(50, "Name can't be over 50 characters long"),
-        description: string().optional().min(1, "Description must be non-empty").max(500, "Description can't be over 500 characters long"),
-        link: string().url().optional(),
-        minTime: number().integer().positive().optional(),
-        quiz: object({
-            minScore: number().integer().positive().optional(),
-            maxAttempts: number().integer().positive().optional(),
-            timeLimit: number().integer().positive().optional(),
-            preserveOrder: boolean().optional(),
-        }).optional().noUnknown(true)
-    }).required().noUnknown(true);
-
-    await schema.validate(request.data, { strict: true })
-        .catch((err) => {
-            logger.error(`Error validating request: ${err}`);
-            throw new HttpsError('invalid-argument', err);
-        });
-
-    logger.info("Schema verification passed");
-
-    const courseId = request.data.courseId;
-    delete request.data.courseId; // Don't need id in document
-    return updateDoc(DatabaseCollections.Course, courseId, request.data);
 });
 
 /**
@@ -215,7 +268,6 @@ const getCourseInfo = onCall(async (request) => {
         if (courseInfo.quiz) {
             quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
                 .where("courseId", "==", request.data.courseId)
-                .where("active", "==", true)
                 .get()
                 .then((docs) => shuffleArray(docs.docs.map((doc) => {
                     const data = doc.data();
@@ -277,7 +329,6 @@ const getCourseInfo = onCall(async (request) => {
     if (courseInfo.quiz) {
         numQuizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
             .where("courseId", "==", request.data.courseId)
-            .where("active", "==", true)
             .get()
             .then((docs) => docs.size)
             .catch((error) => {
@@ -436,5 +487,5 @@ const sendCourseFeedback = onCall(async (request) => {
     return sendEmail(courseCreator.email, subject, content, "sending course feedback");
 });
 
-export { addCourse, setCourseVisibility, updateCourse, getAvailableCourses, getCourseInfo, courseEnroll,
-    courseUnenroll, startCourse, sendBrokenLinkReport, sendCourseFeedback };
+export { addCourse, setCourseVisibility, getAvailableCourses, getCourseInfo, courseEnroll, courseUnenroll, startCourse,
+    sendBrokenLinkReport, sendCourseFeedback };

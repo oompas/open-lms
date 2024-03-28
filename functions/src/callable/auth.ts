@@ -221,7 +221,7 @@ const getUserProfile = onCall(async (request) => {
     const completedCourseData = await Promise.all(completedCourseIds.map(async (data) =>
         getDocData(DatabaseCollections.Course, data.courseId) // @ts-ignore
             .then((course: CourseDocument) => {
-                return { attemptId: data.id, name: course.name, link: course.link, date: data.date._seconds };
+                return { courseId: course.id, name: course.name, link: course.link, date: data.date._seconds };
             })
     ));
 

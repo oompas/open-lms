@@ -15,7 +15,7 @@ const getDocRef = (collection: DatabaseCollections, docId: string) => db.doc(`/$
 const getEmailCollection = () => db.collection(`/Email/`);
 
 // Adds a document to a given collection (random id given)
-const addDoc = (collection: DatabaseCollections, data: any) => {
+const addDoc = (collection: DatabaseCollections, data: any): Promise<string> => {
     return getCollection(collection).add(data)
         .then((docRef) => docRef.id)
         .catch(err => {
@@ -25,7 +25,7 @@ const addDoc = (collection: DatabaseCollections, data: any) => {
 }
 
 // Adds a document to a given collection with a specific id
-const addDocWithId = (collection: DatabaseCollections, docId: string, data: any) => {
+const addDocWithId = (collection: DatabaseCollections, docId: string, data: any): Promise<string> => {
     return getDocRef(collection, docId)
         .set(data)
         .then(() => "Document added successfully")
@@ -36,7 +36,7 @@ const addDocWithId = (collection: DatabaseCollections, docId: string, data: any)
 }
 
 // Checks if a document exists in a collection
-const docExists = async (collection: DatabaseCollections, docId: string) => {
+const docExists = async (collection: DatabaseCollections, docId: string): Promise<boolean> => {
     return getDocRef(collection, docId).get()
         .then((doc) => doc.exists)
         .catch(err => {
@@ -47,7 +47,8 @@ const docExists = async (collection: DatabaseCollections, docId: string) => {
 
 // Returns the document data for a given document in the database (error handling included for not finding the doc)
 const getDocData = (collection: DatabaseCollections, docId: string) => {
-    return getDocRef(collection, docId).get()
+    return getDocRef(collection, docId)
+        .get()
         .then((doc) => {
             if (!doc.exists) {
                 logger.error(`Document '${docId}' not found in collection '${collection}'`);
@@ -68,7 +69,8 @@ const getDocData = (collection: DatabaseCollections, docId: string) => {
 
 // Returns all documents (as an object of the document data) in a collection
 const getCollectionDocs = (collection: DatabaseCollections) => {
-    return getCollection(collection).get()
+    return getCollection(collection)
+        .get()
         .then((result) => result.docs.map(doc => ({ id: doc.id, ...doc.data() })))
         .catch(err => {
             logger.error(`Error getting documents from collection '${collection}': ${err}`);
@@ -77,7 +79,7 @@ const getCollectionDocs = (collection: DatabaseCollections) => {
 }
 
 // Updates a document in the database (error handling included)
-const updateDoc = (collection: DatabaseCollections, docId: string, data: any) => {
+const updateDoc = (collection: DatabaseCollections, docId: string, data: any): Promise<string> => {
     return getDocRef(collection, docId)
         .update(data)
         .then(() => "Document updated successfully")
@@ -87,7 +89,7 @@ const updateDoc = (collection: DatabaseCollections, docId: string, data: any) =>
         });
 }
 
-const deleteDoc = (collection: DatabaseCollections, docId: string) => {
+const deleteDoc = (collection: DatabaseCollections, docId: string): Promise<string> => {
     return getDocRef(collection, docId)
         .delete()
         .then(() => "Document deleted successfully")
@@ -113,8 +115,11 @@ enum DatabaseCollections {
     QuizQuestionAttempt = "QuizQuestionAttempt",
 }
 
-interface UserDocument {
+interface DatabaseDocument {
     id: string;
+}
+
+interface UserDocument extends DatabaseDocument {
     email: string;
     name: string;
     signUpTime: firestore.Timestamp;
@@ -122,8 +127,7 @@ interface UserDocument {
     developer?: true;
 }
 
-interface CourseDocument {
-    id: string;
+interface CourseDocument extends DatabaseDocument {
     name: string;
     description: string;
     link: string;
@@ -135,24 +139,25 @@ interface CourseDocument {
         minScore: number | null;
         preserveOrder: boolean;
         timeLimit: number | null;
+        totalMarks: number;
     } | null;
+    retired?: firestore.Timestamp;
+    version: number;
 }
 
-interface EnrolledCourseDocument {
-    id: string;
+interface EnrolledCourseDocument extends DatabaseDocument {
     userId: string;
     courseId: string;
 }
 
-interface QuizQuestionDocument {
-    id: string;
+interface QuizQuestionDocument extends DatabaseDocument {
     courseId: string;
     question: string;
     type: "tf" | "mc" | "sa";
     marks: number;
     answers?: string[];
     correctAnswer?: number;
-    active: boolean;
+    order?: number,
     stats: {
         numAttempts: number;
         totalScore?: number;
@@ -160,12 +165,10 @@ interface QuizQuestionDocument {
     };
 }
 
-interface ReportedCourseDocument { // TODO
-    id: string;
+interface ReportedCourseDocument extends DatabaseDocument { // TODO
 }
 
-interface CourseAttemptDocument {
-    id: string;
+interface CourseAttemptDocument extends DatabaseDocument {
     userId: string;
     courseId: string;
     startTime: firestore.Timestamp;
@@ -173,8 +176,7 @@ interface CourseAttemptDocument {
     pass: boolean | null;
 }
 
-interface QuizAttemptDocument {
-    id: string;
+interface QuizAttemptDocument extends DatabaseDocument {
     userId: string;
     courseId: string;
     courseAttemptId: string;
@@ -185,8 +187,7 @@ interface QuizAttemptDocument {
     expired?: true; // If the user didn't submit in time, this should be true
 }
 
-interface QuizQuestionAttemptDocument {
-    id: string;
+interface QuizQuestionAttemptDocument extends DatabaseDocument {
     userId: string;
     courseId: string;
     courseAttemptId: string;
@@ -210,6 +211,7 @@ export {
     deleteDoc,
 
     DatabaseCollections,
+
     UserDocument,
     CourseDocument,
     EnrolledCourseDocument,

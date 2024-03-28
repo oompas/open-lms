@@ -12,7 +12,7 @@ import {
     QuizQuestionAttemptDocument,
     UserDocument, getDocData, CourseDocument,
 } from "../helpers/database";
-import { object } from "yup";
+import { object, string } from "yup";
 
 /**
  * Returns a list of all learners on the platform with their:
@@ -95,10 +95,10 @@ const getCourseReports = onCall(async (request) => {
         });
         let averageTime = null;
         if (completionTimes.length > 0) {
-            averageTime = completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length;
+            averageTime = Math.round(completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length * 10) / 10;
         }
 
-        const quizScores = quizAttempts
+        const quizScores: number[] = quizAttempts
             .filter((attempt) => attempt.courseId === course.id && attempt.pass === true)
             .map((attempt) => {
                 if (attempt.score === null) {
@@ -108,7 +108,10 @@ const getCourseReports = onCall(async (request) => {
             });
         let averageScore = null;
         if (quizScores.length > 0) {
-            averageScore = quizScores.reduce((a, b) => a + b, 0) / quizScores.length;
+            const totalQuizMarks = course.data().quiz.totalMarks;
+            const totalScore = quizScores.reduce((total, curr) => total + curr, 0);
+
+            averageScore = Math.round((totalScore / quizScores.length / totalQuizMarks) * 100 * 10) / 10;
         }
 
         return {
@@ -141,7 +144,7 @@ const getCourseInsightReport = onCall(async (request) => {
     logger.info("User is an admin, querying database for this course's report...");
 
     const schema = object({
-        courseId: object().required(),
+        courseId: string().required(),
     }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
