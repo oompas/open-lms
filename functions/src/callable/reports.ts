@@ -206,7 +206,6 @@ const getCourseInsightReport = onCall(async (request) => {
     // Fetch active QuizQuestions for the course
     const quizQuestions: QuizQuestionDocument[] = await getCollection(DatabaseCollections.QuizQuestion)
         .where("courseId", "==", courseId)
-        .where("active", "==", true)
         .get()
         .then(result => result.docs.map(doc => ({ id: doc.id, ...doc.data() }) as QuizQuestionDocument));
 
