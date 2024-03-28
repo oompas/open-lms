@@ -17,6 +17,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const [loading, setLoading] = useState(!newCourse);
     const [activatePopup, setActivatePopup] = useState(false);
     const [showDeletePopup, setShowDeletePopup] = useState(false);
+    const [deletePopupConfirm, setDeletePopupConfirm] = useState("");
 
     const [active, setActive] = useState(false);
     const [name, setName] = useState("");
@@ -143,8 +144,9 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     }
 
     const handleDelete = async () => {
-        // TODO - implement & redirect user to admin tools
-        await alert("delete")
+        await callApi("deleteCourse", { courseId: params.id })
+            .then(() => router.push("/admin/tools"))
+            .catch((err) => console.log(`Error deleting course: ${err}`));
     }
 
     const activationPopup = (
@@ -180,22 +182,30 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 <div className="text-lg mb-2">
                     <b>WARNING!</b>
                     <p className="mt-2">
-                        Deleting this course will <b>permanently delete</b> all records of user completion associated with the course, 
-                        including quiz attempts and quiz scores. Users will not be able to see the course, or access any previous history 
-                        of course completion. Administrators will lose access to any user records related to the course.
-                        This action is irreversible!
+                        Deleting this course will <b>permanently delete <u>all</u> course data</b>, including learner's
+                        course attempts. Users (including admins) will not be able to see the course, access course stats
+                        or access any previous history of course completion. {" "}
+                        <u><b>This action is irreversible!</b></u>
                     </p>
                     <p className="mt-2">
-                        If you want to hide the course from view, you can unpublish the course instead.
+                        <i>If you want to hide the course from view, you can unpublish the course instead.</i>
                     </p>
                 </div>
-                {!active && <div>Any subsequent changes saved will be directly visible to users.</div>}
+                <div className={"mt-4"}>
+                    Type <i>I understand '{name}' will be permanently deleted</i> to confirm you understand:
+                </div>
+                <input
+                    className="border-2 border-gray-400 rounded-xl p-2 mt-2"
+                    value={deletePopupConfirm}
+                    onChange={(e) => setDeletePopupConfirm(e.target.value)}
+                />
                 <div className="flex flex-row space-x-4 mt-6">
                     <Button text="Cancel" onClick={() => setShowDeletePopup(false)} style="ml-auto"/>
                     <Button
-                        text={"Permanently Delete Course"}
+                        text={deletePopupConfirm === `I understand '${name}' will be permanently deleted` ? "Permanently Delete Course" : "Please confirm above"}
                         onClick={async () => await handleDelete()}
                         filled
+                        disabled={deletePopupConfirm !== `I understand '${name}' will be permanently deleted`}
                     />
                 </div>
             </div>
