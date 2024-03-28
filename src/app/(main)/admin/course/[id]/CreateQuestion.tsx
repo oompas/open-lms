@@ -21,12 +21,12 @@ export default function CreateQuestion({
 
     const [question, setQuestion] = useState(data ? data.question : "");
     const [correctAnswer, setCorrectAnswer] = useState(data ? data.type === "mc" ? data.answers[Number(data.correctAnswer)] : data.answer : -1);
-    const [qA, setQA] = useState(data ? data.type === "mc" ? data.answers[0] : "" : "");
-    const [qB, setQB] = useState(data ? data.type === "mc" ? data.answers[1] : "" : "");
+    const [qA, setQA] = useState(data ? data.type === "mc" ? data.answers[0] : data.type === "tf" ? "True" : "" : "");
+    const [qB, setQB] = useState(data ? data.type === "mc" ? data.answers[1] : data.type === "tf" ? "False" : "" : "");
     const [qC, setQC] = useState(data ? data.type === "mc" ? data.answers[2] : "" : "");
     const [qD, setQD] = useState(data ? data.type === "mc" ? data.answers[3] : "" : "");
     const [qE, setQE] = useState(data ? data.type === "mc" ? data.answers[4] : "" : "");
-    const [value, setValue] = useState(data ? data.marks : "1");
+    const [value, setValue] = useState(data ? String(data.marks) : "1");
 
     const isInt = (str: string) => {
         var n = Math.floor(Number(str));
@@ -57,11 +57,11 @@ export default function CreateQuestion({
         }
 
         if (type === "mc") {
-            setData(num, { type: type, question: question, answers: opts, correctAnswer: ans, marks: value });
+            setData(num, { type: type, question: question, answers: opts, correctAnswer: ans, marks: Number(value) });
         } else if (type === "tf") {
-            setData(num, { type: type, question: question, correctAnswer: ans, marks: value });
+            setData(num, { type: type, question: question, correctAnswer: ans, marks: Number(value) });
         } else if (type === "sa") {
-            setData(num, { type: type, question: question, marks: value });
+            setData(num, { type: type, question: question, marks: Number(value) });
         } else {
             throw new Error(`Invalid question type: ${type}`);
         }

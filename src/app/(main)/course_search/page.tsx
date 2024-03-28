@@ -5,6 +5,8 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 import "../../../config/firebase";
 import { useState } from "react";
 import TextField from '@/components/TextField';
+import Link from 'next/link';
+import { MdArrowBack } from 'react-icons/md';
 
 export default function Home() {
 
@@ -36,6 +38,11 @@ export default function Home() {
     return (
         <main className="flex w-full mb-4 justify-center">
             <div className="flex flex-col w-full h-full bg-white p-12 rounded-2xl shadow-custom">
+                <Link href="/home"
+                    className="flex flex-row space-x-2 items-center mb-2 -mt-4 text-lg hover:opacity-60 duration-150">
+                    <MdArrowBack size="28" className="text-red-800"/>
+                    <div>return to my courses</div>
+                </Link>
                 <div className="flex flex-row items-center">
                     <div className="text-lg mb-4">Available Courses</div> 
                     <TextField text={search} onChange={setSearch} placeholder='search for a course title...' style="mb-4 ml-auto w-1/3"/>
