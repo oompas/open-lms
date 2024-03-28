@@ -16,6 +16,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
     const [loading, setLoading] = useState(!newCourse);
     const [activatePopup, setActivatePopup] = useState(false);
+    const [showDeletePopup, setShowDeletePopup] = useState(false);
 
     const [active, setActive] = useState(false);
     const [name, setName] = useState("");
@@ -141,6 +142,11 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             .catch((err) => console.log(`Error unpublishing course: ${err}`));
     }
 
+    const handleDelete = async () => {
+        // TODO - implement & redirect user to admin tools
+        await alert("delete")
+    }
+
     const activationPopup = (
         <div
             className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
@@ -156,10 +162,39 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 </div>
                 {!active && <div>Any subsequent changes saved will be directly visible to users.</div>}
                 <div className="flex flex-row space-x-4 mt-6">
-                <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
+                    <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
                     <Button
                         text={(active ? "Unpublish" : "Publish") + " Course"}
                         onClick={async () => await handlePublish()}
+                        filled
+                    />
+                </div>
+            </div>
+        </div>
+    );
+
+    const deletePopup = (
+        <div
+            className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    <b>WARNING!</b>
+                    <p className="mt-2">
+                        Deleting this course will <b>permanently delete</b> all records of user completion associated with the course, 
+                        including quiz attempts and quiz scores. Users will not be able to see the course, or access any previous history 
+                        of course completion. Administrators will lose access to any user records related to the course.
+                        This action is irreversible!
+                    </p>
+                    <p className="mt-2">
+                        If you want to hide the course from view, you can unpublish the course instead.
+                    </p>
+                </div>
+                {!active && <div>Any subsequent changes saved will be directly visible to users.</div>}
+                <div className="flex flex-row space-x-4 mt-6">
+                    <Button text="Cancel" onClick={() => setShowDeletePopup(false)} style="ml-auto"/>
+                    <Button
+                        text={"Permanently Delete Course"}
+                        onClick={async () => await handleDelete()}
                         filled
                     />
                 </div>
@@ -195,7 +230,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 }
                 <Button
                     text={newCourse ? "Discard changes" : "Delete course"}
-                    onClick={() => newCourse ? router.push("/admin/tools") : alert("delete course")}
+                    onClick={() => newCourse ? router.push("/admin/tools") : setShowDeletePopup(true)}
                 />
                 <Button
                     text={newCourse ? "Create course" : "Update course"}
@@ -386,6 +421,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 </div>
 
                 {activatePopup && activationPopup}
+                {showDeletePopup && deletePopup}
                 {loading && loadingPopup}
                 {showCreateQuestion &&
                     <CreateQuestion
