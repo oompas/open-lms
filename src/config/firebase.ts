@@ -56,10 +56,6 @@ enum ApiEndpoints {
 
     // Helpers
     CleanDatabase = "cleanDatabase",
-    PurgeUnverifiedUsers = "purgeUnverifiedUsers",
-    PurgeExpiredEmails = "purgeExpiredEmails",
-    UpdateAdminPermissions = "updateAdminPermissions",
-    OnCourseDeleted = "onCourseDeleted"
 }
 
 const functions = getFunctions();

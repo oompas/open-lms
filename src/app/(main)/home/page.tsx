@@ -1,39 +1,15 @@
 "use client";
 import EnrolledCourse from "./EnrolledCourse";
-import Notifications from "./Notifications"
-import { useAsync } from 'react-async-hook';
-import { getFunctions, httpsCallable } from "firebase/functions";
 import "../../../config/firebase";
-import { useState } from "react";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import { ApiEndpoints, useAsyncApiCall } from "@/config/firebase";
 
 export default function Home() {
 
     const router = useRouter();
 
-    const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
-
-    const TEMP_NOTIFICATION_DATA = [
-        { title: "CISC 423", description: "Jan 1, 2023", urgency: "URGENT", link: "no", id: 1 },
-    ]
-
-    const notificationData = () => {
-        return (
-            <>
-                {TEMP_NOTIFICATION_DATA.map((notification,key) => (
-                    <Notifications
-                        key={key}
-                        title={notification.title}
-                        description={notification.description}
-                        urgency={notification.urgency}
-                        link={notification.link}
-                        id={notification.id}
-                    />
-                ))}
-            </>
-        )
-    }
+    const courses = useAsyncApiCall(ApiEndpoints.GetAvailableCourses, {});
 
     const enrolledCourses = () => {
         if (courses.loading) {
@@ -55,7 +31,6 @@ export default function Home() {
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
         }
 
-        // @ts-ignore
         return temp_courses.map((course: any, key: number) => {
 
                 let time = "";
