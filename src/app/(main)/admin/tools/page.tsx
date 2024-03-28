@@ -3,17 +3,16 @@ import QuizToMark from "@/app/(main)/admin/tools/QuizToMark";
 import LearnerInsight from "@/app/(main)/admin/tools/LearnerInsight";
 import CourseInsight from "@/app/(main)/admin/tools/CourseInsight";
 import Button from "@/components/Button";
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAsync } from "react-async-hook";
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi, useAsyncApiCall } from "@/config/firebase";
 import TextField from "@/components/TextField";
 
 export default function Tools() {
 
-    const quizzesToMark = useAsync(() => callApi('getQuizzesToMark', {}), []);
-    const courseInsights = useAsync(() => callApi('getCourseInsights', {}), []);
-    const learnerInsights = useAsync(() => callApi('getUserInsights', {}), []);
+    const quizzesToMark = useAsyncApiCall(ApiEndpoints.GetQuizzesToMark, {});
+    const courseInsights = useAsyncApiCall(ApiEndpoints.GetCourseInsights, {});
+    const learnerInsights = useAsyncApiCall(ApiEndpoints.GetUserInsights, {});
 
     const router = useRouter();
     const [search, setSearch] = useState("");
@@ -134,7 +133,7 @@ export default function Tools() {
     }
 
     const handleInvite = async () => {
-        callApi("inviteLearner", { emails: [inviteEmail]})
+        callApi(ApiEndpoints.InviteLearner, { emails: [inviteEmail]})
             .then(() => alert("user invited!"))
             .then(() => setShowInvite(false))
     }
