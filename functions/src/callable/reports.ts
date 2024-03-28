@@ -233,7 +233,7 @@ const getCourseInsightReport = onCall(async (request) => {
         .then((result) => result.docs.map(doc => ({ id: doc.id, ...doc.data() }) as QuizAttemptDocument));
 
     // Combine data to create the courseLearners array
-    const courseLearners = filteredAttempts.map((courseAttempt) => {
+    const courseLearners = filteredAttempts.map(async (courseAttempt) => {
         const markingStatus = markingStatusMap.get(courseAttempt.userId) || false;
         const userName = userDetails.get(courseAttempt.userId)?.name || "Unknown User";
 
@@ -255,7 +255,7 @@ const getCourseInsightReport = onCall(async (request) => {
         return {
             name: userName,
             userId: courseAttempt.userId,
-            completionStatus: getCourseStatus(courseAttempt.courseId, courseAttempt.userId),
+            completionStatus: await getCourseStatus(courseAttempt.courseId, courseAttempt.userId),
             markingStatus: markingStatus, // @ts-ignore
             quizAttemptId: latestQuizAttempt.id, // @ts-ignore
             quizAttemptTime: latestQuizAttempt.endTime.seconds,
