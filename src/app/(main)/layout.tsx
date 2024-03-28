@@ -77,7 +77,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
             </form>
             <span className="text-white p-4">&copy; {new Date().getFullYear()} OpenLMS. All rights reserved.</span>
             <div className="flex flex-col items-left">
-                <Link href="/empty.pdf" className="text-1xl text-white">Access Platform User Guide</Link>
+                <Link href="/learner_guide.pdf" className="text-1xl text-blue-500">Access Platform User Guide</Link>
             </div>
         </footer>
         </body>
