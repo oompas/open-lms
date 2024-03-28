@@ -71,7 +71,7 @@ export default function IDCourse({
 
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const reportBrokenLink = () => {
-        return httpsCallable(getFunctions(), "sendBrokenLinkReport")({courseId: course.courseId})
+        return httpsCallable(getFunctions(), "sendBrokenLinkReport")({ courseId: course.courseId })
             .then(() => {
                 setShowSuccessMessage(true);
             })
@@ -96,9 +96,12 @@ export default function IDCourse({
             );
         }
         return (
-            <a href={course.link} target={"_blank"}>
-                <Button text="Go to course" onClick={() => {}} filled icon="link"/>
-            </a>
+            <>
+                <a href={course.link} target={"_blank"}>
+                    <Button text="Go to course" onClick={() => {}} filled icon="link"/>
+                </a>
+                <Button text="Report Broken Link" onClick={reportBrokenLink} icon="report"/>
+            </>
         );
     }
 
