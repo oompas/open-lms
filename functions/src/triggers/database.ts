@@ -59,7 +59,6 @@ const onCourseDeleted = onDocumentDeleted(`${DatabaseCollections.Course}/{course
             logger.error(`Error deleting documents related to course ${event.params.courseId}: ${err}`);
             throw new HttpsError("internal", "Error deleting documents");
         });
-
 });
 
 export { updateAdminPermissions, onCourseDeleted };

@@ -10,13 +10,20 @@ import TextField from "@/components/TextField";
 
 export default function Tools() {
 
+    const router = useRouter();
+
     const quizzesToMark = useAsyncApiCall(ApiEndpoints.GetQuizzesToMark, {});
     const courseInsights = useAsyncApiCall(ApiEndpoints.GetCourseInsights, {});
     const learnerInsights = useAsyncApiCall(ApiEndpoints.GetUserInsights, {});
 
-    const router = useRouter();
-    const [search, setSearch] = useState("");
-    const [showInvite, setShowInvite] = useState(false);
+    enum PopupType {
+        InviteLearner,
+        DowloadCourseReports,
+        DownloadUserReports,
+    }
+
+    const [currentPopup, setCurrentPopup] = useState<PopupType | null>(null);
+    const [courseSearch, setCourseSearch] = useState("");
     const [inviteEmail, setInviteEmail] = useState("");
 
     const getQuizzesToMark = () => {
@@ -28,7 +35,7 @@ export default function Tools() {
         }
         if (quizzesToMark.result) {
             // @ts-ignore
-            var temp_quizzes = [...quizzesToMark.result.data]
+            const temp_quizzes = [...quizzesToMark.result.data]
             if (temp_quizzes.length % 4 === 1) {
                 temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
                 temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
@@ -39,7 +46,6 @@ export default function Tools() {
             } else if (temp_quizzes.length % 4 === 3) {
                 temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
             }
-            console.log(temp_quizzes)
             return (
                 <div className="flex flex-wrap w-full justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
                     { /* @ts-ignore */ }
@@ -121,11 +127,10 @@ export default function Tools() {
                     </thead>
                     <tbody>
                         { /* @ts-ignore */}
-                        { courseInsights.result.data
-                        .filter((course: any) => course.name.toLowerCase().includes(search.toLowerCase()))
-                        .map((course: any, key: number) => (
-                            <CourseInsight courseData={course}/>
-                        ))}
+                        {courseInsights.result.data
+                            .filter((course: any) => course.name.toLowerCase().includes(courseSearch.toLowerCase()))
+                            .map((course: any, key: number) => <CourseInsight courseData={course} key={key}/>)
+                        }
                     </tbody>
                 </table>
             </div>
@@ -135,7 +140,7 @@ export default function Tools() {
     const handleInvite = async () => {
         callApi(ApiEndpoints.InviteLearner, { emails: [inviteEmail]})
             .then(() => alert("user invited!"))
-            .then(() => setShowInvite(false))
+            .then(() => setCurrentPopup(null))
     }
 
     const invitePopup = (
@@ -144,12 +149,56 @@ export default function Tools() {
                 <div className="text-lg mb-2">Enter the user's email address:</div>
                 <TextField text={inviteEmail} onChange={setInviteEmail} placeholder="john@email.com" />
                 <div className="flex flex-row mt-4">
-                    <Button text="Cancel" onClick={() => setShowInvite(false)} style="ml-auto" />
+                    <Button text="Cancel" onClick={() => setCurrentPopup(null)} style="ml-auto" />
                     <Button text="Invite" onClick={() => handleInvite()} style="ml-4" filled />
                 </div>
             </div>
         </div>
     )
+
+    const downloadCourseReportsPopup = (
+        <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 z-50 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    Downloading course reports will download multiple csv files containing all course and course attempt
+                    data (essentially the whole database excluding user data). This make take some time and the files may
+                    be large
+                </div>
+                <div className="flex flex-row mt-4">
+                    <Button text="Cancel" onClick={() => setCurrentPopup(null)} style="ml-auto" />
+                    <Button text="Download" onClick={() => setCurrentPopup(PopupType.DowloadCourseReports)} style="ml-4" filled />
+                </div>
+            </div>
+        </div>
+    )
+
+    const downloadUserReportsPopup = (
+        <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 z-50 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    Downloading user reports will download all user-related data, and a summary of their course progress.
+                    To see all course progress data in more details, download the course reports instead
+                </div>
+                <div className="flex flex-row mt-4">
+                    <Button text="Cancel" onClick={() => setCurrentPopup(null)} style="ml-auto" />
+                    <Button text="Download" onClick={() => setCurrentPopup(PopupType.DowloadCourseReports)} style="ml-4" filled />
+                </div>
+            </div>
+        </div>
+    )
+
+    const renderPopup = () => {
+        switch (currentPopup) {
+            case PopupType.InviteLearner:
+                return invitePopup;
+            case PopupType.DowloadCourseReports:
+                return downloadCourseReportsPopup;
+            case PopupType.DownloadUserReports:
+                return downloadUserReportsPopup;
+            default:
+                return null;
+        }
+    }
 
     return (
         <main className="flex-col w-full justify-center items-center">
@@ -174,11 +223,11 @@ export default function Tools() {
                     </div>
                     <TextField 
                         placeholder="Search for a course..."
-                        text={search}
-                        onChange={setSearch}
+                        text={courseSearch}
+                        onChange={setCourseSearch}
                     />
                     <Button text="Create a Course" onClick={() => router.push('/admin/course/new')} filled />
-                    <Button text="Download Course Reports" onClick={() => alert("TODO: download course reports")}/>
+                    <Button text="Download Course Reports" onClick={() => setCurrentPopup(PopupType.DowloadCourseReports)}/>
                 </div>
                 {getCourseInsights()}
             </div>
@@ -190,15 +239,15 @@ export default function Tools() {
                         <div className="text-lg -mb-1">Learner Insights</div>
                         <p className="mr-2 text-gray-500">Click on a user to view individual data.</p>
                     </div>
-                    <Button text="Invite New Learners" onClick={() => setShowInvite(true)}/>
-                    <Button text="Download User Reports" onClick={() => alert("TODO: download user reports")} style="ml-4"/>
+                    <Button text="Invite New Learners" onClick={() => setCurrentPopup(PopupType.InviteLearner)}/>
+                    <Button text="Download User Reports" onClick={() => setCurrentPopup(PopupType.DownloadUserReports)} style="ml-4"/>
                 </div>
                 {getLearnerInsights()}
             </div>
 
             <div className="h-4" />
 
-            { showInvite && invitePopup }
+            {renderPopup()}
 
         </main>
     )
