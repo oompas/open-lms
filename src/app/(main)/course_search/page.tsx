@@ -7,8 +7,21 @@ import { useState } from "react";
 import TextField from '@/components/TextField';
 import Link from 'next/link';
 import { MdArrowBack } from 'react-icons/md';
+import { useRouter } from "next/navigation";
+import { auth } from '@/config/firebase';
 
 export default function Home() {
+
+    const router = useRouter();
+
+    // if user is Admin - go to admin tools
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            auth.currentUser?.getIdTokenResult()
+                .then((idTokenResult) => !!idTokenResult.claims.admin ? router.replace('/admin/tools') : null)
+                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
+        }
+    });
 
     const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
     const [search, setSearch] = useState("");

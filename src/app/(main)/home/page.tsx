@@ -4,13 +4,22 @@ import Notifications from "./Notifications"
 import { useAsync } from 'react-async-hook';
 import { getFunctions, httpsCallable } from "firebase/functions";
 import "../../../config/firebase";
-import { useState } from "react";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import { auth } from '@/config/firebase';
 
 export default function Home() {
 
     const router = useRouter();
+
+    // if user is Admin - go to admin tools
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            auth.currentUser?.getIdTokenResult()
+                .then((idTokenResult) => !!idTokenResult.claims.admin ? router.replace('/admin/tools') : null)
+                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
+        }
+    });
 
     const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
 
