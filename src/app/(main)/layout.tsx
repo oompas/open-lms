@@ -64,16 +64,16 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 <div className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
                     <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
                         <div className="text-lg mb-2">Request platform support.</div>
-                        <TextField text={feedback} onChange={setFeedback} area placeholder="type your message here..." />
+                        <TextField text={feedback} onChange={setFeedback} area placeholder="Type your message here..." />
                         <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-left">
-                            <div className="flex flex-row mt-4">
+                            <div className="flex flex-row ml-auto mt-4">
                                 <Button text="Cancel" onClick={() => {
                                     setShowSupportForm(false);
                                     setFeedbackSent(false);
                                 }} style="mr-4" />
                                 <Button text="Submit" onClick={handleSubmitFeedback} filled/>
                             </div>
-                            { feedbackSent && <p className="text-green-700 mt-4">Request sent successfully! Admins will be in touch once your message is recieved!</p> }
+                            { feedbackSent && <p className="text-green-700 mt-4">Request sent successfully - platform admins will be in touch once your message is recieved!</p> }
                         </form>
                     </div>
                 </div>
@@ -83,7 +83,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 className={"fixed bg-gray-800 right-28 rounded-t-md duration-100 "+(showFooter ? "bottom-20" : "bottom-0")}
                 onClick={() => setShowFooter(!showFooter)}
             >
-                <MdChevronLeft color="white" className="rotate-90" size={38} />
+                <MdChevronLeft color="white" className={showFooter ? "-rotate-90" : "rotate-90"} size={38} />
             </button>
             <footer className={"flex flex-row items-center fixed w-auto px-4 rounded-t-2xl h-20 left-20 right-20 shadow-custom bg-gray-800 duration-100 "+(showFooter ? "bottom-0" : "-bottom-20")}>
                 <div className="flex flex-row justify-center">
