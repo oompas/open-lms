@@ -190,16 +190,10 @@ export default function Quiz({ params }: { params: { id: string } }) {
         );
     }
 
-    const allAnswersFilled = () => {
-        for (const [key, value] of Object.entries(userAnswers)) {
-            if (value === null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     const confirmPopup = () => {
+
+        const blankAnswers = () => Object.values(userAnswers).some((value) => value === null || value === "");
+
         return (
             <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
                 <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
@@ -207,7 +201,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                         <div className="text-lg mb-4">Quiz time limit exceeded - click submit to exit.</div>
                     :
                         <div>
-                            {!allAnswersFilled() ? <div className="text-lg mb-2">You haven't answered every question, are you sure you're ready to submit?</div> : null }
+                            { blankAnswers() && <div className="text-lg mb-2">You haven't answered every question, are you sure you're ready to submit?</div> }
                             <div className="text-lg mb-4">Click "Submit Quiz" to confirm - you won't be able to edit your responses after you submit.</div>
                         </div> 
                     }
