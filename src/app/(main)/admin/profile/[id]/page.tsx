@@ -3,11 +3,12 @@
 import IDProfile from "./IDProfile";
 import IDCourse from "./IDCourse";
 import IDEnrolled from "./IDEnrolled"
-import { useState } from "react";
-import { callApi } from "@/config/firebase";
+import { useEffect, useState } from "react";
+import { auth, callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import Link from "next/link";
 import { LuExternalLink } from "react-icons/lu";
+import StatusBadge from "@/components/StatusBadge";
 
 
 export default function Profile({ params }: { params: { id: string } }) {
@@ -18,6 +19,28 @@ export default function Profile({ params }: { params: { id: string } }) {
         []);
 
     const [user, setUser] = useState()
+    const [status, setStatus] = useState("");
+
+    useEffect(() => {
+        let unsubscribe: () => void;
+        unsubscribe = auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                try {
+                    const idTokenResult = await user.getIdTokenResult();
+                    if (idTokenResult.claims.admin && idTokenResult.claims.developer) {
+                        setStatus("DEVELOPER");
+                    } else if (idTokenResult.claims.admin && !idTokenResult.claims.developer) {
+                        setStatus("ADMINISTRATOR");
+                    } else {
+                        setStatus("LEARNER");
+                    }
+                } catch (error) {
+                    console.error("Error getting custom claims: ", error);
+                }
+            }
+        });
+        return unsubscribe;
+    }, []);
 
     const profileData = () => {
         if (user) {
@@ -129,6 +152,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                     {/* Account Details section */}
                     <div className="flex flex-col bg-white w-[50%] h-[50vh] p-12 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar">
                         <div className="text-lg mb-2">Account Details</div>
+                        {status && <StatusBadge status={status} style="mt-2" />}
                         { profileData() }
                     </div>
 

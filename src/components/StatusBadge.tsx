@@ -25,7 +25,7 @@ export default function StatusBadge({
 
     return (
         <div
-            className={"inline-flex items-center px-2 py-1 rounded-full text-sm font-semibold " + border + " " + textColour + " " + style}
+            className={"inline-flex w-fit items-center px-2 py-1 rounded-full text-sm font-semibold " + border + " " + textColour + " " + style}
             style={{ verticalAlign: 'middle' }}
         >
             {status}

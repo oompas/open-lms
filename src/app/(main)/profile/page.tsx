@@ -75,9 +75,10 @@ export default function Profile() {
             <div className="flex flex-col h-[80vh] bg-white w-[60%] p-12 rounded-2xl shadow-custom">
                 <div className="text-lg mb-4">Your Account Details</div>
                 <div className="flex flex-col w-[30rem] h-full">
+                    {status && <StatusBadge status={status} style="mb-2" />}
                     <div>Name</div>
                     {/* @ts-ignore */}
-                    <div className="text-2xl mb-4">{user && user.name} {status && <StatusBadge status={status} />}</div>
+                    <div className="text-2xl mb-4">{user && user.name}</div>
                     <div>Email</div>
                     {/* @ts-ignore */}
                     <div className="text-2xl mb-6">{user && user.email}</div>
