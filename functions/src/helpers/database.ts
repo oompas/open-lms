@@ -165,7 +165,9 @@ interface QuizQuestionDocument extends DatabaseDocument {
     };
 }
 
-interface ReportedCourseDocument extends DatabaseDocument { // TODO
+interface ReportedCourseDocument extends DatabaseDocument {
+    courseId: string;
+    userId: string;
 }
 
 interface CourseAttemptDocument extends DatabaseDocument {

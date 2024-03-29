@@ -11,8 +11,8 @@ const updateAdminPermissions = onDocumentUpdated(`${DatabaseCollections.User}/{u
 
     // @ts-ignore
     const docAfter = event.data.after.data();
-    const permissions: { admin?: true, developer?: true } = {
-        ...("admin" in docAfter && docAfter.admin === true && { admin: true }),
+    const permissions: { admin?: true, developer?: true } = { // Developers are automatically admins
+        ...((("admin" in docAfter && docAfter.admin === true) || ("developer" in docAfter && docAfter.developer === true)) && { admin: true }),
         ...("developer" in docAfter && docAfter.developer === true && { developer: true }),
     };
 
@@ -30,16 +30,16 @@ const updateAdminPermissions = onDocumentUpdated(`${DatabaseCollections.User}/{u
  */
 const onCourseDeleted = onDocumentDeleted(`${DatabaseCollections.Course}/{courseId}`, async (event) => {
 
-    const docsToDelete: any[] = [];
-
     const collectionsToDelete = [
         DatabaseCollections.QuizQuestion,
         DatabaseCollections.EnrolledCourse,
         DatabaseCollections.CourseAttempt,
         DatabaseCollections.QuizAttempt,
-        DatabaseCollections.QuizQuestionAttempt
+        DatabaseCollections.QuizQuestionAttempt,
+        DatabaseCollections.ReportedCourse,
     ];
 
+    const docsToDelete: Promise<any>[] = [];
     for (const collection of collectionsToDelete) {
         const docs = await getCollection(collection)
             .where("courseId", "==", event.params.courseId)
@@ -59,7 +59,6 @@ const onCourseDeleted = onDocumentDeleted(`${DatabaseCollections.Course}/{course
             logger.error(`Error deleting documents related to course ${event.params.courseId}: ${err}`);
             throw new HttpsError("internal", "Error deleting documents");
         });
-
 });
 
 export { updateAdminPermissions, onCourseDeleted };

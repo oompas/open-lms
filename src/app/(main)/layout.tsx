@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 import '../globals.css';
-import { auth, callApi } from '@/config/firebase';
+import { ApiEndpoints, auth, callApi } from '@/config/firebase';
 import { useRouter } from "next/navigation";
 import { useState } from 'react';
 
@@ -30,7 +30,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const handleSubmitFeedback = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
-            await callApi('sendPlatformFeedback', { feedback });
+            await callApi(ApiEndpoints.SendPlatformFeedback, { feedback });
             setFeedback('');
             setFeedbackSent(true);
         } catch (error) {
