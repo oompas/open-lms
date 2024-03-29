@@ -30,16 +30,16 @@ const updateAdminPermissions = onDocumentUpdated(`${DatabaseCollections.User}/{u
  */
 const onCourseDeleted = onDocumentDeleted(`${DatabaseCollections.Course}/{courseId}`, async (event) => {
 
-    const docsToDelete: any[] = [];
-
     const collectionsToDelete = [
         DatabaseCollections.QuizQuestion,
         DatabaseCollections.EnrolledCourse,
         DatabaseCollections.CourseAttempt,
         DatabaseCollections.QuizAttempt,
-        DatabaseCollections.QuizQuestionAttempt
+        DatabaseCollections.QuizQuestionAttempt,
+        DatabaseCollections.ReportedCourse,
     ];
 
+    const docsToDelete: Promise<any>[] = [];
     for (const collection of collectionsToDelete) {
         const docs = await getCollection(collection)
             .where("courseId", "==", event.params.courseId)
