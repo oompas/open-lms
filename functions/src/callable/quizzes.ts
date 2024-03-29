@@ -332,7 +332,7 @@ const submitQuiz = onCall(async (request) => {
             quizAttemptId: quizAttemptId,
             response: userResponse,
             marksAchieved: marks,
-            ...(question.type === "sa" && { maxMarks: question.marks })
+            maxMarks: question.marks,
         };
         updatePromises.push(addDoc(DatabaseCollections.QuizQuestionAttempt, markedResponse));
 
