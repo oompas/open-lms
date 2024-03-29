@@ -134,19 +134,19 @@ const downloadCourseReports = onCall(async (request) => {
                     'Name': course.name,
                     'Description': course.description,
                     'Link': course.link,
-                    'Minimum course time (minutes)': course.minTime,
+                    'Minimum course time (minutes)': course.minTime ?? "None",
 
                     'Active?': course.active ? "Yes" : "No",
                     'Creation time': course.creationTime?.toDate().toUTCString().replace(/,/g, ''),
-                    'Retired?': course.retired?.toDate().toUTCString().replace(/,/g, ''),
+                    'Retired?': course.retired?.toDate().toUTCString().replace(/,/g, '') ?? "No",
                     'Version': course.version,
                     'Creator user ID': course.userId,
 
                     'Has quiz?': course.quiz ? "Yes" : "No",
-                    'Quiz max attempts': course.quiz?.maxAttempts,
-                    'Quiz min score': course.quiz?.minScore,
+                    'Quiz max attempts': course.quiz?.maxAttempts ?? "Unlimited",
+                    'Quiz min score': course.quiz?.minScore ?? "None",
                     'Quiz preserve order?': course.quiz?.preserveOrder ? "Yes" : "No",
-                    'Quiz time limit (minutes)': course.quiz?.timeLimit,
+                    'Quiz time limit (minutes)': course.quiz?.timeLimit ?? "Unlimited",
                 };
             }));
         }), // @ts-ignore
@@ -155,9 +155,10 @@ const downloadCourseReports = onCall(async (request) => {
                 return {
                     'Question ID': question.id,
                     'Course ID': question.courseId,
+
                     'Question': question.question,
                     'Type': question.type === "mc" ? "Multiple Choice" : question.type === "tf" ? "True/False" : "Short Answer",
-                    'Answer options (mc/tf only)': question.answers ? JSON.stringify(question.answers) : null,
+                    'Answer options (mc/tf only)': question.answers ? JSON.stringify(question.answers).replace(/,/g, '') : null,
                     'Correct answer (mc/tf only)': (question.answers && question.correctAnswer) ? question.answers[question.correctAnswer] : null,
                     'Question stats': JSON.stringify(question.stats).replace(/,/g, ' '),
                 };
@@ -202,9 +203,9 @@ const downloadCourseReports = onCall(async (request) => {
                     'Course attempt ID': attempt.courseAttemptId,
                     'Quiz question ID': attempt.questionId,
 
-                    'Response (commas removed)': typeof attempt.response === 'string' ? attempt.response.replace(/,/g, '') : attempt.response,
+                    'Response (commas removed, number for mc/tf)': typeof attempt.response === 'string' ? attempt.response.replace(/,/g, '') : attempt.response,
                     'Max marks': attempt.maxMarks,
-                    'Marks achieved': attempt.marksAchieved,
+                    'Marks achieved': attempt.marksAchieved ?? "Not marked",
                 };
             }));
         }),
