@@ -477,6 +477,7 @@ const getQuizAttempt = onCall(async (request) => {
         saQuestions: attemptData.filter((attempt) => attempt.type === "sa"),
         otherQuestions: attemptData.filter((attempt) => attempt.type !== "sa"),
         score: quizAttemptData.score,
+        markingInfo: quizAttemptData.markerInfo,
     };
 });
 
