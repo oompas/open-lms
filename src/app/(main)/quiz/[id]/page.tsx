@@ -141,6 +141,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
         const responses = [];
         for (const [key, value] of Object.entries(userAnswers)) {
 
+            if (!value) continue;
+
             // @ts-ignore
             const questionData = quizData?.questions.find((question) => question.id === key);
             if (questionData.type === "sa") {
