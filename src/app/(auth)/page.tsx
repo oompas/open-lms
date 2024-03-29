@@ -9,6 +9,8 @@ import { auth } from "@/config/firebase";
 import { signInWithEmailAndPassword } from "@firebase/auth";
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
+const googleAuthProvider = new GoogleAuthProvider();
+
 export default function AuthPage() {
 
     const router = useRouter();
@@ -24,19 +26,15 @@ export default function AuthPage() {
     const [password, setPass] = useState("")
     const [error, setError] = useState(null);
 
-    // function called on "log in" button press
     const submitLogin = async () => {
-        try {
-            setError(null);
-            await signInWithEmailAndPassword(auth, email, password);
-            router.push('/home');
-        } catch (error: any) {
-            setError(error.code);
-        }
+        setError(null);
+        await signInWithEmailAndPassword(auth, email, password)
+            .then(() => router.push('/home'))
+            .catch((error: any) => setError(error.code));
     };
 
     const submitGoogleLogin = async () => {
-        await signInWithPopup(auth, new GoogleAuthProvider())
+        await signInWithPopup(auth, googleAuthProvider)
             .then(() => router.push('/home'))
             .catch((error: any) => setError(error.code));
     }
