@@ -6,7 +6,7 @@ import {
     docExists,
     getCollection,
     getDocData, QuizQuestionAttemptDocument,
-    updateDoc
+    updateDoc, UserDocument
 } from "../helpers/database";
 import { firestore } from "firebase-admin";
 
@@ -139,7 +139,7 @@ const getLatestCourseAttempt = async (courseId: string, userId: string) => {
 /**
  * After marking quiz questions, call this to update quiz attempt & course attempt status
  */
-const updateQuizStatus = async (quizAttemptId: string) => {
+const updateQuizStatus = async (quizAttemptId: string, markerUid: string | null) => {
 
     logger.info(`Updating quiz status for quiz attempt ${quizAttemptId}...`);
 
@@ -169,11 +169,23 @@ const updateQuizStatus = async (quizAttemptId: string) => {
 
     const promises: Promise<any>[] = [];
 
+    let markerInfo = null;
+    if (markerUid) {
+        const markerData = await getDocData(DatabaseCollections.User, markerUid) as UserDocument;
+        markerInfo = {
+            uid: markerUid,
+            name: markerData.name,
+            email: markerData.email,
+            markTime: completionTime
+        }
+    }
+
     // Update the quiz attempt with the final score, completion time and pass status
     const quizAttemptUpdate = {
-        endTime: completionTime,
         pass: pass,
         score: marksAchieved,
+        ...(!markerUid && { endTime: completionTime }),
+        ...(markerUid && { markerInfo })
     };
     promises.push(updateDoc(DatabaseCollections.QuizAttempt, quizAttemptId, quizAttemptUpdate));
 

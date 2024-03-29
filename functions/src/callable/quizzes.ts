@@ -348,7 +348,7 @@ const submitQuiz = onCall(async (request) => {
 
     await Promise.all(updatePromises);
 
-    return updateQuizStatus(quizAttemptId);
+    return updateQuizStatus(quizAttemptId, null);
 });
 
 /**
@@ -502,6 +502,8 @@ const markQuizAttempt = onCall(async (request) => {
             throw new HttpsError('invalid-argument', err);
         });
 
+    // @ts-ignore
+    const uid: string = request.auth?.uid;
     const { quizAttemptId, responses } = request.data;
 
     const questionAttempts: QuizQuestionAttemptDocument[] = await getCollection(DatabaseCollections.QuizQuestionAttempt)
@@ -550,7 +552,7 @@ const markQuizAttempt = onCall(async (request) => {
     logger.info(`Successfully marked ${responses.length} questions for quiz attempt ${quizAttemptId}`);
 
     // Update status of the quiz & course attempt
-    return updateQuizStatus(quizAttemptId);
+    return updateQuizStatus(quizAttemptId, uid);
 });
 
 export { startQuiz, submitQuiz, getQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt };

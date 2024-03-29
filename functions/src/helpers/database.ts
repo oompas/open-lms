@@ -187,6 +187,12 @@ interface QuizAttemptDocument extends DatabaseDocument {
     endTime: firestore.Timestamp | null;
     pass: boolean | null;
     score: number | null;
+    markerInfo?: { // Details about who and when the quiz was marked
+        uid: string;
+        name: string;
+        email: string;
+        markTime: firestore.Timestamp;
+    },
     expired?: true; // If the user didn't submit in time, this should be true
 }
 
