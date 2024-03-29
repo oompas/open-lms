@@ -25,6 +25,7 @@ export default function Tools() {
     const [currentPopup, setCurrentPopup] = useState<PopupType | null>(null);
     const [courseSearch, setCourseSearch] = useState("");
     const [inviteEmail, setInviteEmail] = useState("");
+    const [csvEmails, setCsvEmails] = useState<string[]>([]);
 
     const getQuizzesToMark = () => {
         if (quizzesToMark.loading) {
@@ -168,23 +169,82 @@ export default function Tools() {
     }
 
     const handleInvite = async () => {
-        callApi(ApiEndpoints.InviteLearner, { emails: [inviteEmail]})
-            .then(() => alert("user invited!"))
+        let emailsToInvite: string[] = [];
+        if (csvEmails.length > 0) {
+            emailsToInvite = [...csvEmails];
+        }
+        if (inviteEmail.trim() !== "") {
+            const emailRegex = /^\w+[-.\w%]*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+            if (emailRegex.test(inviteEmail.trim())) {
+                emailsToInvite.push(inviteEmail.trim());
+            }
+        }
+        if (emailsToInvite.length === 0) {
+            alert("Please enter a valid email address or upload a valid CSV file. CSV should be a single row of consecutive cells populated with valid emails.");
+            return;
+        }
+        callApi(ApiEndpoints.InviteLearner, { emails: emailsToInvite })
+            .then(() => {
+                alert("User(s) invited!");
+                setInviteEmail("");
+                setCsvEmails([]);
+            })
             .then(() => setCurrentPopup(null))
     }
 
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                if (event.target) {
+                    const contents = event.target.result as string;
+                    const emails = parseCSV(contents);
+                    setCsvEmails(emails);
+                }
+            };
+            reader.onerror = (event) => {
+                console.error("Error reading file:", event.target?.error);
+            };
+            reader.readAsText(file);
+        }
+    };
+
+    const parseCSV = (contents: string) => {
+        const regex = /^\s*\w+[-.\w%]*@\w+([-.]\w+)*\.\w+([-.]\w+)*(?:\s*,\s*\w+[-.\w%]*@\w+([-.]\w+)*\.\w+([-.]\w+)*)*\s*$/;
+        const matches = contents.match(regex);
+        if (matches) {
+            return matches[0].split(',').map((email) => email.trim());
+        } else {
+            return [];
+        }
+    };
+
     const invitePopup = (
         <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 z-50 bg-white bg-opacity-50">
-            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                <div className="text-lg mb-2">Enter the user's email address:</div>
-                <TextField text={inviteEmail} onChange={setInviteEmail} placeholder="john@email.com" />
-                <div className="flex flex-row mt-4">
-                    <Button text="Cancel" onClick={() => setCurrentPopup(null)} style="ml-auto" />
-                    <Button text="Invite" onClick={() => handleInvite()} style="ml-4" filled />
+            <div className="flex flex-col bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-2xl mb-4">Invite Learners</div>
+                <TextField text={inviteEmail} onChange={setInviteEmail} placeholder="Enter email address" style="w-full mb-2" />
+                <div className="text-lg mt-2 mb-6">
+                    <label htmlFor="file-input" className="block text-lg cursor-pointer">
+                        Or upload a CSV file:
+                    </label>
+                    <div className="text-sm text-gray-500">CSV should be a single row of consecutive cells populated with valid emails.</div>
+                    <input
+                        id="file-input"
+                        type="file"
+                        accept=".csv"
+                        onChange={handleFileUpload}
+                        className="mt-4"
+                    />
+                </div>
+                <div className="flex flex-row ml-auto">
+                    <Button text="Cancel" onClick={() => setCurrentPopup(null)} style="mr-2"/>
+                    <Button text="Invite" onClick={() => handleInvite()} filled/>
                 </div>
             </div>
         </div>
-    )
+    );
 
     const downloadCourseReportsPopup = (
         <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 z-50 bg-white bg-opacity-50">
