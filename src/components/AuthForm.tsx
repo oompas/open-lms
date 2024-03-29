@@ -50,21 +50,21 @@ export default function AuthForm({
             {showName && (
                 <div className="flex flex-col">
                     <p className="mb-1 text-md">Name</p>
-                    <TextField text={name || ""} onChange={setName} placeholder="John" hidden={false}/>
+                    <TextField text={name || ""} onChange={setName} placeholder="John Doe" hidden={false}/>
                 </div>
             )}
             <div className="flex flex-col">
                 <p className="mb-1 text-md">Email</p>
-                <TextField text={email} onChange={handleEmailChange} placeholder="john@doe.com" hidden={false}/>
+                <TextField text={email} onChange={handleEmailChange} placeholder="name@email.com" hidden={false}/>
                 {/* Conditionally display the email validation message */}
                 {isSignUpPage && <p className="mt-1 text-sm text-red-500">{emailValidationMessage}</p>}
             </div>
             <div className="flex flex-col">
                 <p className="mb-1 text-md">Password</p>
-                <TextField text={password} onChange={handlePasswordChange} placeholder="******" hidden={true}/>
+                <TextField text={password} onChange={handlePasswordChange} placeholder="**********" hidden={true}/>
                 {/* Conditionally display the password validation messages */}
-                {isSignUpPage && passwordValidationMessages.map((message, index) => (
-                    <p key={index} className="mt-1 text-sm text-gray-500">{message}</p>
+                {password && isSignUpPage && passwordValidationMessages.map((message, index) => (
+                    <p key={index} className="mt-1 text-sm text-red-500">{message}</p>
                 ))}
                 {onForgotPassword && (
                     <p className="mt-2 text-gray-500 cursor-pointer" onClick={onForgotPassword}>Forgot your password?</p>
