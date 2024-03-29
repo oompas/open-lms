@@ -139,6 +139,7 @@ export default function CreateQuestion({
                 <div className="-mb-2">Value</div>
                 <div className="text-sm text-gray-600 mb-1">How many marks is this question worth?</div>
                 { !isInt(value) && <div className="text-sm text-red-500">Mark must be a positive whole number.</div> }
+                { (isInt(value) && (Number(value) < 1 || Number(value) > 20)) && <div className="text-sm text-red-500">Mark must be a positive whole number between 1 and 20.</div> }
                 <div className="flex flex-row items-baseline">
                     <TextField text={value} onChange={setValue} style="w-20 text-right mr-2" />
                     <div>mark(s)</div>
@@ -147,7 +148,7 @@ export default function CreateQuestion({
             <div className="flex flex-row space-x-4 mt-6">
                 <Button text="Cancel" onClick={closeModal} style="ml-auto"/>
                 { !data && <Button text="Back" onClick={() => setType("")} style="ml-auto"/> }
-                <Button text="Save Question" onClick={() => handleSave()} filled disabled={!question || checkNumQuestionsValid() || correctAnswer === -1 || !isInt(value)}/>
+                <Button text="Save Question" onClick={() => handleSave()} filled disabled={!question || checkNumQuestionsValid() || correctAnswer === -1 || !isInt(value) || Number(value) < 1 || Number(value) > 20}/>
             </div>
         </div>
     )

@@ -18,7 +18,7 @@ import {
     CourseDocument,
     DatabaseCollections,
     QuizAttemptDocument,
-    UserDocument,
+    UserDocument, docExists, ReportedCourseDocument,
 } from "../helpers/database";
 import { enrolledCourseId, getCourseStatus, getLatestCourseAttempt, reportedCourseId } from "./helpers";
 
@@ -56,7 +56,7 @@ const addCourse = onCall(async (request) => {
                 answers: array().of(string()).min(2).max(5).optional(),
                 correctAnswer: number().optional(),
             }).noUnknown(true)
-        ).optional(),
+        ).nullable(),
     }).required().noUnknown(true);
 
     await schema.validate(request.data, { strict: true })
@@ -354,14 +354,13 @@ const getCourseInfo = onCall(async (request) => {
 });
 
 /**
- * Enrolls the requesting user in the specified course
+ * Flips the enrollment status of a user for specific course (if not enroll -> enroll, if enrolled -> unenroll)
  */
-const courseEnroll = onCall(async (request) => {
+const courseEnrollment = onCall(async (request) => {
+
+    logger.info(`Entering courseEnrollment for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
     verifyIsAuthenticated(request);
-
-    // @ts-ignore
-    const uid: string = request.auth?.uid;
 
     const schema = object({
         courseId: string().required(),
@@ -373,32 +372,18 @@ const courseEnroll = onCall(async (request) => {
             throw new HttpsError('invalid-argument', err);
         });
 
-    await getDocData(DatabaseCollections.Course, request.data.courseId);
-
-    return addDocWithId(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId), { userId: uid, courseId: request.data.courseId });
-});
-
-/**
- * Unenrolls the requesting user from the specified course
- */
-const courseUnenroll = onCall(async (request) => {
-
-    verifyIsAuthenticated(request);
+    logger.info("Schema verification passed");
 
     // @ts-ignore
     const uid: string = request.auth?.uid;
 
-    const schema = object({
-        courseId: string().required(),
-    }).required().noUnknown(true);
+    const enrolledId: string = enrolledCourseId(uid, request.data.courseId);
 
-    await schema.validate(request.data, { strict: true })
-        .catch((err) => {
-            logger.error(`Error validating request: ${err}`);
-            throw new HttpsError('invalid-argument', err);
-        });
-
-    return deleteDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId));
+    // If the user is enrolled -> unenroll them, otherwise enroll them
+    if (await docExists(DatabaseCollections.EnrolledCourse, enrolledId)) {
+        return deleteDoc(DatabaseCollections.EnrolledCourse, enrolledId);
+    }
+    return addDocWithId(DatabaseCollections.EnrolledCourse, enrolledId, { userId: uid, courseId: request.data.courseId });
 });
 
 /**
@@ -442,17 +427,59 @@ const sendBrokenLinkReport = onCall(async (request) => {
 
     verifyIsAuthenticated(request);
 
+    const schema = object({
+        courseId: string().required(),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
     // @ts-ignore
     const uid: string = request.auth?.uid;
 
-    // Ensure a valid course ID is passed in
-    if (!request.data.courseId) {
-        throw new HttpsError('invalid-argument', "Must provide a course ID to enroll in");
+    const { courseId } = request.data;
+
+    const courseExists: boolean = await docExists(DatabaseCollections.Course, courseId);
+    if (!courseExists) {
+        throw new HttpsError('not-found', `Course ${courseId} does not exist`);
     }
 
-    await getDocData(DatabaseCollections.Course, request.data.courseId);
+    return addDocWithId(DatabaseCollections.ReportedCourse, reportedCourseId(uid, courseId), { userId: uid, courseId: courseId } as ReportedCourseDocument);
+});
 
-    return addDocWithId(DatabaseCollections.ReportedCourse, reportedCourseId(uid, request.data.courseId), { userId: uid, courseId: request.data.courseId });
+/**
+ * Permanently deletes a course, triggering a deletion of all associated data (quiz questions & all attempts)
+ */
+const deleteCourse = onCall(async (request) => {
+
+    logger.info(`Entering deleteCourse for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
+
+    await verifyIsAdmin(request);
+
+    const schema = object({
+        courseId: string().required(),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
+
+    const courseInfo = await getDocData(DatabaseCollections.Course, request.data.courseId) as CourseDocument;
+
+    if (courseInfo.userId !== request.auth?.uid) {
+        throw new HttpsError('permission-denied', "You can't delete a course you didn't create");
+    }
+
+    logger.info("Course exists and user is the creator, deleting...");
+
+    return deleteDoc(DatabaseCollections.Course, request.data.courseId);
 });
 
 /**
@@ -509,5 +536,5 @@ const sendCourseFeedback = onCall(async (request) => {
     return sendEmail(courseCreator.email, subject, content, "sending course feedback");
 });
 
-export { addCourse, setCourseVisibility, getAvailableCourses, getCourseInfo, courseEnroll, courseUnenroll, startCourse,
-    sendBrokenLinkReport, sendCourseFeedback };
+export { addCourse, setCourseVisibility, getAvailableCourses, getCourseInfo, courseEnrollment, startCourse,
+    sendBrokenLinkReport, deleteCourse, sendCourseFeedback };

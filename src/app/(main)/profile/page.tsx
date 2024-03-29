@@ -6,14 +6,14 @@ import CompletedCourse from "./CompletedCourse";
 import Button from "@/components/Button";
 import { generateDummyData } from "@/app/(main)/admin/tools/generateData";
 import { useAsync } from 'react-async-hook';
-import { auth, callApi } from '@/config/firebase';
+import { ApiEndpoints, auth, callApi } from '@/config/firebase';
 
 export default function Profile() {
 
     const router = useRouter()
 
     const userData = useAsync(() =>
-        callApi('getUserProfile', {}) // @ts-ignore
+        callApi(ApiEndpoints.GetUserProfile, {}) // @ts-ignore
             .then((rsp) => { setUser(rsp.data); return rsp; }),
         []);
 

@@ -2,9 +2,10 @@
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import React, { useState, useEffect } from 'react';
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import { MdCheckCircleOutline } from "react-icons/md";
+import { RiCheckboxCircleFill, RiCheckboxBlankCircleLine } from "react-icons/ri";
 
 export default function Quiz({ params }: { params: { id: string } }) {
 
@@ -14,7 +15,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const [showConfim, setShowConfirm] = useState(false);
 
     const getQuizData = useAsync(() =>
-        callApi("getQuiz", { quizAttemptId: params.id.split('-')[1] })
+        callApi(ApiEndpoints.GetQuiz, { quizAttemptId: params.id.split('-')[1] })
             .then((rsp) => {
                 if (rsp.data === "Invalid") {
                     return rsp;
@@ -61,14 +62,14 @@ export default function Quiz({ params }: { params: { id: string } }) {
                                 <div className="text-xl mb-4">Q{key + 1}: {question.question} <div className="text-sm"><i>{question.marks} mark{question.marks === 1 ? "" : "s"}</i></div></div>
                                 <div className="flex flex-col space-y-2">
                                     {answers.length ? answers.map((answer: string, index: number) => (
-                                            <div key={index} className="flex items-center">
-                                                <input
-                                                    type="radio"
-                                                    id={index + 1 + ""}
-                                                    name={`question${key + 1}`}
-                                                    value={answer}
-                                                    onChange={(e) => setUserAnswers({ ...userAnswers, [question.id]: e.target.value })}
-                                                />
+                                            <div
+                                                key={index}
+                                                className="flex items-center"
+                                                onClick={(e) => setUserAnswers({ ...userAnswers, [question.id]: answers[index] })}
+                                            > { /* @ts-ignore */ }
+                                                {userAnswers[question.id] === answer
+                                                    ? <RiCheckboxCircleFill size={24}/>
+                                                    : <RiCheckboxBlankCircleLine size={24}/>}
                                                 <label htmlFor={`option${index}`} className="ml-2">{answer}</label>
                                             </div>
                                         ))
@@ -151,7 +152,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
             }
         }
 
-        await callApi("submitQuiz", { quizAttemptId: params.id.split('-')[1], responses: responses })
+        await callApi(ApiEndpoints.SubmitQuiz, { quizAttemptId: params.id.split('-')[1], responses: responses })
             .then(() => router.push(`/course/${params.id.split('-')[0]}`))
             .catch((err) => console.log(`Error calling submitQuiz: ${err}`));
     }
