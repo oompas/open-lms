@@ -1,12 +1,11 @@
 "use client";
 import EnrolledCourse from "./EnrolledCourse";
-import Notifications from "./Notifications"
-import { useAsync } from 'react-async-hook';
-import { getFunctions, httpsCallable } from "firebase/functions";
 import "../../../config/firebase";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
-import { auth } from '@/config/firebase';
+import { ApiEndpoints, useAsyncApiCall, auth } from '@/config/firebase';
+import {  } from "@/config/firebase";
+import { useState } from "react";
 
 export default function Home() {
 
@@ -21,28 +20,13 @@ export default function Home() {
         }
     });
 
-    const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
+    const courses = useAsyncApiCall(ApiEndpoints.GetAvailableCourses, {});
 
     const TEMP_NOTIFICATION_DATA = [
         { title: "CISC 423", description: "Jan 1, 2023", urgency: "URGENT", link: "no", id: 1 },
     ]
 
-    const notificationData = () => {
-        return (
-            <>
-                {TEMP_NOTIFICATION_DATA.map((notification,key) => (
-                    <Notifications
-                        key={key}
-                        title={notification.title}
-                        description={notification.description}
-                        urgency={notification.urgency}
-                        link={notification.link}
-                        id={notification.id}
-                    />
-                ))}
-            </>
-        )
-    }
+    const [filters, setFilters] = useState([0, 1, 2, 3, 4]);
 
     const enrolledCourses = () => {
         if (courses.loading) {
@@ -56,7 +40,7 @@ export default function Home() {
             return <div className="text-gray-600 text-center">Enroll in courses to get started!</div>
         }
         // @ts-ignore
-        var temp_courses = [...courses.result.data.filter((course: any) => course.status !== 1)]
+        var temp_courses = [...courses.result.data.filter((course: any) => filters.includes(course.status-2))]
         if (temp_courses.length % 3 === 2) {
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
@@ -64,7 +48,6 @@ export default function Home() {
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
         }
 
-        // @ts-ignore
         return temp_courses.map((course: any, key: number) => {
 
                 let time = "";
@@ -101,11 +84,52 @@ export default function Home() {
             });
     }
 
+    const statusValues = [
+        "To Do",
+        "In Progress",
+        "Awaiting Marking",
+        "Failed",
+        "Completed",
+    ]
+    const statusColors = {
+        0: "#468DF0",
+        1: "#EEBD31",
+        2: "#0fa9bb",
+        3: "#ab0303",
+        4: "#47AD63",
+    }
+
+    const handleUpdateFilter = (key: number) => {
+        var temp = [...filters]
+        if (temp.includes(key)) 
+            temp.splice(temp.indexOf(key), 1)
+        else 
+            temp.push(key)
+        setFilters(temp)
+    }
+
     return (
         <main className="flex w-full justify-center mb-4">
             <div className="flex flex-col bg-white w-full p-12 rounded-2xl shadow-custom">
                 <div className="flex flex-row items-center mb-2">
-                    <div className="text-lg">My Enrolled Courses</div>
+                    <div className="flex flex-row items-center">
+                        <div className="text-lg mr-4">My Enrolled Courses</div>
+                        <div className="flex flex-row space-x-2">
+                            {statusValues.map((value, key) => (
+                                <button
+                                    className="border-2 rounded-full px-4 py-1 cursor-pointer"
+                                    style={{
+                                        // @ts-ignore
+                                        borderColor: filters.includes(key) ? statusColors[key] : null,
+                                        opacity: filters.includes(key) ? 1 : 0.5,
+                                    }}
+                                    onClick={() => handleUpdateFilter(key)}
+                                >
+                                    {value}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                     <Button text="Browse Available Courses" onClick={() => router.push("/course_search")} style="ml-auto" />
                 </div>
                 <div className="flex flex-row flex-wrap justify-between mt-4 overflow-y-scroll sm:no-scrollbar">

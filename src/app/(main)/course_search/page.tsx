@@ -1,7 +1,5 @@
 "use client";
-import { useAsync } from 'react-async-hook';
 import AvailableCourse from "./AvailableCourse";
-import { getFunctions, httpsCallable } from "firebase/functions";
 import "../../../config/firebase";
 import { useState } from "react";
 import TextField from '@/components/TextField';
@@ -9,6 +7,7 @@ import Link from 'next/link';
 import { MdArrowBack } from 'react-icons/md';
 import { useRouter } from "next/navigation";
 import { auth } from '@/config/firebase';
+import { ApiEndpoints, useAsyncApiCall } from "@/config/firebase";
 
 export default function Home() {
 
@@ -23,7 +22,8 @@ export default function Home() {
         }
     });
 
-    const courses = useAsync(httpsCallable(getFunctions(), 'getAvailableCourses'), []);
+    const courses = useAsyncApiCall(ApiEndpoints.GetAvailableCourses, {});
+
     const [search, setSearch] = useState("");
 
     const availableCourses = () => {

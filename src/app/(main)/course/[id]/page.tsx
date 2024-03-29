@@ -5,7 +5,7 @@ import Quiz from "./Quiz"
 import { MdArrowBack } from "react-icons/md";
 import { useAsync } from "react-async-hook";
 import { useEffect, useState } from "react";
-import { auth, callApi } from "@/config/firebase";
+import { ApiEndpoints, auth, callApi } from "@/config/firebase";
 import Checkbox from "@/components/Checkbox";
 import { useRouter } from "next/navigation";
 
@@ -23,7 +23,7 @@ export default function Course({ params }: { params: { id: string } }) {
     });
 
     const getCourse = useAsync(() =>
-        callApi("getCourseInfo", { courseId: params.id, withQuiz: false })
+        callApi(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: false })
             .then((result) => { // @ts-ignore
                 setStatus(result.data.status); // @ts-ignore
                 setCourseAttemptId(result.data.courseAttemptId); // @ts-ignore

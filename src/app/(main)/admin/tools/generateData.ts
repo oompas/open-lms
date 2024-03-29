@@ -1,4 +1,4 @@
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 
 // Dummy course data
 const rawCourseData: { name: string, description: string, link: string }[] = [
@@ -261,14 +261,14 @@ const courses = rawCourseData.map((course) => {
 const generateDummyData = async () => {
 
     // First, clean the database data (leaves users & emails) so the new data can be added without conflicts
-    await callApi('cleanDatabase', {})
+    await callApi(ApiEndpoints.CleanDatabase, {})
         .then(() => console.log("Successfully cleaned database data"))
         .catch((error) => { throw new Error(`Error cleaning database data: ${error}`); });
 
     // Add all the courses
     const courseIds: string[] = [];
     await Promise.all(courses.map(async (course) => {
-        return callApi('addCourse', course)
+        return callApi(ApiEndpoints.AddCourse, course)
             .then((id) => {
                 if (typeof id.data !== 'string') {
                     throw new Error(`Error: saveCourse should return a course ID string. Returned value: ${id}`);
@@ -282,7 +282,7 @@ const generateDummyData = async () => {
 
     courseIds.forEach((id) => {
         promises.push(
-            callApi('setCourseVisibility', { courseId: id, active: true })
+            callApi(ApiEndpoints.SendCourseFeedback, { courseId: id, active: true })
                 .then(() => console.log(`Successfully published course ${id}`))
                 .catch((error) => { throw new Error(`Error publishing course ${id}: ${error}`); })
         );

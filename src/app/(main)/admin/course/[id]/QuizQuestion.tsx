@@ -8,7 +8,8 @@ export default function QuizQuestion({
     editData,
     deleteData,
     moveUp,
-    moveDown
+    moveDown,
+    preserveOrder
 } : {
     first: boolean,
     last: boolean,
@@ -17,7 +18,8 @@ export default function QuizQuestion({
     editData: any,
     deleteData: any,
     moveUp: any,
-    moveDown: any
+    moveDown: any,
+    preserveOrder: boolean
 }) {
 
     const letters = ["a)", "b)", "c)", "d)", "e)"];
@@ -28,8 +30,8 @@ export default function QuizQuestion({
     return (
         <div className="flex flex-row p-6 border-2 rounded-xl text-lg">
             <div className="flex flex-col h-auto justify-between mr-4 -ml-2">
-                { !first && <button onClick={() => moveUp(num)}><MdChevronLeft size={28} className="rotate-90 text-red-800 hover:opacity-50"/></button> }
-                { !last && <button className="mt-auto" onClick={() => moveDown(num)}><MdChevronRight size={28} className="rotate-90 text-red-800 hover:opacity-50"/></button> }
+                { !first && preserveOrder && <button onClick={() => moveUp(num)}><MdChevronLeft size={28} className="rotate-90 text-red-800 hover:opacity-50"/></button> }
+                { !last && preserveOrder && <button className="mt-auto" onClick={() => moveDown(num)}><MdChevronRight size={28} className="rotate-90 text-red-800 hover:opacity-50"/></button> }
             </div>
             <div className="flex flex-col w-full">
                 <div className="flex flex-row items-center">

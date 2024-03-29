@@ -1,7 +1,7 @@
 "use client"
 
 import Button from "@/components/Button"
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import Link from "next/link";
 import { useRouter } from "next/navigation"
 import { useState } from "react";
@@ -10,13 +10,6 @@ import { LuExternalLink } from "react-icons/lu";
 
 
 export default function Insights({ params }: { params: { id: string } }) {
-
-    // const userData = useAsync(() =>
-    //     callApi('getUserProfile', { targetUid: params.id }) // @ts-ignore
-    //         .then((rsp) => { setUser(rsp.data); return rsp; }),
-    //     []);
-
-    // const [user, setUser] = useState()
 
     const statusNames = {
         2: "To do",
@@ -29,7 +22,7 @@ export default function Insights({ params }: { params: { id: string } }) {
     const router = useRouter();
 
     const courseData = useAsync(() =>
-        callApi('getCourseInsightReport', {courseId: params.id})  // @ts-ignore
+        callApi(ApiEndpoints.GetCourseInsightReport, {courseId: params.id})  // @ts-ignore
             .then((rsp) => { setData(rsp.data); console.log(rsp); return rsp; }),
         []);
 

@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "@firebase/auth";
 import { getFunctions, httpsCallable } from "firebase/functions";
+import { useAsync } from "react-async-hook";
 
 // Firebase configuration
 // To switch between dev & prod, swap your .env.local file
@@ -18,6 +19,48 @@ initializeApp(firebaseConfig);
 
 const auth = getAuth();
 
-const callApi = (name: string, payload: object) => httpsCallable(getFunctions(), name)(payload);
+enum ApiEndpoints {
+    // Auth
+    CreateAccount = "createAccount",
+    ResetPassword = "resetPassword",
+    GetUserProfile = "getUserProfile",
 
-export { auth, callApi };
+    // Courses
+    AddCourse = "addCourse",
+    GetAvailableCourses = "getAvailableCourses",
+    GetCourseInfo = "getCourseInfo",
+    SetCourseVisibility = "setCourseVisibility",
+    CourseEnrollment = "courseEnrollment",
+    StartCourse = "startCourse",
+    SendCourseFeedback = "sendCourseFeedback",
+    DeleteCourse = "deleteCourse",
+    SendBrokenLinkReport = "sendBrokenLinkReport",
+
+    // Quizzes
+    GetQuiz = "getQuiz",
+    StartQuiz = "startQuiz",
+    SubmitQuiz = "submitQuiz",
+    GetQuizzesToMark = "getQuizzesToMark",
+    GetQuizAttempt = "getQuizAttempt",
+    MarkQuizAttempt = "markQuizAttempt",
+
+    // Reports
+    GetCourseInsights = "getCourseInsights",
+    DownloadCourseReports = "downloadCourseReports",
+    GetUserInsights = "getUserInsights",
+    DownloadUserReports = "downloadUserReports",
+    GetCourseInsightReport = "getCourseInsightReport",
+
+    // Misc
+    SendPlatformFeedback = "sendPlatformFeedback",
+    InviteLearner = "inviteLearner",
+
+    // Helpers
+    CleanDatabase = "cleanDatabase",
+}
+
+const functions = getFunctions();
+const callApi = (endpoint: ApiEndpoints, payload: object) => httpsCallable(functions, endpoint)(payload);
+const useAsyncApiCall = (endpoint: ApiEndpoints, payload: object) => useAsync(() => httpsCallable(functions, endpoint)(payload), []);
+
+export { auth, ApiEndpoints, callApi, useAsyncApiCall };
