@@ -138,15 +138,11 @@ const addCourse = onCall(async (request) => {
     return Promise.all(quizQuestions.map((question: any, index: number) => {
         // Each question type has different statistics to track
         let defaultStats;
-        if (question.type === "mc" || question.type === "tf") {
+        if (question.type === "tf" || question.type === "mc") {
+            const answers = question.type === "mc" ? question.answers : ["True", "False"];
             defaultStats = {
                 numAttempts: 0,
-                numCorrect: 0,
-            };
-        } else if (question.type === "mc") {
-            defaultStats = {
-                numAttempts: 0,
-                answers: Object.assign({}, new Array(question.answers.length).fill(0)),
+                answers: answers.reduce((acc: { [key: string]: number }, curr: string) => (acc[curr] = 0, acc), {}),
             };
         } else if (question.type === "sa") {
             defaultStats = {

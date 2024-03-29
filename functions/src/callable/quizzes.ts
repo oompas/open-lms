@@ -336,12 +336,14 @@ const submitQuiz = onCall(async (request) => {
         };
         updatePromises.push(addDoc(DatabaseCollections.QuizQuestionAttempt, markedResponse));
 
-        // Update question stats
-        if (marks !== null) {
+        // Update question stats if the user answered the question & it was marked (no short answer question yet)
+        if (marks !== null && userResponse) {
+            const answer = (question.answers ?? ["True", "False"])[userResponse];
             const updateData = {
                 "stats.numAttempts": firestore.FieldValue.increment(1),
-                "stats.numCorrect": firestore.FieldValue.increment(marks > 0 ? 1 : 0),
+                [`stats.answers.${answer}`]: firestore.FieldValue.increment(1),
             };
+
             updatePromises.push(updateDoc(DatabaseCollections.QuizQuestion, question.id, updateData));
         }
     }
@@ -541,8 +543,8 @@ const markQuizAttempt = onCall(async (request) => {
     updatePromises.push(responses.map((response: { questionAttemptId: string, marksAchieved: number }) => {
         const updateData = {
             "stats.numAttempts": firestore.FieldValue.increment(1),
-        }; // @ts-ignore
-        updateData[`stats.distribution.${response.marksAchieved}`] = firestore.FieldValue.increment(1);
+            [`stats.distribution.${response.marksAchieved}`]: firestore.FieldValue.increment(1),
+        };
 
         const questionData = questionAttempts.find((qa) => qa.id === response.questionAttemptId); // @ts-ignore
         return updatePromises.push(updateDoc(DatabaseCollections.QuizQuestion, questionData?.questionId, updateData));
