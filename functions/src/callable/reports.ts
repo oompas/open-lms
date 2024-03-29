@@ -10,10 +10,12 @@ import {
     QuizAttemptDocument,
     QuizQuestionDocument,
     QuizQuestionAttemptDocument,
-    UserDocument, getDocData, CourseDocument,
+    UserDocument, getDocData, CourseDocument, ReportedCourseDocument,
 } from "../helpers/database";
 import { object, string } from "yup";
 import { getCourseStatus } from "./helpers";
+import { auth } from "../helpers/setup";
+import { UserRecord } from "firebase-admin/lib/auth";
 
 /**
  * Converts an array of objects (with the same keys & no embedded objects) into a CSV string
@@ -170,6 +172,62 @@ const getUserInsights = onCall(async (request) => {
             coursesComplete: completedAttempts.length,
         };
     }).sort((a, b) => b.coursesEnrolled - a.coursesEnrolled);
+});
+
+/**
+ * Returns detailed user data in a CSV format (oes tno include actual course attempt data)
+ */
+const downloadUserReports = onCall(async (request) => {
+
+    logger.info(`Entering downloadUserReports for user ${request.auth?.uid} with payload: ${JSON.stringify(request.data)}`);
+
+    await verifyIsAdmin(request);
+
+    const schema = object({}).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info(`Schema validation passed`);
+
+    // Get all records at once, then filter through them for each user to reduce queries
+    const userRecords = await auth.listUsers().then((result) => result.users) as UserRecord[];
+    const enrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
+    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
+    const brokenLinkReports = await getCollectionDocs(DatabaseCollections.ReportedCourse) as ReportedCourseDocument[];
+
+    const userData = await Promise.all(userRecords.map((user: UserRecord) => {
+
+        const role = user.customClaims?.developer ? "Developer" : user.customClaims?.admin ? "Administrator" : "Learner";
+
+        const numEnrollments = enrollments.reduce((count, curr) => curr.userId === user.uid ? ++count : count, 0);
+        const numAttempts = courseAttempts.reduce((count, curr) => curr.userId === user.uid ? ++count : count, 0);
+        const numComplete = courseAttempts.reduce((count, curr) => curr.userId === user.uid && curr.pass === true ? ++count : count, 0);
+        const numReports = brokenLinkReports.reduce((count, curr) => curr.userId === user.uid ? ++count : count, 0);
+
+        return {
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            role: role,
+            accountDisabled: user.disabled,
+
+            emailVerified: user.emailVerified,
+            accountCreated: user.metadata.creationTime,
+            lastLogin: user.metadata.lastSignInTime,
+            lastRefresh: user.metadata.lastRefreshTime,
+
+            coursesEnrolled: numEnrollments,
+            coursesAttempted: numAttempts,
+            coursesComplete: numComplete,
+            courseLinkReports: numReports,
+        }
+    }));
+
+    return toCSV(userData);
 });
 
 /**
@@ -340,4 +398,4 @@ const getCourseInsightReport = onCall(async (request) => {
     };
 });
 
-export { getCourseInsights, downloadCourseReports, getUserInsights, getCourseInsightReport };
+export { getCourseInsights, downloadCourseReports, getUserInsights, downloadUserReports, getCourseInsightReport };
