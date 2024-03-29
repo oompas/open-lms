@@ -140,10 +140,13 @@ export default function Tools() {
             emailsToInvite = [...csvEmails];
         }
         if (inviteEmail.trim() !== "") {
-            emailsToInvite.push(inviteEmail.trim());
+            const emailRegex = /^\w+[-.\w%]*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+            if (emailRegex.test(inviteEmail.trim())) {
+                emailsToInvite.push(inviteEmail.trim());
+            }
         }
         if (emailsToInvite.length === 0) {
-            alert("Please enter an email address or upload a CSV file.");
+            alert("Please enter a valid email address or upload a valid CSV file. CSV should be a single row of consecutive cells populated with valid emails.");
             return;
         }
         callApi("inviteLearner", { emails: emailsToInvite })
@@ -174,7 +177,7 @@ export default function Tools() {
     };
 
     const parseCSV = (contents: string) => {
-        const regex = /^\s*([\w+-.%]+@[\w.]+\.[A-Za-z]{2,4}\s*,?\s*)+$/;
+        const regex = /^\s*\w+[-.\w%]*@\w+([-.]\w+)*\.\w+([-.]\w+)*(?:\s*,\s*\w+[-.\w%]*@\w+([-.]\w+)*\.\w+([-.]\w+)*)*\s*$/;
         const matches = contents.match(regex);
         if (matches) {
             return matches[0].split(',').map((email) => email.trim());
