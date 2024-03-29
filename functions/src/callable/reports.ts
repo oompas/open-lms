@@ -104,6 +104,8 @@ const getCourseInsights = onCall(async (request) => {
  */
 const downloadCourseReports = onCall(async (request) => {
 
+    logger.info(`Entering downloadCourseReports for user ${request.auth?.uid} with payload: ${JSON.stringify(request.data)}`)
+
     await verifyIsAdmin(request);
 
     const schema = object({}).required().noUnknown(true);
@@ -113,6 +115,10 @@ const downloadCourseReports = onCall(async (request) => {
             logger.error(`Error validating request: ${err}`);
             throw new HttpsError('invalid-argument', err);
         });
+
+    logger.info(`Schema validation passed`);
+
+    const courseData = await getCollectionDocs(DatabaseCollections.Course) as CourseDocument[];
 
     const courses: { [key: string]: any }[] = await getCollectionDocs(DatabaseCollections.Course) // @ts-ignore
         .then((result: CourseDocument[]) => {
@@ -194,10 +200,12 @@ const downloadUserReports = onCall(async (request) => {
     logger.info(`Schema validation passed`);
 
     // Get all records at once, then filter through them for each user to reduce queries
-    const userRecords = await auth.listUsers().then((result) => result.users) as UserRecord[];
-    const enrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
-    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
-    const brokenLinkReports = await getCollectionDocs(DatabaseCollections.ReportedCourse) as ReportedCourseDocument[];
+    const { userRecords, enrollments, courseAttempts, brokenLinkReports } = await Promise.all([
+        auth.listUsers().then((result) => result.users), // @ts-ignore
+        getCollectionDocs(DatabaseCollections.EnrolledCourse).then((result) => result.map(doc => ({ userId: doc.userId }))), // @ts-ignore
+        getCollectionDocs(DatabaseCollections.CourseAttempt).then((result) => result.map(doc => ({ userId: doc.userId, pass: doc.pass }))), // @ts-ignore
+        getCollectionDocs(DatabaseCollections.ReportedCourse).then((result) => result.map(doc => ({ userId: doc.userId })))
+    ]).then(([userRecords, enrollments, courseAttempts, brokenLinkReports]) => ({ userRecords, enrollments, courseAttempts, brokenLinkReports }));
 
     const userData = await Promise.all(userRecords.map((user: UserRecord) => {
 
