@@ -137,24 +137,19 @@ export default function Tools() {
         );
     }
 
-    const handleDownloadReports = () => {
+    const handleDownloadReports = async () => {
+        await callApi(ApiEndpoints.DownloadCourseReports, {}) // @ts-ignore
+            .then((response: { data: string }) => {
+                const blob = new Blob([response.data], { type: 'text/csv' });
+                const currentTime = new Date().toLocaleString().replace(/,/g, '').replace(/ /g, '_');
 
-        // TODO: call api
-
-        // text content
-        const texts = ["line 1", "line 2", "line 3"];
-
-        // file object
-        const file = new Blob(texts, {type: 'text/plain'});
-
-        // anchor link
-        const element = document.createElement("a");
-        element.href = URL.createObjectURL(file);
-        element.download = "100ideas-" + Date.now() + ".txt";
-
-        // simulate link click
-        document.body.appendChild(element); // Required for this to work in FireFox
-        element.click();
+                const file = document.createElement('a');
+                file.href = window.URL.createObjectURL(blob);
+                file.download = `course_reports_${currentTime}.csv`;
+                document.body.appendChild(file); // Required for this to work in FireFox
+                file.click();
+            })
+            .catch((error) => console.log(`Error downloading course reports: ${error}`));
     }
 
     const handleInvite = async () => {
