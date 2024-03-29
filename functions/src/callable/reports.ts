@@ -209,25 +209,25 @@ const downloadUserReports = onCall(async (request) => {
         const numReports = brokenLinkReports.reduce((count, curr) => curr.userId === user.uid ? ++count : count, 0);
 
         return {
-            uid: user.uid,
-            name: user.displayName,
-            email: user.email,
-            role: role,
-            accountDisabled: user.disabled,
+            'User ID': user.uid,
+            'Name': user.displayName,
+            'Email': user.email,
+            'Role': role,
+            'Account Disabled?': user.disabled ? "Yes" : "No",
 
-            emailVerified: user.emailVerified,
-            accountCreated: user.metadata.creationTime,
-            lastLogin: user.metadata.lastSignInTime,
-            lastRefresh: user.metadata.lastRefreshTime,
+            'Email Verified?': user.emailVerified ? "Yes" : "No",
+            'Account creation time': user.metadata.creationTime?.replace(/,/g, ''),
+            'Last login time': user.metadata.lastSignInTime?.replace(/,/g, ''),
+            'Last refresh time': user.metadata.lastRefreshTime?.replace(/,/g, ''),
 
-            coursesEnrolled: numEnrollments,
-            coursesAttempted: numAttempts,
-            coursesComplete: numComplete,
-            courseLinkReports: numReports,
+            'Number of courses enrolled': numEnrollments,
+            'Number of courses started': numAttempts,
+            'Number of courses completed': numComplete,
+            'Number of active broken link reports': numReports,
         }
     }));
 
-    return toCSV(userData);
+    return toCSV(userData.sort((a, b) => b['Number of courses enrolled'] - a['Number of courses enrolled']));
 });
 
 /**
