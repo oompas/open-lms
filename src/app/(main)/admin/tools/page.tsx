@@ -160,7 +160,6 @@ export default function Tools() {
                 document.body.appendChild(file); // Required for this to work in FireFox
                 file.click();
                 file.remove();
-                file.click();
             })
             .catch((error) => console.log(`Error downloading course reports: ${error}`));
     }
