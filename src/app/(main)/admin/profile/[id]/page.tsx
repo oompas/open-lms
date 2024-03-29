@@ -14,32 +14,11 @@ export default function Profile({ params }: { params: { id: string } }) {
 
     const userData = useAsync(() =>
         callApi(ApiEndpoints.GetUserProfile, { targetUid: params.id }) // @ts-ignore
-            .then((rsp) => { setUser(rsp.data); return rsp; }),
+            .then((rsp) => { setUser(rsp.data); setStatus(rsp.data.role.toUpperCase()); return rsp; }),
         []);
 
     const [user, setUser] = useState()
     const [status, setStatus] = useState("");
-
-    useEffect(() => {
-        let unsubscribe: () => void;
-        unsubscribe = auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                try {
-                    const idTokenResult = await user.getIdTokenResult();
-                    if (idTokenResult.claims.admin && idTokenResult.claims.developer) {
-                        setStatus("DEVELOPER");
-                    } else if (idTokenResult.claims.admin && !idTokenResult.claims.developer) {
-                        setStatus("ADMINISTRATOR");
-                    } else {
-                        setStatus("LEARNER");
-                    }
-                } catch (error) {
-                    console.error("Error getting custom claims: ", error);
-                }
-            }
-        });
-        return unsubscribe;
-    }, []);
 
     const profileData = () => {
         if (user) {
