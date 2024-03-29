@@ -105,6 +105,7 @@ export default function Home() {
                                 <button
                                     className="border-2 rounded-full px-4 py-1 cursor-pointer"
                                     style={{
+                                        // @ts-ignore
                                         borderColor: filters.includes(key) ? statusColors[key] : null,
                                         opacity: filters.includes(key) ? 1 : 0.5,
                                     }}
