@@ -16,6 +16,19 @@ import { object, string } from "yup";
 import { getCourseStatus } from "./helpers";
 
 /**
+ * Converts an array of objects (with the same keys & no embedded objects) into a CSV string
+ */
+const toCSV = (json: { [key: string]: any }[]) => {
+    let csv = "";
+    const keys = (json[0] && Object.keys(json[0])) || [];
+    csv += keys.join(',') + '\n';
+    for (let line of json) {
+        csv += keys.map(key => line[key]).join(',') + '\n';
+    }
+    return csv;
+}
+
+/**
  * Returns a list of all courses on the platform with their name, enrolled & completed users and average course/quiz
  * time
  */
@@ -82,6 +95,46 @@ const getCourseInsights = onCall(async (request) => {
             avgQuizScore: averageScore,
         };
     }).sort((a, b) => b.numEnrolled - a.numEnrolled);
+});
+
+/**
+ * Downloads all course-related data, including attempts, in a csv format
+ */
+const downloadCourseReports = onCall(async (request) => {
+
+    await verifyIsAdmin(request);
+
+    const schema = object({}).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    const courses: { [key: string]: any }[] = await getCollectionDocs(DatabaseCollections.Course) // @ts-ignore
+        .then((result: CourseDocument[]) => {
+            return result.map((course) => {
+                return {
+                    courseId: course.id,
+                    name: course.name,
+                    description: course.description,
+                    link: course.link,
+                    active: course.active,
+                    minTime: course.minTime,
+                    userId: course.userId,
+                    hasQuiz: course.quiz !== null,
+                    quizMaxAttempts: course.quiz?.maxAttempts,
+                    quizMinScore: course.quiz?.minScore,
+                    quizPreserveOrder: course.quiz?.preserveOrder,
+                    quizTimeLimit: course.quiz?.timeLimit,
+                    retired: course.retired,
+                    version: course.version,
+                };
+            });
+        });
+
+    return toCSV(courses);
 });
 
 /**
@@ -287,4 +340,4 @@ const getCourseInsightReport = onCall(async (request) => {
     };
 });
 
-export { getCourseInsights, getUserInsights, getCourseInsightReport };
+export { getCourseInsights, downloadCourseReports, getUserInsights, getCourseInsightReport };
