@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CompletedCourse from "./CompletedCourse";
 import Button from "@/components/Button";
+import StatusBadge from "@/components/StatusBadge";
 import { generateDummyData } from "@/app/(main)/admin/tools/generateData";
 import { useAsync } from 'react-async-hook';
 import { auth, callApi } from '@/config/firebase';
@@ -18,6 +19,28 @@ export default function Profile() {
         []);
 
     const [user, setUser] = useState();
+    const [status, setStatus] = useState("");
+
+    useEffect(() => {
+        let unsubscribe: () => void;
+        unsubscribe = auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                try {
+                    const idTokenResult = await user.getIdTokenResult();
+                    if (idTokenResult.claims.admin && idTokenResult.claims.developer) {
+                        setStatus("DEVELOPER");
+                    } else if (idTokenResult.claims.admin && !idTokenResult.claims.developer) {
+                        setStatus("ADMINISTRATOR");
+                    } else {
+                        setStatus("LEARNER");
+                    }
+                } catch (error) {
+                    console.error("Error getting custom claims: ", error);
+                }
+            }
+        });
+        return unsubscribe;
+    }, []);
 
     const generateData = async () => {
         await generateDummyData()
@@ -54,7 +77,7 @@ export default function Profile() {
                 <div className="flex flex-col w-[30rem] h-full">
                     <div>Name</div>
                     {/* @ts-ignore */}
-                    <div className="text-2xl mb-4">{user && user.name}</div>
+                    <div className="text-2xl mb-4">{user && user.name} {status && <StatusBadge status={status} />}</div>
                     <div>Email</div>
                     {/* @ts-ignore */}
                     <div className="text-2xl mb-6">{user && user.email}</div>
