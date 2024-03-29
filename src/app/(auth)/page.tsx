@@ -1,13 +1,10 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import '@/config/firebase';
 import Button from "@/components/Button";
 import AuthForm from '@/components/AuthForm';
-import AuthButton from './AuthButton';
 import { auth } from "@/config/firebase";
 import { signInWithEmailAndPassword } from "@firebase/auth";
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 export default function AuthPage() {
 
@@ -24,25 +21,11 @@ export default function AuthPage() {
     const [password, setPass] = useState("")
     const [error, setError] = useState(null);
 
-    // function called on "log in" button press
     const submitLogin = async () => {
-        try {
-            setError(null);
-            await signInWithEmailAndPassword(auth, email, password);
-            router.push('/home');
-        } catch (error: any) {
-            setError(error.code);
-        }
-    };
-
-    const submitGoogleLogin = async () => {
-        await signInWithPopup(auth, new GoogleAuthProvider())
+        setError(null);
+        await signInWithEmailAndPassword(auth, email, password)
             .then(() => router.push('/home'))
             .catch((error: any) => setError(error.code));
-    }
-
-    const handleForgotPassword = () => {
-        router.push('/forgotpassword');
     };
 
     return (
@@ -57,7 +40,7 @@ export default function AuthPage() {
                             password={password}
                             setPass={setPass}
                             showName={false}
-                            onForgotPassword={handleForgotPassword}
+                            onForgotPassword={() => router.push('/forgotpassword')}
                         />
                         <div className="flex justify-between mt-4">
                             <Button text="Sign Up" onClick={() => router.push('/signup')}
@@ -76,10 +59,6 @@ export default function AuthPage() {
                             </p>
                         )}
                     </div>
-                    {/* sso integration buttons */}
-                    <div>or</div>
-                    <AuthButton text={"Continue with Google"} icon="google" onClick={() => submitGoogleLogin()}/>
-                    {/* <AuthButton text={"continue with another SSO"} icon="sso" onClick={() => router.push('/home')}/> */}
                 </div>
                 <div className="flex-col h-full w-2/5 ml-10 space-y-4">
                     <div className="text-2xl">Welcome to <b>OpenLMS</b></div>

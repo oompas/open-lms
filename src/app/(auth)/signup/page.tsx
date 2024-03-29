@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import Button from "@/components/Button";
 import AuthForm from "@/components/AuthForm";
 import VerifyEmailPopup from "@/app/(auth)/signup/VerifyEmail";
@@ -46,7 +46,7 @@ export default function SignUpPage() {
         }
 
         try {
-            const response = await callApi('createAccount', {
+            const response = await callApi(ApiEndpoints.CreateAccount, {
                 name: name,
                 email: email,
                 password: password

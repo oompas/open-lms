@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { MdAdd } from "react-icons/md";
 import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import { useRouter } from "next/navigation"; // @ts-ignore
 
 export default function AdminCourse({ params }: { params: { id: string } }) {
@@ -16,6 +16,9 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
     const [loading, setLoading] = useState(!newCourse);
     const [activatePopup, setActivatePopup] = useState(false);
+    const [showDeletePopup, setShowDeletePopup] = useState(false);
+    const [showSavePopup, setShowSavePopup] = useState(false);
+    const [deletePopupConfirm, setDeletePopupConfirm] = useState("");
 
     const [active, setActive] = useState(false);
     const [name, setName] = useState("");
@@ -85,7 +88,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     useEffect(() => {
         if (!loading || newCourse) return;
 
-        callApi("getCourseInfo", { courseId: params.id, withQuiz: true })
+        callApi(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: true })
             .then((result) => {
                 const data: any = result.data;
 
@@ -102,6 +105,8 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     setQuizAttempts(data.quiz.maxAttempts);
                     setQuizMaxTime(data.quiz.timeLimit);
 
+                    setQuizTotalScore(data.quizQuestions.reduce((acc: number, q: any) => acc + q.marks, 0));
+
                     setQuizQuestions(data.quizQuestions);
                 }
 
@@ -115,7 +120,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             setShowCreateQuestion(true)
     }, [editQuestion]);
 
-    const addCourse = async () => {
+    const saveCourse = async () => {
 
         const courseData = {
             ...(!newCourse && { previousVersionId: params.id }),
@@ -132,13 +137,19 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             quizQuestions: !quizQuestions.length ? null : quizQuestions.map(({ id, ...rest }) => rest)
         }
 
-        await callApi("addCourse", courseData).then((result) => router.push(`/admin/course/${result.data}`));
+        await callApi(ApiEndpoints.AddCourse, courseData).then((result) => router.push(`/admin/course/${result.data}`));
     }
 
     const handlePublish = async () => {
-        await callApi("setCourseVisibility", { courseId: params.id, active: !active })
+        await callApi(ApiEndpoints.SetCourseVisibility, { courseId: params.id, active: !active })
             .then(() => { setActive(!active); setActivatePopup(false); })
             .catch((err) => console.log(`Error unpublishing course: ${err}`));
+    }
+
+    const handleDelete = async () => {
+        await callApi(ApiEndpoints.DeleteCourse, { courseId: params.id })
+            .then(() => router.push("/admin/tools"))
+            .catch((err) => console.log(`Error deleting course: ${err}`));
     }
 
     const activationPopup = (
@@ -147,19 +158,85 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
                 <div className="text-lg mb-2">
                     {active
-                        ? "Pressing \"Unpublish Course\" removes users' access to the course\n without deleting any" +
-                        " data. You can re-publish the course to restore access at any time."
-                        : "\"Publish Course\" will allow users of the platform to view, without deleting any data." +
-                        " You can re-publish the course to restore access at any time. enroll, and complete this" +
-                        " course. You can unpublish at any time to remove users' access to the course without losing any data"
+                        ? "Pressing \"Unpublish Course\" makes the course hidden to learners, but does not change" +
+                        " any course related data (user's course attempts are kept). You can still view the course," +
+                        " or re-publish it at any time to restore access."
+                        : "\"Publish Course\" will make this course visible to learners so they may view and complete" +
+                        " the course. This does not change any other course-related data, and you may unpublish it" +
+                        " at any time."
                     }
                 </div>
-                {!active && <div>Any subsequent changes saved will be directly visible to users.</div>}
                 <div className="flex flex-row space-x-4 mt-6">
-                <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
+                    <Button text="Cancel" onClick={() => setActivatePopup(false)} style="ml-auto"/>
                     <Button
                         text={(active ? "Unpublish" : "Publish") + " Course"}
                         onClick={async () => await handlePublish()}
+                        filled
+                    />
+                </div>
+            </div>
+        </div>
+    );
+
+    const deletePopup = (
+        <div
+            className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    <b>WARNING!</b>
+                    <p className="mt-2">
+                        Deleting this course will <b>permanently delete <u>all</u> course data</b>, including learner's
+                        course attempts. Users (including admins) will not be able to see the course, access course stats
+                        or access any previous history of course completion. {" "}
+                        <u><b>This action is irreversible!</b></u>
+                    </p>
+                    <p className="mt-2">
+                        <i>If you want to hide the course from view, you can unpublish the course instead.</i>
+                    </p>
+                </div>
+                <div className={"mt-4"}>
+                    Type <i>I understand '{name}' will be permanently deleted</i> to confirm you understand:
+                </div>
+                <input
+                    className="border-2 border-gray-400 rounded-xl p-2 mt-2"
+                    value={deletePopupConfirm}
+                    onChange={(e) => setDeletePopupConfirm(e.target.value)}
+                />
+                <div className="flex flex-row space-x-4 mt-6">
+                    <Button text="Cancel" onClick={() => setShowDeletePopup(false)} style="ml-auto"/>
+                    <Button
+                        text={deletePopupConfirm === `I understand '${name}' will be permanently deleted` ? "Permanently Delete Course" : "Please confirm above"}
+                        onClick={async () => await handleDelete()}
+                        filled
+                        disabled={deletePopupConfirm !== `I understand '${name}' will be permanently deleted`}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+
+    const savePopup = (
+        <div
+            className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    <b>{newCourse ? "Add course" : "Update course"}</b>
+                    <p className="mt-2">
+                        {newCourse
+                            ? <>Adding a new course will create a new course with the specified details, but <b>it will
+                                not be visible to users yet</b>. Once added, you need to publish the course using the
+                                button that will appear on the top menu</>
+                            : <>To avoid issues with course stats and data, updating a course will <b>create a new course
+                                and retire the old course</b>. The old course cannot be attempted again, but data for
+                                the old course is still kept so users can still see they're completed the old version</>
+                        }
+                    </p>
+                </div>
+                <div className="flex flex-row space-x-4 mt-6">
+                    <Button text="Cancel" onClick={() => setShowSavePopup(false)} style="ml-auto"/>
+                    <Button
+                        text={newCourse ? "Add course" : "Update course"}
+                        onClick={async () => await saveCourse()}
                         filled
                     />
                 </div>
@@ -195,11 +272,11 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 }
                 <Button
                     text={newCourse ? "Discard changes" : "Delete course"}
-                    onClick={() => newCourse ? router.push("/admin/tools") : alert("delete course")}
+                    onClick={() => newCourse ? router.push("/admin/tools") : setShowDeletePopup(true)}
                 />
                 <Button
                     text={newCourse ? "Create course" : "Update course"}
-                    onClick={async () => await addCourse()}
+                    onClick={async () => setShowSavePopup(true)}
                     filled
                 />
             </div>
@@ -275,12 +352,20 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                             <div className="flex flex-row space-x-2 items-center mt-2">
                                                 <TextField
                                                     text={quizMinScore}
-                                                    onChange={ (text: string) => 
-                                                        Number(text) > quizTotalScore ? 
-                                                            setQuizMinScore(quizTotalScore) : 
-                                                        Number(text) < 0 ? 
-                                                            setQuizMinScore(0) : setQuizMinScore(text)
-                                                    }
+                                                    onChange={(text: string) => {
+                                                        if (text === "") {
+                                                            setQuizMinScore(0);
+                                                            return;
+                                                        }
+                                                        if (!(/^[0-9]+$/).test(text)) {
+                                                            return;
+                                                        }
+                                                        if (Number(text) > quizTotalScore) {
+                                                            setQuizMinScore(quizTotalScore);
+                                                            return;
+                                                        }
+                                                        return setQuizMinScore(Number(text));
+                                                    }}
                                                     style="w-24 text-right"
                                                 />
                                                 <div className="text-lg">
@@ -371,6 +456,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                         deleteData={handleDeleteQuestion}
                                         moveUp={handleMoveUp}
                                         moveDown={handleMoveDown}
+                                        preserveOrder={preserveOrder}
                                     />
                                 ))}
                                 <button
@@ -386,6 +472,8 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 </div>
 
                 {activatePopup && activationPopup}
+                {showDeletePopup && deletePopup}
+                {showSavePopup && savePopup}
                 {loading && loadingPopup}
                 {showCreateQuestion &&
                     <CreateQuestion

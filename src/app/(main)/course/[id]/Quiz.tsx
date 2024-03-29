@@ -1,7 +1,7 @@
 "use client";
 import Button from "@/components/Button"
 import { useRouter } from 'next/navigation'
-import { callApi } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 
 export default function Quiz({
     length,
@@ -29,7 +29,7 @@ export default function Quiz({
         if (quizStarted) {
             router.push(`/quiz/${courseId}-${quizAttemptId}`);
         } else {
-            await callApi("startQuiz", { courseAttemptId: courseAttemptId })
+            await callApi(ApiEndpoints.StartQuiz, { courseAttemptId: courseAttemptId })
                 .then((result) => router.push(`/quiz/${courseId}-${result.data}`))
                 .catch((e) => console.log(`Error starting quiz: ${e}`));
         }

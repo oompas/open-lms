@@ -10,58 +10,31 @@ import {
     QuizAttemptDocument,
     QuizQuestionDocument,
     QuizQuestionAttemptDocument,
-    UserDocument, getDocData, CourseDocument,
+    UserDocument, getDocData, CourseDocument, ReportedCourseDocument,
 } from "../helpers/database";
 import { object, string } from "yup";
 import { getCourseStatus } from "./helpers";
+import { auth } from "../helpers/setup";
+import { UserRecord } from "firebase-admin/lib/auth";
 
 /**
- * Returns a list of all learners on the platform with their:
- * -uid
- * -name
- * -Number of courses completed
+ * Converts an array of objects (with the same keys & no embedded objects) into a CSV string
  */
-const getUserReports = onCall(async (request) => {
-
-    logger.info("Verifying user is an admin...");
-
-    await verifyIsAdmin(request);
-
-    logger.info("User is an admin, querying database for user reports...");
-
-    const users = await getCollectionDocs(DatabaseCollections.User) as UserDocument[];
-    const courseEnrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
-    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
-
-    logger.info("Successfully queried database data, translating to user data...");
-
-    return users.map((user) => {
-
-        const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.userId === user.id);
-        const userAttempts = courseAttempts.filter((attempt) => attempt.userId === user.id);
-        const completedAttempts = courseAttempts.filter((attempt) => attempt.userId == user.id && attempt.pass === true);
-
-        return {
-            uid: user.id,
-            name: user.name,
-            email: user.email,
-            coursesEnrolled: userEnrollments.length,
-            coursesAttempted: userAttempts.length,
-            coursesComplete: completedAttempts.length,
-        };
-    }).sort((a, b) => b.coursesEnrolled - a.coursesEnrolled);
-});
+const toCSV = (json: { [key: string]: any }[]) => {
+    let csv = "";
+    const keys = (json[0] && Object.keys(json[0])) || [];
+    csv += keys.join(',') + '\n';
+    for (let line of json) {
+        csv += keys.map(key => line[key]).join(',') + '\n';
+    }
+    return csv;
+}
 
 /**
- * Returns a list of all courses on the platform with their:
- * -course ID
- * -name
- * -active status
- * -Number of enrolled learners
- * -Number of learners who completed the course
- * -Average course completion time (not including quiz attempt(s))
+ * Returns a list of all courses on the platform with their name, enrolled & completed users and average course/quiz
+ * time
  */
-const getCourseReports = onCall(async (request) => {
+const getCourseInsights = onCall(async (request) => {
 
     logger.info("Verifying user is an admin...");
 
@@ -127,7 +100,138 @@ const getCourseReports = onCall(async (request) => {
 });
 
 /**
- * Returns a list of statistics for the course on the platform:
+ * Downloads all course-related data, including attempts, in a csv format
+ */
+const downloadCourseReports = onCall(async (request) => {
+
+    await verifyIsAdmin(request);
+
+    const schema = object({}).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    const courses: { [key: string]: any }[] = await getCollectionDocs(DatabaseCollections.Course) // @ts-ignore
+        .then((result: CourseDocument[]) => {
+            return result.map((course) => {
+                return {
+                    courseId: course.id,
+                    name: course.name,
+                    description: course.description,
+                    link: course.link,
+                    active: course.active,
+                    minTime: course.minTime,
+                    userId: course.userId,
+                    hasQuiz: course.quiz !== null,
+                    quizMaxAttempts: course.quiz?.maxAttempts,
+                    quizMinScore: course.quiz?.minScore,
+                    quizPreserveOrder: course.quiz?.preserveOrder,
+                    quizTimeLimit: course.quiz?.timeLimit,
+                    retired: course.retired,
+                    version: course.version,
+                };
+            });
+        });
+
+    return toCSV(courses);
+});
+
+/**
+ * Returns a list of all learners on the platform with their name, email and course statistics (# enrolled, started,
+ * completed)
+ */
+const getUserInsights = onCall(async (request) => {
+
+    logger.info("Verifying user is an admin...");
+
+    await verifyIsAdmin(request);
+
+    logger.info("User is an admin, querying database for user reports...");
+
+    const users = await getCollectionDocs(DatabaseCollections.User) as UserDocument[];
+    const courseEnrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
+    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
+
+    logger.info("Successfully queried database data, translating to user data...");
+
+    return users.map((user) => {
+
+        const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.userId === user.id);
+        const userAttempts = courseAttempts.filter((attempt) => attempt.userId === user.id);
+        const completedAttempts = courseAttempts.filter((attempt) => attempt.userId == user.id && attempt.pass === true);
+
+        return {
+            uid: user.id,
+            name: user.name,
+            email: user.email,
+            coursesEnrolled: userEnrollments.length,
+            coursesAttempted: userAttempts.length,
+            coursesComplete: completedAttempts.length,
+        };
+    }).sort((a, b) => b.coursesEnrolled - a.coursesEnrolled);
+});
+
+/**
+ * Returns detailed user data in a CSV format (oes tno include actual course attempt data)
+ */
+const downloadUserReports = onCall(async (request) => {
+
+    logger.info(`Entering downloadUserReports for user ${request.auth?.uid} with payload: ${JSON.stringify(request.data)}`);
+
+    await verifyIsAdmin(request);
+
+    const schema = object({}).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info(`Schema validation passed`);
+
+    // Get all records at once, then filter through them for each user to reduce queries
+    const userRecords = await auth.listUsers().then((result) => result.users) as UserRecord[];
+    const enrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
+    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
+    const brokenLinkReports = await getCollectionDocs(DatabaseCollections.ReportedCourse) as ReportedCourseDocument[];
+
+    const userData = await Promise.all(userRecords.map((user: UserRecord) => {
+
+        const role = user.customClaims?.developer ? "Developer" : user.customClaims?.admin ? "Administrator" : "Learner";
+
+        const numEnrollments = enrollments.reduce((count, curr) => curr.userId === user.uid ? ++count : count, 0);
+        const numAttempts = courseAttempts.reduce((count, curr) => curr.userId === user.uid ? ++count : count, 0);
+        const numComplete = courseAttempts.reduce((count, curr) => curr.userId === user.uid && curr.pass === true ? ++count : count, 0);
+        const numReports = brokenLinkReports.reduce((count, curr) => curr.userId === user.uid ? ++count : count, 0);
+
+        return {
+            'User ID': user.uid,
+            'Name': user.displayName,
+            'Email': user.email,
+            'Role': role,
+            'Account Disabled?': user.disabled ? "Yes" : "No",
+
+            'Email Verified?': user.emailVerified ? "Yes" : "No",
+            'Account creation time': user.metadata.creationTime?.replace(/,/g, ''),
+            'Last login time': user.metadata.lastSignInTime?.replace(/,/g, ''),
+            'Last refresh time': user.metadata.lastRefreshTime?.replace(/,/g, ''),
+
+            'Number of courses enrolled': numEnrollments,
+            'Number of courses started': numAttempts,
+            'Number of courses completed': numComplete,
+            'Number of active broken link reports': numReports,
+        }
+    }));
+
+    return toCSV(userData.sort((a, b) => b['Number of courses enrolled'] - a['Number of courses enrolled']));
+});
+
+/**
+ * Returns a list of statistics for a specific course on the platform:
  * -List of enrolled users
  *      -Status of completion
  *      -Quiz to be marked?
@@ -294,4 +398,4 @@ const getCourseInsightReport = onCall(async (request) => {
     };
 });
 
-export { getUserReports, getCourseReports, getCourseInsightReport };
+export { getCourseInsights, downloadCourseReports, getUserInsights, downloadUserReports, getCourseInsightReport };
