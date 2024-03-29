@@ -4,6 +4,7 @@ import '../globals.css';
 import { auth, callApi } from '@/config/firebase';
 import { useRouter } from "next/navigation";
 import { useState } from 'react';
+import Button from "@/components/Button";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
@@ -22,11 +23,14 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         }
     });
 
+    const [showSupportForm, setShowSupportForm] = useState(false);
     const [feedback, setFeedback] = useState('');
     const [feedbackSent, setFeedbackSent] = useState(false);
+
     const handleFeedbackChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setFeedback(event.target.value);
     };
+
     const handleSubmitFeedback = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
@@ -36,6 +40,10 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         } catch (error) {
             console.error('Error sending feedback:', error);
         }
+    };
+
+    const handleSupportRequest = () => {
+        setShowSupportForm(true);
     };
 
     return (
@@ -53,32 +61,38 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
             {children}
         </div>
 
-        <footer className="flex flex-col justify-between items-center bg-gray-800 rounded-t-2xl shadow-custom">
-            <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-center items-center p-4">
-                <label htmlFor="feedback" className="text-white">
-                    Request technical support:
-                </label>
-                <textarea
-                    id="feedback"
-                    name="feedback"
-                    value={feedback}
-                    onChange={handleFeedbackChange}
-                    className="block w-full md:w-96 rounded-md mt-2 p-2"
-                    rows={4}
-                    required
-                ></textarea>
-                <button
-                    type="submit"
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-2"
-                >
-                    Submit
-                </button>
-                {feedbackSent && <p className="text-green-500">Feedback sent successfully!</p>}
-            </form>
-            <span className="text-white p-4">&copy; {new Date().getFullYear()} OpenLMS. All rights reserved.</span>
-            <div className="flex flex-col items-left">
-                <Link href="/empty.pdf" className="text-1xl text-white">Access Platform User Guide</Link>
+        {showSupportForm && (
+            <div className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
+                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                    <div className="text-lg mb-2">Request Technical Support</div>
+                    <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-left">
+                                <textarea
+                                    value={feedback}
+                                    onChange={handleFeedbackChange}
+                                    className="block w-full md:w-96 rounded-md mt-2 p-2 border-2 border-gray-800"
+                                    rows={4}
+                                    required
+                                    placeholder="Enter your request here"
+                                ></textarea>
+                        <div className="flex flex-row mt-4">
+                            <Button text="Cancel" onClick={() => {
+                                setShowSupportForm(false);
+                                setFeedbackSent(false);
+                            }} style="mr-4" />
+                            <Button text="Submit" onClick={handleSubmitFeedback} filled/>
+                        </div>
+                        {feedbackSent && <p className="text-green-500 mt-2">Request sent successfully!</p>}
+                    </form>
+                </div>
             </div>
+        )}
+
+        <footer className="flex flex-col justify-between items-center bg-gray-800 rounded-t-2xl shadow-custom">
+            <div className="flex flex-row justify-center mt-6">
+                <Button text="Access Platform User Guide" onClick={() => {}} style="mr-4 text-sm" filled/>
+                <Button text="Request Technical Support" onClick={handleSupportRequest} style="text-sm" filled/>
+            </div>
+            <span className="text-white p-4">&copy; {new Date().getFullYear()} OpenLMS. All rights reserved.</span>
         </footer>
         </body>
         </html>
