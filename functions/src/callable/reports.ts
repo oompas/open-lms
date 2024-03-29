@@ -157,9 +157,9 @@ const downloadCourseReports = onCall(async (request) => {
                     'Course ID': question.courseId,
                     'Question': question.question,
                     'Type': question.type === "mc" ? "Multiple Choice" : question.type === "tf" ? "True/False" : "Short Answer",
-                    'Answer options (mc/tf only)': question.answers,
+                    'Answer options (mc/tf only)': question.answers ? JSON.stringify(question.answers) : null,
                     'Correct answer (mc/tf only)': (question.answers && question.correctAnswer) ? question.answers[question.correctAnswer] : null,
-                    'Question stats': JSON.stringify(question.stats),
+                    'Question stats': JSON.stringify(question.stats).replace(/,/g, ' '),
                 };
             }));
         }), // @ts-ignore
@@ -187,7 +187,7 @@ const downloadCourseReports = onCall(async (request) => {
                     'Start time': attempt.startTime.toDate().toUTCString().replace(/,/g, ''),
                     'End time': attempt.endTime?.toDate().toUTCString().replace(/,/g, ''),
                     'Pass?': attempt.pass === true ? "Passed" : attempt.pass === false ? "Failed" : "Not completed",
-                    'Score': attempt.score,
+                    'Score': attempt.score ? attempt.score : "Not marked",
                     'Expired (didn\'t submit in time)?': attempt.expired ? "Yes" : "No",
                 };
             }));
@@ -202,7 +202,7 @@ const downloadCourseReports = onCall(async (request) => {
                     'Course attempt ID': attempt.courseAttemptId,
                     'Quiz question ID': attempt.questionId,
 
-                    'Response': attempt.response,
+                    'Response (commas removed)': typeof attempt.response === 'string' ? attempt.response.replace(/,/g, '') : attempt.response,
                     'Max marks': attempt.maxMarks,
                     'Marks achieved': attempt.marksAchieved,
                 };
