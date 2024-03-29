@@ -11,6 +11,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const router = useRouter();
   
     const [countdown, setCountDown] = useState(0);
+    const [showConfim, setShowConfirm] = useState(false);
 
     const getQuizData = useAsync(() =>
         callApi("getQuiz", { quizAttemptId: params.id.split('-')[1] })
@@ -34,7 +35,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
 
     useEffect(() => {
         if (countdown === 0 && quizData && quizData !== "Invalid") { // Automatically submit quiz when time runs out
-            handleSubmit();
+            setShowConfirm(true);
         }
         if (countdown < 0 || !quizData || quizData == "Invalid") {
             return;
@@ -43,39 +44,6 @@ export default function Quiz({ params }: { params: { id: string } }) {
         const interval = setInterval(() => setCountDown(Math.floor(quizData.startTime + (60 * quizData.timeLimit) - (Date.now() / 1000))), 1000);
         return () => clearInterval(interval);
     }, [countdown, quizData]);
-
-    const loadingPopup = () => {
-        let text;
-        if (getQuizData.loading) {
-            text = "Loading quiz...";
-        } else if (quizData === "Invalid") {
-            text = "You did not submit this quiz in time, so it has expired";
-        } else {
-            text = "Error loading quiz";
-        }
-
-        return (
-            <div
-                className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
-                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                    <div className="text-lg mb-2">
-                        {text}
-                        {quizData === "Invalid" &&
-                            <>
-                                <br/>
-                                <button
-                                    onClick={() => router.push(`/course/${params.id.split('-')[0]}`)}
-                                    className={"mt-4 bg-blue-500 text-white rounded-xl p-2"}
-                                >
-                                    Return to course
-                                </button>
-                            </>
-                        }
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     const renderQuestions = () => {
         return (
@@ -172,11 +140,6 @@ export default function Quiz({ params }: { params: { id: string } }) {
         const responses = [];
         for (const [key, value] of Object.entries(userAnswers)) {
 
-            if (value === null) {
-                alert("Please answer all questions before submitting the quiz");
-                return;
-            }
-
             // @ts-ignore
             const questionData = quizData?.questions.find((question) => question.id === key);
             if (questionData.type === "sa") {
@@ -191,6 +154,69 @@ export default function Quiz({ params }: { params: { id: string } }) {
         await callApi("submitQuiz", { quizAttemptId: params.id.split('-')[1], responses: responses })
             .then(() => router.push(`/course/${params.id.split('-')[0]}`))
             .catch((err) => console.log(`Error calling submitQuiz: ${err}`));
+    }
+
+    const loadingPopup = () => {
+        let text;
+        if (getQuizData.loading) {
+            text = "Loading quiz...";
+        } else if (quizData === "Invalid") {
+            text = "You did not submit this quiz in time, so it has expired";
+        } else {
+            text = "Error loading quiz";
+        }
+
+        return (
+            <div
+                className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                    <div className="text-lg mb-2">
+                        {text}
+                        {quizData === "Invalid" &&
+                            <>
+                                <br/>
+                                <button
+                                    onClick={() => router.push(`/course/${params.id.split('-')[0]}`)}
+                                    className={"mt-4 bg-blue-500 text-white rounded-xl p-2"}
+                                >
+                                    Return to course
+                                </button>
+                            </>
+                        }
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const allAnswersFilled = () => {
+        for (const [key, value] of Object.entries(userAnswers)) {
+            if (value === null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    const confirmPopup = () => {
+        return (
+            <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                    { countdown === 0 ? 
+                        <div className="text-lg mb-4">Quiz time limit exceeded - click submit to exit.</div>
+                    :
+                        <div>
+                            {!allAnswersFilled() ? <div className="text-lg mb-2">You haven't answered every question, are you sure you're ready to submit?</div> : null }
+                            <div className="text-lg mb-4">Click "Submit Quiz" to confirm - you won't be able to edit your responses after you submit.</div>
+                        </div> 
+                    }
+                    <div className="flex flex-row">
+                        { countdown != 0 && <Button text="Back" onClick={() => setShowConfirm(false)} style="ml-auto" />}
+                        <Button text="Submit Quiz" onClick={async () => await handleSubmit()} style="ml-4" filled />
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -214,10 +240,11 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     {renderProgress()}
                 </div>
                 <div className="flex justify-center mt-8">
-                    <Button text="Submit Quiz" onClick={async () => await handleSubmit() } filled style="mx-auto mt-auto"/>
+                    <Button text="Submit Quiz" onClick={() => setShowConfirm(true) } filled style="mx-auto mt-auto"/>
                 </div>
             </div>
             {(!quizData || quizData === "Invalid") && loadingPopup()}
+            { showConfim && confirmPopup() }
         </main>
     )
 }
