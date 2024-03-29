@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import React, { useState, useEffect } from 'react';
-import { ApiEndpoints, callApi } from "@/config/firebase";
+import { ApiEndpoints, auth, callApi } from "@/config/firebase";
 import { useAsync } from "react-async-hook";
 import { MdCheckCircleOutline } from "react-icons/md";
 import { RiCheckboxCircleFill, RiCheckboxBlankCircleLine } from "react-icons/ri";
@@ -10,6 +10,15 @@ import { RiCheckboxCircleFill, RiCheckboxBlankCircleLine } from "react-icons/ri"
 export default function Quiz({ params }: { params: { id: string } }) {
 
     const router = useRouter();
+
+    // if user is Admin - go to admin tools
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            auth.currentUser?.getIdTokenResult()
+                .then((idTokenResult) => !!idTokenResult.claims.admin ? router.replace("/admin/tools") : null)
+                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
+        }
+    });
   
     const [countdown, setCountDown] = useState(0);
     const [showConfim, setShowConfirm] = useState(false);

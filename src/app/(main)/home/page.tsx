@@ -3,16 +3,30 @@ import EnrolledCourse from "./EnrolledCourse";
 import "../../../config/firebase";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
-import { ApiEndpoints, useAsyncApiCall } from "@/config/firebase";
+import { ApiEndpoints, useAsyncApiCall, auth } from '@/config/firebase';
+import {  } from "@/config/firebase";
 import { useState } from "react";
 
 export default function Home() {
 
     const router = useRouter();
 
-    const [filters, setFilters] = useState([0, 1, 2, 3, 4]);
+    // if user is Admin - go to admin tools
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            auth.currentUser?.getIdTokenResult()
+                .then((idTokenResult) => !!idTokenResult.claims.admin ? router.replace('/admin/tools') : null)
+                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
+        }
+    });
 
     const courses = useAsyncApiCall(ApiEndpoints.GetAvailableCourses, {});
+
+    const TEMP_NOTIFICATION_DATA = [
+        { title: "CISC 423", description: "Jan 1, 2023", urgency: "URGENT", link: "no", id: 1 },
+    ]
+
+    const [filters, setFilters] = useState([0, 1, 2, 3, 4]);
 
     const enrolledCourses = () => {
         if (courses.loading) {
