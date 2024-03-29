@@ -354,14 +354,13 @@ const getCourseInfo = onCall(async (request) => {
 });
 
 /**
- * Enrolls the requesting user in the specified course
+ * Flips the enrollment status of a user for specific course (if not enroll -> enroll, if enrolled -> unenroll)
  */
-const courseEnroll = onCall(async (request) => {
+const courseEnrollment = onCall(async (request) => {
+
+    logger.info(`Entering courseEnrollment for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
     verifyIsAuthenticated(request);
-
-    // @ts-ignore
-    const uid: string = request.auth?.uid;
 
     const schema = object({
         courseId: string().required(),
@@ -373,32 +372,18 @@ const courseEnroll = onCall(async (request) => {
             throw new HttpsError('invalid-argument', err);
         });
 
-    await getDocData(DatabaseCollections.Course, request.data.courseId);
-
-    return addDocWithId(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId), { userId: uid, courseId: request.data.courseId });
-});
-
-/**
- * Unenrolls the requesting user from the specified course
- */
-const courseUnenroll = onCall(async (request) => {
-
-    verifyIsAuthenticated(request);
+    logger.info("Schema verification passed");
 
     // @ts-ignore
     const uid: string = request.auth?.uid;
 
-    const schema = object({
-        courseId: string().required(),
-    }).required().noUnknown(true);
+    const enrolledId: string = enrolledCourseId(uid, request.data.courseId);
 
-    await schema.validate(request.data, { strict: true })
-        .catch((err) => {
-            logger.error(`Error validating request: ${err}`);
-            throw new HttpsError('invalid-argument', err);
-        });
-
-    return deleteDoc(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId));
+    // If the user is enrolled -> unenroll them, otherwise enroll them
+    if (await docExists(DatabaseCollections.EnrolledCourse, enrolledId)) {
+        return deleteDoc(DatabaseCollections.EnrolledCourse, enrolledId);
+    }
+    return addDocWithId(DatabaseCollections.EnrolledCourse, enrolledId, { userId: uid, courseId: request.data.courseId });
 });
 
 /**
@@ -551,5 +536,5 @@ const sendCourseFeedback = onCall(async (request) => {
     return sendEmail(courseCreator.email, subject, content, "sending course feedback");
 });
 
-export { addCourse, setCourseVisibility, getAvailableCourses, getCourseInfo, courseEnroll, courseUnenroll, startCourse,
+export { addCourse, setCourseVisibility, getAvailableCourses, getCourseInfo, courseEnrollment, startCourse,
     sendBrokenLinkReport, deleteCourse, sendCourseFeedback };

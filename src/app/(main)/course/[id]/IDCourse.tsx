@@ -51,16 +51,10 @@ export default function IDCourse({
         return () => clearInterval(interval);
     }, [countdown]);
 
-    const enroll = () => {
-        return callApi(ApiEndpoints.CourseEnroll, { courseId: course.courseId })
-            .then(() => setStatus(2))
+    const enrollment = () => {
+        return callApi(ApiEndpoints.CourseEnrollment, { courseId: course.courseId })
+            .then(() => setStatus(status === 1 ? 2 : 1))
             .catch((err) => { throw new Error(`Error enrolling in course: ${err}`) });
-    };
-
-    const unEnroll = () => {
-        return callApi(ApiEndpoints.CourseUnenroll, { courseId: course.courseId })
-            .then(() => setStatus(1))
-            .catch((err) => { throw new Error(`Error unenrolling in course: ${err}`) });
     };
 
     const start = () => {
@@ -86,14 +80,14 @@ export default function IDCourse({
 
     const renderButton = () => {
         if (status === 1) {
-            return <Button text="Enroll" onClick={enroll} icon="plus" />;
+            return <Button text="Enroll" onClick={enrollment} icon="plus" />;
         } else if (status === 2) {
             return (
                 <>
                     <a href={course.link} target={"_blank"}>
                         <Button text="Start course" onClick={async () => await start()} filled icon="link"/>
                     </a>
-                    <Button text="Unenroll" onClick={unEnroll} icon="minus"/>
+                    <Button text="Unenroll" onClick={enrollment} icon="minus"/>
                     <Button text="Report Broken Link" onClick={reportBrokenLink} icon="report"/>
                 </>
             );
