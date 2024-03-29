@@ -4,11 +4,12 @@ import { sendEmail, USER_UID_LENGTH, verifyIsAdmin, verifyIsAuthenticated } from
 import { auth } from "../helpers/setup";
 import { object, string } from "yup";
 import {
-    addDocWithId, CourseDocument,
+    addDocWithId,
+    CourseDocument,
     DatabaseCollections,
     getCollection,
-    getDocData, QuizAttemptDocument,
-    UserDocument
+    getDocData,
+    QuizAttemptDocument,
 } from "../helpers/database";
 import { firestore } from "firebase-admin";
 
@@ -217,8 +218,7 @@ const getUserProfile = onCall(async (request) => {
     if (request.data.targetUid) {
         await verifyIsAdmin(request); // Only administrators can view other's profiles
     }
-    const user = await auth.getUser(targetUserUid);
-    const userName = (await getDocData(DatabaseCollections.User, targetUserUid) as UserDocument).name;
+    const userRecord = await auth.getUser(targetUserUid);
 
     // Query all enrolled courses
     const enrolledCourses = await getCollection(DatabaseCollections.EnrolledCourse)
@@ -277,10 +277,11 @@ const getUserProfile = onCall(async (request) => {
         });
 
     return {
-        name: userName,
-        email: user.email,
-        signUpDate: Date.parse(user.metadata.creationTime),
-        lastSignIn: user.metadata.lastRefreshTime ? Date.parse(user.metadata.lastRefreshTime) : -1,
+        name: userRecord.displayName,
+        email: userRecord.email,
+        role: userRecord.customClaims?.developer ? "Developer" : userRecord.customClaims?.admin ? "Administrator" : "Learner",
+        signUpDate: Date.parse(userRecord.metadata.creationTime),
+        lastSignIn: userRecord.metadata.lastRefreshTime ? Date.parse(userRecord.metadata.lastRefreshTime) : -1,
         enrolledCourses: enrolledCourses.map((courseId) => ({ id: courseId, name: courseNames[courseId] })),
         completedCourses: completedCourseData,
         quizAttempts: quizAttemptData
