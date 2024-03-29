@@ -1,3 +1,54 @@
+export function validateEmailAndLength(input: string): string {
+    const emailFormat = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!emailFormat.test(input)) {
+        return "Invalid email format.";
+    }
+
+    return "Email is valid.";
+}
+
+export function validatePassword(input: string): string[] {
+    const trimmedInput = input.trim();
+    const minLength = 10;
+    const upperCaseFormat = /[A-Z]/;
+    const lowerCaseFormat = /[a-z]/;
+    const numberFormat = /[0-9]/;
+    const specialCharFormat = /[!@#$%^&*(),.?":{}|<>]/;
+
+    let errors = [];
+
+    if (input !== trimmedInput) {
+        errors.push("Password should not have leading or trailing whitespace.");
+    }
+
+    if (input.length < minLength) {
+        errors.push("Password is too short. It should be at least 10 characters.");
+    }
+
+    if (!upperCaseFormat.test(input)) {
+        errors.push("Password should contain at least one uppercase letter.");
+    }
+
+    if (!lowerCaseFormat.test(input)) {
+        errors.push("Password should contain at least one lowercase letter.");
+    }
+
+    if (!numberFormat.test(input)) {
+        errors.push("Password should contain at least one number.");
+    }
+
+    if (!specialCharFormat.test(input)) {
+        errors.push("Password should contain at least one special character.");
+    }
+
+    if (errors.length === 0) {
+        return ["Password is valid."];
+    }
+
+    return errors;
+}
+
 export default function TextField({
     placeholder,
     text,
@@ -5,7 +56,7 @@ export default function TextField({
     style,
     hidden,
     readonly,
-    area            // toggle multi-line text input
+    area,            // toggle multi-line text input
 } : {
     placeholder?: string,
     text: number | string,
@@ -15,6 +66,30 @@ export default function TextField({
     readonly?: boolean,
     area?: boolean
 }) {
+    
+    // Check for code
+    const isCode = /[\w\s]*(function|const|let|var|if|else|return|class|for|while|switch|case|break|default|import|from|export|new|this|super|try|catch|finally|throw|break|continue|null|true|false|Infinity|NaN|undefined|typeof|instanceof|delete|void|yield|await)[\w\s]*[{()}]/.test(text.toString());
+    if (isCode) {
+        throw new Error("Entered text should not be code.");
+    }
+
+    // Check of SQL attack
+    const isSqlInjection = /(\bSELECT\b|\bUPDATE\b|\bDELETE\b|\bINSERT\b|\bWHERE\b|\bDROP\b|\bEXEC\b|\bCREATE\b|\bALTER\b|\bTRUNCATE\b|\bTABLE\b|\bDATABASE\b|\bUNION\b|\bALL\b)/i.test(text.toString());
+    if (isSqlInjection) {
+        throw new Error("Entered text should not be code.");
+    }
+
+    // Check for XSS attack
+    const isXssAttack = /(<\s*script\b[^<]*(?:(?!<\/\s*script\s*>)<[^<]*)*<\/\s*script\s*>)/i.test(text.toString());
+    if (isXssAttack) {
+        throw new Error("Entered text should not be code.");
+    }
+
+    // Check for Command Injection attack
+    const isCommandInjection = /(;|\|\||&&)\s*(ls|pwd|whoami|wget|curl|nc|netcat|python|ruby|perl|bash|sh|ssh|telnet|get|post|head|options|ftp|tftp|sftp)/i.test(text.toString());
+    if (isCommandInjection) {
+        throw new Error("Entered text should not be code.");
+    }
 
     const textarea = (
         <textarea 

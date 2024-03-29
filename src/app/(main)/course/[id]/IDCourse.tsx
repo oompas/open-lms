@@ -1,7 +1,7 @@
 "use client"
 import Button from "@/components/Button"
-import { getFunctions, httpsCallable } from "firebase/functions";
 import { useEffect, useState } from "react";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 
 export default function IDCourse({
     course,
@@ -51,20 +51,14 @@ export default function IDCourse({
         return () => clearInterval(interval);
     }, [countdown]);
 
-    const enroll = () => {
-        return httpsCallable(getFunctions(), "courseEnroll")({ courseId: course.courseId })
-            .then(() => setStatus(2))
+    const enrollment = () => {
+        return callApi(ApiEndpoints.CourseEnrollment, { courseId: course.courseId })
+            .then(() => setStatus(status === 1 ? 2 : 1))
             .catch((err) => { throw new Error(`Error enrolling in course: ${err}`) });
     };
 
-    const unEnroll = () => {
-        return httpsCallable(getFunctions(), "courseUnenroll")({ courseId: course.courseId })
-            .then(() => setStatus(1))
-            .catch((err) => { throw new Error(`Error unenrolling in course: ${err}`) });
-    };
-
     const start = () => {
-        return httpsCallable(getFunctions(), "startCourse")({ courseId: course.courseId })
+        return callApi(ApiEndpoints.StartCourse, { courseId: course.courseId })
             .then((result) => {
                 setCourseAttemptId(result.data);
                 setCountDown(60 * course.minTime);
@@ -76,10 +70,8 @@ export default function IDCourse({
 
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const reportBrokenLink = () => {
-        return httpsCallable(getFunctions(), "sendBrokenLinkReport")({ courseId: course.courseId })
-            .then(() => {
-                setShowSuccessMessage(true);
-            })
+        return callApi(ApiEndpoints.SendBrokenLinkReport, { courseId: course.courseId })
+            .then(() => setShowSuccessMessage(true))
             .catch((err) => {
                 console.error(err);
                 throw new Error(`Error reporting broken link: ${err}`)
@@ -88,14 +80,14 @@ export default function IDCourse({
 
     const renderButton = () => {
         if (status === 1) {
-            return <Button text="Enroll" onClick={enroll} icon="plus" />;
+            return <Button text="Enroll" onClick={enrollment} icon="plus" />;
         } else if (status === 2) {
             return (
                 <>
                     <a href={course.link} target={"_blank"}>
                         <Button text="Start course" onClick={async () => await start()} filled icon="link"/>
                     </a>
-                    <Button text="Unenroll" onClick={unEnroll} icon="minus"/>
+                    <Button text="Unenroll" onClick={enrollment} icon="minus"/>
                     <Button text="Report Broken Link" onClick={reportBrokenLink} icon="report"/>
                 </>
             );

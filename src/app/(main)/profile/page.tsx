@@ -1,23 +1,46 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CompletedCourse from "./CompletedCourse";
 import Button from "@/components/Button";
+import StatusBadge from "@/components/StatusBadge";
 import { generateDummyData } from "@/app/(main)/admin/tools/generateData";
 import { useAsync } from 'react-async-hook';
-import { auth, callApi } from '@/config/firebase';
+import { ApiEndpoints, auth, callApi } from '@/config/firebase';
 
 export default function Profile() {
 
     const router = useRouter()
 
     const userData = useAsync(() =>
-        callApi('getUserProfile', {}) // @ts-ignore
+        callApi(ApiEndpoints.GetUserProfile, {}) // @ts-ignore
             .then((rsp) => { setUser(rsp.data); return rsp; }),
         []);
 
     const [user, setUser] = useState();
+    const [status, setStatus] = useState("");
+
+    useEffect(() => {
+        let unsubscribe: () => void;
+        unsubscribe = auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                try {
+                    const idTokenResult = await user.getIdTokenResult();
+                    if (idTokenResult.claims.admin && idTokenResult.claims.developer) {
+                        setStatus("DEVELOPER");
+                    } else if (idTokenResult.claims.admin && !idTokenResult.claims.developer) {
+                        setStatus("ADMINISTRATOR");
+                    } else {
+                        setStatus("LEARNER");
+                    }
+                } catch (error) {
+                    console.error("Error getting custom claims: ", error);
+                }
+            }
+        });
+        return unsubscribe;
+    }, []);
 
     const generateData = async () => {
         await generateDummyData()
@@ -52,6 +75,7 @@ export default function Profile() {
             <div className="flex flex-col h-[80vh] bg-white w-[60%] p-12 rounded-2xl shadow-custom">
                 <div className="text-lg mb-4">Your Account Details</div>
                 <div className="flex flex-col w-[30rem] h-full">
+                    {status && <StatusBadge status={status} style="mb-2" />}
                     <div>Name</div>
                     {/* @ts-ignore */}
                     <div className="text-2xl mb-4">{user && user.name}</div>
