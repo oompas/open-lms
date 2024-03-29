@@ -28,7 +28,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const [showSupportForm, setShowSupportForm] = useState(false);
     const [feedback, setFeedback] = useState('');
     const [feedbackSent, setFeedbackSent] = useState(false);
-    const [showFooter, setShowFooter] = useState(true);
+    const [showFooter, setShowFooter] = useState(false);
 
     const handleSubmitFeedback = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
