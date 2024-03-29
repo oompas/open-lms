@@ -87,6 +87,7 @@ export default function SignUpPage() {
                             name={name}
                             setName={setName}
                             showName={true}
+                            isSignUpPage={true}
                         />
                         {isInvalidName && (
                             <p className="text-red-500 mt-2" style={{ maxWidth: "300px" }}>
