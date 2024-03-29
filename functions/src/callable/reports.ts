@@ -13,7 +13,7 @@ import {
     UserDocument, getDocData, CourseDocument,
 } from "../helpers/database";
 import { object, string } from "yup";
-import { getCourseStatus } from "./helpers";
+import { CourseStatus } from "./helpers";
 import { auth } from "../helpers/setup";
 import { UserRecord } from "firebase-admin/lib/auth";
 
@@ -323,8 +323,6 @@ const getCourseInsightReport = onCall(async (request) => {
 
     await verifyIsAdmin(request);
 
-    logger.info("User is an admin, querying database for this course's report...");
-
     const schema = object({
         courseId: string().required(),
     }).required().noUnknown(true);
@@ -337,140 +335,118 @@ const getCourseInsightReport = onCall(async (request) => {
 
     const { courseId } = request.data;
 
+    logger.info(`Schema verification passes`);
+
     const courseData = await getDocData(DatabaseCollections.Course, courseId) as CourseDocument;
 
-    const courseAttempts: CourseAttemptDocument[] = await getCollection(DatabaseCollections.CourseAttempt)
+    /**
+     * Get all required data for this course: enroll users, user names, latest course attempts, quiz attempts, quiz questions
+     */
+    const courseEnrollments: string[] = await getCollection(DatabaseCollections.EnrolledCourse)
         .where("courseId", "==", courseId)
         .get()
-        .then((result) => result.docs.map(doc => ({ id: doc.id, ...doc.data() }) as CourseAttemptDocument))
+        .then((result) => result.docs.map(doc => doc.data().userId))
+        .catch((error) => {
+            logger.error(`Error querying course enrollments: ${error}`);
+            throw new HttpsError('internal', "Error getting this course insight report, please try again later");
+        });
+
+    const userNames: Map<string, { name: string }> = new Map();
+    await Promise.all(courseEnrollments.map((userId) => // @ts-ignore
+        auth.getUser(userId).then((user) => userNames.set(userId, { name: user.displayName }))
+    ));
+
+    const latestCourseAttempts: Map<string, CourseAttemptDocument> = new Map();
+    await getCollection(DatabaseCollections.CourseAttempt)
+        .where("courseId", "==", courseId)
+        .get()
+        .then((result) => result.docs.map(doc => {
+            const attempt = { id: doc.id, ...doc.data() } as CourseAttemptDocument;
+            const existingAttempt = latestCourseAttempts.get(attempt.userId);
+            if (!existingAttempt || attempt.startTime > existingAttempt.startTime) { // @ts-ignore
+                latestCourseAttempts.set(attempt.userId, attempt);
+            }
+        }))
         .catch((error) => {
             logger.error(`Error querying course attempts: ${error}`);
             throw new HttpsError('internal', "Error getting this course insight report, please try again later")
         });
 
-    // Use a Map to track the latest attempt for each userId
-    const latestAttemptsByUser: Map<string, CourseAttemptDocument> = new Map();
-
-    courseAttempts.forEach((attempt) => {
-        const existingAttempt = latestAttemptsByUser.get(attempt.userId);
-        if (!existingAttempt || attempt.startTime > existingAttempt.startTime) {
-            latestAttemptsByUser.set(attempt.userId, attempt);
-        }
-    });
-
-    // Convert the Map values back to an array
-    const filteredAttempts: CourseAttemptDocument[] = Array.from(latestAttemptsByUser.values());
-
-    // Fetch quiz attempts that need marking
-    const markingStatusMap: Map<string, boolean> = new Map();
-
-    // Fetch all QuizQuestionAttempts for the course
-    const quizQuestionAttempts: QuizQuestionAttemptDocument[] = await getCollection(DatabaseCollections.QuizQuestionAttempt)
+    const latestQuizAttempts: Map<string, { id: string, pass: boolean | null, time: number }> = new Map();
+    await getCollection(DatabaseCollections.QuizAttempt)
         .where("courseId", "==", courseId)
         .get()
-        .then((result) => result.docs.map(doc => doc.data() as QuizQuestionAttemptDocument));
+        .then((result) => result.docs.map(doc => {
+            const attempt = { id: doc.id, ...doc.data() } as QuizAttemptDocument;
+            const existingAttempt = latestQuizAttempts.get(attempt.userId);
+            if (!existingAttempt || attempt.startTime.seconds > existingAttempt.time) {
+                latestQuizAttempts.set(attempt.userId, { id: attempt.id, pass: attempt.pass, time: attempt.startTime.seconds });
+            }
+        }))
+        .catch((error) => {
+            logger.error(`Error querying quiz attempts: ${error}`);
+            throw new HttpsError('internal', "Error getting this course insight report, please try again later");
+        });
 
-    quizQuestionAttempts.forEach((attempt) => {
-        if (attempt.marksAchieved === null) {
-            markingStatusMap.set(attempt.userId, true);
-        }
-    });
-
-    // Fetch user details
-    const userDetails: Map<string, { name: string }> = new Map();
-    // @ts-ignore
-    const users: UserDocument[] = await getCollection(DatabaseCollections.User)
-        .get()
-        .then((result) => result.docs.forEach(doc => {
-            userDetails.set(doc.id, { name: doc.data().name });
-        }));
-
-    // Fetch active QuizQuestions for the course
     const quizQuestions: QuizQuestionDocument[] = await getCollection(DatabaseCollections.QuizQuestion)
         .where("courseId", "==", courseId)
         .get()
-        .then(result => result.docs.map(doc => ({ id: doc.id, ...doc.data() }) as QuizQuestionDocument));
+        .then(result => result.docs.map(doc => ({ id: doc.id, ...doc.data() }) as QuizQuestionDocument))
+        .catch((error) => {
+            logger.error(`Error querying quiz questions: ${error}`);
+            throw new HttpsError('internal', "Error getting this course insight report, please try again later");
+        });
 
-    const enrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
+    /**
+     * Build the required user data
+     */
+    const learnerData = courseEnrollments.map((userId) => {
+        const courseAttempt = latestCourseAttempts.get(userId);
+        if (!courseAttempt) {
+            return {
+                name: userNames.get(userId),
+                userId: userId,
+                status: CourseStatus.Enrolled,
+                latestQuizAttemptId: null,
+                latestQuizAttemptTime: null,
+            };
+        }
 
-    const courseEnrollments = enrollments.filter((enrollment) => enrollment.courseId === courseId);
+        let status;
+        if (courseAttempt.pass === null) {
+            const latestQuiz = latestQuizAttempts.get(userId);
+            status = latestQuiz && latestQuiz.pass === null ? CourseStatus.AwaitingMarking : CourseStatus.InProgress;
+        } else if (courseAttempt.pass === false) {
+            status = CourseStatus.Failed;
+        } else if (courseAttempt.pass === true) {
+            status = CourseStatus.Passed;
+        } else {
+            throw new HttpsError("internal", `Course is in an invalid state - can't get status`);
+        }
 
-    const completedAttempts = courseAttempts.filter((attempt) => {
-        return attempt.courseId === courseId && attempt.pass === true;
-    });
-
-    const completionTimes = completedAttempts.map((attempt) => {
-        // @ts-ignore
-        const milliseconds = attempt.endTime.toMillis() - attempt.startTime.toMillis();
-        return Math.floor(milliseconds / 1000 / 60); // In minutes
-    });
-    const averageTime = completionTimes.length === 0 ? null : (1 / completionTimes.length) * completionTimes.reduce((a, b) => a + b, 0);
-
-
-    // Fetch all QuizAttempts for the course
-    const quizAttempts: QuizAttemptDocument[] = await getCollection(DatabaseCollections.QuizAttempt)
-        .where("courseId", "==", courseId)
-        .get()
-        .then((result) => result.docs.map(doc => ({ id: doc.id, ...doc.data() }) as QuizAttemptDocument));
-
-    // Store the status of each course attempt
-    const courseAttemptStatuses = new Map<string, number>();
-    await Promise.all(filteredAttempts.map((courseAttempt) =>
-        getCourseStatus(courseAttempt.courseId, courseAttempt.userId).then((status) => courseAttemptStatuses.set(courseAttempt.userId, status))
-    ));
-
-
-    // Combine data to create the courseLearners array
-    const courseLearners = filteredAttempts.map((courseAttempt) => {
-        const userName = userDetails.get(courseAttempt.userId)?.name || "Unknown User";
-
-        const courseAttemptQuizzes = quizAttempts.filter((quizAttempt) => quizAttempt.courseAttemptId == courseAttempt.id);
-
-        let latestQuizAttempt = courseAttemptQuizzes.reduce<QuizAttemptDocument | undefined>((latest, current) => {
-            // If latest is null or undefined, or current has no endTime, current becomes the latest
-            if (!latest || !current.endTime) {
-                return current;
-            }
-            // If latest has no endTime, it remains as the latest
-            if (!latest.endTime) {
-                return latest;
-            }
-            // Compare endTime of latest and current to determine the latest
-            return current.endTime > latest.endTime ? current : latest;
-        }, undefined); // Start with undefined to ensure the first element is evaluated
+        const latestQuiz = latestQuizAttempts.get(userId) ?? null;
 
         return {
-            name: userName,
-            userId: courseAttempt.userId,
-            completionStatus: courseAttemptStatuses.get(courseAttempt.userId), // @ts-ignore
-            quizAttemptId: latestQuizAttempt.id, // @ts-ignore
-            quizAttemptTime: latestQuizAttempt.endTime.seconds,
+            name: userNames.get(userId),
+            userId: userId,
+            status: status,
+            latestQuizAttemptId: latestQuiz?.id ?? null,
+            latestQuizAttemptTime: latestQuiz?.time ?? null,
         };
     });
 
-    // Add total marks for short answers for front-end convenience
-    const questionsWithStats = quizQuestions.map((question) => {
-        if (question.type !== "sa") {
-            return question;
-        }
+    const latestCoursesArray = Array.from(latestCourseAttempts.values());
+    const averageTime = !latestCoursesArray.length ? null : latestCoursesArray
+        .filter((attempt) => attempt.endTime) // @ts-ignore
+        .reduce((total, attempt) => total + (attempt.endTime.seconds - attempt.startTime.seconds), 0) / latestCoursesArray.length;
 
-        // @ts-ignore
-        const distributionValues = Object.keys(question.stats.distribution);
-        let totalScore = 0;
-        distributionValues.forEach((key: string) => { // @ts-ignore
-            totalScore += question.stats.distribution[key] * Number(key);
-        }); // @ts-ignore
-        question.stats.totalScore = totalScore;
-        return question;
-    });
-
-    // Combine all stats for the return array
     return {
         courseName: courseData.name,
-        learners: courseLearners,
-        questions: questionsWithStats,
+        learners: learnerData,
+        questions: quizQuestions,
         numEnrolled: courseEnrollments.length,
-        numComplete: completedAttempts.length,
+        numStarted: latestCourseAttempts.size,
+        numComplete: latestCoursesArray.reduce((count, attempt) => attempt.pass === true ? ++count : count, 0),
         avgTime: averageTime
     };
 });

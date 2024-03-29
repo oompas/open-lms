@@ -218,4 +218,4 @@ const updateQuizStatus = async (quizAttemptId: string, markerUid: string | null)
     return Promise.all(promises).then(() => `Quiz attempt '${quizAttemptId}' status updated successfully`);
 }
 
-export { enrolledCourseId, reportedCourseId, getCourseStatus, getLatestCourseAttempt, updateQuizStatus };
+export { CourseStatus, enrolledCourseId, reportedCourseId, getCourseStatus, getLatestCourseAttempt, updateQuizStatus };
