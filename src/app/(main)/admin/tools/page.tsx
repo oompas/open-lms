@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ApiEndpoints, callApi, useAsyncApiCall } from "@/config/firebase";
 import TextField from "@/components/TextField";
+import { downloadZip } from "client-zip";
 
 export default function Tools() {
 
@@ -139,14 +140,26 @@ export default function Tools() {
 
     const downloadCourseReports = async () => {
         await callApi(ApiEndpoints.DownloadCourseReports, {}) // @ts-ignore
-            .then((response: { data: string }) => {
-                const blob = new Blob([response.data], { type: 'text/csv' });
+            .then(async (response: { data: { courses: string, quizQuestions: string, courseAttempts: string, quizAttempts: string, quizQuestionAttempts: string } }) => {
+
+                // Since there's multiple files, create a zip file
                 const currentTime = new Date().toLocaleString().replace(/,/g, '').replace(/ /g, '_');
 
-                const file = document.createElement('a');
-                file.href = window.URL.createObjectURL(blob);
-                file.download = `course_reports_${currentTime}.csv`;
+                const courses = { name: "course_data.csv", lastModified: new Date(), input: response.data.courses };
+                const quizQuestions = { name: "quiz_question_data.csv", lastModified: new Date(), input: response.data.quizQuestions };
+                const courseAttempts = { name: "course_attempt_data.csv", lastModified: new Date(), input: response.data.courseAttempts };
+                const quizAttempts = { name: "quiz_attempt_data.csv", lastModified: new Date(), input: response.data.quizAttempts };
+                const quizQuestionAttempts = { name: "quiz_question_attempt_data.csv", lastModified: new Date(), input: response.data.quizQuestionAttempts };
+
+                const blob = await downloadZip([courses, quizQuestions, courseAttempts, quizAttempts, quizQuestionAttempts]).blob();
+
+                // Download the zip file on the user's browser
+                const file = document.createElement("a");
+                file.href = URL.createObjectURL(blob);
+                file.download = `openLMS_course_reports${currentTime}.zip`;
                 document.body.appendChild(file); // Required for this to work in FireFox
+                file.click();
+                file.remove();
                 file.click();
             })
             .catch((error) => console.log(`Error downloading course reports: ${error}`));
@@ -155,12 +168,14 @@ export default function Tools() {
     const downloadUserReports = async () => {
         await callApi(ApiEndpoints.DownloadUserReports, {}) // @ts-ignore
             .then((response: { data: string }) => {
-                const blob = new Blob([response.data], { type: 'text/csv' });
-                const currentTime = new Date().toLocaleString().replace(/,/g, '').replace(/ /g, '_');
 
+                const currentTime = new Date().toLocaleString().replace(/,/g, '').replace(/ /g, '_');
+                const blob = new Blob([response.data], { type: 'text/csv' });
+
+                // Download the file on the user's browser
                 const file = document.createElement('a');
                 file.href = window.URL.createObjectURL(blob);
-                file.download = `user_reports_${currentTime}.csv`;
+                file.download = `openLMS_user_reports_${currentTime}.csv`;
                 document.body.appendChild(file); // Required for this to work in FireFox
                 file.click();
             })
