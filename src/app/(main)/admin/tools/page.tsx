@@ -137,7 +137,7 @@ export default function Tools() {
         );
     }
 
-    const handleDownloadReports = async () => {
+    const downloadCourseReports = async () => {
         await callApi(ApiEndpoints.DownloadCourseReports, {}) // @ts-ignore
             .then((response: { data: string }) => {
                 const blob = new Blob([response.data], { type: 'text/csv' });
@@ -146,6 +146,21 @@ export default function Tools() {
                 const file = document.createElement('a');
                 file.href = window.URL.createObjectURL(blob);
                 file.download = `course_reports_${currentTime}.csv`;
+                document.body.appendChild(file); // Required for this to work in FireFox
+                file.click();
+            })
+            .catch((error) => console.log(`Error downloading course reports: ${error}`));
+    }
+
+    const downloadUserReports = async () => {
+        await callApi(ApiEndpoints.DownloadUserReports, {}) // @ts-ignore
+            .then((response: { data: string }) => {
+                const blob = new Blob([response.data], { type: 'text/csv' });
+                const currentTime = new Date().toLocaleString().replace(/,/g, '').replace(/ /g, '_');
+
+                const file = document.createElement('a');
+                file.href = window.URL.createObjectURL(blob);
+                file.download = `user_reports_${currentTime}.csv`;
                 document.body.appendChild(file); // Required for this to work in FireFox
                 file.click();
             })
@@ -181,16 +196,11 @@ export default function Tools() {
                 </div>
                 <div className="flex flex-row mt-4">
                     <Button text="Cancel" onClick={() => setCurrentPopup(null)} style="ml-auto"/>
-                    <Button
-                        text="Download"
-                        onClick={() => handleDownloadReports()}
-                        style="ml-4"
-                        filled
-                    />
+                    <Button text="Download" onClick={() => downloadCourseReports()} style="ml-4" filled/>
                 </div>
             </div>
         </div>
-    )
+    );
 
     const downloadUserReportsPopup = (
         <div
@@ -201,12 +211,12 @@ export default function Tools() {
                     To see all course progress data in more details, download the course reports instead
                 </div>
                 <div className="flex flex-row mt-4">
-                    <Button text="Cancel" onClick={() => setCurrentPopup(null)} style="ml-auto" />
-                    <Button text="Download" onClick={() => setCurrentPopup(PopupType.DowloadCourseReports)} style="ml-4" filled />
+                    <Button text="Cancel" onClick={() => setCurrentPopup(null)} style="ml-auto"/>
+                    <Button text="Download" onClick={() => downloadUserReports()} style="ml-4" filled/>
                 </div>
             </div>
         </div>
-    )
+    );
 
     const renderPopup = () => {
         switch (currentPopup) {

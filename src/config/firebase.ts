@@ -48,6 +48,7 @@ enum ApiEndpoints {
     GetCourseInsights = "getCourseInsights",
     DownloadCourseReports = "downloadCourseReports",
     GetUserInsights = "getUserInsights",
+    DownloadUserReports = "downloadUserReports",
     GetCourseInsightReport = "getCourseInsightReport",
 
     // Misc
