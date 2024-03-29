@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ApiEndpoints, callApi } from "@/config/firebase";
 import Button from "@/components/Button";
+import TextField from '@/components/TextField';
 
 export default function ForgotPasswordPage() {
     const router = useRouter();
@@ -27,12 +28,11 @@ export default function ForgotPasswordPage() {
             <div className="flex flex-col bg-white p-12 rounded-2xl shadow-custom">
                 <div className="text-2xl font-bold mb-4">Forgot password?</div>
                 <div className="flex flex-col space-y-4">
-                    <div className="flex flex-col">
-                        <p className="mb-1 text-md">Email</p>
-                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                               className="border rounded-md px-3 py-2"/>
+                    <div className="flex flex-col mb-2">
+                        <p className="mb-1 text-md">Account Email</p>
+                        <TextField text={email} onChange={setEmail} />
                     </div>
-                    <Button text="Send Reset Email" onClick={sendResetEmail} filled={true} style="mt-4"/>
+                    <Button text="Send Reset Email" onClick={sendResetEmail} filled={true} style="mt-6"/>
                     {isSent && <p>Password reset email was sent.</p>}
                     <Button text="Back to Login" onClick={() => router.push('/')} style="border-[3px] border-red-800 mt-4" filled={false}/>
                 </div>
