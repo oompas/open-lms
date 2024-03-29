@@ -141,6 +141,7 @@ interface CourseDocument extends DatabaseDocument {
         timeLimit: number | null;
         totalMarks: number;
     } | null;
+    creationTime: firestore.Timestamp;
     retired?: firestore.Timestamp;
     version: number;
 }
@@ -197,7 +198,7 @@ interface QuizQuestionAttemptDocument extends DatabaseDocument {
     questionId: string;
     response: string | number;
     marksAchieved: number | null;
-    maxMarks?: number;
+    maxMarks: number;
 }
 
 export {

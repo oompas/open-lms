@@ -10,7 +10,7 @@ import {
     QuizAttemptDocument,
     QuizQuestionDocument,
     QuizQuestionAttemptDocument,
-    UserDocument, getDocData, CourseDocument, ReportedCourseDocument,
+    UserDocument, getDocData, CourseDocument,
 } from "../helpers/database";
 import { object, string } from "yup";
 import { getCourseStatus } from "./helpers";
@@ -118,31 +118,99 @@ const downloadCourseReports = onCall(async (request) => {
 
     logger.info(`Schema validation passed`);
 
-    const courseData = await getCollectionDocs(DatabaseCollections.Course) as CourseDocument[];
+    const tables: { courses: string, quizQuestions: string, courseAttempts: string, quizAttempts: string, quizQuestionAttempts: string } = {
+        courses: '',
+        quizQuestions: '',
+        courseAttempts: '',
+        quizAttempts: '',
+        quizQuestionAttempts: '',
+    };
 
-    const courses: { [key: string]: any }[] = await getCollectionDocs(DatabaseCollections.Course) // @ts-ignore
-        .then((result: CourseDocument[]) => {
-            return result.map((course) => {
+    await Promise.all([ // @ts-ignore
+        getCollectionDocs(DatabaseCollections.Course).then((result: CourseDocument[]) => {
+            tables.courses = toCSV(result.map((course) => {
                 return {
-                    courseId: course.id,
-                    name: course.name,
-                    description: course.description,
-                    link: course.link,
-                    active: course.active,
-                    minTime: course.minTime,
-                    userId: course.userId,
-                    hasQuiz: course.quiz !== null,
-                    quizMaxAttempts: course.quiz?.maxAttempts,
-                    quizMinScore: course.quiz?.minScore,
-                    quizPreserveOrder: course.quiz?.preserveOrder,
-                    quizTimeLimit: course.quiz?.timeLimit,
-                    retired: course.retired,
-                    version: course.version,
-                };
-            });
-        });
+                    'Course ID': course.id,
+                    'Name': course.name,
+                    'Description': course.description,
+                    'Link': course.link,
+                    'Minimum course time (minutes)': course.minTime,
 
-    return toCSV(courses);
+                    'Active?': course.active ? "Yes" : "No",
+                    'Creation time': course.creationTime?.toDate().toUTCString().replace(/,/g, ''),
+                    'Retired?': course.retired?.toDate().toUTCString().replace(/,/g, ''),
+                    'Version': course.version,
+                    'Creator user ID': course.userId,
+
+                    'Has quiz?': course.quiz ? "Yes" : "No",
+                    'Quiz max attempts': course.quiz?.maxAttempts,
+                    'Quiz min score': course.quiz?.minScore,
+                    'Quiz preserve order?': course.quiz?.preserveOrder ? "Yes" : "No",
+                    'Quiz time limit (minutes)': course.quiz?.timeLimit,
+                };
+            }));
+        }), // @ts-ignore
+        getCollectionDocs(DatabaseCollections.QuizQuestion).then((result: QuizQuestionDocument[]) => {
+            tables.quizQuestions = toCSV(result.map((question) => {
+                return {
+                    'Question ID': question.id,
+                    'Course ID': question.courseId,
+                    'Question': question.question,
+                    'Type': question.type === "mc" ? "Multiple Choice" : question.type === "tf" ? "True/False" : "Short Answer",
+                    'Answer options (mc/tf only)': question.answers,
+                    'Correct answer (mc/tf only)': (question.answers && question.correctAnswer) ? question.answers[question.correctAnswer] : null,
+                    'Question stats': JSON.stringify(question.stats),
+                };
+            }));
+        }), // @ts-ignore
+        getCollectionDocs(DatabaseCollections.CourseAttempt).then((result: CourseAttemptDocument[]) => {
+            tables.courseAttempts = toCSV(result.map((attempt) => {
+                return {
+                    'Attempt ID': attempt.id,
+                    'Course ID': attempt.courseId,
+                    'User ID': attempt.userId,
+
+                    'Start time': attempt.startTime.toDate().toUTCString().replace(/,/g, ''),
+                    'End time': attempt.endTime?.toDate().toUTCString().replace(/,/g, ''),
+                    'Pass?': attempt.pass === true ? "Passed" : attempt.pass === false ? "Failed" : "Not completed",
+                };
+            }));
+        }), // @ts-ignore
+        getCollectionDocs(DatabaseCollections.QuizAttempt).then((result: QuizAttemptDocument[]) => {
+            tables.quizAttempts = toCSV(result.map((attempt) => {
+                return {
+                    'Quiz attempt ID': attempt.id,
+                    'Course ID': attempt.courseId,
+                    'Course attempt ID': attempt.courseAttemptId,
+                    'User ID': attempt.userId,
+
+                    'Start time': attempt.startTime.toDate().toUTCString().replace(/,/g, ''),
+                    'End time': attempt.endTime?.toDate().toUTCString().replace(/,/g, ''),
+                    'Pass?': attempt.pass === true ? "Passed" : attempt.pass === false ? "Failed" : "Not completed",
+                    'Score': attempt.score,
+                    'Expired (didn\'t submit in time)?': attempt.expired ? "Yes" : "No",
+                };
+            }));
+        }), // @ts-ignore
+        getCollectionDocs(DatabaseCollections.QuizQuestionAttempt).then((result: QuizQuestionAttemptDocument[]) => {
+            tables.quizQuestionAttempts = toCSV(result.map((attempt) => {
+                return {
+                    'Quiz question attempt ID': attempt.id,
+                    'Course ID': attempt.courseId,
+                    'Question ID': attempt.questionId,
+                    'User ID': attempt.userId,
+                    'Course attempt ID': attempt.courseAttemptId,
+                    'Quiz question ID': attempt.questionId,
+
+                    'Response': attempt.response,
+                    'Max marks': attempt.maxMarks,
+                    'Marks achieved': attempt.marksAchieved,
+                };
+            }));
+        }),
+    ]);
+
+    return tables;
 });
 
 /**

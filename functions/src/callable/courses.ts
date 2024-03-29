@@ -126,6 +126,7 @@ const addCourse = onCall(async (request) => {
         link: request.data.link,
         minTime: request.data.minTime,
         quiz: quiz,
+        creationTime: firestore.FieldValue.serverTimestamp(),
     };
 
     const courseId = await addDoc(DatabaseCollections.Course, courseData);
