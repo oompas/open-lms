@@ -137,6 +137,26 @@ export default function Tools() {
         );
     }
 
+    const handleDownloadReports = () => {
+
+        // TODO: call api
+
+        // text content
+        const texts = ["line 1", "line 2", "line 3"];
+
+        // file object
+        const file = new Blob(texts, {type: 'text/plain'});
+
+        // anchor link
+        const element = document.createElement("a");
+        element.href = URL.createObjectURL(file);
+        element.download = "100ideas-" + Date.now() + ".txt";
+
+        // simulate link click
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
+    }
+
     const handleInvite = async () => {
         callApi(ApiEndpoints.InviteLearner, { emails: [inviteEmail]})
             .then(() => alert("user invited!"))
@@ -165,15 +185,21 @@ export default function Tools() {
                     be large
                 </div>
                 <div className="flex flex-row mt-4">
-                    <Button text="Cancel" onClick={() => setCurrentPopup(null)} style="ml-auto" />
-                    <Button text="Download" onClick={() => setCurrentPopup(PopupType.DowloadCourseReports)} style="ml-4" filled />
+                    <Button text="Cancel" onClick={() => setCurrentPopup(null)} style="ml-auto"/>
+                    <Button
+                        text="Download"
+                        onClick={() => handleDownloadReports()}
+                        style="ml-4"
+                        filled
+                    />
                 </div>
             </div>
         </div>
     )
 
     const downloadUserReportsPopup = (
-        <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 z-50 bg-white bg-opacity-50">
+        <div
+            className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 z-50 bg-white bg-opacity-50">
             <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
                 <div className="text-lg mb-2">
                     Downloading user reports will download all user-related data, and a summary of their course progress.
