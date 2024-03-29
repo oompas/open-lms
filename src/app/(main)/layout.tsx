@@ -5,6 +5,8 @@ import { auth, callApi } from '@/config/firebase';
 import { useRouter } from "next/navigation";
 import { useState } from 'react';
 import Button from "@/components/Button";
+import { MdChevronLeft } from 'react-icons/md';
+import TextField from '@/components/TextField';
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
@@ -26,10 +28,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const [showSupportForm, setShowSupportForm] = useState(false);
     const [feedback, setFeedback] = useState('');
     const [feedbackSent, setFeedbackSent] = useState(false);
-
-    const handleFeedbackChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setFeedback(event.target.value);
-    };
+    const [showFooter, setShowFooter] = useState(true);
 
     const handleSubmitFeedback = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -49,51 +48,50 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     return (
         <html lang="en">
         <body className="h-[100vh] px-20 bg-gray-100 overflow-x-hidden">
-        <div className="flex flex-row px-12 h-[13vh] items-center bg-white rounded-b-2xl shadow-custom">
-            <Link href="/home" className="font-bold text-4xl">OpenLMS</Link>
-            <div className="flex ml-auto space-x-10 text-2xl">
-                {isAdmin && <Link href="/admin/tools" className="hover:opacity-50 duration-75">Admin Tools</Link>}
-                <Link href="/profile" className="hover:opacity-50 duration-75">View Profile</Link>
-            </div>
-        </div>
-        
-        <div className='flex h-[85vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar'>
-            {children}
-        </div>
-
-        {showSupportForm && (
-            <div className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
-                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                    <div className="text-lg mb-2">Request Technical Support</div>
-                    <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-left">
-                                <textarea
-                                    value={feedback}
-                                    onChange={handleFeedbackChange}
-                                    className="block w-full md:w-96 rounded-md mt-2 p-2 border-2 border-gray-800"
-                                    rows={4}
-                                    required
-                                    placeholder="Enter your request here"
-                                ></textarea>
-                        <div className="flex flex-row mt-4">
-                            <Button text="Cancel" onClick={() => {
-                                setShowSupportForm(false);
-                                setFeedbackSent(false);
-                            }} style="mr-4" />
-                            <Button text="Submit" onClick={handleSubmitFeedback} filled/>
-                        </div>
-                        {feedbackSent && <p className="text-green-500 mt-2">Request sent successfully!</p>}
-                    </form>
+            <div className="flex flex-row px-12 h-[13vh] items-center bg-white rounded-b-2xl shadow-custom">
+                <Link href="/home" className="font-bold text-4xl">OpenLMS</Link>
+                <div className="flex ml-auto space-x-10 text-2xl">
+                    {isAdmin && <Link href="/admin/tools" className="hover:opacity-50 duration-75">Admin Tools</Link>}
+                    <Link href="/profile" className="hover:opacity-50 duration-75">View Profile</Link>
                 </div>
             </div>
-        )}
-
-        <footer className="flex flex-col justify-between items-center bg-gray-800 rounded-t-2xl shadow-custom">
-            <div className="flex flex-row justify-center mt-6">
-                <Button text="Access Platform User Guide" onClick={() => {}} style="mr-4 text-sm" filled/>
-                <Button text="Request Technical Support" onClick={handleSupportRequest} style="text-sm" filled/>
+            
+            <div className='flex h-[85vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar'>
+                {children}
             </div>
-            <span className="text-white p-4">&copy; {new Date().getFullYear()} OpenLMS. All rights reserved.</span>
-        </footer>
+
+            { showSupportForm && (
+                <div className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
+                    <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                        <div className="text-lg mb-2">Request platform support.</div>
+                        <TextField text={feedback} onChange={setFeedback} area placeholder="type your message here..." />
+                        <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-left">
+                            <div className="flex flex-row mt-4">
+                                <Button text="Cancel" onClick={() => {
+                                    setShowSupportForm(false);
+                                    setFeedbackSent(false);
+                                }} style="mr-4" />
+                                <Button text="Submit" onClick={handleSubmitFeedback} filled/>
+                            </div>
+                            { feedbackSent && <p className="text-green-700 mt-4">Request sent successfully! Admins will be in touch once your message is recieved!</p> }
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            <button 
+                className={"fixed bg-gray-800 right-28 rounded-t-md duration-100 "+(showFooter ? "bottom-20" : "bottom-0")}
+                onClick={() => setShowFooter(!showFooter)}
+            >
+                <MdChevronLeft color="white" className="rotate-90" size={38} />
+            </button>
+            <footer className={"flex flex-row items-center fixed w-auto px-4 rounded-t-2xl h-20 left-20 right-20 shadow-custom bg-gray-800 duration-100 "+(showFooter ? "bottom-0" : "-bottom-20")}>
+                <div className="flex flex-row justify-center">
+                    <Button text="Access Platform User Guide" onClick={() => {}} style="mr-4 text-sm" filled/>
+                    <Button text="Request Technical Support" onClick={handleSupportRequest} style="text-sm" filled/>
+                </div>
+                <span className="text-white ml-auto">&copy; {new Date().getFullYear()} OpenLMS. All rights reserved.</span>
+            </footer>
         </body>
         </html>
     )
