@@ -35,7 +35,7 @@ export default function AuthForm({
                 <p className="mb-1 text-md">Password</p>
                 <TextField text={password} onChange={setPass} placeholder="******" hidden={true}/>
                 {onForgotPassword && (
-                    <p className="mt-2 text-gray-500 cursor-pointer" onClick={onForgotPassword}>Forgot your
+                    <p className="mt-2 text-blue-800 cursor-pointer" onClick={onForgotPassword}>Forgot your
                         password?</p>
                 )}
             </div>
