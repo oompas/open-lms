@@ -436,9 +436,9 @@ const getCourseInsightReport = onCall(async (request) => {
     });
 
     const latestCoursesArray = Array.from(latestCourseAttempts.values());
-    const averageTime = !latestCoursesArray.length ? null : latestCoursesArray
+    const averageTime = !latestCoursesArray.length ? null : Math.floor(latestCoursesArray
         .filter((attempt) => attempt.endTime) // @ts-ignore
-        .reduce((total, attempt) => total + (attempt.endTime.seconds - attempt.startTime.seconds), 0) / latestCoursesArray.length;
+        .reduce((total, attempt) => total + (attempt.endTime.seconds - attempt.startTime.seconds), 0) / latestCoursesArray.length);
 
     return {
         courseName: courseData.name,
@@ -447,7 +447,7 @@ const getCourseInsightReport = onCall(async (request) => {
         numEnrolled: courseEnrollments.length,
         numStarted: latestCourseAttempts.size,
         numComplete: latestCoursesArray.reduce((count, attempt) => attempt.pass === true ? ++count : count, 0),
-        avgTime: averageTime
+        avgTime: averageTime, // In seconds
     };
 });
 
