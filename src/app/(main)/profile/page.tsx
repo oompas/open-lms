@@ -17,6 +17,14 @@ export default function Profile() {
     const [user, setUser] = useState();
     const [status, setStatus] = useState("");
 
+    const unixToString = (unix: number) => {
+        if (unix === -1) {
+            return "Never";
+        }
+
+        return new Date(unix).toDateString() + ", " + new Date(unix).toLocaleTimeString();
+    }
+
     useEffect(() => {
         let unsubscribe: () => void;
         unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -67,39 +75,40 @@ export default function Profile() {
     }
 
     return (
-        <main className="flex justify-center w-full h-full pb-[2vh]">
-            <div className="flex flex-col h-[80vh] bg-white w-[60%] p-12 rounded-2xl shadow-custom">
+        <main className="flex w-full h-full pb-[2vh]">
+            <div className={`flex flex-col h-[80vh] bg-white ${status === "LEARNER" ? 'w-[60%]' : 'w-full'} p-12 rounded-2xl shadow-custom`}>
                 <div className="text-lg mb-4">Your Account Details</div>
-                <div className="flex flex-col w-[30rem] h-full">
-                    {status && <StatusBadge status={status} style="mb-2" />}
-                    <div>Name</div>
+                <div className="flex flex-col h-full">
+                    {status && <StatusBadge status={status} style="mb-2"/>}
                     {/* @ts-ignore */}
-                    <div className="text-2xl mb-4">{user && user.name}</div>
-                    <div>Email</div>
-                    {/* @ts-ignore */}
-                    <div className="text-2xl mb-6">{user && user.email}</div>
-                    <Button text="Log Out" onClick={async () => await logout()} />
-                    <Button text="Delete Account" onClick={() => router.push('/home')} style="mt-auto" />
-                    {/* <Button text="Add dummy data (WILL CLEAN DATABASE)" onClick={async () => await generateData()}/> */}
+                    <div className="text-2xl font-bold mt-2">{user && user.name}</div>
+                    <div className="flex flex-col h-full items-end mb-auto">
+                        {/* @ts-ignore */}
+                        <div className="mr-auto text-lg mb-4">{user && user.email}</div>
+                        {/* @ts-ignore */}
+                        <div className="mr-auto text-lg">Joined: <i>{user && unixToString(user.signUpDate)}</i></div>
+                    </div>
+                    <Button text="Log Out" onClick={async () => await logout()}/>
                 </div>
             </div>
-            <div className="flex flex-col h-[80vh] bg-white w-[38%] ml-[2%] p-12 rounded-2xl shadow-custom">
-                <div className="flex flex-row mb-4">
-                    <div className="text-lg mr-auto">Completed Courses</div>
+            {status && status === "LEARNER" && (
+                <div className="flex flex-col h-[80vh] bg-white w-[38%] ml-[2%] p-12 rounded-2xl shadow-custom">
+                    <div className="flex flex-row mb-4">
+                        <div className="text-lg mr-auto">Completed Courses</div>
+                    </div>
+                    <div className="flex flex-col justify-between overflow-y-scroll sm:no-scrollbar">
+                        {/* @ts-ignore */}
+                        {user && user.completedCourses.map((course, key) => (
+                            <CompletedCourse
+                                key={key}
+                                title={course.name}
+                                date={course.date}
+                                id={course.courseId}
+                            />
+                        ))}
+                    </div>
                 </div>
-                <div className="flex flex-col justify-between overflow-y-scroll sm:no-scrollbar">
-                    {/* @ts-ignore */}
-                    {user && user.completedCourses.map((course, key) => (
-                        <CompletedCourse
-                            key={key}
-                            title={course.name}
-                            date={course.date}
-                            id={course.courseId}
-                        />
-                    ))}
-                </div>
-            </div>
-
+            )}
             { loadingPopup() }
 
         </main>
