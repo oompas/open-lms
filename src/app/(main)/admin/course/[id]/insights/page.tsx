@@ -23,7 +23,6 @@ export default function Insights({ params }: { params: { id: string } }) {
     const courseData = useAsyncApiCall(ApiEndpoints.GetCourseInsightReport, { courseId: params.id }, (rsp) => { setData(rsp.data); return rsp; });
 
     const [data, setData] = useState();
-    console.log(JSON.stringify(data, null, 4));
 
     const getEnrolledLearners = () => {
         if (!data) return;
@@ -115,6 +114,19 @@ export default function Insights({ params }: { params: { id: string } }) {
         );
     }
 
+    const getAverageTime = () => {
+        if (!data) {
+            return;
+        } // @ts-ignore
+        if (!data.avgTime) {
+            return "N/A";
+        }
+
+        // @ts-ignore
+        const time: number = data.avgTime;
+        return time > 3600 ? `${Math.floor(time / 3600)}h ${Math.floor((time % 3600) / 60)}m` : `${Math.floor(time / 60)}m`;
+    }
+
     return (
         <main className="w-full h-full pb-4">
             <div className="h-full overflow-y-scroll rounded-2xl sm:no-scrollbar">
@@ -122,6 +134,8 @@ export default function Insights({ params }: { params: { id: string } }) {
                     <div className="flex flex-col">
                         {/* @ts-ignore */}
                         <div className="text-xl font-bold mb-4">{data ? data.courseName : ""}</div>
+                        {/* @ts-ignore */}
+                        <div className="text-xl mb-4">Average completion time: {getAverageTime()}</div>
                         <div className="flex flex-row space-x-6">
                             <div className="flex flex-col items-center">
                                 <div>Learners Enrolled</div>
