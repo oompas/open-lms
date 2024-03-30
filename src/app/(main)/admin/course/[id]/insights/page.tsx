@@ -94,7 +94,10 @@ export default function Insights({ params }: { params: { id: string } }) {
                                     {question.question}
                                 </td>
                                 <td className="border p-2">
-                                    {question.stats.totalScore ? (question.stats.totalScore/(question.stats.numAttempts*question.marks)) : null}
+                                    {question.stats.numAttempts
+                                        ? Math.round(100 * question.stats.totalScore / (question.stats.numAttempts * question.marks))
+                                        : "-"
+                                    }
                                 </td>
                             </tr>
                         ))}
