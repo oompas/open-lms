@@ -61,6 +61,11 @@ enum ApiEndpoints {
 
 const functions = getFunctions();
 const callApi = (endpoint: ApiEndpoints, payload: object) => httpsCallable(functions, endpoint)(payload);
-const useAsyncApiCall = (endpoint: ApiEndpoints, payload: object) => useAsync(() => httpsCallable(functions, endpoint)(payload), []);
+const useAsyncApiCall = (endpoint: ApiEndpoints, payload: object, then?: (rsp: any) => any) => {
+    if (then) {
+        return useAsync(() => httpsCallable(functions, endpoint)(payload).then(then), []);
+    }
+    return useAsync(() => httpsCallable(functions, endpoint)(payload), []);
+}
 
 export { auth, ApiEndpoints, callApi, useAsyncApiCall };

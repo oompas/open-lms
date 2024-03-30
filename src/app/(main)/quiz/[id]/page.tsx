@@ -2,8 +2,7 @@
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import React, { useState, useEffect } from 'react';
-import { ApiEndpoints, callApi } from "@/config/firebase";
-import { useAsync } from "react-async-hook";
+import { ApiEndpoints, callApi, useAsyncApiCall } from "@/config/firebase";
 import { MdCheckCircleOutline } from "react-icons/md";
 import { RiCheckboxCircleFill, RiCheckboxBlankCircleLine } from "react-icons/ri";
 
@@ -13,10 +12,10 @@ export default function Quiz({ params }: { params: { id: string } }) {
   
     const [countdown, setCountDown] = useState(0);
     const [showConfim, setShowConfirm] = useState(false);
+    const [emptySubmit, setEmptySubmit] = useState(false);
 
-    const getQuizData = useAsync(() =>
-        callApi(ApiEndpoints.GetQuiz, { quizAttemptId: params.id.split('-')[1] })
-            .then((rsp) => {
+    const getQuizData = useAsyncApiCall(ApiEndpoints.GetQuiz, { quizAttemptId: params.id.split('-')[1] },
+            (rsp) => {
                 if (rsp.data === "Invalid") {
                     return rsp;
                 }
@@ -26,8 +25,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
                 // @ts-ignore
                 setUserAnswers(rsp.data.questions.map(question => question.id).reduce((prev: any, cur: any) => ({ ...prev, [cur]: null }), {}));
                 return rsp;
-            }),
-        []);
+            }
+        );
 
     // @ts-ignore
     const quizData: undefined | "Invalid" | { questions: any[], timeLimit: number, courseName: number, numAttempts: number, maxAttempts: number, startTime: number }
@@ -236,8 +235,23 @@ export default function Quiz({ params }: { params: { id: string } }) {
                 <div className="flex flex-col h-full mb-4 overflow-y-scroll sm:no-scrollbar">
                     {renderProgress()}
                 </div>
-                <div className="flex justify-center mt-8">
-                    <Button text="Submit Quiz" onClick={() => setShowConfirm(true) } filled style="mx-auto mt-auto"/>
+                <div className="justify-center mt-8">
+                    { emptySubmit && <div className="text-red-500 text-sm mb-4">Please answer at least one question</div> }
+                    <Button
+                        text="Submit Quiz"
+                        onClick={() => {
+                            if (!Object.values(userAnswers).some((answer) => answer)) {
+                                setEmptySubmit(true);
+                                return;
+                            }
+                            setEmptySubmit(false);
+
+                            setShowConfirm(true);
+                        }}
+                        filled
+                        style="mx-auto mt-auto"
+                    />
+
                 </div>
             </div>
             {(!quizData || quizData === "Invalid") && loadingPopup()}
