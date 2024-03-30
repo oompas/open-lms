@@ -2,6 +2,7 @@
 import Button from "@/components/Button"
 import { useEffect, useState } from "react";
 import { ApiEndpoints, callApi } from "@/config/firebase";
+import TextField from "@/components/TextField";
 
 export default function IDCourse({
     course,
@@ -68,15 +69,6 @@ export default function IDCourse({
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });
     }
 
-    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-    const reportBrokenLink = () => {
-        return callApi(ApiEndpoints.SendBrokenLinkReport, { courseId: course.courseId })
-            .then(() => setShowSuccessMessage(true))
-            .catch((err) => {
-                console.error(err);
-                throw new Error(`Error reporting broken link: ${err}`)
-            });
-    }
 
     const renderButton = () => {
         if (status === 1) {
@@ -88,7 +80,7 @@ export default function IDCourse({
                         <Button text="Start course" onClick={async () => await start()} filled icon="link"/>
                     </a>
                     <Button text="Unenroll" onClick={enrollment} icon="minus"/>
-                    <Button text="Report Broken Link" onClick={reportBrokenLink} icon="report"/>
+                    <Button text="Request help" onClick={handleSupportRequest} icon="report"/>
                 </>
             );
         }
@@ -97,7 +89,6 @@ export default function IDCourse({
                 <a href={course.link} target={"_blank"}>
                     <Button text="Go to course" onClick={() => {}} filled icon="link"/>
                 </a>
-                <Button text="Report Broken Link" onClick={reportBrokenLink} icon="report"/>
             </>
         );
     }
@@ -128,6 +119,26 @@ export default function IDCourse({
         return format(countdown);
     }
 
+    const [showSupportForm, setShowSupportForm] = useState(false);
+    const [feedback, setFeedback] = useState('');
+    const [feedbackSent, setFeedbackSent] = useState(false);
+
+    const handleSubmitFeedback = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const courseId = course.courseId;
+        try {
+            await callApi(ApiEndpoints.SendCourseFeedback, { courseId, feedback });
+            setFeedback('');
+            setFeedbackSent(true);
+        } catch (error) {
+            console.error('Error sending feedback:', error);
+        }
+    };
+
+    const handleSupportRequest = () => {
+        setShowSupportForm(true);
+    };
+
     return (
         <main>
             <div className="flex flex-row border rounded-2xl p-8">
@@ -137,12 +148,25 @@ export default function IDCourse({
                     <div className="flex flex-row space-x-4 mt-4 mb-4">
                         {renderButton()}
                     </div>
-                    {showSuccessMessage && (
-                        <div className="success-message">
-                            <p>Successfully reported broken link</p>
-                        </div>
-                    )}
                 </div>
+                { showSupportForm && (
+                    <div className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
+                        <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                            <div className="text-lg mb-2">Request course support or report issue.</div>
+                            <TextField text={feedback} onChange={setFeedback} area placeholder="Type your message here..." />
+                            <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-left">
+                                <div className="flex flex-row ml-auto mt-4">
+                                    <Button text="Cancel" onClick={() => {
+                                        setShowSupportForm(false);
+                                        setFeedbackSent(false);
+                                    }} style="mr-4" />
+                                    <Button text="Submit" onClick={handleSubmitFeedback} filled/>
+                                </div>
+                                { feedbackSent && <p className="text-green-700 mt-4">Request sent successfully - course admins will be in touch once your message is received!</p> }
+                            </form>
+                        </div>
+                    </div>
+                )}
                 {/* @ts-ignore */}
                 <div className="flex flex-col justify-center items-center ml-auto border-4 rounded-xl px-10 py-4 shadow-lg" style={{borderColor: statusColors[status]}}>
                     <div className="text-sm -mb-1">status:</div>

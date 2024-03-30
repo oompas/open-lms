@@ -2,9 +2,8 @@
 import IDProfile from "./IDProfile";
 import IDCourse from "./IDCourse";
 import IDEnrolled from "./IDEnrolled"
-import { useEffect, useState } from "react";
-import { ApiEndpoints, auth, callApi } from "@/config/firebase";
-import { useAsync } from "react-async-hook";
+import { useState } from "react";
+import { ApiEndpoints, useAsyncApiCall } from "@/config/firebase";
 import Link from "next/link";
 import { LuExternalLink } from "react-icons/lu";
 import StatusBadge from "@/components/StatusBadge";
@@ -12,34 +11,11 @@ import StatusBadge from "@/components/StatusBadge";
 
 export default function Profile({ params }: { params: { id: string } }) {
 
-    const userData = useAsync(() =>
-        callApi(ApiEndpoints.GetUserProfile, { targetUid: params.id }) // @ts-ignore
-            .then((rsp) => { setUser(rsp.data); return rsp; }),
-        []);
+    const userData = useAsyncApiCall(ApiEndpoints.GetUserProfile, { targetUid: params.id }, (rsp) => { setUser(rsp.data); return rsp; });
+
 
     const [user, setUser] = useState()
     const [status, setStatus] = useState("");
-
-    useEffect(() => {
-        let unsubscribe: () => void;
-        unsubscribe = auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                try {
-                    const idTokenResult = await user.getIdTokenResult();
-                    if (idTokenResult.claims.admin && idTokenResult.claims.developer) {
-                        setStatus("DEVELOPER");
-                    } else if (idTokenResult.claims.admin && !idTokenResult.claims.developer) {
-                        setStatus("ADMINISTRATOR");
-                    } else {
-                        setStatus("LEARNER");
-                    }
-                } catch (error) {
-                    console.error("Error getting custom claims: ", error);
-                }
-            }
-        });
-        return unsubscribe;
-    }, []);
 
     const profileData = () => {
         if (user) {

@@ -109,7 +109,6 @@ enum DatabaseCollections {
     Course = "Course",
     EnrolledCourse = "EnrolledCourse",
     QuizQuestion = "QuizQuestion",
-    ReportedCourse = "ReportedCourse",
     CourseAttempt = "CourseAttempt",
     QuizAttempt = "QuizAttempt",
     QuizQuestionAttempt = "QuizQuestionAttempt",
@@ -141,6 +140,7 @@ interface CourseDocument extends DatabaseDocument {
         timeLimit: number | null;
         totalMarks: number;
     } | null;
+    creationTime: firestore.Timestamp;
     retired?: firestore.Timestamp;
     version: number;
 }
@@ -160,14 +160,10 @@ interface QuizQuestionDocument extends DatabaseDocument {
     order?: number,
     stats: {
         numAttempts: number;
-        numCorrect?: number; // Only for tf & mc
+        totalScore: number;
+        answers?: { [key: string]: number }; // Only for t/f & mc
         distribution?: { [key: string]: number }; // Only for sa
     };
-}
-
-interface ReportedCourseDocument extends DatabaseDocument {
-    courseId: string;
-    userId: string;
 }
 
 interface CourseAttemptDocument extends DatabaseDocument {
@@ -186,6 +182,12 @@ interface QuizAttemptDocument extends DatabaseDocument {
     endTime: firestore.Timestamp | null;
     pass: boolean | null;
     score: number | null;
+    markerInfo?: { // Details about who and when the quiz was marked
+        uid: string;
+        name: string;
+        email: string;
+        markTime: firestore.Timestamp;
+    },
     expired?: true; // If the user didn't submit in time, this should be true
 }
 
@@ -197,7 +199,7 @@ interface QuizQuestionAttemptDocument extends DatabaseDocument {
     questionId: string;
     response: string | number;
     marksAchieved: number | null;
-    maxMarks?: number;
+    maxMarks: number;
 }
 
 export {
@@ -217,7 +219,6 @@ export {
     UserDocument,
     CourseDocument,
     EnrolledCourseDocument,
-    ReportedCourseDocument,
     QuizQuestionDocument,
     CourseAttemptDocument,
     QuizAttemptDocument,

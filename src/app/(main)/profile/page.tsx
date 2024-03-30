@@ -6,17 +6,13 @@ import CompletedCourse from "./CompletedCourse";
 import Button from "@/components/Button";
 import StatusBadge from "@/components/StatusBadge";
 import { generateDummyData } from "@/app/(main)/admin/tools/generateData";
-import { useAsync } from 'react-async-hook';
-import { ApiEndpoints, auth, callApi } from '@/config/firebase';
+import { ApiEndpoints, auth, callApi, useAsyncApiCall } from '@/config/firebase';
 
 export default function Profile() {
 
     const router = useRouter()
 
-    const userData = useAsync(() =>
-        callApi(ApiEndpoints.GetUserProfile, {}) // @ts-ignore
-            .then((rsp) => { setUser(rsp.data); return rsp; }),
-        []);
+    const userData = useAsyncApiCall(ApiEndpoints.GetUserProfile, {}, (rsp) => { setUser(rsp.data); return rsp; });
 
     const [user, setUser] = useState();
     const [status, setStatus] = useState("");

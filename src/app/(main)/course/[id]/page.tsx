@@ -3,23 +3,33 @@ import Link from "next/link";
 import IDCourse from "./IDCourse";
 import Quiz from "./Quiz"
 import { MdArrowBack } from "react-icons/md";
-import { useAsync } from "react-async-hook";
 import { useEffect, useState } from "react";
-import { ApiEndpoints, callApi } from "@/config/firebase";
+import { ApiEndpoints, auth, useAsyncApiCall } from "@/config/firebase";
 import Checkbox from "@/components/Checkbox";
+import { useRouter } from "next/navigation";
 
 export default function Course({ params }: { params: { id: string } }) {
 
-    const getCourse = useAsync(() =>
-        callApi(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: false })
-            .then((result) => { // @ts-ignore
-                setStatus(result.data.status); // @ts-ignore
-                setCourseAttemptId(result.data.courseAttemptId); // @ts-ignore
-                if (result.data.currentQuiz) { // @ts-ignore
-                    setQuizAttemptId(result.data.currentQuiz.id);
-                }
-                return result;
-            }), []);
+    const router = useRouter();
+  
+    // if user is Admin - go to course insights
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            auth.currentUser?.getIdTokenResult()
+                .then((idTokenResult) => !!idTokenResult.claims.admin ? router.replace('/admin/course/'+params.id+"/insights") : null)
+                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
+        }
+    });
+    
+    const getCourse = useAsyncApiCall(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: false },
+        (result) => {
+            setStatus(result.data.status);
+            setCourseAttemptId(result.data.courseAttemptId);
+            if (result.data.currentQuiz) {
+                setQuizAttemptId(result.data.currentQuiz.id);
+            }
+            return result;
+        });
 
     const [status, setStatus] = useState(0);
     const [timeDone, setTimeDone] = useState(false);
