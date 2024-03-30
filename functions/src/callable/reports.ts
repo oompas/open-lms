@@ -227,26 +227,46 @@ const getUserInsights = onCall(async (request) => {
     logger.info("User is an admin, querying database for user reports...");
 
     const users = await getCollectionDocs(DatabaseCollections.User) as UserDocument[];
+    const courses = await getCollectionDocs(DatabaseCollections.Course) as CourseDocument[];
     const courseEnrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
     const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
 
     logger.info("Successfully queried database data, translating to user data...");
 
-    return users.map((user) => {
+    const learners = users.filter((user) => !user.admin && !user.developer).map((user) => {
 
-        const userEnrollments = courseEnrollments.filter((enrollment) => enrollment.userId === user.id);
-        const userAttempts = courseAttempts.filter((attempt) => attempt.userId === user.id);
-        const completedAttempts = courseAttempts.filter((attempt) => attempt.userId == user.id && attempt.pass === true);
+        const numEnrollments = courseEnrollments.reduce((count, enrollment) => enrollment.userId === user.id ? ++count : count, 0);
+        const numAttempts = courseAttempts.reduce((count, attempt) => attempt.userId === user.id ? ++count : count, 0);
+        const numComplete = courseAttempts.reduce((count, attempt) => attempt.userId === user.id && attempt.pass === true ? ++count : count, 0);
 
         return {
             uid: user.id,
             name: user.name,
             email: user.email,
-            coursesEnrolled: userEnrollments.length,
-            coursesAttempted: userAttempts.length,
-            coursesComplete: completedAttempts.length,
+            role : "Learner",
+            coursesEnrolled: numEnrollments,
+            coursesAttempted: numAttempts,
+            coursesComplete: numComplete,
         };
     }).sort((a, b) => b.coursesEnrolled - a.coursesEnrolled);
+
+    const admins = users.filter((user) => user.admin === true || user.developer === true).map((user) => {
+
+        const numCoursesCreated = courses.reduce((count, course) => course.userId === user.id ? ++count : count, 0);
+
+        return {
+            uid: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.admin ? "Administrator" : "Developer",
+            coursesCreated: numCoursesCreated,
+        };
+    });
+
+    return {
+        learners,
+        admins,
+    };
 });
 
 /**

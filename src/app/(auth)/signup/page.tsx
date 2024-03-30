@@ -7,7 +7,9 @@ import AuthForm from "@/components/AuthForm";
 import VerifyEmailPopup from "@/app/(auth)/signup/VerifyEmail";
 
 export default function SignUpPage() {
+
     const router = useRouter();
+
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
