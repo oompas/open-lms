@@ -23,76 +23,79 @@ export default function Insights({ params }: { params: { id: string } }) {
     const courseData = useAsyncApiCall(ApiEndpoints.GetCourseInsightReport, { courseId: params.id }, (rsp) => { setData(rsp.data); return rsp; });
 
     const [data, setData] = useState();
+    console.log(JSON.stringify(data, null, 4));
 
     const getEnrolledLearners = () => {
-        if (data) {
-            return (
-                <div className="flex flex-wrap w-full justify-start overflow-y-scroll sm:no-scrollbar">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b-2 border-black text-left">
-                                <th className="py-1">Name</th>
-                                <th className="py-1">Status</th>
-                                <th className="py-1">Quiz</th>
+        if (!data) return;
+
+        return (
+            <div className="flex flex-wrap w-full justify-start overflow-y-scroll sm:no-scrollbar">
+                <table className="w-full">
+                    <thead>
+                        <tr className="border-b-2 border-black text-left">
+                            <th className="py-1">Name</th>
+                            <th className="py-1">Status</th>
+                            <th className="py-1">Quiz</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        { /* @ts-ignore */}
+                        { data.learners.map((learner: any, key: number) => (
+                            <tr key={key} className="border">
+                                <td className="border p-2">
+                                    <Link href={"/admin/profile/"+learner.userId} className="flex flex-row items-center hover:opacity-60">
+                                        {learner.name}
+                                        <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
+                                    </Link>
+                                </td>
+                                <td className="border p-2">
+                                    {/* @ts-ignore */}
+                                    {statusNames[learner.status]}
+                                </td>
+                                <td className="border p-2">
+                                    { learner.latestQuizAttemptId &&
+                                        <Link href={`/admin/mark/${learner.latestQuizAttemptId}`} className="flex flex-row items-center hover:opacity-60">
+                                            {new Date(learner.latestQuizAttemptTime * 1000).toLocaleString()}
+                                            <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
+                                        </Link>
+                                    }
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            { /* @ts-ignore */}
-                            { data.learners.map((learner: any, key: number) => (
-                                <tr key={key} className="border">
-                                    <td className="border p-2">
-                                        <Link href={"/admin/profile/"+learner.userId} className="flex flex-row items-center hover:opacity-60">
-                                            {learner.name}
-                                            <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
-                                        </Link>
-                                    </td>
-                                    <td className="border p-2">
-                                        {/* @ts-ignore */}
-                                        {statusNames[learner.completionStatus]}
-                                    </td>
-                                    <td className="border p-2">
-                                        <Link href={"/admin/mark/"+learner.quizAttemptId} className="flex flex-row items-center hover:opacity-60">
-                                            {new Date(learner.quizAttemptTime*1000).toLocaleString()}
-                                            <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
-                                        </Link>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            );
-        }
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
     }
 
     const getQuizQuestions = () => {
-        if (data) {
-            return (
-                <div className="flex flex-wrap w-full justify-start overflow-y-scroll sm:no-scrollbar">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b-2 border-black text-left">
-                                <th className="py-1">Question</th>
-                                <th className="py-1"><div className="w-max">% Correct</div></th>
+        if (!data) return;
+
+        return (
+            <div className="flex flex-wrap w-full justify-start overflow-y-scroll sm:no-scrollbar">
+                <table className="w-full">
+                    <thead>
+                        <tr className="border-b-2 border-black text-left">
+                            <th className="py-1">Question</th>
+                            <th className="py-1"><div className="w-max">% Correct</div></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        { /* @ts-ignore */}
+                        { data.questions.map((question: any, key: number) => (
+                            <tr key={key} className="border">
+                                <td className="border p-2">
+                                    {question.question}
+                                </td>
+                                <td className="border p-2">
+                                    {question.stats.totalScore ? (question.stats.totalScore/(question.stats.numAttempts*question.marks)) : null}
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            { /* @ts-ignore */}
-                            { data.questions.map((question: any, key: number) => (
-                                <tr key={key} className="border">
-                                    <td className="border p-2">
-                                        {question.question}
-                                    </td>
-                                    <td className="border p-2">
-                                        {question.stats.totalScore ? (question.stats.totalScore/(question.stats.numAttempts*question.marks)) : null}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            );
-        }
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
     }
 
     const loadingPopup = () => {
@@ -126,16 +129,23 @@ export default function Insights({ params }: { params: { id: string } }) {
                                 <div className="text-3xl font-bold">{data ? data.numEnrolled : ""}</div>
                             </div>
                             <div className="flex flex-col items-center">
+                                <div>Course Attempts</div>
+                                {/* @ts-ignore */}
+                                <div className="text-3xl font-bold">{data ? data.numStarted : ""}</div>
+                            </div>
+                            <div className="flex flex-col items-center">
                                 <div>Course Completions</div>
                                 {/* @ts-ignore */}
                                 <div className="text-3xl font-bold">{data ? data.numComplete : ""}</div>
                             </div>
                         </div>
                     </div>
-                    <Button text="Edit Course Details" onClick={() => router.push("/admin/course/"+params.id)} style="ml-auto" />
+                    <Button text="Edit Course Details" onClick={() => router.push("/admin/course/" + params.id)}
+                            style="ml-auto"/>
                 </div>
                 <div className="flex flex-row space-x-6">
-                    <div className="flex flex-col bg-white w-1/2 p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar">
+                    <div
+                        className="flex flex-col bg-white w-1/2 p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar">
                         <div className="text-lg mb-2">Enrolled Learners</div>
                         { getEnrolledLearners() }
                     </div>
