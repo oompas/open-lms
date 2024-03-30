@@ -3,13 +3,24 @@ import Link from "next/link";
 import IDCourse from "./IDCourse";
 import Quiz from "./Quiz"
 import { MdArrowBack } from "react-icons/md";
-import { useAsync } from "react-async-hook";
 import { useEffect, useState } from "react";
 import { ApiEndpoints, callApi, useAsyncApiCall } from "@/config/firebase";
 import Checkbox from "@/components/Checkbox";
+import { useRouter } from "next/navigation";
 
 export default function Course({ params }: { params: { id: string } }) {
 
+    const router = useRouter();
+  
+    // if user is Admin - go to course insights
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            auth.currentUser?.getIdTokenResult()
+                .then((idTokenResult) => !!idTokenResult.claims.admin ? router.replace('/admin/course/'+params.id+"/insights") : null)
+                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
+        }
+    });
+    
     const getCourse = useAsyncApiCall(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: false },
         (result) => {
             setStatus(result.data.status);

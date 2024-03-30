@@ -6,13 +6,16 @@ import { useState } from "react";
 import { ApiEndpoints, useAsyncApiCall } from "@/config/firebase";
 import Link from "next/link";
 import { LuExternalLink } from "react-icons/lu";
+import StatusBadge from "@/components/StatusBadge";
 
 
 export default function Profile({ params }: { params: { id: string } }) {
 
     const userData = useAsyncApiCall(ApiEndpoints.GetUserProfile, { targetUid: params.id }, (rsp) => { setUser(rsp.data); return rsp; });
 
+
     const [user, setUser] = useState()
+    const [status, setStatus] = useState("");
 
     const profileData = () => {
         if (user) {
@@ -124,6 +127,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                     {/* Account Details section */}
                     <div className="flex flex-col bg-white w-[50%] h-[50vh] p-12 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar">
                         <div className="text-lg mb-2">Account Details</div>
+                        {status && <StatusBadge status={status} style="mt-2" />}
                         { profileData() }
                     </div>
 
