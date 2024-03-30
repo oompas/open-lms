@@ -4,7 +4,7 @@ import IDCourse from "./IDCourse";
 import Quiz from "./Quiz"
 import { MdArrowBack } from "react-icons/md";
 import { useEffect, useState } from "react";
-import { ApiEndpoints, callApi, useAsyncApiCall } from "@/config/firebase";
+import { ApiEndpoints, auth, useAsyncApiCall } from "@/config/firebase";
 import Checkbox from "@/components/Checkbox";
 import { useRouter } from "next/navigation";
 

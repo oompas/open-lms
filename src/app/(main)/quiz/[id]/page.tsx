@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import React, { useState, useEffect } from 'react';
-import { ApiEndpoints, callApi, useAsyncApiCall } from "@/config/firebase";
+import { ApiEndpoints, auth, callApi, useAsyncApiCall } from "@/config/firebase";
 import { MdCheckCircleOutline } from "react-icons/md";
 import { RiCheckboxCircleFill, RiCheckboxBlankCircleLine } from "react-icons/ri";
 
