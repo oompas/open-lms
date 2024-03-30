@@ -1,11 +1,10 @@
 "use client"
 
 import Button from "@/components/Button"
-import { ApiEndpoints, callApi } from "@/config/firebase";
+import { ApiEndpoints, useAsyncApiCall } from "@/config/firebase";
 import Link from "next/link";
 import { useRouter } from "next/navigation"
 import { useState } from "react";
-import { useAsync } from "react-async-hook";
 import { LuExternalLink } from "react-icons/lu";
 
 
@@ -21,10 +20,7 @@ export default function Insights({ params }: { params: { id: string } }) {
 
     const router = useRouter();
 
-    const courseData = useAsync(() =>
-        callApi(ApiEndpoints.GetCourseInsightReport, {courseId: params.id})  // @ts-ignore
-            .then((rsp) => { setData(rsp.data); console.log(rsp); return rsp; }),
-        []);
+    const courseData = useAsyncApiCall(ApiEndpoints.GetCourseInsightReport, { courseId: params.id }, (rsp) => { setData(rsp.data); return rsp; });
 
     const [data, setData] = useState();
 

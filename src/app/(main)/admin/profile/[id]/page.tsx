@@ -3,18 +3,14 @@ import IDProfile from "./IDProfile";
 import IDCourse from "./IDCourse";
 import IDEnrolled from "./IDEnrolled"
 import { useState } from "react";
-import { ApiEndpoints, callApi } from "@/config/firebase";
-import { useAsync } from "react-async-hook";
+import { ApiEndpoints, useAsyncApiCall } from "@/config/firebase";
 import Link from "next/link";
 import { LuExternalLink } from "react-icons/lu";
 
 
 export default function Profile({ params }: { params: { id: string } }) {
 
-    const userData = useAsync(() =>
-        callApi(ApiEndpoints.GetUserProfile, { targetUid: params.id }) // @ts-ignore
-            .then((rsp) => { setUser(rsp.data); return rsp; }),
-        []);
+    const userData = useAsyncApiCall(ApiEndpoints.GetUserProfile, { targetUid: params.id }, (rsp) => { setUser(rsp.data); return rsp; });
 
     const [user, setUser] = useState()
 

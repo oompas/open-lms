@@ -34,7 +34,6 @@ enum ApiEndpoints {
     StartCourse = "startCourse",
     SendCourseFeedback = "sendCourseFeedback",
     DeleteCourse = "deleteCourse",
-    SendBrokenLinkReport = "sendBrokenLinkReport",
 
     // Quizzes
     GetQuiz = "getQuiz",
