@@ -18,9 +18,10 @@ import {
     CourseDocument,
     DatabaseCollections,
     QuizAttemptDocument,
-    UserDocument, docExists, ReportedCourseDocument,
+    UserDocument,
+    docExists
 } from "../helpers/database";
-import { enrolledCourseId, getCourseStatus, getLatestCourseAttempt, reportedCourseId } from "./helpers";
+import { enrolledCourseId, getCourseStatus, getLatestCourseAttempt } from "./helpers";
 
 /**
  * Adds a course to the database. Includes both metadata and quiz questions
@@ -432,36 +433,6 @@ const startCourse = onCall(async (request) => {
 });
 
 /**
- * Reports the course link as broken by the requested user in the specified course
- */
-const sendBrokenLinkReport = onCall(async (request) => {
-
-    verifyIsAuthenticated(request);
-
-    const schema = object({
-        courseId: string().required(),
-    }).required().noUnknown(true);
-
-    await schema.validate(request.data, { strict: true })
-        .catch((err) => {
-            logger.error(`Error validating request: ${err}`);
-            throw new HttpsError('invalid-argument', err);
-        });
-
-    // @ts-ignore
-    const uid: string = request.auth?.uid;
-
-    const { courseId } = request.data;
-
-    const courseExists: boolean = await docExists(DatabaseCollections.Course, courseId);
-    if (!courseExists) {
-        throw new HttpsError('not-found', `Course ${courseId} does not exist`);
-    }
-
-    return addDocWithId(DatabaseCollections.ReportedCourse, reportedCourseId(uid, courseId), { userId: uid, courseId: courseId } as ReportedCourseDocument);
-});
-
-/**
  * Permanently deletes a course, triggering a deletion of all associated data (quiz questions & all attempts)
  */
 const deleteCourse = onCall(async (request) => {
@@ -548,4 +519,4 @@ const sendCourseFeedback = onCall(async (request) => {
 });
 
 export { addCourse, setCourseVisibility, getAvailableCourses, getCourseInfo, courseEnrollment, startCourse,
-    sendBrokenLinkReport, deleteCourse, sendCourseFeedback };
+    deleteCourse, sendCourseFeedback };

@@ -4,7 +4,7 @@
 
 import { createAccount, getUserProfile, resetPassword } from "./callable/auth";
 import { beforeSignIn, onUserDelete } from "./triggers/auth";
-import { setCourseVisibility, courseEnrollment, getAvailableCourses, getCourseInfo, addCourse, startCourse, sendCourseFeedback, deleteCourse, sendBrokenLinkReport } from "./callable/courses";
+import { setCourseVisibility, courseEnrollment, getAvailableCourses, getCourseInfo, addCourse, startCourse, sendCourseFeedback, deleteCourse } from "./callable/courses";
 import { getQuiz, startQuiz, submitQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt } from "./callable/quizzes";
 import { getCourseInsights, downloadCourseReports, getUserInsights, downloadUserReports, getCourseInsightReport } from "./callable/reports";
 import { sendPlatformFeedback, inviteLearner } from "./callable/misc";
@@ -15,7 +15,7 @@ import { updateAdminPermissions, onCourseDeleted } from "./triggers/database";
 export {
     createAccount, resetPassword, getUserProfile,
     beforeSignIn, onUserDelete,
-    addCourse, getAvailableCourses, getCourseInfo, setCourseVisibility, courseEnrollment, startCourse, sendCourseFeedback, deleteCourse, sendBrokenLinkReport,
+    addCourse, getAvailableCourses, getCourseInfo, setCourseVisibility, courseEnrollment, startCourse, sendCourseFeedback, deleteCourse,
     getQuiz, startQuiz, submitQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt,
     getCourseInsights, downloadCourseReports, getUserInsights, downloadUserReports, getCourseInsightReport,
     sendPlatformFeedback, inviteLearner,

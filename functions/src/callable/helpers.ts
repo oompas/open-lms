@@ -36,17 +36,6 @@ const enrolledCourseId = (userId: string, courseId: string) => {
 }
 
 /**
- * The ID for a course reported by a user to have a broken platform link is the user & course ID concatenated so:
- * - No duplicate reports from the same user
- */
-const reportedCourseId = (userId: string, courseId: string) => {
-    validUserId(userId);
-    validDocumentId(courseId);
-
-    return `${userId}|${courseId}`;
-}
-
-/**
  * Throws an error if a given string is not a valid document ID (20 alphanumeric characters long)
  */
 const validDocumentId = (docId: string) => {
@@ -218,4 +207,4 @@ const updateQuizStatus = async (quizAttemptId: string, markerUid: string | null)
     return Promise.all(promises).then(() => `Quiz attempt '${quizAttemptId}' status updated successfully`);
 }
 
-export { CourseStatus, enrolledCourseId, reportedCourseId, getCourseStatus, getLatestCourseAttempt, updateQuizStatus };
+export { CourseStatus, enrolledCourseId, getCourseStatus, getLatestCourseAttempt, updateQuizStatus };

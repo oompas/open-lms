@@ -109,7 +109,6 @@ enum DatabaseCollections {
     Course = "Course",
     EnrolledCourse = "EnrolledCourse",
     QuizQuestion = "QuizQuestion",
-    ReportedCourse = "ReportedCourse",
     CourseAttempt = "CourseAttempt",
     QuizAttempt = "QuizAttempt",
     QuizQuestionAttempt = "QuizQuestionAttempt",
@@ -166,11 +165,6 @@ interface QuizQuestionDocument extends DatabaseDocument {
     };
 }
 
-interface ReportedCourseDocument extends DatabaseDocument {
-    courseId: string;
-    userId: string;
-}
-
 interface CourseAttemptDocument extends DatabaseDocument {
     userId: string;
     courseId: string;
@@ -224,7 +218,6 @@ export {
     UserDocument,
     CourseDocument,
     EnrolledCourseDocument,
-    ReportedCourseDocument,
     QuizQuestionDocument,
     CourseAttemptDocument,
     QuizAttemptDocument,
