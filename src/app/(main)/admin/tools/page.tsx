@@ -15,7 +15,7 @@ export default function Tools() {
 
     const quizzesToMark = useAsyncApiCall(ApiEndpoints.GetQuizzesToMark, {});
     const courseInsights = useAsyncApiCall(ApiEndpoints.GetCourseInsights, {});
-    const learnerInsights = useAsyncApiCall(ApiEndpoints.GetUserInsights, {});
+    const userInsights = useAsyncApiCall(ApiEndpoints.GetUserInsights, {});
 
     enum PopupType {
         InviteLearner,
@@ -66,10 +66,10 @@ export default function Tools() {
     }
 
     const getLearnerInsights = () => {
-        if (learnerInsights.loading) {
+        if (userInsights.loading) {
             return <div>Loading...</div>;
         }
-        if (!learnerInsights.result) {
+        if (!userInsights.result) {
             return <div>Error loading learner insights</div>;
         }
 
@@ -90,8 +90,7 @@ export default function Tools() {
                         </tr>
                     </thead>
                     <tbody>
-                        { /* @ts-ignore */}
-                        { learnerInsights.result.data.map((learner: any, key: number) => (
+                        { userInsights.result.data.learners.map((learner: any, key: number) => (
                             <LearnerInsight
                                 key={key}
                                 name={learner.name}
@@ -133,6 +132,40 @@ export default function Tools() {
                             .filter((course: any) => course.name.toLowerCase().includes(courseSearch.toLowerCase()))
                             .map((course: any, key: number) => <CourseInsight courseData={course} key={key}/>)
                         }
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+
+    const getAdminInsights = () => {
+        if (userInsights.loading) {
+            return <div>Loading...</div>;
+        }
+        if (!userInsights.result) {
+            return <div>Error loading admin insights</div>;
+        }
+
+        return (
+            <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
+                <table className="border-collapse w-full">
+                    <thead>
+                        <tr className="border-b-2 border-black text-left">
+                            <th className="py-1">Name</th>
+                            <th className="py-1">Email</th>
+                            <th className="py-1">Courses Created</th>
+                            <th className="py-1">Courses Published</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {userInsights.result.data.admins.map((admin: any, key: number) => (
+                            <tr key={key} className="border-b-2 border-black">
+                                <td className="py-1">{admin.name}</td>
+                                <td className="py-1">{admin.email}</td>
+                                <td className="py-1">{admin.coursesCreated}</td>
+                                <td className="py-1">{admin.coursesPublished}</td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -340,16 +373,27 @@ export default function Tools() {
             </div>
 
             {/* Learner insights section */}
-            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom">
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-end items-center">
                     <div className="flex flex-col mr-auto">
                         <div className="text-lg -mb-1">Learner Insights</div>
-                        <p className="mr-2 text-gray-500">Click on a user to view individual data.</p>
+                        <p className="mr-2 text-gray-500">Click on a user to view their profile</p>
                     </div>
                     <Button text="Invite New Learners" onClick={() => setCurrentPopup(PopupType.InviteLearner)}/>
                     <Button text="Download User Reports" onClick={() => setCurrentPopup(PopupType.DownloadUserReports)} style="ml-4"/>
                 </div>
                 {getLearnerInsights()}
+            </div>
+
+            {/* Admin insights section */}
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom">
+                <div className="flex flex-row justify-end items-center">
+                    <div className="flex flex-col mr-auto">
+                        <div className="text-lg -mb-1">Site administrators</div>
+                        <p className="mr-2 text-gray-500">Click on a user to view their profile</p>
+                    </div>
+                </div>
+                {getAdminInsights()}
             </div>
 
             <div className="h-4" />
