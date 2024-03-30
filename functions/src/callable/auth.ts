@@ -86,16 +86,17 @@ const createAccount = onCall(async (request) => {
                 <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; max-width: 600px; margin: auto; 
                 background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 20px;">
                     <header style="text-align: center; margin-bottom: 20px;">
-                        <img src="public/openlms.png" alt="OpenLMS Logo" style="max-width: 200px;">
+                        <img src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaKJ6WNZbIVmwI2H2DhOpcEjPI20dv54xarsGWLL7Dqpr2YdwjoWz1iJbCXDFjyGA4XsIswyuyiBToe8QTA9Mvddj4Dyw=s2560" 
+                        alt="OpenLMS Logo" style="max-width: 200px;">
                     </header>
                     <section style="margin-bottom: 20px;">
-                        <h2 style="font-size: 24px; color: #333333;">Thanks for signing up to OpenLMS!</h2>
+                        <h2 style="font-size: 24px; color: #333333; text-align: center">Thanks for signing up to OpenLMS!</h2>
                         <div style="text-align: center; margin: 20px 0;">
                             <a href="${verifyLink}" class="verify-button" style="background: linear-gradient(to right, #007bff, #6699ff);
                              color: white; padding: 10px 20px; text-decoration: none; font-size: 16px; border-radius: 5px;
                               box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.3s ease;">Verify Your Account</a>
                         </div>
-                        <p style="font-size: 16px; color: #444444;">If you didn't sign up, please disregard this email.</p>
+                        <p style="font-size: 16px; color: #444444; text-align: center">If you didn't sign up, please disregard this email.</p>
                     </section>
                     <footer style="font-size: 12px; color: #666666; text-align: center;">
                         <p>Best Regards,</p>
@@ -105,7 +106,7 @@ const createAccount = onCall(async (request) => {
                     </footer>
                 </div>`;
 
-            await sendEmail(email, 'Verify Your Email For OpenLMS', emailHtml, 'email address verification');
+            await sendEmail(email, 'Verify Your Email', emailHtml, 'email address verification');
 
             logger.info(`Verification email sent and user document created`);
             return user.uid;
@@ -159,37 +160,38 @@ const resetPassword = onCall(async (request) => {
     logger.info(`Generated password reset link for ${email}: ${link}`);
 
     const emailHtml = `
-                <style>
-                    .reset-button:hover {
-                        background: linear-gradient(to right, #0056b3, #007bff);
-                        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-                    }
-                </style>
-                <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ccc; padding: 20px;">
-                    <header style="text-align: center; margin-bottom: 20px;">
-                        <img src="public/openlms.png" alt="OpenLMS Logo" style="max-width: 200px;">
-                    </header>
-                    <section style="margin-bottom: 20px;">
-                        <h2 style="font-size: 24px; color: #333;">Password Reset Request</h2>
-                        <p style="font-size: 16px; color: #555;">Hi there,</p>
-                        <p style="font-size: 16px; color: #555;">A password reset request was made for your account. 
-                            If you did not make this request, please ignore this email. Otherwise, you can reset your
-                            password by clicking below:</p>
-                        <div style="text-align: center; margin: 20px 0;">
-                            <a href="${link}" class="reset-button" style="background: linear-gradient(to right, #007bff, #6699ff);
-                             color: white; padding: 10px 20px; text-decoration: none; font-size: 16px; border-radius: 5px;
-                              box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.3s ease;">Reset Your Password</a>
-                        </div>
-                    </section>
-                    <footer style="font-size: 12px; color: #777; text-align: center;">
-                        <p>Best Regards,</p>
-                        <p>The OpenLMS Team</p>
-                        <p><a href="https://github.com/oompas/open-lms" style="color: #0066CC;">Platform Readme</a> | 
-                        <a href="https://github.com/oompas/open-lms/blob/main/LICENSE" style="color: #0066CC;">Platform License</a></p>
-                    </footer>
-                </div>`;
+        <style>
+            .reset-button:hover {
+                background: linear-gradient(to right, #0056b3, #007bff);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            }
+        </style>
+        <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ccc; padding: 20px;">
+            <header style="text-align: center; margin-bottom: 20px;">
+                <img src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaKJ6WNZbIVmwI2H2DhOpcEjPI20dv54xarsGWLL7Dqpr2YdwjoWz1iJbCXDFjyGA4XsIswyuyiBToe8QTA9Mvddj4Dyw=s2560" 
+                alt="OpenLMS Logo" style="max-width: 200px;">
+            </header>
+            <section style="margin-bottom: 20px;">
+                <h2 style="font-size: 24px; color: #333; text-align: center">Password Reset Request</h2>
+                <p style="font-size: 16px; color: #555; text-align: center">Hi there!</p>
+                <p style="font-size: 16px; color: #555; text-align: center">A password reset request was made for your account. 
+                    If you did not make this request, please ignore this email. Otherwise, you can reset your
+                    password by clicking below:</p>
+                <div style="text-align: center; margin: 20px 0;">
+                    <a href="${link}" class="reset-button" style="background: linear-gradient(to right, #007bff, #6699ff);
+                     color: white; padding: 10px 20px; text-decoration: none; font-size: 16px; border-radius: 5px;
+                     box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.3s ease;">Reset Your Password</a>
+                </div>
+            </section>
+            <footer style="font-size: 12px; color: #777; text-align: center;">
+                <p>Best Regards,</p>
+                <p>The OpenLMS Team</p>
+                <p><a href="https://github.com/oompas/open-lms" style="color: #0066CC;">Platform Readme</a> | 
+                <a href="https://github.com/oompas/open-lms/blob/main/LICENSE" style="color: #0066CC;">Platform License</a></p>
+            </footer>
+        </div>`;
 
-    return sendEmail(email, 'Reset Your Password for OpenLMS', emailHtml, 'password reset');
+    return sendEmail(email, 'Reset Your Password', emailHtml, 'password reset');
 });
 
 /**

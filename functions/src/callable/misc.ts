@@ -24,7 +24,7 @@ const sendPlatformFeedback = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const devEmail = "18rem8@queensu.ca";
+    const devEmail = "support@open-lms.ca";
 
     // @ts-ignore
     const uid: string = request.auth.uid;
@@ -37,14 +37,13 @@ const sendPlatformFeedback = onCall(async (request) => {
         <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; max-width: 600px; margin: auto; 
         background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 20px;">
             <header style="text-align: center; margin-bottom: 20px;">
-                <img src="public/openlms.png" alt="OpenLMS Logo" style="max-width: 200px;">
+                <img src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaKJ6WNZbIVmwI2H2DhOpcEjPI20dv54xarsGWLL7Dqpr2YdwjoWz1iJbCXDFjyGA4XsIswyuyiBToe8QTA9Mvddj4Dyw=s2560" 
+                alt="OpenLMS Logo" style="max-width: 200px;">
             </header>
             <section style="margin-bottom: 20px;">
-                <h2 style="font-size: 24px; color: #333333;">OpenLMS Platform Feedback</h2>
-                <p style="font-size: 16px; color: #444444;">Hi there,</p>
-                <p style="font-size: 16px; color: #444444;">A user submitted the feedback form:</p>
-                <p style="font-size: 16px; color: #444444;">Name: ${userInfo.name}<br/>Email: ${userInfo.email}
-                <br/>Uid: ${uid}<br/>Feedback: ${request.data.feedback}</p>
+                <h2 style="font-size: 24px; color: #333333;">Request from User ${userInfo.name}</h2>
+                <p style="font-size: 16px; color: #555;">User information: <br> Name: ${userInfo.name} <br> Email: ${userInfo.email} <br> Uid: ${uid}</p>
+                <p style="font-size: 16px; color: #555;">User Response: ${request.data.feedback}</p>
             </section>
             <footer style="font-size: 12px; color: #666666; text-align: center;">
                 <p>Best Regards,</p>
@@ -54,8 +53,7 @@ const sendPlatformFeedback = onCall(async (request) => {
             </footer>
         </div>`;
 
-
-    return sendEmail(devEmail, "OpenLMS User Feedback", content, "user bug report/platform feedback");
+    return sendEmail(devEmail, "OpenLMS Technical Request", content, "user bug report/platform feedback");
 });
 
 /**
@@ -86,12 +84,13 @@ const inviteLearner = onCall(async (request) => {
         <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; max-width: 600px; margin: auto; 
         background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 20px;">
             <header style="text-align: center; margin-bottom: 20px;">
-                <img src="public/openlms.png" alt="" style="max-width: 200px;">
+                <img src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaKJ6WNZbIVmwI2H2DhOpcEjPI20dv54xarsGWLL7Dqpr2YdwjoWz1iJbCXDFjyGA4XsIswyuyiBToe8QTA9Mvddj4Dyw=s2560" 
+                alt="" style="max-width: 200px;">
             </header>
             <section style="margin-bottom: 20px;">
-                <h2 style="font-size: 24px; color: #333333;">Welcome to OpenLMS!</h2>
-                <p style="font-size: 16px; color: #444444;">Hi there,</p>
-                <p style="font-size: 16px; color: #444444;">You've been invited to the OpenLMS learning platform!</p>
+                <h2 style="font-size: 24px; color: #333333; text-align: center">Welcome to OpenLMS!</h2>
+                <p style="font-size: 16px; color: #444444; text-align: center">Hi there!</p>
+                <p style="font-size: 16px; color: #444444; text-align: center">You've been invited to the OpenLMS learning platform.</p>
                 <div style="text-align: center; margin: 20px 0;">
                     <a href="https://open-lms.ca/" class="invite-button" style="background: linear-gradient(to right, #007bff, #6699ff);
                      color: white; padding: 10px 20px; text-decoration: none; font-size: 16px; border-radius: 5px;
