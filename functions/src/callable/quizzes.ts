@@ -3,7 +3,7 @@ import {
     DOCUMENT_ID_LENGTH,
     shuffleArray,
     verifyIsAdmin,
-    verifyIsAuthenticated
+    verifyIsLearner
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
 import { array, number, object, string } from "yup";
@@ -24,7 +24,7 @@ const getQuiz = onCall(async (request) => {
 
     logger.info(`Retrieving quiz questions for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
-    verifyIsAuthenticated(request);
+    await verifyIsLearner(request);
 
     const schema = object({
         quizAttemptId: string().required(),
@@ -134,7 +134,7 @@ const startQuiz = onCall(async (request) => {
 
     logger.info(`Starting quiz for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
-    verifyIsAuthenticated(request);
+    await verifyIsLearner(request);
 
     const schema = object({
         courseAttemptId: string().required().length(20),
@@ -238,7 +238,7 @@ const submitQuiz = onCall(async (request) => {
 
     logger.info(`Submitting quiz for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
-    verifyIsAuthenticated(request);
+    await verifyIsLearner(request);
 
     const schema = object({
         quizAttemptId: string().required(),
@@ -420,7 +420,7 @@ const getQuizzesToMark = onCall(async (request) => {
 });
 
 /**
- * Gets a specific quiz attempt to mark
+ * Gets a specific quiz attempt to mark or view
  */
 const getQuizAttempt = onCall(async (request) => {
 

@@ -3,7 +3,7 @@ import {
     sendEmail,
     shuffleArray,
     verifyIsAdmin,
-    verifyIsAuthenticated
+    verifyIsAuthenticated, verifyIsLearner
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
 import { array, boolean, number, object, string } from 'yup';
@@ -237,14 +237,7 @@ const getAvailableCourses = onCall(async (request) => {
 });
 
 /**
- * Gets the given information for the specified quiz:
- * -courseId
- * -name
- * -description
- * -link
- * -minTime
- * -maxQuizAttempts
- * -quizTimeLimit
+ * Gets the given information for the specified course, including the quiz if editing
  */
 const getCourseInfo = onCall(async (request) => {
 
@@ -375,7 +368,7 @@ const courseEnrollment = onCall(async (request) => {
 
     logger.info(`Entering courseEnrollment for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
-    verifyIsAuthenticated(request);
+    await verifyIsLearner(request);
 
     const schema = object({
         courseId: string().required(),
@@ -406,7 +399,7 @@ const courseEnrollment = onCall(async (request) => {
  */
 const startCourse = onCall(async (request) => {
 
-    verifyIsAuthenticated(request);
+    await verifyIsLearner(request);
 
     // @ts-ignore
     const uid: string = request.auth?.uid;
@@ -472,7 +465,7 @@ const deleteCourse = onCall(async (request) => {
  */
 const sendCourseFeedback = onCall(async (request) => {
 
-    verifyIsAuthenticated(request);
+    await verifyIsLearner(request);
 
     const schema = object({
         courseId: string().required(),

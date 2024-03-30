@@ -37,7 +37,7 @@ const onUserDelete = functions.auth.user().onDelete(async (user) => {
         .catch((err: any) => { throw new HttpsError('internal', `Error getting user emails: ${err}`) });
     promises.concat(emails.map((email: { ref: { delete: () => any; }; }) => email.ref.delete()));
 
-    if (user.customClaims && user.customClaims["admin"] === true) {
+    if (user.customClaims && (user.customClaims["admin"] === true || user.customClaims["developer"] === true)) {
         const userCourses = await getCollection(DatabaseCollections.Course)
             .where('userID', '==', user.uid)
             .get()

@@ -1,5 +1,5 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { sendEmail, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
+import { sendEmail, verifyIsAdmin, verifyIsLearner } from "../helpers/helpers";
 import { DatabaseCollections, getDocData, UserDocument } from "../helpers/database";
 import { array, object, string } from "yup";
 import { logger } from "firebase-functions";
@@ -11,7 +11,7 @@ const sendPlatformFeedback = onCall(async (request) => {
 
     logger.info(`Entering sendPlatformFeedback for user ${request.auth?.uid} with data: ${JSON.stringify(request.data)}`);
 
-    verifyIsAuthenticated(request);
+    await verifyIsLearner(request);
 
     const schema = object({
         feedback: string().required()
