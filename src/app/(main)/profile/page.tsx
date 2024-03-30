@@ -79,7 +79,6 @@ export default function Profile() {
                     {/* @ts-ignore */}
                     <div className="text-2xl mb-6">{user && user.email}</div>
                     <Button text="Log Out" onClick={async () => await logout()} />
-                    <Button text="Delete Account" onClick={() => router.push('/home')} style="mt-auto" />
                     {/* <Button text="Add dummy data (WILL CLEAN DATABASE)" onClick={async () => await generateData()}/> */}
                 </div>
             </div>
