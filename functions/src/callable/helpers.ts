@@ -6,7 +6,7 @@ import {
     docExists,
     getCollection,
     getDocData, QuizQuestionAttemptDocument,
-    updateDoc
+    updateDoc, UserDocument
 } from "../helpers/database";
 import { firestore } from "firebase-admin";
 
@@ -29,17 +29,6 @@ enum CourseStatus {
  * The enrollment document will also have these IDs in the document if individual queries are needed
  */
 const enrolledCourseId = (userId: string, courseId: string) => {
-    validUserId(userId);
-    validDocumentId(courseId);
-
-    return `${userId}|${courseId}`;
-}
-
-/**
- * The ID for a course reported by a user to have a broken platform link is the user & course ID concatenated so:
- * - No duplicate reports from the same user
- */
-const reportedCourseId = (userId: string, courseId: string) => {
     validUserId(userId);
     validDocumentId(courseId);
 
@@ -139,7 +128,7 @@ const getLatestCourseAttempt = async (courseId: string, userId: string) => {
 /**
  * After marking quiz questions, call this to update quiz attempt & course attempt status
  */
-const updateQuizStatus = async (quizAttemptId: string) => {
+const updateQuizStatus = async (quizAttemptId: string, markerUid: string | null) => {
 
     logger.info(`Updating quiz status for quiz attempt ${quizAttemptId}...`);
 
@@ -169,11 +158,23 @@ const updateQuizStatus = async (quizAttemptId: string) => {
 
     const promises: Promise<any>[] = [];
 
+    let markerInfo = null;
+    if (markerUid) {
+        const markerData = await getDocData(DatabaseCollections.User, markerUid) as UserDocument;
+        markerInfo = {
+            uid: markerUid,
+            name: markerData.name,
+            email: markerData.email,
+            markTime: completionTime
+        }
+    }
+
     // Update the quiz attempt with the final score, completion time and pass status
     const quizAttemptUpdate = {
-        endTime: completionTime,
         pass: pass,
         score: marksAchieved,
+        ...(!markerUid && { endTime: completionTime }),
+        ...(markerUid && { markerInfo })
     };
     promises.push(updateDoc(DatabaseCollections.QuizAttempt, quizAttemptId, quizAttemptUpdate));
 
@@ -206,4 +207,4 @@ const updateQuizStatus = async (quizAttemptId: string) => {
     return Promise.all(promises).then(() => `Quiz attempt '${quizAttemptId}' status updated successfully`);
 }
 
-export { enrolledCourseId, reportedCourseId, getCourseStatus, getLatestCourseAttempt, updateQuizStatus };
+export { CourseStatus, enrolledCourseId, getCourseStatus, getLatestCourseAttempt, updateQuizStatus };

@@ -18,9 +18,10 @@ import {
     CourseDocument,
     DatabaseCollections,
     QuizAttemptDocument,
-    UserDocument, docExists, ReportedCourseDocument,
+    UserDocument,
+    docExists
 } from "../helpers/database";
-import { enrolledCourseId, getCourseStatus, getLatestCourseAttempt, reportedCourseId } from "./helpers";
+import { enrolledCourseId, getCourseStatus, getLatestCourseAttempt } from "./helpers";
 
 /**
  * Adds a course to the database. Includes both metadata and quiz questions
@@ -126,6 +127,7 @@ const addCourse = onCall(async (request) => {
         link: request.data.link,
         minTime: request.data.minTime,
         quiz: quiz,
+        creationTime: firestore.FieldValue.serverTimestamp(),
     };
 
     const courseId = await addDoc(DatabaseCollections.Course, courseData);
@@ -135,10 +137,22 @@ const addCourse = onCall(async (request) => {
     }
 
     return Promise.all(quizQuestions.map((question: any, index: number) => {
-        // Each question has statistics - score for tf/mc, distribution for sa (since partial marks are possible)
-        const defaultStats = { numAttempts: 0 }; // @ts-ignore
-        if (question.type === "mc" || question.type === "tf") defaultStats["numCorrect"] = 0; // @ts-ignore
-        if (question.type === "sa") defaultStats["distribution"] = Object.assign({}, new Array(question.marks + 1).fill(0));
+        // Each question type has different statistics to track
+        let defaultStats;
+        if (question.type === "tf" || question.type === "mc") {
+            const answers = question.type === "mc" ? question.answers : ["True", "False"];
+            defaultStats = {
+                numAttempts: 0,
+                totalScore: 0,
+                answers: answers.reduce((acc: { [key: string]: number }, curr: string) => (acc[curr] = 0, acc), {}),
+            };
+        } else if (question.type === "sa") {
+            defaultStats = {
+                numAttempts: 0,
+                totalScore: 0,
+                distribution: Object.assign({}, new Array(question.marks + 1).fill(0)),
+            };
+        }
 
         const questionDoc = {
             courseId: courseId,
@@ -275,7 +289,8 @@ const getCourseInfo = onCall(async (request) => {
                         id: doc.id,
                         type: data.type,
                         question: data.question,
-                        marks: data.marks
+                        marks: data.marks,
+                        ...(data.order && { order: data.order })
                     };
                     if (data.type === "mc") {
                         question["answers"] = data.answers;
@@ -421,36 +436,6 @@ const startCourse = onCall(async (request) => {
 });
 
 /**
- * Reports the course link as broken by the requested user in the specified course
- */
-const sendBrokenLinkReport = onCall(async (request) => {
-
-    verifyIsAuthenticated(request);
-
-    const schema = object({
-        courseId: string().required(),
-    }).required().noUnknown(true);
-
-    await schema.validate(request.data, { strict: true })
-        .catch((err) => {
-            logger.error(`Error validating request: ${err}`);
-            throw new HttpsError('invalid-argument', err);
-        });
-
-    // @ts-ignore
-    const uid: string = request.auth?.uid;
-
-    const { courseId } = request.data;
-
-    const courseExists: boolean = await docExists(DatabaseCollections.Course, courseId);
-    if (!courseExists) {
-        throw new HttpsError('not-found', `Course ${courseId} does not exist`);
-    }
-
-    return addDocWithId(DatabaseCollections.ReportedCourse, reportedCourseId(uid, courseId), { userId: uid, courseId: courseId } as ReportedCourseDocument);
-});
-
-/**
  * Permanently deletes a course, triggering a deletion of all associated data (quiz questions & all attempts)
  */
 const deleteCourse = onCall(async (request) => {
@@ -537,4 +522,4 @@ const sendCourseFeedback = onCall(async (request) => {
 });
 
 export { addCourse, setCourseVisibility, getAvailableCourses, getCourseInfo, courseEnrollment, startCourse,
-    sendBrokenLinkReport, deleteCourse, sendCourseFeedback };
+    deleteCourse, sendCourseFeedback };

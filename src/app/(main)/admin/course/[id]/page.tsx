@@ -107,6 +107,9 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
                     setQuizTotalScore(data.quizQuestions.reduce((acc: number, q: any) => acc + q.marks, 0));
 
+                    if (data.quizQuestions && data.quizQuestions[0].order) {
+                        data.quizQuestions.sort((a: any, b: any) => a.order - b.order);
+                    }
                     setQuizQuestions(data.quizQuestions);
                 }
 

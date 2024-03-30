@@ -68,15 +68,6 @@ export default function IDCourse({
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });
     }
 
-    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-    const reportBrokenLink = () => {
-        return callApi(ApiEndpoints.SendBrokenLinkReport, { courseId: course.courseId })
-            .then(() => setShowSuccessMessage(true))
-            .catch((err) => {
-                console.error(err);
-                throw new Error(`Error reporting broken link: ${err}`)
-            });
-    }
 
     const renderButton = () => {
         if (status === 1) {
@@ -88,7 +79,6 @@ export default function IDCourse({
                         <Button text="Start course" onClick={async () => await start()} filled icon="link"/>
                     </a>
                     <Button text="Unenroll" onClick={enrollment} icon="minus"/>
-                    <Button text="Report Broken Link" onClick={reportBrokenLink} icon="report"/>
                 </>
             );
         }
@@ -97,7 +87,6 @@ export default function IDCourse({
                 <a href={course.link} target={"_blank"}>
                     <Button text="Go to course" onClick={() => {}} filled icon="link"/>
                 </a>
-                <Button text="Report Broken Link" onClick={reportBrokenLink} icon="report"/>
             </>
         );
     }
@@ -137,11 +126,6 @@ export default function IDCourse({
                     <div className="flex flex-row space-x-4 mt-4 mb-4">
                         {renderButton()}
                     </div>
-                    {showSuccessMessage && (
-                        <div className="success-message">
-                            <p>Successfully reported broken link</p>
-                        </div>
-                    )}
                 </div>
                 {/* @ts-ignore */}
                 <div className="flex flex-col justify-center items-center ml-auto border-4 rounded-xl px-10 py-4 shadow-lg" style={{borderColor: statusColors[status]}}>

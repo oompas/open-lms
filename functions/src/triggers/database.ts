@@ -36,7 +36,6 @@ const onCourseDeleted = onDocumentDeleted(`${DatabaseCollections.Course}/{course
         DatabaseCollections.CourseAttempt,
         DatabaseCollections.QuizAttempt,
         DatabaseCollections.QuizQuestionAttempt,
-        DatabaseCollections.ReportedCourse,
     ];
 
     const docsToDelete: Promise<any>[] = [];
