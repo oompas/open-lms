@@ -253,6 +253,7 @@ const getUserInsights = onCall(async (request) => {
     const admins = users.filter((user) => user.admin === true || user.developer === true).map((user) => {
 
         const numCoursesCreated = courses.reduce((count, course) => course.userId === user.id ? ++count : count, 0);
+        const numCoursesPublished = courses.reduce((count, course) => course.userId === user.id && course.active ? ++count : count, 0);
 
         return {
             uid: user.id,
@@ -260,6 +261,7 @@ const getUserInsights = onCall(async (request) => {
             email: user.email,
             role: user.admin ? "Administrator" : "Developer",
             coursesCreated: numCoursesCreated,
+            coursesPublished: numCoursesPublished,
         };
     });
 
