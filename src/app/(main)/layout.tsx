@@ -73,7 +73,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                 }} style="mr-4" />
                                 <Button text="Submit" onClick={handleSubmitFeedback} filled/>
                             </div>
-                            { feedbackSent && <p className="text-green-700 mt-4">Request sent successfully - platform admins will be in touch once your message is recieved!</p> }
+                            { feedbackSent && <p className="text-green-700 mt-4">Request sent successfully - platform admins will be in touch once your message is received!</p> }
                         </form>
                     </div>
                 </div>
