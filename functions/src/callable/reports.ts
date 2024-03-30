@@ -351,9 +351,9 @@ const getCourseInsightReport = onCall(async (request) => {
             throw new HttpsError('internal', "Error getting this course insight report, please try again later");
         });
 
-    const userNames: Map<string, { name: string }> = new Map();
+    const userNames: Map<string, string> = new Map();
     await Promise.all(courseEnrollments.map((userId) => // @ts-ignore
-        auth.getUser(userId).then((user) => userNames.set(userId, { name: user.displayName }))
+        auth.getUser(userId).then((user) => userNames.set(userId, user.displayName))
     ));
 
     const latestCourseAttempts: Map<string, CourseAttemptDocument> = new Map();
