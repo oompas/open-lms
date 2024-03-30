@@ -143,11 +143,13 @@ const addCourse = onCall(async (request) => {
             const answers = question.type === "mc" ? question.answers : ["True", "False"];
             defaultStats = {
                 numAttempts: 0,
+                totalScore: 0,
                 answers: answers.reduce((acc: { [key: string]: number }, curr: string) => (acc[curr] = 0, acc), {}),
             };
         } else if (question.type === "sa") {
             defaultStats = {
                 numAttempts: 0,
+                totalScore: 0,
                 distribution: Object.assign({}, new Array(question.marks + 1).fill(0)),
             };
         }

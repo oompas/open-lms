@@ -341,6 +341,7 @@ const submitQuiz = onCall(async (request) => {
             const answer = (question.answers ?? ["True", "False"])[userResponse];
             const updateData = {
                 "stats.numAttempts": firestore.FieldValue.increment(1),
+                "stats.totalScore": firestore.FieldValue.increment(marks),
                 [`stats.answers.${answer}`]: firestore.FieldValue.increment(1),
             };
 
@@ -543,6 +544,7 @@ const markQuizAttempt = onCall(async (request) => {
     updatePromises.push(responses.map((response: { questionAttemptId: string, marksAchieved: number }) => {
         const updateData = {
             "stats.numAttempts": firestore.FieldValue.increment(1),
+            "stats.totalScore": firestore.FieldValue.increment(response.marksAchieved),
             [`stats.distribution.${response.marksAchieved}`]: firestore.FieldValue.increment(1),
         };
 
