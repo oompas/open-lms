@@ -1,19 +1,17 @@
 import Link from "next/link";
 import { LuExternalLink } from "react-icons/lu";
 
-export default function LearnerInsight({
-    name,
-    email,
-    coursesEnrolled,
-    coursesAttempted,
-    coursesCompleted,
-    id
+export default function AdminInsight({
+   name,
+   email,
+   coursesCreated,
+   coursesPublished,
+   id
 } : {
     name: string,
     email: string,
-    coursesEnrolled: number,
-    coursesAttempted: number,
-    coursesCompleted: number,
+    coursesCreated: number,
+    coursesPublished: number,
     id: number
 }) {
     return (
@@ -25,9 +23,8 @@ export default function LearnerInsight({
                 </Link>
             </td>
             <td className="border p-2">{email}</td>
-            <td className="border p-2">{coursesEnrolled}</td>
-            <td className="border p-2">{coursesAttempted}</td>
-            <td className="border p-2">{coursesCompleted}</td>
+            <td className="border p-2">{coursesCreated}</td>
+            <td className="border p-2">{coursesPublished}</td>
         </tr>
     );
 }

@@ -8,6 +8,7 @@ import { useState } from "react";
 import { ApiEndpoints, callApi, useAsyncApiCall } from "@/config/firebase";
 import TextField from "@/components/TextField";
 import { downloadZip } from "client-zip";
+import AdminInsight from "@/app/(main)/admin/tools/AdminInsight";
 
 export default function Tools() {
 
@@ -159,12 +160,14 @@ export default function Tools() {
                     </thead>
                     <tbody>
                         {userInsights.result.data.admins.map((admin: any, key: number) => (
-                            <tr key={key} className="border-b-2 border-black">
-                                <td className="py-1">{admin.name}</td>
-                                <td className="py-1">{admin.email}</td>
-                                <td className="py-1">{admin.coursesCreated}</td>
-                                <td className="py-1">{admin.coursesPublished}</td>
-                            </tr>
+                            <AdminInsight
+                                key={key}
+                                name={admin.name}
+                                email={admin.email}
+                                coursesCreated={admin.coursesCreated}
+                                coursesPublished={admin.coursesPublished}
+                                id={admin.uid}
+                            />
                         ))}
                     </tbody>
                 </table>
