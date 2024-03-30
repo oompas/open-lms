@@ -22,6 +22,9 @@ export default function Quiz({ params }: { params: { id: string } }) {
 
                 // @ts-ignore
                 setCountDown(Math.floor(rsp.data.startTime + (60 * rsp.data.timeLimit) - (Date.now() / 1000)));
+                if (rsp.data.questions && rsp.data.questions[0].order) {
+                    rsp.data.questions.sort((a: any, b: any) => a.order - b.order);
+                }
                 // @ts-ignore
                 setUserAnswers(rsp.data.questions.map(question => question.id).reduce((prev: any, cur: any) => ({ ...prev, [cur]: null }), {}));
                 return rsp;
