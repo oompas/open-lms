@@ -151,12 +151,13 @@ export default function Tools() {
             <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
                 <table className="border-collapse w-full">
                     <thead>
-                        <tr className="border-b-2 border-black text-left">
-                            <th className="py-1">Name</th>
-                            <th className="py-1">Email</th>
-                            <th className="py-1">Courses Created</th>
-                            <th className="py-1">Courses Published</th>
-                        </tr>
+                    <tr className="border-b-2 border-black text-left">
+                        <th className="py-1">Name</th>
+                        <th className="py-1">Email</th>
+                        <th className="py-1">Role</th>
+                        <th className="py-1">Courses Created</th>
+                        <th className="py-1">Courses Published</th>
+                    </tr>
                     </thead>
                     <tbody>
                         {userInsights.result.data.admins.map((admin: any, key: number) => (
@@ -164,6 +165,7 @@ export default function Tools() {
                                 key={key}
                                 name={admin.name}
                                 email={admin.email}
+                                role={admin.role}
                                 coursesCreated={admin.coursesCreated}
                                 coursesPublished={admin.coursesPublished}
                                 id={admin.uid}
@@ -392,7 +394,7 @@ export default function Tools() {
             <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom">
                 <div className="flex flex-row justify-end items-center">
                     <div className="flex flex-col mr-auto">
-                        <div className="text-lg -mb-1">Site administrators</div>
+                        <div className="text-lg -mb-1">Platform Admins & Developers</div>
                         <p className="mr-2 text-gray-500">Click on a user to view their profile</p>
                     </div>
                 </div>
