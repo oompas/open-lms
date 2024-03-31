@@ -282,6 +282,7 @@ const getUserProfile = onCall(async (request) => {
         name: userRecord.displayName,
         email: userRecord.email,
         role: userRecord.customClaims?.developer ? "Developer" : userRecord.customClaims?.admin ? "Administrator" : "Learner",
+        disabled: userRecord.disabled,
         signUpDate: Date.parse(userRecord.metadata.creationTime),
         lastSignIn: userRecord.metadata.lastRefreshTime ? Date.parse(userRecord.metadata.lastRefreshTime) : -1,
         enrolledCourses: enrolledCourses.map((courseId) => ({ id: courseId, name: courseNames[courseId] })),

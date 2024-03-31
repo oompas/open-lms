@@ -58,6 +58,12 @@ export default function Tools() {
                         id={quiz.quizAttemptId}
                     />
                 ))}
+                {
+                    temp_quizzes.length === 0 &&
+                    <div className="flex flex-col w-full justify-center items-center">
+                        <div className="text-lg">No quizzes to mark!</div>
+                    </div>
+                }
             </div>
         );
     }
