@@ -117,6 +117,7 @@ export default function Home() {
                         <div className="flex flex-row space-x-2">
                             {statusValues.map((value, key) => (
                                 <button
+                                    key={key}
                                     className="border-2 rounded-full px-4 py-1 cursor-pointer"
                                     style={{
                                         // @ts-ignore

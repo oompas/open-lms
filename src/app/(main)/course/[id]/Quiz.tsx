@@ -5,23 +5,29 @@ import { ApiEndpoints, callApi } from "@/config/firebase";
 
 export default function Quiz({
     length,
+    numAttempts,
     maxAttempts,
     numQuestions,
     totalMarks,
     minimumScore,
+    totalMarks,
     quizStarted,
     courseAttemptId,
     quizAttemptId,
+    courseStatus,
     courseId
 } : {
     length: string
+    numAttempts: number
     maxAttempts: number
     numQuestions: number
     totalMarks: number
     minimumScore: number
+    totalMarks: number
     quizStarted: boolean | null
     courseAttemptId: any
     quizAttemptId: any
+    courseStatus: number
     courseId: string
 }) {
 
@@ -39,16 +45,38 @@ export default function Quiz({
 
     return (
         <div className="border-4 mb-8 p-6 rounded-2xl">
-            <div className="flex flex-row items-center">
-                <div className="flex flex-col mr-auto text-lg">
-                    {length && <div>{length} minute time limit</div>}
-                    {maxAttempts && <div>{maxAttempts} attempts allowed</div>}
-                    <div>{numQuestions} questions{minimumScore && ` (${minimumScore / totalMarks * 100}% minimum passing grade)`}</div>
+            <div className="flex flex-col items-center">
+                <div className="flex flex-row mr-auto text-lg w-full justify-between space-x-4">
+                    {length && 
+                        <div className="flex flex-col border p-2 rounded-lg items-center justify-center text-center">
+                            <div className="w-max text-md">time limit</div>
+                            <div className="text-3xl">{length}</div>
+                            <div className="text-sm">minute{length==="1" ? "" : "s"}</div>
+                        </div>
+                    }
+                    {maxAttempts && 
+                        <div className="flex flex-col border p-2 rounded-lg items-center text-center justify-center">
+                            <div className="w-max text-md">attempts</div>
+                            <div className="text-3xl">{numAttempts}/{maxAttempts}</div>
+                            <div className="text-sm opacity-0">marks</div>
+                        </div>
+                    }
+                    <div className="flex flex-col border p-2 rounded-lg items-center text-center justify-center">
+                        <div className="w-max text-md">questions</div>
+                        <div className="text-3xl">{numQuestions}</div>
+                        <div className="text-sm opacity-0">marks</div>
+                    </div>
+                    <div className="flex flex-col border p-2 rounded-lg items-center text-center justify-center">
+                        <div className="w-max text-md">score to pass</div>
+                        <div className="text-3xl">{minimumScore}/{totalMarks}</div>
+                        <div className="text-sm">marks</div>
+                    </div>
                 </div>
-                {quizStarted !== null &&
+                {quizStarted !== null && courseStatus !== 5 &&
                     <Button
                         text={quizStarted ? "Continue quiz" : "Click to start"}
                         onClick={async () => await goToQuiz()}
+                        style="mt-6"
                     />
                 }
             </div>

@@ -89,17 +89,20 @@ export default function Course({ params }: { params: { id: string } }) {
 
                 { course.quiz &&
                     <div className="mt-4">
-                        <div className="flex flex-col w-1/2">
+                        <div className="flex flex-col w-fit">
                             <Quiz
                                 key={1}
                                 length={course.quiz.timeLimit}
-                                maxAttempts={course.quiz.maxQuizAttempts}
+                                numAttempts={course.quizAttempts}
+                                maxAttempts={course.quiz.maxAttempts}
                                 numQuestions={course.quiz.numQuestions}
                                 totalMarks={course.quiz.totalMarks}
                                 minimumScore={course.quiz.minScore}
+                                totalMarks={course.quiz.totalMarks}
                                 quizStarted={quizStarted}
                                 courseAttemptId={courseAttemptId}
                                 quizAttemptId={quizAttemptId}
+                                courseStatus={course.status}
                                 courseId={params.id}
                             />
                         </div>
