@@ -188,7 +188,6 @@ interface QuizAttemptDocument extends DatabaseDocument {
         email: string;
         markTime: firestore.Timestamp;
     },
-    expired?: true; // If the user didn't submit in time, this should be true
 }
 
 interface QuizQuestionAttemptDocument extends DatabaseDocument {

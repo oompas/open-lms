@@ -82,7 +82,7 @@ export default function Course({ params }: { params: { id: string } }) {
                     {course.quiz &&
                         <div className="flex flex-row items-center mt-2">
                             <Checkbox checked={course.status === 6} setChecked={null} style="mr-3"/>
-                            <div>{"Complete the required quiz"}</div>
+                            <div>{"Pass the required quiz"}</div>
                         </div>
                     }
                 </div>
@@ -95,6 +95,7 @@ export default function Course({ params }: { params: { id: string } }) {
                                 length={course.quiz.timeLimit}
                                 maxAttempts={course.quiz.maxQuizAttempts}
                                 numQuestions={course.quiz.numQuestions}
+                                totalMarks={course.quiz.totalMarks}
                                 minimumScore={course.quiz.minScore}
                                 quizStarted={quizStarted}
                                 courseAttemptId={courseAttemptId}

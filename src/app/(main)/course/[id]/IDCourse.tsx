@@ -98,7 +98,7 @@ export default function IDCourse({
         1: "Not enrolled",
         2: "To do",
         3: "In progress",
-        4: "Awaiting marking",
+        4: "Awaiting Marking",
         5: "Failed",
         6: "Completed",
     }

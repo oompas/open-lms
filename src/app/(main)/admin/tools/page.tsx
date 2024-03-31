@@ -8,14 +8,13 @@ import { useState } from "react";
 import { ApiEndpoints, callApi, useAsyncApiCall } from "@/config/firebase";
 import TextField from "@/components/TextField";
 import { downloadZip } from "client-zip";
+import AdminInsight from "@/app/(main)/admin/tools/AdminInsight";
 
 export default function Tools() {
 
     const router = useRouter();
 
-    const quizzesToMark = useAsyncApiCall(ApiEndpoints.GetQuizzesToMark, {});
-    const courseInsights = useAsyncApiCall(ApiEndpoints.GetCourseInsights, {});
-    const learnerInsights = useAsyncApiCall(ApiEndpoints.GetUserInsights, {});
+    const adminInsights = useAsyncApiCall(ApiEndpoints.GetAdminInsights, {});
 
     enum PopupType {
         InviteLearner,
@@ -29,47 +28,51 @@ export default function Tools() {
     const [csvEmails, setCsvEmails] = useState<string[]>([]);
 
     const getQuizzesToMark = () => {
-        if (quizzesToMark.loading) {
+        if (adminInsights.loading) {
             return <div>Loading...</div>;
         }
-        if (quizzesToMark.error) {
+        if (!adminInsights.result) {
             return <div>Error loading quizzes to mark</div>;
         }
-        if (quizzesToMark.result) {
-            // @ts-ignore
-            const temp_quizzes = [...quizzesToMark.result.data]
-            if (temp_quizzes.length % 4 === 1) {
-                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
-                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
-                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
-            } else if (temp_quizzes.length % 4 === 2) {
-                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
-                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
-            } else if (temp_quizzes.length % 4 === 3) {
-                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
-            }
-            return (
-                <div className="flex flex-wrap w-full justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
-                    { /* @ts-ignore */ }
-                    {temp_quizzes.map((quiz, key) => (
-                        <QuizToMark
-                            key={key}
-                            title={quiz.courseName}
-                            date={new Date(quiz.timestamp*1000).toLocaleString()}
-                            learner={quiz.userName}
-                            id={quiz.quizAttemptId}
-                        />
-                    ))}
-                </div>
-            );
+
+        const temp_quizzes = [...adminInsights.result.data.quizAttemptsToMark]
+        if (temp_quizzes.length % 4 === 1) {
+            temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+            temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+            temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+        } else if (temp_quizzes.length % 4 === 2) {
+            temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+            temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+        } else if (temp_quizzes.length % 4 === 3) {
+            temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
         }
+        return (
+            <div className="flex flex-wrap w-full justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
+                { /* @ts-ignore */ }
+                {temp_quizzes.map((quiz, key) => (
+                    <QuizToMark
+                        key={key}
+                        title={quiz.courseName}
+                        date={new Date(quiz.timestamp*1000).toLocaleString()}
+                        learner={quiz.userName}
+                        id={quiz.quizAttemptId}
+                    />
+                ))}
+                {
+                    temp_quizzes.length === 0 &&
+                    <div className="flex flex-col w-full justify-center items-center">
+                        <div className="text-lg">No quizzes to mark!</div>
+                    </div>
+                }
+            </div>
+        );
     }
 
     const getLearnerInsights = () => {
-        if (learnerInsights.loading) {
+        if (adminInsights.loading) {
             return <div>Loading...</div>;
         }
-        if (!learnerInsights.result) {
+        if (!adminInsights.result) {
             return <div>Error loading learner insights</div>;
         }
 
@@ -90,8 +93,7 @@ export default function Tools() {
                         </tr>
                     </thead>
                     <tbody>
-                        { /* @ts-ignore */}
-                        { learnerInsights.result.data.map((learner: any, key: number) => (
+                        { adminInsights.result.data.learners.map((learner: any, key: number) => (
                             <LearnerInsight
                                 key={key}
                                 name={learner.name}
@@ -109,10 +111,10 @@ export default function Tools() {
     }
 
     const getCourseInsights = () => {
-        if (courseInsights.loading) {
+        if (adminInsights.loading) {
             return <div>Loading...</div>;
         }
-        if (!courseInsights.result) {
+        if (!adminInsights.result) {
             return <div>Error loading course insights</div>;
         }
 
@@ -129,10 +131,48 @@ export default function Tools() {
                     </thead>
                     <tbody>
                         { /* @ts-ignore */}
-                        {courseInsights.result.data
+                        {adminInsights.result.data.courseInsights
                             .filter((course: any) => course.name.toLowerCase().includes(courseSearch.toLowerCase()))
                             .map((course: any, key: number) => <CourseInsight courseData={course} key={key}/>)
                         }
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+
+    const getAdminInsights = () => {
+        if (adminInsights.loading) {
+            return <div>Loading...</div>;
+        }
+        if (!adminInsights.result) {
+            return <div>Error loading admin insights</div>;
+        }
+
+        return (
+            <div className="flex flex-wrap justify-start overflow-y-scroll sm:no-scrollbar">
+                <table className="border-collapse w-full">
+                    <thead>
+                    <tr className="border-b-2 border-black text-left">
+                        <th className="py-1">Name</th>
+                        <th className="py-1">Email</th>
+                        <th className="py-1">Role</th>
+                        <th className="py-1">Courses Created</th>
+                        <th className="py-1">Courses Published</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {adminInsights.result.data.admins.map((admin: any, key: number) => (
+                            <AdminInsight
+                                key={key}
+                                name={admin.name}
+                                email={admin.email}
+                                role={admin.role}
+                                coursesCreated={admin.coursesCreated}
+                                coursesPublished={admin.coursesPublished}
+                                id={admin.uid}
+                            />
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -307,19 +347,19 @@ export default function Tools() {
 
     return (
         <main className="flex-col w-full justify-center items-center">
-            {/* Quizzes to mark section */ /* @ts-ignore */
-            quizzesToMark.result && quizzesToMark.result.data.length > 0 ?
-            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
-                <div className="flex flex-row justify-between items-center mb-2">
-                    <div className="flex flex-col">
-                        <div className="text-lg mb-2">Quizzes To Mark</div>
+            {/* Quizzes to mark section */
+            adminInsights.result &&
+                <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
+                    <div className="flex flex-row justify-between items-center mb-2">
+                        <div className="flex flex-col">
+                            <div className="text-lg mb-2">Quizzes To Mark</div>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
+                        {getQuizzesToMark()}
                     </div>
                 </div>
-                <div className="flex flex-wrap justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
-                    {getQuizzesToMark()}
-                </div>
-            </div>
-            : null}
+            }
 
             {/* Course insights section */}
             <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
@@ -340,16 +380,27 @@ export default function Tools() {
             </div>
 
             {/* Learner insights section */}
-            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom">
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
                 <div className="flex flex-row justify-end items-center">
                     <div className="flex flex-col mr-auto">
                         <div className="text-lg -mb-1">Learner Insights</div>
-                        <p className="mr-2 text-gray-500">Click on a user to view individual data.</p>
+                        <p className="mr-2 text-gray-500">Click on a user to view their profile</p>
                     </div>
                     <Button text="Invite New Learners" onClick={() => setCurrentPopup(PopupType.InviteLearner)}/>
                     <Button text="Download User Reports" onClick={() => setCurrentPopup(PopupType.DownloadUserReports)} style="ml-4"/>
                 </div>
                 {getLearnerInsights()}
+            </div>
+
+            {/* Admin insights section */}
+            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom">
+                <div className="flex flex-row justify-end items-center">
+                    <div className="flex flex-col mr-auto">
+                        <div className="text-lg -mb-1">Platform Admins & Developers</div>
+                        <p className="mr-2 text-gray-500">Click on a user to view their profile</p>
+                    </div>
+                </div>
+                {getAdminInsights()}
             </div>
 
             <div className="h-4" />

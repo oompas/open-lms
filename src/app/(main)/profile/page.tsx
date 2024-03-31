@@ -89,6 +89,7 @@ export default function Profile() {
                         <div className="mr-auto text-lg">Joined: <i>{user && unixToString(user.signUpDate)}</i></div>
                     </div>
                     <Button text="Log Out" onClick={async () => await logout()}/>
+                    {/* <Button text="Add dummy data (WILL CLEAN DATABASE)" onClick={async () => await generateData()}/> */}
                 </div>
             </div>
             {status && status === "LEARNER" && (
