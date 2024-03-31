@@ -8,7 +8,6 @@ export default function Quiz({
     numAttempts,
     maxAttempts,
     numQuestions,
-    totalMarks,
     minimumScore,
     totalMarks,
     quizStarted,
@@ -21,7 +20,6 @@ export default function Quiz({
     numAttempts: number
     maxAttempts: number
     numQuestions: number
-    totalMarks: number
     minimumScore: number
     totalMarks: number
     quizStarted: boolean | null
