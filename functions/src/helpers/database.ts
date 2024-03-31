@@ -148,6 +148,7 @@ interface CourseDocument extends DatabaseDocument {
 interface EnrolledCourseDocument extends DatabaseDocument {
     userId: string;
     courseId: string;
+    enrollmentTime: firestore.Timestamp;
 }
 
 interface QuizQuestionDocument extends DatabaseDocument {
