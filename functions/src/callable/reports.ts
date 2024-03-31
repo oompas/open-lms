@@ -223,13 +223,14 @@ const downloadCourseReports = onCall(async (request) => {
         }), // @ts-ignore
         getCollectionDocs(DatabaseCollections.QuizQuestion).then((result: QuizQuestionDocument[]) => {
             tables.quizQuestions = toCSV(result.map((question) => {
+                if (question.type === "tf") question.answers = ["True", "False"];
                 return {
                     'Question ID': question.id,
                     'Course ID': question.courseId,
 
                     'Question (commas removed)': question.question.replace(/,/g, ''),
                     'Type': question.type === "mc" ? "Multiple Choice" : question.type === "tf" ? "True/False" : "Short Answer",
-                    'Answer options (mc/tf only)': question.answers ? JSON.stringify(question.answers).replace(/,/g, '') : null,
+                    'Answer options (mc/tf only)': question.answers ? JSON.stringify(question.answers).replace(/,/g, ' ') : null,
                     'Correct answer (mc/tf only)': (question.answers && question.correctAnswer) ? question.answers[question.correctAnswer] : null,
                     'Question stats': JSON.stringify(question.stats).replace(/,/g, ' '),
                 };
