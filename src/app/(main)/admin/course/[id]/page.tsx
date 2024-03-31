@@ -37,6 +37,8 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
     const [quizTotalScore, setQuizTotalScore] = useState(0);
     const [editQuestion, setEditQuesiton] = useState(-1);
+    const [showAddCourseErrorPopup, setShowAddCourseErrorPopup] = useState(false);
+    const [addCourseErrorPopupMsg, setShowAddCourseErrorPopupMsg] = useState("");
 
     const toNumber = (val: string | number | null) => val === null ? null : Number(val);
 
@@ -66,7 +68,12 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         // TODO - question delete confirmation
         const temp = [...quizQuestions];
         temp.splice(num - 1, 1);
+        let temp_score = 0;
+        temp.map((q) => (
+            temp_score += q.marks
+        ))
         setQuizQuestions(temp);
+        setQuizTotalScore(temp_score);
     }
 
     const handleMoveUp = (num: number) => {
@@ -140,7 +147,13 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             quizQuestions: !quizQuestions.length ? null : quizQuestions.map(({ id, ...rest }) => rest)
         }
 
-        await callApi(ApiEndpoints.AddCourse, courseData).then((result) => router.push(`/admin/course/${result.data}`));
+        try {
+            await callApi(ApiEndpoints.AddCourse, courseData).then((result) => router.push(`/admin/course/${result.data}`));
+        } catch (error: any) {
+            const errorMessage = error.toString().split(':').slice(-1)[0].trim();
+            setShowAddCourseErrorPopup(true);
+            setShowAddCourseErrorPopupMsg("Error adding/updating course. Please try again. " + errorMessage);
+        }
     }
 
     const handlePublish = async () => {
@@ -258,6 +271,19 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         </div>
     )
 
+    const addCourseErrorPopup = (
+        <div className="fixed flex justify-center items-center w-full h-full top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    {addCourseErrorPopupMsg}
+                </div>
+                <div className="flex flex-row space-x-4 mt-6">
+                    <Button text="OK" onClick={() => setShowAddCourseErrorPopup(false)} filled />
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div className="flex flex-row w-full h-full justify-center pb-[2vh]">
 
@@ -357,10 +383,15 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                                     text={quizMinScore}
                                                     onChange={(text: string) => {
                                                         if (text === "") {
-                                                            setQuizMinScore(0);
+                                                            setQuizMinScore(1);
                                                             return;
                                                         }
-                                                        if (!(/^[0-9]+$/).test(text)) {
+                                                        if (!(/^[1-9]+$/).test(text)) {
+                                                            setQuizMinScore(1);
+                                                            return;
+                                                        }
+                                                        if (Number(text) <= 0) {
+                                                            setQuizMinScore(1);
                                                             return;
                                                         }
                                                         if (Number(text) > quizTotalScore) {
@@ -478,6 +509,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 {showDeletePopup && deletePopup}
                 {showSavePopup && savePopup}
                 {loading && loadingPopup}
+                {showAddCourseErrorPopup && addCourseErrorPopup}
                 {showCreateQuestion &&
                     <CreateQuestion
                         num={editQuestion}
