@@ -65,6 +65,33 @@ const getQuiz = onCall(async (request) => {
         };
         await updateDoc(DatabaseCollections.QuizAttempt, request.data.quizAttemptId, quizAttemptUpdate);
 
+        // If this was the last quiz attempt, fail the course attempt
+        if (courseData.quiz.maxAttempts) {
+            const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
+                .where("courseId", "==", courseAttempt.courseId)
+                .where("userId", "==", request.auth?.uid)
+                .get()
+                .then((snapshot) => {
+                    if (snapshot.empty) {
+                        logger.error(`No quiz attempts found for course ${courseAttempt.courseId}`);
+                        throw new HttpsError("not-found", `No quiz attempts found for course ${courseAttempt.courseId}`);
+                    }
+                    return snapshot.docs;
+                })
+                .catch((err) => {
+                    logger.info(`Error getting quiz attempts: ${err}`);
+                    throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
+                });
+
+            if (quizAttempts.length >= courseData.quiz.maxAttempts) {
+                const updateCourseAttempt = {
+                    endTime: firestore.FieldValue.serverTimestamp(),
+                    pass: false,
+                };
+                await updateDoc(DatabaseCollections.CourseAttempt, courseAttempt.id, updateCourseAttempt);
+            }
+        }
+
         return "Invalid";
     }
 
