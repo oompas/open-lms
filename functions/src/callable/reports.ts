@@ -4,7 +4,6 @@ import { logger } from "firebase-functions";
 import {
     CourseAttemptDocument,
     DatabaseCollections,
-    EnrolledCourseDocument,
     getCollection,
     getCollectionDocs,
     QuizAttemptDocument,
@@ -64,7 +63,7 @@ const getAdminInsights = onCall(async (request) => {
         });
 
     const users = await getCollectionDocs(DatabaseCollections.User) as UserDocument[];
-    const enrollments = await getCollectionDocs(DatabaseCollections.EnrolledCourse) as EnrolledCourseDocument[];
+    const enrollments = await EnrolledCourse.getAllDocs();
     const quizAttempts = await getCollectionDocs(DatabaseCollections.QuizAttempt) as QuizAttemptDocument[];
     const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
 
@@ -92,7 +91,7 @@ const getAdminInsights = onCall(async (request) => {
 
     const courseInsights = courses.map((course) => {
 
-        const courseEnrollments: EnrolledCourseDocument[] = enrollments.filter((enrollment) => enrollment.courseId === course.id);
+        const courseEnrollments = enrollments.filter((enrollment) => enrollment.courseId === course.id);
 
         const completedAttempts: CourseAttemptDocument[] = courseAttempts.filter((attempt) => attempt.courseId === course.id && attempt.pass === true);
 
