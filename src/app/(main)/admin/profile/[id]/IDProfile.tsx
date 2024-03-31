@@ -1,15 +1,18 @@
 import Button from "@/components/Button"
+import { ApiEndpoints, callApi } from "@/config/firebase";
 
 export default function IDProfile({
     name,
     signUpDate,
     lastLoginDate,
-    email
+    email,
+    uid
 } : {
     name: string,
     signUpDate: number,
     lastLoginDate: number,
     email: string,
+    uid: string,
 }) {
     return (
         <div className="flex flex-col h-full">
@@ -19,8 +22,7 @@ export default function IDProfile({
                 <div className="mr-auto text-lg">Joined: <i>{signUpDate}</i></div>
                 <div className="mr-auto text-lg mb-4">Last active: <i>{lastLoginDate}</i></div>
             </div>
-            {/* TODO - implement */}
-            <Button text="Remove user from platform" onClick={() => alert("remove")} />
+            <Button text="Disable user account" onClick={async () => await callApi(ApiEndpoints.UpdateUserEnabled, { targetUid: uid })}/>
         </div>
     )
     }

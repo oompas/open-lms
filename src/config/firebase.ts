@@ -2,7 +2,6 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "@firebase/auth";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { useAsync } from "react-async-hook";
-import { getAdminInsights } from "../../functions/src";
 
 // Firebase configuration
 // To switch between dev & prod, swap your .env.local file
@@ -25,6 +24,7 @@ enum ApiEndpoints {
     CreateAccount = "createAccount",
     ResetPassword = "resetPassword",
     GetUserProfile = "getUserProfile",
+    UpdateUserEnabled = "updateUserEnabled",
 
     // Courses
     AddCourse = "addCourse",

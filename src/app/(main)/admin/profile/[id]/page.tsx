@@ -38,6 +38,8 @@ export default function Profile({ params }: { params: { id: string } }) {
                     lastLoginDate={unixToString(user.lastSignIn)}
                     // @ts-ignore
                     email={user.email}
+                    // @ts-ignore
+                    uid={user.id}
                 />
             )
         }
@@ -46,7 +48,7 @@ export default function Profile({ params }: { params: { id: string } }) {
     const coursesEnrolledData = () => {
         if (user) {
             // @ts-ignore
-            var temp_courses = [...user.enrolledCourses]
+            const temp_courses = [...user.enrolledCourses]
             if ( temp_courses.length % 4 == 1 ) {
                 temp_courses.push({"name": "_placeholder", "id": 0})
                 temp_courses.push({"name": "_placeholder", "id": 0})

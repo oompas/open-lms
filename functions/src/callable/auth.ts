@@ -290,4 +290,52 @@ const getUserProfile = onCall(async (request) => {
     };
 });
 
-export { createAccount, resetPassword, getUserProfile };
+/**
+ * Flips the user's account enable status (disables the account if enabled, enables if disabled)
+ */
+const updateUserEnabled = onCall(async (request) => {
+
+    logger.info(`Entering disableUserAccount with payload ${JSON.stringify(request.data)} (user: ${request.auth?.uid})`);
+
+    await verifyIsAdmin(request);
+
+    const schema = object({
+        targetUid: string().length(USER_UID_LENGTH).required(),
+    }).required().noUnknown(true);
+
+    await schema.validate(request.data, { strict: true })
+        .catch((err) => {
+            logger.error(`Error validating request: ${err}`);
+            throw new HttpsError('invalid-argument', err);
+        });
+
+    logger.info("Schema verification passed");
+
+    const targetUserUid = request.data.targetUid;
+
+    // Can't disable an admin or developer
+    const user = await auth.getUser(targetUserUid)
+        .then((user) => {
+            if (user.customClaims?.admin || user.customClaims?.developer) {
+                logger.warn(`Cannot disable admin user ${targetUserUid}`);
+                throw new HttpsError('invalid-argument', `Cannot disable admin/developer user ${targetUserUid}`);
+            }
+            return user;
+        })
+        .catch((error) => {
+            logger.error(`Error getting user ${targetUserUid}: ${error}`);
+            throw new HttpsError('not-found', `User ${targetUserUid} not found`);
+        });
+
+    return auth.updateUser(targetUserUid, { disabled: !user.disabled })
+        .then(() => {
+            logger.info(`Successfully disabled user ${targetUserUid}`);
+            return targetUserUid;
+        })
+        .catch((error) => {
+            logger.error(`Error disabling user ${targetUserUid}: ${error}`);
+            throw new HttpsError('internal', `Error disabling user ${targetUserUid}`);
+        });
+});
+
+export { createAccount, resetPassword, getUserProfile, updateUserEnabled };
