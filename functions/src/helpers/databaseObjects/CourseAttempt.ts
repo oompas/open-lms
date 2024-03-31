@@ -24,11 +24,34 @@ class CourseAttempt extends DatabaseObject {
         this.pass = pass;
     }
 
-    public getObject(): object {
+    public getUserId(): string {
+        return this.userId;
+    }
+
+    public getCourseId(): string {
+        return this.courseId;
+    }
+
+    public getStartTime(): number {
+        return this.startTime.seconds;
+    }
+
+    public getEndTime(): number | null {
+        return this.endTime?.seconds ?? null;
+    }
+
+    public getPass(): boolean | null {
+        return this.pass;
+    }
+
+    public getObject(): { id: string; userId: string; courseId: string; startTime: number; endTime: number | null; pass: boolean | null } {
         return {
             id: this.getId(),
             userId: this.userId,
-            courseId: this.courseId
+            courseId: this.courseId,
+            startTime: this.startTime.seconds,
+            endTime: this.endTime?.seconds ?? null,
+            pass: this.pass
         };
     }
 

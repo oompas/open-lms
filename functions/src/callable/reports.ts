@@ -16,6 +16,7 @@ import { CourseStatus } from "./helpers";
 import { auth } from "../helpers/setup";
 import { UserRecord } from "firebase-admin/lib/auth";
 import { EnrolledCourse } from "../helpers/databaseObjects/EnrolledCourse";
+import { CourseAttempt } from "../helpers/databaseObjects/CourseAttempt";
 
 /**
  * Converts an array of objects (with the same keys & no embedded objects) into a CSV string
@@ -65,7 +66,7 @@ const getAdminInsights = onCall(async (request) => {
     const users = await getCollectionDocs(DatabaseCollections.User) as UserDocument[];
     const enrollments = await EnrolledCourse.getAllDocs();
     const quizAttempts = await getCollectionDocs(DatabaseCollections.QuizAttempt) as QuizAttemptDocument[];
-    const courseAttempts = await getCollectionDocs(DatabaseCollections.CourseAttempt) as CourseAttemptDocument[];
+    const courseAttempts = await CourseAttempt.getAllDocs();
 
     logger.info("Successfully queried database collections");
 
@@ -93,11 +94,11 @@ const getAdminInsights = onCall(async (request) => {
 
         const courseEnrollments = enrollments.filter((enrollment) => enrollment.getCourseId() === course.id);
 
-        const completedAttempts: CourseAttemptDocument[] = courseAttempts.filter((attempt) => attempt.courseId === course.id && attempt.pass === true);
+        const completedAttempts = courseAttempts.filter((attempt) => attempt.getCourseId() === course.id && attempt.getPass() === true);
 
         const completionTimes: number[] = completedAttempts.map((attempt) => {
-            const milliseconds = (attempt.endTime?.toMillis() ?? 0) - attempt.startTime.toMillis();
-            return Math.floor(milliseconds / 1000 / 60); // In minutes
+            const seconds = (attempt.getEndTime() ?? 0) - attempt.getStartTime();
+            return Math.floor(seconds / 60); // In minutes
         });
         let averageTime = null;
         if (completionTimes.length > 0) {
@@ -133,8 +134,8 @@ const getAdminInsights = onCall(async (request) => {
     const learners = users.filter((user) => !user.admin && !user.developer).map((user) => {
 
         const numEnrollments = enrollments.reduce((count, enrollment) => enrollment.getUserId() === user.id ? ++count : count, 0);
-        const numAttempts = courseAttempts.reduce((count, attempt) => attempt.userId === user.id ? ++count : count, 0);
-        const numComplete = courseAttempts.reduce((count, attempt) => attempt.userId === user.id && attempt.pass === true ? ++count : count, 0);
+        const numAttempts = courseAttempts.reduce((count, attempt) => attempt.getUserId() === user.id ? ++count : count, 0);
+        const numComplete = courseAttempts.reduce((count, attempt) => attempt.getUserId() === user.id && attempt.getPass() === true ? ++count : count, 0);
 
         return {
             uid: user.id,
