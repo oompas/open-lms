@@ -54,7 +54,9 @@ export default function Button({
             </button>
             {isLoading && 
                 <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
-                    <div className="loading ml-4"></div>
+                    <div className="loading ml-4">
+                        <div className="inner-circle"></div>
+                    </div>
                 </div>
             }
         </>
