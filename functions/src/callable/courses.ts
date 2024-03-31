@@ -3,7 +3,7 @@ import {
     sendEmail,
     shuffleArray,
     verifyIsAdmin,
-    verifyIsAuthenticated
+    verifyIsAuthenticated, verifyIsLearner
 } from "../helpers/helpers";
 import { logger } from "firebase-functions";
 import { array, boolean, number, object, string } from 'yup';
@@ -237,14 +237,7 @@ const getAvailableCourses = onCall(async (request) => {
 });
 
 /**
- * Gets the given information for the specified quiz:
- * -courseId
- * -name
- * -description
- * -link
- * -minTime
- * -maxQuizAttempts
- * -quizTimeLimit
+ * Gets the given information for the specified course, including the quiz if editing
  */
 const getCourseInfo = onCall(async (request) => {
 
@@ -363,7 +356,8 @@ const getCourseInfo = onCall(async (request) => {
         quiz: courseInfo.quiz ? { numQuestions: numQuizQuestions, ...courseInfo.quiz } : null,
         status: status,
         startTime: courseAttempt?.startTime.seconds ?? null,
-        currentQuiz: quizAttempts.find((attempt) => !attempt.endTime && !attempt.expired) ?? null,
+        quizAttempts: quizAttempts.length,
+        currentQuiz: quizAttempts.find((attempt) => !attempt.endTime) ?? null,
         courseAttemptId: courseAttempt?.id ?? null,
     };
 });
@@ -375,7 +369,7 @@ const courseEnrollment = onCall(async (request) => {
 
     logger.info(`Entering courseEnrollment for user ${request.auth?.uid} with payload ${JSON.stringify(request.data)}`);
 
-    verifyIsAuthenticated(request);
+    await verifyIsLearner(request);
 
     const schema = object({
         courseId: string().required(),
@@ -398,7 +392,13 @@ const courseEnrollment = onCall(async (request) => {
     if (await docExists(DatabaseCollections.EnrolledCourse, enrolledId)) {
         return deleteDoc(DatabaseCollections.EnrolledCourse, enrolledId);
     }
-    return addDocWithId(DatabaseCollections.EnrolledCourse, enrolledId, { userId: uid, courseId: request.data.courseId });
+
+    const enrollmentDoc = {
+        userId: uid,
+        courseId: request.data.courseId,
+        enrollmentTime: firestore.FieldValue.serverTimestamp(),
+    };
+    return addDocWithId(DatabaseCollections.EnrolledCourse, enrolledId, enrollmentDoc);
 });
 
 /**
@@ -406,7 +406,7 @@ const courseEnrollment = onCall(async (request) => {
  */
 const startCourse = onCall(async (request) => {
 
-    verifyIsAuthenticated(request);
+    await verifyIsLearner(request);
 
     // @ts-ignore
     const uid: string = request.auth?.uid;
@@ -472,7 +472,7 @@ const deleteCourse = onCall(async (request) => {
  */
 const sendCourseFeedback = onCall(async (request) => {
 
-    verifyIsAuthenticated(request);
+    await verifyIsLearner(request);
 
     const schema = object({
         courseId: string().required(),

@@ -47,6 +47,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
 
     useEffect(() => {
         if (countdown === 0 && quizData && quizData !== "Invalid") { // Automatically submit quiz when time runs out
+            handleSubmit();
             setShowConfirm(true);
         }
         if (countdown < 0 || !quizData || quizData == "Invalid") {
@@ -166,7 +167,6 @@ export default function Quiz({ params }: { params: { id: string } }) {
         }
 
         await callApi(ApiEndpoints.SubmitQuiz, { quizAttemptId: params.id.split('-')[1], responses: responses })
-            .then(() => router.push(`/course/${params.id.split('-')[0]}`))
             .catch((err) => console.log(`Error calling submitQuiz: ${err}`));
     }
 
@@ -210,8 +210,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
         return (
             <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
                 <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                    { countdown === 0 ? 
-                        <div className="text-lg mb-4">Quiz time limit exceeded - click submit to exit.</div>
+                    { countdown <= 0 ? 
+                        <div className="text-lg mb-4">Quiz time limit exceeded, answers have been automatically submitted - click to exit.</div>
                     :
                         <div>
                             { blankAnswers() && <div className="text-lg mb-2">You haven't answered every question, are you sure you're ready to submit?</div> }
@@ -219,8 +219,9 @@ export default function Quiz({ params }: { params: { id: string } }) {
                         </div> 
                     }
                     <div className="flex flex-row">
-                        { countdown != 0 && <Button text="Back" onClick={() => setShowConfirm(false)} style="ml-auto" />}
-                        <Button text="Submit Quiz" onClick={async () => await handleSubmit()} style="ml-4" filled />
+                        { countdown > 0 && <Button text="Back" onClick={() => setShowConfirm(false)} style="ml-auto" />}
+                        { countdown > 0 && <Button text="Submit Quiz" onClick={async () => {await handleSubmit(); router.push(`/course/${params.id.split('-')[0]}`)}} style="ml-4" filled /> }
+                        { countdown <= 0 && <Button text="Exit Quiz" onClick={() => router.push(`/course/${params.id.split('-')[0]}`)} style="ml-auto" filled /> }
                     </div>
                 </div>
             </div>

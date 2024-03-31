@@ -82,23 +82,26 @@ export default function Course({ params }: { params: { id: string } }) {
                     {course.quiz &&
                         <div className="flex flex-row items-center mt-2">
                             <Checkbox checked={course.status === 6} setChecked={null} style="mr-3"/>
-                            <div>{"Complete the required quiz"}</div>
+                            <div>{"Pass the required quiz"}</div>
                         </div>
                     }
                 </div>
 
                 { course.quiz &&
                     <div className="mt-4">
-                        <div className="flex flex-col w-1/2">
+                        <div className="flex flex-col w-fit">
                             <Quiz
                                 key={1}
                                 length={course.quiz.timeLimit}
-                                maxAttempts={course.quiz.maxQuizAttempts}
+                                numAttempts={course.quizAttempts}
+                                maxAttempts={course.quiz.maxAttempts}
                                 numQuestions={course.quiz.numQuestions}
+                                totalMarks={course.quiz.totalMarks}
                                 minimumScore={course.quiz.minScore}
                                 quizStarted={quizStarted}
                                 courseAttemptId={courseAttemptId}
                                 quizAttemptId={quizAttemptId}
+                                courseStatus={course.status}
                                 courseId={params.id}
                             />
                         </div>

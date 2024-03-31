@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { LuExternalLink } from "react-icons/lu";
-import { MdLink } from "react-icons/md";
 
 export default function LearnerInsight({
     name,
