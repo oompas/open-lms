@@ -201,6 +201,8 @@ export default function Tools() {
                 document.body.appendChild(file); // Required for this to work in FireFox
                 file.click();
                 file.remove();
+
+                setCurrentPopup(null);
             })
             .catch((error) => console.log(`Error downloading course reports: ${error}`));
     }
@@ -218,6 +220,8 @@ export default function Tools() {
                 file.download = `openLMS_user_reports_${currentTime}.csv`;
                 document.body.appendChild(file); // Required for this to work in FireFox
                 file.click();
+
+                setCurrentPopup(null);
             })
             .catch((error) => console.log(`Error downloading course reports: ${error}`));
     }
