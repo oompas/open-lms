@@ -197,7 +197,7 @@ export default function Tools() {
                 // Download the zip file on the user's browser
                 const file = document.createElement("a");
                 file.href = URL.createObjectURL(blob);
-                file.download = `openLMS_course_reports${currentTime}.zip`;
+                file.download = `OpenLMS_Course_Reports${currentTime}.zip`;
                 document.body.appendChild(file); // Required for this to work in FireFox
                 file.click();
                 file.remove();
@@ -217,7 +217,7 @@ export default function Tools() {
                 // Download the file on the user's browser
                 const file = document.createElement('a');
                 file.href = window.URL.createObjectURL(blob);
-                file.download = `openLMS_user_reports_${currentTime}.csv`;
+                file.download = `OpenLMS_User_Reports_${currentTime}.csv`;
                 document.body.appendChild(file); // Required for this to work in FireFox
                 file.click();
 

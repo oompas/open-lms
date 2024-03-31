@@ -72,7 +72,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
             { showSupportForm && (
                 <div className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
                     <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                        <div className="text-lg mb-2">Request platform support.</div>
+                        <div className="text-lg mb-2">Request platform support or report technical issues</div>
                         <TextField text={feedback} onChange={setFeedback} area placeholder="Type your message here..." />
                         <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-left">
                             <div className="flex flex-row ml-auto mt-4">

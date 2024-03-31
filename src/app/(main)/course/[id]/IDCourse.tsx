@@ -77,19 +77,19 @@ export default function IDCourse({
             return (
                 <>
                     <a href={course.link} target={"_blank"}>
-                        <Button text="Start course" onClick={async () => await start()} filled icon="link"/>
+                        <Button text="Start Course" onClick={async () => await start()} filled icon="link"/>
                     </a>
                     <Button text="Unenroll" onClick={enrollment} icon="minus"/>
-                    <Button text="Request help" onClick={handleSupportRequest} icon="report"/>
+                    <Button text="Request Help" onClick={handleSupportRequest} icon="report"/>
                 </>
             );
         }
         return (
             <>
                 <a href={course.link} target={"_blank"}>
-                    <Button text="Go to course" onClick={() => {}} filled icon="link"/>
+                    <Button text="Go to Course" onClick={() => {}} filled icon="link"/>
                 </a>
-                <Button text="Request help" onClick={handleSupportRequest} icon="report"/>
+                <Button text="Request Help" onClick={handleSupportRequest} icon="report"/>
             </>
         );
     }
@@ -153,7 +153,7 @@ export default function IDCourse({
                 { showSupportForm && (
                     <div className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
                         <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                            <div className="text-lg mb-2">Request course support or report issue.</div>
+                            <div className="text-lg mb-2">Request course support or report issue</div>
                             <TextField text={feedback} onChange={setFeedback} area placeholder="Type your message here..." />
                             <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-left">
                                 <div className="flex flex-row ml-auto mt-4">

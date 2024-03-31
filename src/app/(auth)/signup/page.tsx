@@ -80,7 +80,7 @@ export default function SignUpPage() {
             <div className="flex bg-white w-1/3 p-12 rounded-2xl shadow-custom">
                 <div className="flex flex-col h-full w-full space-y-4">
                     <div className="border-2 p-6 rounded-2xl">
-                        <div className="text-xl font-bold mb-4">Register Account</div>
+                        <div className="text-xl font-bold mb-4">Create Account</div>
                         <AuthForm
                             email={email}
                             setEmail={setEmail}
@@ -108,7 +108,7 @@ export default function SignUpPage() {
                         )}
                         <Button text="Sign Up" onClick={signUp} style="mt-4 ml-auto" icon="arrow" filled/>
                     </div>
-                    <Button text="Back to Log In" onClick={() => router.push('/')} style="border-[3px] border-red-800" filled={false}/>
+                    <Button text="Back to Login" onClick={() => router.push('/')} style="border-[3px] border-red-800" filled={false}/>
                 </div>
             </div>
             {showVerifyEmailPopup && <VerifyEmailPopup onClose={handlePopupClose} />}

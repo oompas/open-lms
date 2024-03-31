@@ -26,10 +26,10 @@ export default function ForgotPasswordPage() {
     return (
         <main className="flex h-[100vh] items-center justify-center">
             <div className="flex flex-col bg-white p-12 rounded-2xl shadow-custom">
-                <div className="text-2xl font-bold mb-4">Forgot password?</div>
+                <div className="text-2xl font-bold mb-4">Forgot Password?</div>
                 <div className="flex flex-col space-y-4">
                     <div className="flex flex-col mb-2">
-                        <p className="mb-1 text-md">Account Email</p>
+                        <p className="mb-1 text-md">Email</p>
                         <TextField text={email} onChange={setEmail} />
                     </div>
                     <Button text="Send Reset Email" onClick={sendResetEmail} filled={true} style="mt-6"/>

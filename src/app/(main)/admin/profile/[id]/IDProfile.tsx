@@ -32,7 +32,7 @@ export default function IDProfile({
             <div className="flex flex-col h-full items-end mb-auto">
                 <div className="mr-auto text-lg mb-4">{email}</div>
                 <div className="mr-auto text-lg">Joined: <i>{signUpDate}</i></div>
-                <div className="mr-auto text-lg mb-4">Last active: <i>{lastLoginDate}</i></div>
+                <div className="mr-auto text-lg mb-4">Last Active: <i>{lastLoginDate}</i></div>
             </div>
             <Button
                 text={`${isDisabled ? "Enable" : "Disable"} user account`}
