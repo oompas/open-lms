@@ -32,7 +32,10 @@ const toCSV = (json: { [key: string]: any }[]) => {
 
 /**
  * Returns admin insights:
- * -
+ * -Quizzes to mark
+ * -Course insights
+ * -Learner insights
+ * -Admin insights
  */
 const getAdminInsights = onCall(async (request) => {
 
