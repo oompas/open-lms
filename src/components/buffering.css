@@ -1,17 +1,17 @@
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  .loading {
-    position: fixed;
-    top: 1%;
-    left: 1%;
-    transform: translate(-50%, -50%);
-    border: 16px solid #ffffff;
-    border-top: 16px solid #991b1b;
-    border-radius: 50%;
-    width: 120px;
-    height: 120px;
-    animation: spin 2s linear infinite;
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading {
+  position: fixed;
+  top: 45%;
+  left: 45%;
+  transform: translate(-50%, -50%);
+  border: 16px solid rgb(255, 255, 255);
+  border-top: 16px solid #991b1b;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}

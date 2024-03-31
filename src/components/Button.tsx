@@ -20,12 +20,10 @@ export default function Button({
 }) {
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleClick = () => {
+    const handleClick = async () => {
         setIsLoading(true);
-        onClick();
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 5000);
+        await onClick();
+        setIsLoading(false);
     };
 
     const background: any = " bg-red-800 text-white"
@@ -54,7 +52,11 @@ export default function Button({
                 <div>{text}</div>
                 { icon ? <div className="ml-2">{iconElem}</div> : null }
             </button>
-            {isLoading && <div className="loading ml-4"></div>}
+            {isLoading && 
+                <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+                    <div className="loading ml-4"></div>
+                </div>
+            }
         </>
     )
 }
