@@ -355,71 +355,6 @@ const submitQuiz = onCall(async (request) => {
 });
 
 /**
- * Returns a list of quiz attempts that need marking
- */
-const getQuizzesToMark = onCall(async (request) => {
-
-    logger.info(`Entering getQuestionsToMark for user ${request.auth?.uid}`);
-
-    await verifyIsAdmin(request);
-
-    const schema = object({}).required().noUnknown();
-
-    await schema.validate(request.data, { strict: true })
-        .catch((err) => {
-            logger.error(`Error validating request: ${err}`);
-            throw new HttpsError('invalid-argument', err);
-        });
-
-    logger.info("Schema & admin verification passed");
-
-    // Get all quiz attempts that need marking
-    const attemptsToMark = await getCollection(DatabaseCollections.QuizAttempt)
-        .where("endTime", "!=", null)
-        .where("pass", "==", null)
-        .get()
-        .then((snapshot) => snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as QuizAttemptDocument)))
-        .catch((err) => {
-            logger.info(`Error getting short answer questions: ${err}`);
-            throw new HttpsError("internal", `Error getting short answer questions: ${err}`);
-        });
-
-    logger.info(`Successfully retrieved ${attemptsToMark.length} quiz attempts with short answer questions to mark`);
-
-    // Get all course names (may have duplicates, so use a set to get unique values for efficiency)
-    const courseNames: { [key: string]: string } = {};
-    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.courseId))].map((courseId) => // @ts-ignore
-        getDocData(DatabaseCollections.Course, courseId).then((course: CourseDocument) => courseNames[courseId] = course.name)
-    ));
-
-    logger.info(`Successfully retrieved course data for ${Object.keys(courseNames).length} courses`);
-
-    // Get all usernames (same as above with possible duplicates)
-    const userNames: { [key: string]: string } = {};
-    await Promise.all([...new Set(attemptsToMark.map((attempt) => attempt.userId))].map((userId) => // @ts-ignore
-        getDocData(DatabaseCollections.User, userId).then((user: UserDocument) => userNames[userId] = user.name)
-    ));
-
-    logger.info(`Successfully retrieved user data for ${Object.keys(userNames).length} users`);
-
-    return attemptsToMark.map((quizAttempt) => {
-
-        if (quizAttempt.endTime === null) {
-            throw new HttpsError("internal", `Quiz attempt ${quizAttempt.id} is still active (no end time)`);
-        }
-
-        return {
-            courseId: quizAttempt.courseId,
-            courseName: courseNames[quizAttempt.courseId],
-            userId: quizAttempt.userId,
-            userName: userNames[quizAttempt.userId],
-            quizAttemptId: quizAttempt.id,
-            timestamp: Math.floor(quizAttempt.endTime.toMillis() / 1000),
-        };
-    });
-});
-
-/**
  * Gets a specific quiz attempt to mark or view
  */
 const getQuizAttempt = onCall(async (request) => {
@@ -560,4 +495,4 @@ const markQuizAttempt = onCall(async (request) => {
     return updateQuizStatus(quizAttemptId, uid);
 });
 
-export { startQuiz, submitQuiz, getQuiz, getQuizzesToMark, getQuizAttempt, markQuizAttempt };
+export { startQuiz, submitQuiz, getQuiz, getQuizAttempt, markQuizAttempt };
