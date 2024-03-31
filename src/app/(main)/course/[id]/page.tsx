@@ -72,7 +72,7 @@ export default function Course({ params }: { params: { id: string } }) {
                 />
 
                 <div className="mt-8 text-2xl">
-                    <h1 className="mb-4">Required completion verification:</h1>
+                    <h1 className="mb-4">To complete the course:</h1>
                     {course.minTime &&
                         <div className="flex flex-row items-center mt-2">
                             <Checkbox checked={timeDone} setChecked={null} style="mr-3"/>

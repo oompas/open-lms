@@ -122,7 +122,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     Time remaining:
                 </div>
                 <div className="flex flex-col text-4xl items-center justify-center mb-4">
-                    {timeFormat}
+                    {countdown > 0 ? timeFormat : "00:00:00"}
                 </div>
             </>
         );

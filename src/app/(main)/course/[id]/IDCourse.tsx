@@ -95,9 +95,9 @@ export default function IDCourse({
     }
 
     const statusNames = {
-        1: "Not enrolled",
-        2: "To do",
-        3: "In progress",
+        1: "Not Enrolled",
+        2: "To Do",
+        3: "In Progress",
         4: "Awaiting Marking",
         5: "Failed",
         6: "Completed",
@@ -170,7 +170,7 @@ export default function IDCourse({
                 )}
                 {/* @ts-ignore */}
                 <div className="flex flex-col justify-center items-center ml-auto border-4 rounded-xl px-10 py-4 shadow-lg" style={{borderColor: statusColors[status]}}>
-                    <div className="text-sm -mb-1">status:</div>
+                    <div className="text-sm -mb-1">Status:</div>
                     { /* @ts-ignore */ }
                     <div className="text-2xl text-center">{statusNames[status]}</div>
                     {course.minTime && (

@@ -46,7 +46,7 @@ export default function Button({
         <>
             <button
                 onClick={handleClick}
-                className={ "flex h-fit items-right px-5 py-2 w-fit rounded-xl text-lg font-bold border-[3px] border-red-800 duration-75 ease-out " + style + (filled ? background : border) + (disabled ? " opacity-40" : " hover:opacity-60 cursor-pointer") }
+                className={ "flex h-fit items-center px-5 py-2 w-fit rounded-xl text-lg font-bold border-[3px] border-red-800 duration-75 ease-out " + style + (filled ? background : border) + (disabled ? " opacity-40" : " hover:opacity-60 cursor-pointer") }
                 disabled={disabled}
             >
                 <div>{text}</div>
