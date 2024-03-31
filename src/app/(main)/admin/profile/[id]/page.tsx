@@ -38,8 +38,9 @@ export default function Profile({ params }: { params: { id: string } }) {
                     lastLoginDate={unixToString(user.lastSignIn)}
                     // @ts-ignore
                     email={user.email}
+                    uid={params.id}
                     // @ts-ignore
-                    uid={user.id}
+                    disabled={user.disabled}
                 />
             )
         }
