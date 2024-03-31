@@ -5,7 +5,7 @@
 
 .loading {
   position: fixed;
-  top: 45%;
+  top: 40%;
   left: 45%;
   transform: translate(-50%, -50%);
   border: 16px solid rgb(255, 255, 255);
