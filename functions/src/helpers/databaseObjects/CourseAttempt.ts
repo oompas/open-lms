@@ -60,7 +60,7 @@ class CourseAttempt extends DatabaseObject {
         return new CourseAttempt(doc.id, data.userId, data.courseId, data.startTime, data.endTime, data.pass);
     }
 
-    static getAllDocs = (): Promise<CourseAttempt[]> => {
+    public static getAllDocs = (): Promise<CourseAttempt[]> => {
         return db.collection(CourseAttempt.CollectionName)
             .get()
             .then((result) => result.docs.map(doc => CourseAttempt.fromFirestore(doc)))
@@ -71,4 +71,4 @@ class CourseAttempt extends DatabaseObject {
     }
 }
 
-export { CourseAttempt };
+export default CourseAttempt;

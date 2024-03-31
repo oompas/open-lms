@@ -9,14 +9,16 @@ import {
     QuizAttemptDocument,
     QuizQuestionDocument,
     QuizQuestionAttemptDocument,
-    UserDocument, getDocData, CourseDocument,
+    getDocData,
+    CourseDocument
 } from "../helpers/database";
 import { object, string } from "yup";
 import { CourseStatus } from "./helpers";
 import { auth } from "../helpers/setup";
 import { UserRecord } from "firebase-admin/lib/auth";
-import { EnrolledCourse } from "../helpers/databaseObjects/EnrolledCourse";
-import { CourseAttempt } from "../helpers/databaseObjects/CourseAttempt";
+import EnrolledCourse from "../helpers/databaseObjects/EnrolledCourse";
+import CourseAttempt from "../helpers/databaseObjects/CourseAttempt";
+import User from "../helpers/databaseObjects/User";
 
 /**
  * Converts an array of objects (with the same keys & no embedded objects) into a CSV string
@@ -63,7 +65,7 @@ const getAdminInsights = onCall(async (request) => {
             throw new HttpsError('internal', "Error getting course reports, please try again later");
         });
 
-    const users = await getCollectionDocs(DatabaseCollections.User) as UserDocument[];
+    const users = await User.getAllDocs();
     const enrollments = await EnrolledCourse.getAllDocs();
     const quizAttempts = await getCollectionDocs(DatabaseCollections.QuizAttempt) as QuizAttemptDocument[];
     const courseAttempts = await CourseAttempt.getAllDocs();
@@ -77,7 +79,7 @@ const getAdminInsights = onCall(async (request) => {
             throw new HttpsError("internal", `Quiz attempt ${quizAttempt.id} is still active (no end time)`);
         }
 
-        const userName = users.find((user) => user.id === quizAttempt.userId)?.name;
+        const userName = users.find((user) => user.getId() === quizAttempt.userId)?.getName();
         const courseName = courses.find((course) => course.id === quizAttempt.courseId)?.name;
 
         return {
@@ -131,16 +133,16 @@ const getAdminInsights = onCall(async (request) => {
         };
     }).sort((a, b) => b.numEnrolled - a.numEnrolled);
 
-    const learners = users.filter((user) => !user.admin && !user.developer).map((user) => {
+    const learners = users.filter((user) => !user.isAdmin() && !user.isDeveloper()).map((user) => {
 
-        const numEnrollments = enrollments.reduce((count, enrollment) => enrollment.getUserId() === user.id ? ++count : count, 0);
-        const numAttempts = courseAttempts.reduce((count, attempt) => attempt.getUserId() === user.id ? ++count : count, 0);
-        const numComplete = courseAttempts.reduce((count, attempt) => attempt.getUserId() === user.id && attempt.getPass() === true ? ++count : count, 0);
+        const numEnrollments = enrollments.reduce((count, enrollment) => enrollment.getUserId() === user.getId() ? ++count : count, 0);
+        const numAttempts = courseAttempts.reduce((count, attempt) => attempt.getUserId() === user.getId() ? ++count : count, 0);
+        const numComplete = courseAttempts.reduce((count, attempt) => attempt.getUserId() === user.getId() && attempt.getPass() === true ? ++count : count, 0);
 
         return {
-            uid: user.id,
-            name: user.name,
-            email: user.email,
+            uid: user.getId(),
+            name: user.getName(),
+            email: user.getEmail(),
             role : "Learner",
             coursesEnrolled: numEnrollments,
             coursesAttempted: numAttempts,
@@ -148,16 +150,16 @@ const getAdminInsights = onCall(async (request) => {
         };
     }).sort((a, b) => b.coursesEnrolled - a.coursesEnrolled);
 
-    const admins = users.filter((user) => user.admin === true || user.developer === true).map((user) => {
+    const admins = users.filter((user) => user.isAdmin() || user.isDeveloper()).map((user) => {
 
-        const numCoursesCreated = courses.reduce((count, course) => course.userId === user.id ? ++count : count, 0);
-        const numCoursesPublished = courses.reduce((count, course) => course.userId === user.id && course.active ? ++count : count, 0);
+        const numCoursesCreated = courses.reduce((count, course) => course.userId === user.getId() ? ++count : count, 0);
+        const numCoursesPublished = courses.reduce((count, course) => course.userId === user.getId() && course.active ? ++count : count, 0);
 
         return {
-            uid: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.admin ? "Administrator" : "Developer",
+            uid: user.getId(),
+            name: user.getName(),
+            email: user.getEmail(),
+            role: user.isAdmin() ? "Administrator" : "Developer",
             coursesCreated: numCoursesCreated,
             coursesPublished: numCoursesPublished,
         };

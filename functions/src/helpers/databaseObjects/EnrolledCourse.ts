@@ -46,7 +46,7 @@ class EnrolledCourse extends DatabaseObject {
         return new EnrolledCourse(doc.id, data.userId, data.courseId, data.enrolledDate);
     }
 
-    static getAllDocs = (): Promise<EnrolledCourse[]> => {
+    public static getAllDocs = (): Promise<EnrolledCourse[]> => {
         return db.collection(EnrolledCourse.CollectionName)
             .get()
             .then((result) => result.docs.map(doc => EnrolledCourse.fromFirestore(doc)))
@@ -57,4 +57,4 @@ class EnrolledCourse extends DatabaseObject {
     }
 }
 
-export { EnrolledCourse };
+export default EnrolledCourse;
