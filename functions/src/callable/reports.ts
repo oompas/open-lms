@@ -19,6 +19,7 @@ import { UserRecord } from "firebase-admin/lib/auth";
 import EnrolledCourse from "../helpers/databaseObjects/EnrolledCourse";
 import CourseAttempt from "../helpers/databaseObjects/CourseAttempt";
 import User from "../helpers/databaseObjects/User";
+import QuizQuestion from "../helpers/databaseObjects/QuizQuestion";
 
 /**
  * Converts an array of objects (with the same keys & no embedded objects) into a CSV string
@@ -223,9 +224,10 @@ const downloadCourseReports = onCall(async (request) => {
                     'Quiz time limit (minutes)': course.quiz?.timeLimit ?? "Unlimited",
                 };
             }));
-        }), // @ts-ignore
-        getCollectionDocs(DatabaseCollections.QuizQuestion).then((result: QuizQuestionDocument[]) => {
-            tables.quizQuestions = toCSV(result.map((question) => {
+        }),
+        QuizQuestion.getAllDocs().then((result: QuizQuestion[]) => {
+            tables.quizQuestions = toCSV(result.map((q) => {
+                const question = q.getObject();
                 if (question.type === "tf") question.answers = ["True", "False"];
                 return {
                     'Question ID': question.id,
