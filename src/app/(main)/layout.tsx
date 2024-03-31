@@ -49,7 +49,10 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         <html lang="en">
         <body className="h-[100vh] px-20 bg-gray-100 overflow-x-hidden">
             <div className="flex flex-row px-12 h-[13vh] items-center bg-white rounded-b-2xl shadow-custom">
-                <Link href="/home" className="font-bold text-4xl">OpenLMS</Link>
+                <Link href="/home" className="font-bold text-4xl flex items-center">
+                    <img src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaKJ6WNZbIVmwI2H2DhOpcEjPI20dv54xarsGWLL7Dqpr2YdwjoWz1iJbCXDFjyGA4XsIswyuyiBToe8QTA9Mvddj4Dyw=s2560" alt="Logo" className="h-10 w-auto mr-2" />
+                    OpenLMS
+                </Link>
                 <div className="flex ml-auto space-x-10 text-2xl">
                     {isAdmin && <Link href="/admin/tools" className="hover:opacity-50 duration-75">Admin Tools</Link>}
                     <Link href="/profile" className="hover:opacity-50 duration-75">View Profile</Link>

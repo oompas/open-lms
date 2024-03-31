@@ -89,6 +89,7 @@ export default function IDCourse({
                 <a href={course.link} target={"_blank"}>
                     <Button text="Go to course" onClick={() => {}} filled icon="link"/>
                 </a>
+                <Button text="Request help" onClick={handleSupportRequest} icon="report"/>
             </>
         );
     }
