@@ -260,7 +260,6 @@ const downloadCourseReports = onCall(async (request) => {
                     'End time': attempt.endTime?.toDate().toUTCString().replace(/,/g, ''),
                     'Pass?': attempt.pass === true ? "Passed" : attempt.pass === false ? "Failed" : "Not completed",
                     'Score': attempt.score ? attempt.score : "Not marked",
-                    'Expired (didn\'t submit in time)?': attempt.expired ? "Yes" : "No",
                 };
             }));
         }), // @ts-ignore

@@ -51,12 +51,20 @@ const getQuiz = onCall(async (request) => {
         logger.error(`Course ${courseAttempt.courseId} does not have a quiz`);
         throw new HttpsError("not-found", `Course ${courseAttempt.courseId} does not have a quiz`);
     }
-    if (quizAttempt.endTime !== null || quizAttempt.expired) {
+    if (quizAttempt.endTime !== null) {
         logger.error(`Quiz attempt with ID ${request.data.quizAttemptId} is already completed`);
         throw new HttpsError("failed-precondition", `Quiz attempt with ID ${request.data.quizAttemptId} is already completed`);
     }
     if (courseData.quiz.timeLimit && Date.now() > quizAttempt.startTime.toMillis() + (courseData.quiz.timeLimit * 60 * 1000)) {
-        await updateDoc(DatabaseCollections.QuizAttempt, request.data.quizAttemptId, { expired: true })
+
+        // If the attempt has expired -> fail the attempt
+        const quizAttemptUpdate = {
+            endTime: firestore.FieldValue.serverTimestamp(),
+            pass: false,
+            score: 0,
+        };
+        await updateDoc(DatabaseCollections.QuizAttempt, request.data.quizAttemptId, quizAttemptUpdate);
+
         return "Invalid";
     }
 
