@@ -1,6 +1,6 @@
 abstract class DatabaseObject {
 
-    protected id: string;
+    protected readonly id: string;
 
     protected constructor(id: string) {
         this.id = id;

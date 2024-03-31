@@ -91,7 +91,7 @@ const getAdminInsights = onCall(async (request) => {
 
     const courseInsights = courses.map((course) => {
 
-        const courseEnrollments = enrollments.filter((enrollment) => enrollment.courseId === course.id);
+        const courseEnrollments = enrollments.filter((enrollment) => enrollment.getCourseId() === course.id);
 
         const completedAttempts: CourseAttemptDocument[] = courseAttempts.filter((attempt) => attempt.courseId === course.id && attempt.pass === true);
 
@@ -132,7 +132,7 @@ const getAdminInsights = onCall(async (request) => {
 
     const learners = users.filter((user) => !user.admin && !user.developer).map((user) => {
 
-        const numEnrollments = enrollments.reduce((count, enrollment) => enrollment.userId === user.id ? ++count : count, 0);
+        const numEnrollments = enrollments.reduce((count, enrollment) => enrollment.getUserId() === user.id ? ++count : count, 0);
         const numAttempts = courseAttempts.reduce((count, attempt) => attempt.userId === user.id ? ++count : count, 0);
         const numComplete = courseAttempts.reduce((count, attempt) => attempt.userId === user.id && attempt.pass === true ? ++count : count, 0);
 

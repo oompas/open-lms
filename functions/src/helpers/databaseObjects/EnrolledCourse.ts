@@ -8,18 +8,31 @@ class EnrolledCourse extends DatabaseObject {
 
     private static CollectionName: string = "EnrolledCourse";
 
-    userId: string;
-    courseId: string;
-    enrolledDate: firestore.Timestamp;
+    private readonly courseId: string;
+    private readonly userId: string;
+    private readonly enrolledDate: firestore.Timestamp;
 
     constructor(id: string, userId: string, courseId: string, enrolledDate: firestore.Timestamp) {
         super(id);
-        this.userId = userId;
+
         this.courseId = courseId;
+        this.userId = userId;
         this.enrolledDate = enrolledDate;
     }
 
-    public getObject(): object {
+    public getCourseId(): string {
+        return this.courseId;
+    }
+
+    public getUserId(): string {
+        return this.userId;
+    }
+
+    public getEnrolledDate(): number {
+        return this.enrolledDate.seconds;
+    }
+
+    public getObject(): { id: string; userId: string; courseId: string; enrolledDate: number } {
         return {
             id: this.id,
             userId: this.userId,
