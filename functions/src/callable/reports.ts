@@ -16,6 +16,7 @@ import { object, string } from "yup";
 import { CourseStatus } from "./helpers";
 import { auth } from "../helpers/setup";
 import { UserRecord } from "firebase-admin/lib/auth";
+import { EnrolledCourse } from "../helpers/databaseObjects/EnrolledCourse";
 
 /**
  * Converts an array of objects (with the same keys & no embedded objects) into a CSV string
@@ -307,7 +308,7 @@ const downloadUserReports = onCall(async (request) => {
     // Get all records at once, then filter through them for each user to reduce queries
     const { userRecords, enrollments, courseAttempts } = await Promise.all([
         auth.listUsers().then((result) => result.users), // @ts-ignore
-        getCollectionDocs(DatabaseCollections.EnrolledCourse).then((result) => result.map(doc => ({ userId: doc.userId }))), // @ts-ignore
+        EnrolledCourse.getAllDocs().then((result) => result.map(doc => ({ userId: doc.userId }))), // @ts-ignore
         getCollectionDocs(DatabaseCollections.CourseAttempt).then((result) => result.map(doc => ({ userId: doc.userId, pass: doc.pass }))),
     ]).then(([userRecords, enrollments, courseAttempts]) => ({ userRecords, enrollments, courseAttempts }));
 
