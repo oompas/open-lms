@@ -13,6 +13,12 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const router = useRouter();
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
     const [userName, setUserName] = useState<string | null>(null);
+    const [selectedLink, setSelectedLink] = useState('/admin/tools');
+
+    const handleLinkClick = (path: string) => {
+        setSelectedLink(path);
+        router.push(path);
+    };
 
     // Takes time to detect if the user is logged in; if so, check if they're an admin
     auth.onAuthStateChanged((user) => {
@@ -54,8 +60,8 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                     OpenLMS
                 </Link>
                 <div className="flex ml-auto space-x-10 text-2xl">
-                    {isAdmin && <Link href="/admin/tools" className="hover:opacity-50 duration-75">Admin Tools</Link>}
-                    <Link href="/profile" className="hover:opacity-50 duration-75">View Profile</Link>
+                    {isAdmin && <a onClick={() => handleLinkClick('/admin/tools')} className={`hover:opacity-50 duration-75 cursor-pointer ${selectedLink === '/admin/tools' ? 'underline' : ''}`}>Admin Tools</a>}
+                    <a onClick={() => handleLinkClick('/profile')} className={`hover:opacity-50 duration-75 cursor-pointer ${selectedLink === '/profile' ? 'underline' : ''}`}>View Profile</a>
                 </div>
             </div>
             

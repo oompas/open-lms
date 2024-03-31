@@ -1,12 +1,14 @@
 import { ReactElement } from "react";
 import { MdAddCircleOutline, MdRemoveCircleOutline, MdArrowForward, MdOpenInNew, MdReport } from "react-icons/md";
+import React, { useState } from 'react';
+import './buffering.css';
 
 export default function Button({
     text,
-    onClick,    // function to run on button press - pass in the form of: () => function()
-    style,      // additional tailwind style to be applid - ex. "mx-2 shadow-md"
-    filled,     // toggles border or filled button types
-    icon,        // toggles possible icons - "arrow" (more will be added)
+    onClick,   
+    style,    
+    filled,    
+    icon,        
     disabled
 } : {
     text: string,
@@ -16,6 +18,13 @@ export default function Button({
     icon?: string,
     disabled?: boolean
 }) {
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleClick = async () => {
+        setIsLoading(true);
+        await onClick();
+        setIsLoading(false);
+    };
 
     const background: any = " bg-red-800 text-white"
     const border: any = " text-red-800"
@@ -34,14 +43,22 @@ export default function Button({
     </div>
 
     return (
-        <button
-            type="button"
-            onClick={onClick}
-            className={ "flex h-fit items-center px-5 py-2 w-fit rounded-xl text-lg font-bold border-[3px] border-red-800 duration-75 ease-out " + style + (filled ? background : border) + (disabled ? " opacity-40" : " hover:opacity-60 cursor-pointer") }
-            disabled={disabled}
-        >
-            <div>{text}</div>
-            { icon ? <div className="ml-2">{iconElem}</div> : null }
-        </button>
+        <>
+            <button
+                onClick={handleClick}
+                className={ "flex h-fit items-right px-5 py-2 w-fit rounded-xl text-lg font-bold border-[3px] border-red-800 duration-75 ease-out " + style + (filled ? background : border) + (disabled ? " opacity-40" : " hover:opacity-60 cursor-pointer") }
+                disabled={disabled}
+            >
+                <div>{text}</div>
+                { icon ? <div className="ml-2">{iconElem}</div> : null }
+            </button>
+            {isLoading && 
+                <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+                    <div className="loading ml-4">
+                        <div className="inner-circle"></div>
+                    </div>
+                </div>
+            }
+        </>
     )
 }
