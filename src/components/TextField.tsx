@@ -5,7 +5,7 @@ export function validateEmailAndLength(input: string): string {
         return "Invalid email format.";
     }
 
-    return "Email is valid.";
+    return "";
 }
 
 export function validatePassword(input: string): string[] {
@@ -43,7 +43,7 @@ export function validatePassword(input: string): string[] {
     }
 
     if (errors.length === 0) {
-        return ["Password is valid."];
+        return [""];
     }
 
     return errors;

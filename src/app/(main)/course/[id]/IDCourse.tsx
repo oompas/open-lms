@@ -89,6 +89,7 @@ export default function IDCourse({
                 <a href={course.link} target={"_blank"}>
                     <Button text="Go to course" onClick={() => {}} filled icon="link"/>
                 </a>
+                <Button text="Request help" onClick={handleSupportRequest} icon="report"/>
             </>
         );
     }
@@ -97,7 +98,7 @@ export default function IDCourse({
         1: "Not enrolled",
         2: "To do",
         3: "In progress",
-        4: "Awaiting marking",
+        4: "Awaiting Marking",
         5: "Failed",
         6: "Completed",
     }

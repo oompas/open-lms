@@ -24,6 +24,7 @@ enum ApiEndpoints {
     CreateAccount = "createAccount",
     ResetPassword = "resetPassword",
     GetUserProfile = "getUserProfile",
+    UpdateUserEnabled = "updateUserEnabled",
 
     // Courses
     AddCourse = "addCourse",
@@ -39,14 +40,12 @@ enum ApiEndpoints {
     GetQuiz = "getQuiz",
     StartQuiz = "startQuiz",
     SubmitQuiz = "submitQuiz",
-    GetQuizzesToMark = "getQuizzesToMark",
     GetQuizAttempt = "getQuizAttempt",
     MarkQuizAttempt = "markQuizAttempt",
 
     // Reports
-    GetCourseInsights = "getCourseInsights",
+    GetAdminInsights = "getAdminInsights",
     DownloadCourseReports = "downloadCourseReports",
-    GetUserInsights = "getUserInsights",
     DownloadUserReports = "downloadUserReports",
     GetCourseInsightReport = "getCourseInsightReport",
 

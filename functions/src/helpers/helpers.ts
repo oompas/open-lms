@@ -35,7 +35,25 @@ const sendEmail = (emailAddress: string, subject: string, html: string, context:
         });
 };
 
-// Verify the requesting user is authenticated and an administrator
+// Verify the requesting user is authenticated and a learner (not an admin or developer)
+const verifyIsLearner = async (request: CallableRequest) => {
+    verifyIsAuthenticated(request);
+
+    // @ts-ignore
+    const user = await auth.getUser(request.auth.uid)
+        .then((userRecord) => userRecord)
+        .catch((error) => {
+            logger.error(`Can't get UserRecord object for requesting object: ${error}`);
+            throw new HttpsError('internal', "Error getting user data, try again later")
+        });
+
+    if (user.customClaims && ("admin" in user.customClaims || user.customClaims["admin"] === true || "developer" in user.customClaims || user.customClaims["developer"] === true)) {
+        logger.error(`Non-learner user '${user.email}' is trying to request this endpoint (admin: ${"admin" in user.customClaims}, developer: ${"developer" in user.customClaims})`);
+        throw new HttpsError('permission-denied', "You must be a learner to perform this action");
+    }
+}
+
+// Verify the requesting user is authenticated and an administrator (developers are also admins)
 const verifyIsAdmin = async (request: CallableRequest) => {
     verifyIsAuthenticated(request);
 
@@ -66,4 +84,4 @@ const shuffleArray = (array: any[]) => {
 const DOCUMENT_ID_LENGTH = 20;
 const USER_UID_LENGTH = 28;
 
-export { verifyIsAuthenticated, sendEmail, verifyIsAdmin, shuffleArray, DOCUMENT_ID_LENGTH, USER_UID_LENGTH };
+export { verifyIsAuthenticated, sendEmail, verifyIsLearner, verifyIsAdmin, shuffleArray, DOCUMENT_ID_LENGTH, USER_UID_LENGTH };
