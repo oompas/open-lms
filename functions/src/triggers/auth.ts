@@ -1,7 +1,7 @@
 import { HttpsError } from "firebase-functions/v2/https";
 import * as functions from "firebase-functions";
 import { logger } from "firebase-functions";
-import { getCollection, getEmailCollection, DatabaseCollections, deleteDoc } from "../helpers/database";
+import { DatabaseCollections, deleteDoc, getCollection, getEmailCollection } from "../helpers/database";
 
 /**
  * Logic run before a user is able to sign in (throw errors here to block sign in):
@@ -20,7 +20,7 @@ const beforeSignIn = functions.auth.user().beforeSignIn((user) => {
  * Logic that's run when a user is deleted:
  * -Delete user document from firestore
  * -Delete all emails sent to the user
- * -Delete all courses created by the user
+ * -Delete all other data for the user (course enrollments/attempts/creations/etc)
  */
 const onUserDelete = functions.auth.user().onDelete(async (user) => {
 
@@ -37,15 +37,24 @@ const onUserDelete = functions.auth.user().onDelete(async (user) => {
         .catch((err: any) => { throw new HttpsError('internal', `Error getting user emails: ${err}`) });
     promises.concat(emails.map((email: { ref: { delete: () => any; }; }) => email.ref.delete()));
 
-    if (user.customClaims && (user.customClaims["admin"] === true || user.customClaims["developer"] === true)) {
-        const userCourses = await getCollection(DatabaseCollections.Course)
+    const collectionsToDelete: DatabaseCollections[] = [
+        DatabaseCollections.Course,
+        DatabaseCollections.QuizQuestion,
+        DatabaseCollections.EnrolledCourse,
+        DatabaseCollections.CourseAttempt,
+        DatabaseCollections.QuizAttempt,
+        DatabaseCollections.QuizQuestionAttempt,
+    ];
+
+    for (const collection of collectionsToDelete) {
+        const docs = await getCollection(collection)
             .where('userID', '==', user.uid)
             .get()
             .then((result) => result.docs)
-            .catch((err) => { throw new HttpsError('internal', `Error getting user courses: ${err}`) });
+            .catch((err) => { throw new HttpsError('internal', `Error getting user docs from collection ${collection}: ${err}`) });
 
-        logger.info(`Queried ${userCourses.length} courses created by the user '${user.uid}'`);
-        promises.concat(...userCourses.map((course) => course.ref.delete()));
+        logger.info(`Queried ${docs.length} docs from collection ${collection} created by the user '${user.uid}'`);
+        promises.concat(...docs.map((doc) => doc.ref.delete()));
     }
 
     const numDocs = promises.length;
