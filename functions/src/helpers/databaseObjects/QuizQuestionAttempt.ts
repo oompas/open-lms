@@ -9,55 +9,71 @@ class QuizQuestionAttempt extends DatabaseObject {
     private static CollectionName: string = "QuizQuestionAttempt";
 
     private readonly userId: string;
-    private readonly quizQuestionId: string;
-    private readonly attemptTime: number;
-    private readonly answer: string;
-    private readonly score: number;
+    private readonly courseId: string;
+    private readonly courseAttemptId: string;
+    private readonly quizAttemptId: string;
+    private readonly questionId: string;
+    private readonly response: string | number;
+    private readonly marksAchieved: number | null;
+    private readonly maxMarks: number;
+    private readonly timestamp: firestore.Timestamp;
 
-    constructor(id: string, userId: string, quizQuestionId: string, attemptTime: number, answer: string, score: number) {
-        super(id);
+    constructor(attempt: { id: string, userId: string, courseId: string, courseAttemptId: string, quizAttemptId: string,
+                questionId: string, response: string | number, marksAchieved: number | null, maxMarks: number,
+                timestamp: firestore.Timestamp }) {
+        super(attempt.id);
 
-        this.userId = userId;
-        this.quizQuestionId = quizQuestionId;
-        this.attemptTime = attemptTime;
-        this.answer = answer;
-        this.score = score;
+        this.userId = attempt.userId;
+        this.courseId = attempt.courseId;
+        this.courseAttemptId = attempt.courseAttemptId;
+        this.quizAttemptId = attempt.quizAttemptId;
+        this.questionId = attempt.questionId;
+        this.response = attempt.response;
+        this.marksAchieved = attempt.marksAchieved;
+        this.maxMarks = attempt.maxMarks;
+        this.timestamp = attempt.timestamp;
     }
 
-    public getUserId(): string {
-        return this.userId;
-    }
+    public getUserId = (): string => this.userId;
+    public getCourseId = (): string => this.courseId;
+    public getCourseAttemptId = (): string => this.courseAttemptId;
+    public getQuizAttemptId = (): string => this.quizAttemptId;
+    public getQuestionId = (): string => this.questionId;
+    public getResponse = (): string | number => this.response;
+    public getMarksAchieved = (): number | null => this.marksAchieved;
+    public getMaxMarks = (): number => this.maxMarks;
+    public getTimestamp = (): number => this.timestamp.seconds;
 
-    public getQuizQuestionId(): string {
-        return this.quizQuestionId;
-    }
-
-    public getAttemptTime(): number {
-        return this.attemptTime;
-    }
-
-    public getAnswer(): string {
-        return this.answer;
-    }
-
-    public getScore(): number {
-        return this.score;
-    }
-
-    public getObject(): { id: string; userId: string; quizQuestionId: string; attemptTime: number; answer: string; score: number } {
+    public getObject = (): { id: string; userId: string; courseId: string; courseAttemptId: string; quizAttemptId: string; questionId: string; response: string | number; marksAchieved: number | null; maxMarks: number; timestamp: number } => {
         return {
             id: this.getId(),
             userId: this.userId,
-            quizQuestionId: this.quizQuestionId,
-            attemptTime: this.attemptTime,
-            answer: this.answer,
-            score: this.score
+            courseId: this.courseId,
+            courseAttemptId: this.courseAttemptId,
+            quizAttemptId: this.quizAttemptId,
+            questionId: this.questionId,
+            response: this.response,
+            marksAchieved: this.marksAchieved,
+            maxMarks: this.maxMarks,
+            timestamp: this.timestamp.seconds
         };
     }
 
     public static fromFirestore = (doc: firestore.QueryDocumentSnapshot): QuizQuestionAttempt => {
         const data = doc.data();
-        return new QuizQuestionAttempt(doc.id, data.userId, data.quizQuestionId, data.attemptTime, data.answer, data.score);
+        const attempt = {
+            id: doc.id,
+            userId: data.userId,
+            courseId: data.courseId,
+            courseAttemptId: data.courseAttemptId,
+            quizAttemptId: data.quizAttemptId,
+            questionId: data.questionId,
+            response: data.response,
+            marksAchieved: data.marksAchieved,
+            maxMarks: data.maxMarks,
+            timestamp: data.timestamp
+        };
+        return new QuizQuestionAttempt(attempt);
     }
 
     public static getAllDocs = (): Promise<QuizQuestionAttempt[]> => {

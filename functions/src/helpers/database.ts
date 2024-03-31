@@ -67,17 +67,6 @@ const getDocData = (collection: DatabaseCollections, docId: string) => {
         });
 }
 
-// Returns all documents (as an object of the document data) in a collection
-const getCollectionDocs = (collection: DatabaseCollections) => {
-    return getCollection(collection)
-        .get()
-        .then((result) => result.docs.map(doc => ({ id: doc.id, ...doc.data() })))
-        .catch(err => {
-            logger.error(`Error getting documents from collection '${collection}': ${err}`);
-            throw new HttpsError("internal", `Error getting documents from collection '${collection}'`);
-        });
-}
-
 // Updates a document in the database (error handling included)
 const updateDoc = (collection: DatabaseCollections, docId: string, data: any): Promise<string> => {
     return getDocRef(collection, docId)
@@ -210,7 +199,6 @@ export {
     addDocWithId,
     docExists,
     getDocData,
-    getCollectionDocs,
     updateDoc,
     deleteDoc,
 
