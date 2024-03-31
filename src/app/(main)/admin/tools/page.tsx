@@ -14,9 +14,7 @@ export default function Tools() {
 
     const router = useRouter();
 
-    const quizzesToMark = useAsyncApiCall(ApiEndpoints.GetQuizzesToMark, {});
-    const courseInsights = useAsyncApiCall(ApiEndpoints.GetCourseInsights, {});
-    const userInsights = useAsyncApiCall(ApiEndpoints.GetUserInsights, {});
+    const adminInsights = useAsyncApiCall(ApiEndpoints.GetAdminInsights, {});
 
     enum PopupType {
         InviteLearner,
@@ -30,47 +28,45 @@ export default function Tools() {
     const [csvEmails, setCsvEmails] = useState<string[]>([]);
 
     const getQuizzesToMark = () => {
-        if (quizzesToMark.loading) {
+        if (adminInsights.loading) {
             return <div>Loading...</div>;
         }
-        if (quizzesToMark.error) {
+        if (!adminInsights.result) {
             return <div>Error loading quizzes to mark</div>;
         }
-        if (quizzesToMark.result) {
-            // @ts-ignore
-            const temp_quizzes = [...quizzesToMark.result.data]
-            if (temp_quizzes.length % 4 === 1) {
-                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
-                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
-                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
-            } else if (temp_quizzes.length % 4 === 2) {
-                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
-                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
-            } else if (temp_quizzes.length % 4 === 3) {
-                temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
-            }
-            return (
-                <div className="flex flex-wrap w-full justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
-                    { /* @ts-ignore */ }
-                    {temp_quizzes.map((quiz, key) => (
-                        <QuizToMark
-                            key={key}
-                            title={quiz.courseName}
-                            date={new Date(quiz.timestamp*1000).toLocaleString()}
-                            learner={quiz.userName}
-                            id={quiz.quizAttemptId}
-                        />
-                    ))}
-                </div>
-            );
+
+        const temp_quizzes = [...adminInsights.result.data.quizAttemptsToMark]
+        if (temp_quizzes.length % 4 === 1) {
+            temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+            temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+            temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+        } else if (temp_quizzes.length % 4 === 2) {
+            temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+            temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
+        } else if (temp_quizzes.length % 4 === 3) {
+            temp_quizzes.push({courseName: "_placeholder", timestamp: 0, userName: "", quizAttemptId: 0})
         }
+        return (
+            <div className="flex flex-wrap w-full justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
+                { /* @ts-ignore */ }
+                {temp_quizzes.map((quiz, key) => (
+                    <QuizToMark
+                        key={key}
+                        title={quiz.courseName}
+                        date={new Date(quiz.timestamp*1000).toLocaleString()}
+                        learner={quiz.userName}
+                        id={quiz.quizAttemptId}
+                    />
+                ))}
+            </div>
+        );
     }
 
     const getLearnerInsights = () => {
-        if (userInsights.loading) {
+        if (adminInsights.loading) {
             return <div>Loading...</div>;
         }
-        if (!userInsights.result) {
+        if (!adminInsights.result) {
             return <div>Error loading learner insights</div>;
         }
 
@@ -91,7 +87,7 @@ export default function Tools() {
                         </tr>
                     </thead>
                     <tbody>
-                        { userInsights.result.data.learners.map((learner: any, key: number) => (
+                        { adminInsights.result.data.learners.map((learner: any, key: number) => (
                             <LearnerInsight
                                 key={key}
                                 name={learner.name}
@@ -109,10 +105,10 @@ export default function Tools() {
     }
 
     const getCourseInsights = () => {
-        if (courseInsights.loading) {
+        if (adminInsights.loading) {
             return <div>Loading...</div>;
         }
-        if (!courseInsights.result) {
+        if (!adminInsights.result) {
             return <div>Error loading course insights</div>;
         }
 
@@ -129,7 +125,7 @@ export default function Tools() {
                     </thead>
                     <tbody>
                         { /* @ts-ignore */}
-                        {courseInsights.result.data
+                        {adminInsights.result.data.courseInsights
                             .filter((course: any) => course.name.toLowerCase().includes(courseSearch.toLowerCase()))
                             .map((course: any, key: number) => <CourseInsight courseData={course} key={key}/>)
                         }
@@ -140,10 +136,10 @@ export default function Tools() {
     }
 
     const getAdminInsights = () => {
-        if (userInsights.loading) {
+        if (adminInsights.loading) {
             return <div>Loading...</div>;
         }
-        if (!userInsights.result) {
+        if (!adminInsights.result) {
             return <div>Error loading admin insights</div>;
         }
 
@@ -160,7 +156,7 @@ export default function Tools() {
                     </tr>
                     </thead>
                     <tbody>
-                        {userInsights.result.data.admins.map((admin: any, key: number) => (
+                        {adminInsights.result.data.admins.map((admin: any, key: number) => (
                             <AdminInsight
                                 key={key}
                                 name={admin.name}
@@ -345,19 +341,19 @@ export default function Tools() {
 
     return (
         <main className="flex-col w-full justify-center items-center">
-            {/* Quizzes to mark section */ /* @ts-ignore */
-            quizzesToMark.result && quizzesToMark.result.data.length > 0 ?
-            <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
-                <div className="flex flex-row justify-between items-center mb-2">
-                    <div className="flex flex-col">
-                        <div className="text-lg mb-2">Quizzes To Mark</div>
+            {/* Quizzes to mark section */
+            adminInsights.result &&
+                <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
+                    <div className="flex flex-row justify-between items-center mb-2">
+                        <div className="flex flex-col">
+                            <div className="text-lg mb-2">Quizzes To Mark</div>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
+                        {getQuizzesToMark()}
                     </div>
                 </div>
-                <div className="flex flex-wrap justify-between overflow-y-scroll gap-2 sm:no-scrollbar">
-                    {getQuizzesToMark()}
-                </div>
-            </div>
-            : null}
+            }
 
             {/* Course insights section */}
             <div className="flex flex-col h-fit max-h-full bg-white p-12 rounded-2xl shadow-custom mb-8">
