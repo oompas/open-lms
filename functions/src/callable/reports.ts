@@ -304,12 +304,11 @@ const downloadUserReports = onCall(async (request) => {
     logger.info(`Schema validation passed`);
 
     // Get all records at once, then filter through them for each user to reduce queries
-    const { userRecords, enrollments, courseAttempts, brokenLinkReports } = await Promise.all([
+    const { userRecords, enrollments, courseAttempts } = await Promise.all([
         auth.listUsers().then((result) => result.users), // @ts-ignore
         getCollectionDocs(DatabaseCollections.EnrolledCourse).then((result) => result.map(doc => ({ userId: doc.userId }))), // @ts-ignore
-        getCollectionDocs(DatabaseCollections.CourseAttempt).then((result) => result.map(doc => ({ userId: doc.userId, pass: doc.pass }))), // @ts-ignore
-        getCollectionDocs(DatabaseCollections.ReportedCourse).then((result) => result.map(doc => ({ userId: doc.userId })))
-    ]).then(([userRecords, enrollments, courseAttempts, brokenLinkReports]) => ({ userRecords, enrollments, courseAttempts, brokenLinkReports }));
+        getCollectionDocs(DatabaseCollections.CourseAttempt).then((result) => result.map(doc => ({ userId: doc.userId, pass: doc.pass }))),
+    ]).then(([userRecords, enrollments, courseAttempts]) => ({ userRecords, enrollments, courseAttempts }));
 
     const userData = await Promise.all(userRecords.map((user: UserRecord) => {
 
@@ -318,7 +317,6 @@ const downloadUserReports = onCall(async (request) => {
         const numEnrollments = enrollments.reduce((count, curr) => curr.userId === user.uid ? ++count : count, 0);
         const numAttempts = courseAttempts.reduce((count, curr) => curr.userId === user.uid ? ++count : count, 0);
         const numComplete = courseAttempts.reduce((count, curr) => curr.userId === user.uid && curr.pass === true ? ++count : count, 0);
-        const numReports = brokenLinkReports.reduce((count, curr) => curr.userId === user.uid ? ++count : count, 0);
 
         return {
             'User ID': user.uid,
@@ -335,7 +333,6 @@ const downloadUserReports = onCall(async (request) => {
             'Number of courses enrolled': numEnrollments,
             'Number of courses started': numAttempts,
             'Number of courses completed': numComplete,
-            'Number of active broken link reports': numReports,
         }
     }));
 
