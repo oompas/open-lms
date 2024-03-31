@@ -392,7 +392,13 @@ const courseEnrollment = onCall(async (request) => {
     if (await docExists(DatabaseCollections.EnrolledCourse, enrolledId)) {
         return deleteDoc(DatabaseCollections.EnrolledCourse, enrolledId);
     }
-    return addDocWithId(DatabaseCollections.EnrolledCourse, enrolledId, { userId: uid, courseId: request.data.courseId });
+
+    const enrollmentDoc = {
+        userId: uid,
+        courseId: request.data.courseId,
+        enrollmentTime: firestore.FieldValue.serverTimestamp(),
+    };
+    return addDocWithId(DatabaseCollections.EnrolledCourse, enrolledId, enrollmentDoc);
 });
 
 /**
