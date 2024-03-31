@@ -95,6 +95,7 @@ export default function Course({ params }: { params: { id: string } }) {
                                 length={course.quiz.timeLimit}
                                 maxAttempts={course.quiz.maxQuizAttempts}
                                 numQuestions={course.quiz.numQuestions}
+                                totalMarks={course.quiz.totalMarks}
                                 minimumScore={course.quiz.minScore}
                                 quizStarted={quizStarted}
                                 courseAttemptId={courseAttemptId}

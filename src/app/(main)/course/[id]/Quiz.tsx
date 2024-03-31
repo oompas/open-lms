@@ -7,6 +7,7 @@ export default function Quiz({
     length,
     maxAttempts,
     numQuestions,
+    totalMarks,
     minimumScore,
     quizStarted,
     courseAttemptId,
@@ -16,6 +17,7 @@ export default function Quiz({
     length: string
     maxAttempts: number
     numQuestions: number
+    totalMarks: number
     minimumScore: number
     quizStarted: boolean | null
     courseAttemptId: any
@@ -41,7 +43,7 @@ export default function Quiz({
                 <div className="flex flex-col mr-auto text-lg">
                     {length && <div>{length} minute time limit</div>}
                     {maxAttempts && <div>{maxAttempts} attempts allowed</div>}
-                    <div>{numQuestions} questions{minimumScore && ` (${minimumScore} required to pass)`}</div>
+                    <div>{numQuestions} questions{minimumScore && ` (${minimumScore / totalMarks * 100}% minimum passing grade)`}</div>
                 </div>
                 {quizStarted !== null &&
                     <Button
