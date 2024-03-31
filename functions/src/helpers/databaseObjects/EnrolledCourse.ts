@@ -34,7 +34,7 @@ class EnrolledCourse extends DatabaseObject {
 
     public getObject(): { id: string; userId: string; courseId: string; enrolledDate: number } {
         return {
-            id: this.id,
+            id: this.getId(),
             userId: this.userId,
             courseId: this.courseId,
             enrolledDate: this.enrolledDate.seconds
