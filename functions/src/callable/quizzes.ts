@@ -410,6 +410,8 @@ const getQuizAttempt = onCall(async (request) => {
 
     logger.info("Schema & admin verification passed");
 
+    const quizAttempt = await getDocData(DatabaseCollections.QuizAttempt, request.data.quizAttemptId) as QuizAttemptDocument;
+
     const allAttempts = await getCollection(DatabaseCollections.QuizQuestionAttempt)
         .where("quizAttemptId", "==", request.data.quizAttemptId)
         .get()
@@ -421,8 +423,8 @@ const getQuizAttempt = onCall(async (request) => {
             throw new HttpsError("internal", `Error getting quiz questions: ${err}`);
         });
 
-    const courseInfo = await getDocData(DatabaseCollections.Course, allAttempts[0].courseId) as CourseDocument;
-    const userInfo = await getDocData(DatabaseCollections.User, allAttempts[0].userId) as UserDocument;
+    const courseInfo = await getDocData(DatabaseCollections.Course, quizAttempt.courseId) as CourseDocument;
+    const userInfo = await getDocData(DatabaseCollections.User, quizAttempt.userId) as UserDocument;
     const quizAttemptData = await getDocData(DatabaseCollections.QuizAttempt, request.data.quizAttemptId) as QuizAttemptDocument;
 
     const attemptData = await Promise.all(allAttempts.map((attempt) =>
