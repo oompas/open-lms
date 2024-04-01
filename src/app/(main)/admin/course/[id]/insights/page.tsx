@@ -22,7 +22,7 @@ export default function Insights({ params }: { params: { id: string } }) {
 
     const courseData = useAsyncApiCall(ApiEndpoints.GetCourseInsightReport, { courseId: params.id },
         (rsp) => {
-        if (rsp.data.questions && rsp.data.questions[0].order) {
+        if (rsp.data.questions.length > 0 && rsp.data.questions[0].order) {
             rsp.data.questions.sort((a: any, b: any) => a.order - b.order);
         }
         setData(rsp.data);
