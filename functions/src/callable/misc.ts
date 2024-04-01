@@ -41,7 +41,7 @@ const sendPlatformFeedback = onCall(async (request) => {
                 alt="OpenLMS Logo" style="max-width: 200px;">
             </header>
             <section style="margin-bottom: 20px;">
-                <h2 style="font-size: 24px; color: #333333;">Request from User ${userInfo.name}</h2>
+                <h2 style="font-size: 24px; color: #333333;">Request from User "${userInfo.name}"</h2>
                 <p style="font-size: 16px; color: #555;">User information: <br> Name: ${userInfo.name} <br> Email: ${userInfo.email} <br> Uid: ${uid}</p>
                 <p style="font-size: 16px; color: #555;">User Response: ${request.data.feedback}</p>
             </section>

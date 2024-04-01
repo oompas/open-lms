@@ -505,7 +505,7 @@ const sendCourseFeedback = onCall(async (request) => {
                 alt="OpenLMS Logo" style="max-width: 200px;">
             </header>
             <section style="margin-bottom: 20px;">
-                <h2 style="font-size: 24px; color: #333333; text-align: center">Request from User ${userInfo.name} on Course ${courseInfo.name}</h2>
+                <h2 style="font-size: 24px; color: #333333; text-align: center">Request from User "${userInfo.name}" on Course "${courseInfo.name}"</h2>
                 <p style="font-size: 16px; color: #555;">User information: <br> Email: ${userInfo.email} <br> Uid: ${uid} <br> </p>
                 <p style="font-size: 16px; color: #555;">Request information: <br> Course: ${courseInfo.name} <br> User Response: ${request.data.feedback}</p>
             </section>
