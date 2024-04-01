@@ -175,7 +175,7 @@ export default function IDCourse({
                     <div className="text-2xl text-center">{statusNames[status]}</div>
                     {course.minTime && (
                         <>
-                            <div className="text-sm mt-2">{status === 1 ? "Minimum" : "Required"} time:</div>
+                            <div className="text-sm mt-2">{status === 1 ? "Minimum" : "Required"} Time:</div>
                             <div className="text-3xl">
                                 {countdown > 0 || status < 3 ? getTime() : "Completed"}
                             </div>
