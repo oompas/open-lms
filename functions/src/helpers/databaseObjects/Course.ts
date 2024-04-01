@@ -3,10 +3,11 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { firestore } from "firebase-admin";
 import { db } from "../setup";
 import { DatabaseObject } from "./DatabseObject";
+import { string } from "yup";
 
 class Course extends DatabaseObject {
 
-    private static CollectionName: string = "Course";
+    CollectionName: string = "Course";
 
     private readonly name: string;
     private readonly description: string;
@@ -63,8 +64,8 @@ class Course extends DatabaseObject {
     public getRetired = (): firestore.Timestamp | undefined => this.retired;
     public getVersion = (): number => this.version;
 
-    public getObject(): {
-        id: string;
+    public getObject(noId?: boolean): {
+        id?: string;
         name: string;
         description: string;
         link: string;
@@ -80,7 +81,7 @@ class Course extends DatabaseObject {
         version: number
     } {
         return {
-            id: this.getId(),
+            ...(!noId && { id: this.getId() }),
             name: this.name,
             description: this.description,
             link: this.link,
@@ -100,14 +101,16 @@ class Course extends DatabaseObject {
     }
 
     public static getAllDocs = (): Promise<Course[]> => {
-        return db.collection(Course.CollectionName)
+        return db.collection(this.CollectionName)
             .get()
             .then((result) => result.docs.map(doc => Course.fromFirestore(doc)))
             .catch(err => {
-                logger.error(`Error getting documents from collection '${Course.CollectionName}': ${err}`);
-                throw new HttpsError("internal", `Error getting documents from collection '${Course.CollectionName}'`);
+                logger.error(`Error getting documents from collection '${this.CollectionName}': ${err}`);
+                throw new HttpsError("internal", `Error getting documents from collection '${this.CollectionName}'`);
             });
     }
+
+    public addtoFirestore = (id?: string): Promise<string> => this._addToFirestore(this.CollectionName, id);
 }
 
 export default Course;
