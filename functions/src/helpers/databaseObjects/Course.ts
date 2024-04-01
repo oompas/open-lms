@@ -7,7 +7,7 @@ import { string } from "yup";
 
 class Course extends DatabaseObject {
 
-    CollectionName: string = "Course";
+    private static readonly CollectionName: string = "Course";
 
     private readonly name: string;
     private readonly description: string;
@@ -100,16 +100,8 @@ class Course extends DatabaseObject {
         return new Course(doc.id, data.name, data.description, data.link, data.active, data.minTime, data.userId, data.quiz, data.creationTime, data.retired, data.version);
     }
 
-    public static getAllDocs = (): Promise<Course[]> => {
-        return db.collection(this.CollectionName)
-            .get()
-            .then((result) => result.docs.map(doc => Course.fromFirestore(doc)))
-            .catch(err => {
-                logger.error(`Error getting documents from collection '${this.CollectionName}': ${err}`);
-                throw new HttpsError("internal", `Error getting documents from collection '${this.CollectionName}'`);
-            });
-    }
 
+    public static getAllDocs = () => DatabaseObject._getAllDocs(this.CollectionName).then((docs) => docs.map((course) => Course.fromFirestore(course)));
     public addtoFirestore = (id?: string): Promise<string> => this._addToFirestore(this.CollectionName, id);
 }
 

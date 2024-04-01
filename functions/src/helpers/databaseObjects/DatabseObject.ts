@@ -1,6 +1,7 @@
 import { db } from "../setup";
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/lib/v2/providers/https";
+import { firestore } from "firebase-admin";
 
 abstract class DatabaseObject {
 
@@ -27,13 +28,13 @@ abstract class DatabaseObject {
      */
     protected abstract addtoFirestore(id?: string): Promise<string>;
 
-    protected static getAllDocs = (): Promise<Course[]> => {
-        return db.collection(this.CollectionName)
+    protected static _getAllDocs = (collectionName: string): Promise<firestore.QueryDocumentSnapshot[]> => {
+        return db.collection(collectionName)
             .get()
-            .then((result) => result.docs.map(doc => Course.fromFirestore(doc)))
+            .then((result) => result.docs)
             .catch(err => {
-                logger.error(`Error getting documents from collection '${this.CollectionName}': ${err}`);
-                throw new HttpsError("internal", `Error getting documents from collection '${this.CollectionName}'`);
+                logger.error(`Error getting documents from collection '${collectionName}': ${err}`);
+                throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
             });
     }
 
