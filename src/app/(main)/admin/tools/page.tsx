@@ -390,7 +390,7 @@ export default function Tools() {
                         <div className="text-lg -mb-1">Learner Insights</div>
                         <p className="mr-2 text-gray-500">Click on a user to view their profile</p>
                     </div>
-                    <Button text="Invite New Learners" onClick={() => setCurrentPopup(PopupType.InviteLearner)}/>
+                    <Button text="Invite Learners" onClick={() => setCurrentPopup(PopupType.InviteLearner)}/>
                     <Button text="Download User Reports" onClick={() => setCurrentPopup(PopupType.DownloadUserReports)} style="ml-4"/>
                 </div>
                 {getLearnerInsights()}

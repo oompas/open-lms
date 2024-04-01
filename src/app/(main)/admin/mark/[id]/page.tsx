@@ -122,12 +122,12 @@ export default function Mark({ params }: { params: { id: string } }) {
                         {/* @ts-ignore */}
                         <div className="flex flex-col text-lg space-y-8 w-[30rem]">Learner: {questions && questions.learnerName}</div>
                         {/* @ts-ignore */}
-                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Completion date: {questions && new Date(questions.completionTime * 1000).toLocaleString()}</div>
+                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Completion Date: {questions && new Date(questions.completionTime * 1000).toLocaleString()}</div>
                         {/* @ts-ignore */}
                         { questions && questions.markingInfo && 
                         <div> 
                             {/* @ts-ignore */}
-                            <div className="flex flex-col text-lg space-y-8 w-[30rem] mt-2">Marked by: {questions && questions.markingInfo?.name+" - "+questions.markingInfo?.email}</div>
+                            <div className="flex flex-col text-lg space-y-8 w-[30rem] mt-2">Marked by {questions && questions.markingInfo?.name+" ("+questions.markingInfo?.email+") on "+questions && new Date(questions.markingInfo?.markTime._seconds * 1000).toLocaleString()}</div>
                             {/* @ts-ignore */}
                             <div className="flex flex-col text-lg space-y-8 w-[30rem]">Marked on: {questions && new Date(questions.markingInfo?.markTime._seconds * 1000).toLocaleString()}</div>
                         </div> }
