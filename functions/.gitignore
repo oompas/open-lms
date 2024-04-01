@@ -1,0 +1,18 @@
+# Compiled JavaScript files
+lib/**/*.js
+lib/**/*.js.map
+
+# TypeScript v1 declaration files
+typings/
+
+# Node.js dependency directory
+node_modules/
+
+# Service account info for tests (!!! DO NOT EVER EXPOSE THIS FILE !!!)
+test/serviceAccountKey.json
+
+# Firebase config file (Do not expose either !!)
+test/config.json
+
+# Temporary files for testing
+test/tmp/
