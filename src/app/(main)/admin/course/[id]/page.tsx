@@ -356,7 +356,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                             setChecked={() => setMinCourseTime(minCourseTime === null ? 1 : null)}
                         />
                         <div className="flex flex-col">
-                            <div className="text-lg">Minimum required course completion time</div>
+                            <div className="text-lg">Minimum time spent completing course</div>
                             {minCourseTime !== null &&
                                 <div className="flex flex-row space-x-2 items-center mt-2">
                                     <TextField text={minCourseTime} onChange={setMinCourseTime}
@@ -371,7 +371,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     <div className="flex items-start space-x-4">
                         <Checkbox checked={useQuiz} setChecked={setUseQuiz}/>
                         <div className="flex flex-col">
-                            <div className="text-lg">Completion knowledge quiz</div>
+                            <div className="text-lg">Knowledge quiz completion</div>
                             {useQuiz &&
                                 <div>
                                     { /* Min score */}
@@ -439,7 +439,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                             setChecked={() => setQuizMaxTime(quizMaxTime === null ? 1 : null)}
                                         />
                                         <div className="flex flex-col">
-                                            <div className="text-lg">Maximum quiz completion time</div>
+                                            <div className="text-lg">Maximum quiz time</div>
                                             {quizMaxTime !== null &&
                                                 <div className="flex flex-row space-x-2 items-center mt-2">
                                                     <TextField

@@ -50,7 +50,7 @@ export default function AuthForm({
             {showName && (
                 <div className="flex flex-col">
                     <p className="mb-1 text-md">Name</p>
-                    <TextField text={name || ""} onChange={setName} placeholder="John Doe" hidden={false}/>
+                    <TextField text={name || ""} onChange={setName} placeholder="Nomen Nescio" hidden={false}/>
                 </div>
             )}
             <div className="flex flex-col">

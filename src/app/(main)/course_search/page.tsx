@@ -54,11 +54,11 @@ export default function Home() {
                 <Link href="/home"
                     className="flex flex-row space-x-2 items-center mb-2 -mt-4 text-lg hover:opacity-60 duration-150">
                     <MdArrowBack size="28" className="text-red-800"/>
-                    <div>return to my courses</div>
+                    <div>Return To My Courses</div>
                 </Link>
                 <div className="flex flex-row items-center">
                     <div className="text-lg mb-4">Available Courses</div> 
-                    <TextField text={search} onChange={setSearch} placeholder='search for a course title...' style="mb-4 ml-auto w-1/3"/>
+                    <TextField text={search} onChange={setSearch} placeholder='Search for a course title...' style="mb-4 ml-auto w-1/3"/>
                 </div>
                 <div className="flex flex-col gap-4 justify-between overflow-y-scroll sm:no-scrollbar">
                     {availableCourses()}
