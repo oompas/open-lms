@@ -24,6 +24,7 @@ export default function Tools() {
 
     const [currentPopup, setCurrentPopup] = useState<PopupType | null>(null);
     const [courseSearch, setCourseSearch] = useState("");
+    const [userSearch, setUserSearch] = useState("");
     const [inviteEmail, setInviteEmail] = useState("");
     const [csvEmails, setCsvEmails] = useState<string[]>([]);
 
@@ -93,7 +94,9 @@ export default function Tools() {
                         </tr>
                     </thead>
                     <tbody>
-                        { adminInsights.result.data.learners.map((learner: any, key: number) => (
+                        { adminInsights.result.data.learners
+                            .filter((learner: any) => learner.name.toLowerCase().includes(userSearch.toLowerCase()))
+                            .map((learner: any, key: number) => (
                             <LearnerInsight
                                 key={key}
                                 name={learner.name}
@@ -390,7 +393,12 @@ export default function Tools() {
                         <div className="text-lg -mb-1">Learner Insights</div>
                         <p className="mr-2 text-gray-500">Click on a user to view their profile</p>
                     </div>
-                    <Button text="Invite Learners" onClick={() => setCurrentPopup(PopupType.InviteLearner)}/>
+                    <TextField 
+                        placeholder="Search for a user..."
+                        text={userSearch}
+                        onChange={setUserSearch}
+                    />
+                    <Button text="Invite Learners" onClick={() => setCurrentPopup(PopupType.InviteLearner)} style="ml-4"/>
                     <Button text="Download User Reports" onClick={() => setCurrentPopup(PopupType.DownloadUserReports)} style="ml-4"/>
                 </div>
                 {getLearnerInsights()}
