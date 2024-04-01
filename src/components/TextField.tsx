@@ -66,30 +66,6 @@ export default function TextField({
     readonly?: boolean,
     area?: boolean
 }) {
-    
-    // Check for code
-    const isCode = /[\w\s]*(function|const|let|var|if|else|return|class|for|while|switch|case|break|default|import|from|export|new|this|super|try|catch|finally|throw|break|continue|null|true|false|Infinity|NaN|undefined|typeof|instanceof|delete|void|yield|await)[\w\s]*[{()}]/.test(text.toString());
-    if (isCode) {
-        throw new Error("Entered text should not be code.");
-    }
-
-    // Check of SQL attack
-    const isSqlInjection = /(\bSELECT\b|\bUPDATE\b|\bDELETE\b|\bINSERT\b|\bWHERE\b|\bDROP\b|\bEXEC\b|\bCREATE\b|\bALTER\b|\bTRUNCATE\b|\bTABLE\b|\bDATABASE\b|\bUNION\b|\bALL\b)/i.test(text.toString());
-    if (isSqlInjection) {
-        throw new Error("Entered text should not be code.");
-    }
-
-    // Check for XSS attack
-    const isXssAttack = /(<\s*script\b[^<]*(?:(?!<\/\s*script\s*>)<[^<]*)*<\/\s*script\s*>)/i.test(text.toString());
-    if (isXssAttack) {
-        throw new Error("Entered text should not be code.");
-    }
-
-    // Check for Command Injection attack
-    const isCommandInjection = /(;|\|\||&&)\s*(ls|pwd|whoami|wget|curl|nc|netcat|python|ruby|perl|bash|sh|ssh|telnet|get|post|head|options|ftp|tftp|sftp)/i.test(text.toString());
-    if (isCommandInjection) {
-        throw new Error("Entered text should not be code.");
-    }
 
     const textarea = (
         <textarea 
