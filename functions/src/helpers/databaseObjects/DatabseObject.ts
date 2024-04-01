@@ -5,8 +5,6 @@ import { firestore } from "firebase-admin";
 
 abstract class DatabaseObject {
 
-    protected abstract CollectionName: string;
-
     private readonly id: string;
 
     protected constructor(id: string) {
@@ -46,17 +44,17 @@ abstract class DatabaseObject {
                 .set(this.getObject(true))
                 .then(() => id)
                 .catch((err) => {
-                    logger.error(`Error setting document in collection '${this.CollectionName}': ${err}`);
-                    throw new HttpsError("internal", `Error setting document in collection '${this.CollectionName}'`);
+                    logger.error(`Error setting document in collection '${collectionName}': ${err}`);
+                    throw new HttpsError("internal", `Error setting document in collection '${collectionName}'`);
                 });
         }
 
-        return db.collection(this.CollectionName)
+        return db.collection(collectionName)
             .add(this.getObject(true))
             .then((doc) => doc.id)
             .catch((err) => {
-                logger.error(`Error adding document to collection '${this.CollectionName}': ${err}`);
-                throw new HttpsError("internal", `Error adding document to collection '${this.CollectionName}'`);
+                logger.error(`Error adding document to collection '${collectionName}': ${err}`);
+                throw new HttpsError("internal", `Error adding document to collection '${collectionName}'`);
             });
     }
 }

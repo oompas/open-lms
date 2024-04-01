@@ -1,9 +1,5 @@
-import { logger } from "firebase-functions/v1";
-import { HttpsError } from "firebase-functions/v2/https";
 import { firestore } from "firebase-admin";
-import { db } from "../setup";
 import { DatabaseObject } from "./DatabseObject";
-import { string } from "yup";
 
 class Course extends DatabaseObject {
 
@@ -101,8 +97,8 @@ class Course extends DatabaseObject {
     }
 
 
-    public static getAllDocs = () => DatabaseObject._getAllDocs(this.CollectionName).then((docs) => docs.map((course) => Course.fromFirestore(course)));
-    public addtoFirestore = (id?: string): Promise<string> => this._addToFirestore(this.CollectionName, id);
+    public static getAllDocs = () => DatabaseObject._getAllDocs(this.CollectionName).then((docs) => docs.map((doc) => Course.fromFirestore(doc)));
+    public addtoFirestore = (id?: string): Promise<string> => this._addToFirestore(Course.CollectionName, id);
 }
 
 export default Course;
