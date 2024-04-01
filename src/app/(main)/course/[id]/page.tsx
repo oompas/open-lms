@@ -82,7 +82,7 @@ export default function Course({ params }: { params: { id: string } }) {
                     {course.quiz &&
                         <div className="flex flex-row items-center mt-2">
                             <Checkbox checked={course.status === 6} setChecked={null} style="mr-3"/>
-                            <div>{"Pass the required quiz"}</div>
+                            <div>{"Pass the quiz"}</div>
                         </div>
                     }
                 </div>
