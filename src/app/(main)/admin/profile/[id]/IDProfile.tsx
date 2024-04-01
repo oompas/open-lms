@@ -35,7 +35,7 @@ export default function IDProfile({
                 <div className="mr-auto text-lg mb-4">Last Active: <i>{lastLoginDate}</i></div>
             </div>
             <Button
-                text={`${isDisabled ? "Enable" : "Disable"} user account`}
+                text={`${isDisabled ? "Enable" : "Disable"} User Account`}
                 onClick={async () => await handleUpdateUserEnabled()}
             />
         </div>
