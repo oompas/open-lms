@@ -96,7 +96,9 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
             </button>
             <footer className={"flex flex-row items-center fixed w-auto px-4 rounded-t-2xl h-20 left-20 right-20 shadow-custom bg-gray-800 duration-100 "+(showFooter ? "bottom-0" : "-bottom-20")}>
                 <div className="flex flex-row justify-center">
-                    <Button text="Access Platform User Guide" onClick={() => {}} style="mr-4 text-sm" filled/>
+                    <Link href="/Learner_Guide.pdf" target="_blank">
+                        <Button text="Access Platform User Guide" onClick={() => {}} style="mr-4 text-sm" filled/>
+                    </Link>
                     <Button text="Request Technical Support" onClick={handleSupportRequest} style="text-sm" filled/>
                 </div>
                 <span className="text-white ml-auto">&copy; {new Date().getFullYear()} OpenLMS. All rights reserved.</span>
