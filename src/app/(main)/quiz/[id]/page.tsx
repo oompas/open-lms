@@ -29,7 +29,6 @@ export default function Quiz({ params }: { params: { id: string } }) {
                     return rsp;
                 }
 
-                // @ts-ignore
                 setCountDown(Math.floor(rsp.data.startTime + (60 * rsp.data.timeLimit) - (Date.now() / 1000)));
                 if (rsp.data.questions && rsp.data.questions[0].order) {
                     rsp.data.questions.sort((a: any, b: any) => a.order - b.order);
@@ -210,7 +209,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
         return (
             <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
                 <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                    { countdown <= 0 ? 
+                    { (countdown <= 0 && quizData !== "Invalid" && quizData?.timeLimit) ?
                         <div className="text-lg mb-4">Quiz time limit exceeded, answers have been automatically submitted - click to exit.</div>
                     :
                         <div>
@@ -219,9 +218,16 @@ export default function Quiz({ params }: { params: { id: string } }) {
                         </div> 
                     }
                     <div className="flex flex-row">
-                        { countdown > 0 && <Button text="Back" onClick={() => setShowConfirm(false)} style="ml-auto" />}
-                        { countdown > 0 && <Button text="Submit Quiz" onClick={async () => {await handleSubmit(); router.push(`/course/${params.id.split('-')[0]}`)}} style="ml-4" filled /> }
-                        { countdown <= 0 && <Button text="Exit Quiz" onClick={() => router.push(`/course/${params.id.split('-')[0]}`)} style="ml-auto" filled /> }
+                        { (countdown <= 0 && quizData !== "Invalid" && quizData?.timeLimit) ?
+                            <>
+                                <Button text="Exit Quiz" onClick={() => router.push(`/course/${params.id.split('-')[0]}`)} style="ml-auto" filled />
+                            </>
+                            :
+                            <>
+                                <Button text="Back" onClick={() => setShowConfirm(false)} style="ml-auto" />
+                                <Button text="Submit Quiz" onClick={async () => {await handleSubmit(); router.push(`/course/${params.id.split('-')[0]}`)}} style="ml-4" filled />
+                            </>
+                        }
                     </div>
                 </div>
             </div>
