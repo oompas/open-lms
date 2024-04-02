@@ -1,4 +1,8 @@
-- build badge, version badge
+<!--
+[![Build Status](badge)](link)
+[![Version](badge)](link)
+-->
+
 # OpenLMS - An Open-Source LMS Platform
 
 Welcome to the official repository for the OpenLMS platform created at Queen's University. This repository is a comprehensive collection of our generic & extensible platform code as well as our official documentation that may assist in initializing, configuring, and modifying your own instance of the platform.
@@ -11,16 +15,16 @@ The platform is ready to use and will function effectively out of the box after 
 ![Next JS](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white)
 ![Vercel](https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)
 ![Firebase](https://img.shields.io/badge/firebase-a08021?style=for-the-badge&logo=firebase&logoColor=ffcd34)
-![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=Cloudflare&logoColor=white)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 
 #### To streamline our development process and fit the needs of most organizations, we utilize these frameworks and services:
 
-- Next.js is an open-source web meta framework using React to enable hybrid rendering of both the server and client side to significantly improve performance and SEO. and we use it because ...
+- Next.js is an open-source web meta framework using React to enable hybrid rendering of both the server and client side to significantly improve performance and SEO using Typescript. and we use it because ...
 
 - Vercel is a cloud platform allowing developers to easily deploy web applications enabling a seamless experience by taking care of deployment and scaling so developers can focus on their code. and we use it because ...
 
-- Firebase is a collection of Google-powered back-end cloud computing services designed to simplify and enhance API creation, improvement, and growth. It offers key services like authentication, databases, and serverless functions, reducing the complexity and maintenance required for instance management. The OpenLMS core team specifically chose it due to it's reliability, simplisticity, and ease to scale and extend platform functionalities, making it ideal for minimizing technical overlead.
+- Firebase is a collection of Google-powered back-end cloud computing services designed to simplify and enhance API creation, improvement, and growth. It offers key services like authentication, databases, and serverless functions, reducing the complexity and maintenance required for instance management using TypeScript. The OpenLMS core team specifically chose it due to it's reliability, simplisticity, and ease to scale and extend platform functionalities, making it ideal for minimizing technical overlead.
 
 - Cloudflare is a global network designed to be secure, private, fast, and reliable. OpenLMS uses Cloudflare as a proxy between the Vercel production deployment and the user accessing the instance. This makes it ideal to migiate against potential DDoS attacks and simplify the instance's DNS services as well.
 
@@ -28,8 +32,8 @@ The platform is ready to use and will function effectively out of the box after 
 
 ### Potential Costs
 
-- For most organizations, the Vercel free "Hobby" tier is recommended, but larger organizations or those with specific needs for deployment may use other methods to host the instance with varying costs associated with this.
-- The Firebase paid "Blaze" tier is required, but the costs are [generally very low](https://firebase.google.com/pricing), but may scale more than expected if the instance Firebase environment is significantly modified or misused.
+- For most organizations, the Vercel free `Hobby` tier is recommended, but larger organizations or those with specific needs for deployment may use other methods to host the instance with varying costs associated with this.
+- The Firebase paid `Blaze` tier is required, but the costs are [generally very low](https://firebase.google.com/pricing), but may scale more than expected if the instance Firebase environment is significantly modified or misused.
 - A domain name is an optional but desirable thing to use in the production deployment of an instance for a cohesive platform look. We recommend [Porkbun](https://porkbun.com) or [Cloudflare Register](https://www.cloudflare.com/products/registrar/) for the lowest priced domains, but almost any domain registrar suffices!
 
 ### Getting Started
