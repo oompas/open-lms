@@ -3,15 +3,11 @@
 
 Welcome to the official repository for the OpenLMS platform created at Queen's University. This repository is a comprehensive collection of our generic & extensible platform code as well as our official documentation that may assist in initializing, configuring, and modifying your own instance of the platform.
 
-## Overview
-
 The Open-Source LMS platform aims to make open education more accessible and usable to organizations. A blessing in the open education space is the ease of access to many great third-party courses hosted on unique online platforms. However, the curse and subsequent challenge lies in the lack of centralized platform which can be used to assign and track the completion of these courses.
 
 The platform is ready to use and will function effectively out of the box after creating an instance and configuring minor setup details. However, the code base is intentionally structured to be easily extensible to fit your organization's needs. 
 
-## Creating an Instance
-
-### Overview
+## Overview
 ![Next JS](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white)
 ![Vercel](https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)
 ![Firebase](https://img.shields.io/badge/firebase-a08021?style=for-the-badge&logo=firebase&logoColor=ffcd34)
@@ -28,11 +24,13 @@ The platform is ready to use and will function effectively out of the box after 
 
 - Cloudflare is a global network designed to be secure, private, fast, and reliable. OpenLMS uses Cloudflare as a proxy between the Vercel production deployment and the user accessing the instance. This makes it ideal to migiate against potential DDoS attacks and simplify the instance's DNS services as well.
 
-- Essentially, the tech stack choices were made with the ease of deployment and extensibility for future developers in mind!
+- **Essentially, the tech stack choices were made with the ease of deployment and extensibility for future developers in mind!**
 
 ### Potential Costs
 
-- Placeholder
+- For most organizations, the Vercel free "Hobby" tier is recommended, but larger organizations or those with specific needs for deployment may use other methods to host the instance with varying costs associated with this.
+- The Firebase paid "Blaze" tier is required, but the costs are [generally very low](https://firebase.google.com/pricing) and may scale more than expected if the instance Firebase environment is significantly modified or misused.
+- A domain name is an optional but desirable thing to use in the production deployment of an instance for a cohesive platform look. We recommend [Porkbun](https://porkbun.com) or [Cloudflare Register](https://www.cloudflare.com/products/registrar/) for the lowest priced domains, but almost any domain registrar suffices!
 
 ### Getting Started
 
@@ -61,4 +59,4 @@ We look forward to continuing our journey in the Computing world!
 
 ---
 
-For more information or questions not answered by our respository resources, please get in touch with anyone from the core team through LinkedIn.
+For more information or to ask questions not answered by our respository resources, please get in touch with anyone from the core team through LinkedIn.
