@@ -33,12 +33,12 @@ The platform is ready to use and will function effectively out of the box after 
 ### Potential Costs
 
 - For most organizations, the Vercel free `Hobby` tier is recommended, but larger organizations or those with specific needs for deployment may use other methods to host the instance with varying costs associated with this.
-- The Firebase paid `Blaze` tier is required, but the costs are [generally very low](https://firebase.google.com/pricing), but may scale more than expected if the instance Firebase environment is significantly modified or misused.
+- The Firebase paid `Blaze` tier is required, but the costs are [generally very low](https://firebase.google.com/pricing). Small projects likely have no variable costs (100,000 document reads per day and 2 million API calls per month for free) and only a few dolalrs for fixed costs.
 - A domain name is an optional but desirable thing to use in the production deployment of an instance for a cohesive platform look. We recommend [Porkbun](https://porkbun.com) or [Cloudflare Register](https://www.cloudflare.com/products/registrar/) for the lowest priced domains, but almost any domain registrar suffices!
 
 ### Getting Started
 
-- To get started with an initial instance, check out our platform developer guide for more detailed instructions. [Visit Developer Guide](https://github.com/oompas/open-lms/blob/main/public/Administrator%20Guide.pdf)
+- To get started with an initial instance, check out our platform developer guide for more detailed instructions. [Visit Developer Guide](https://github.com/oompas/open-lms/blob/main/public/OpenLMS%20Developer%20Guide.pdf)
 - For ideas on potential features to extend the platform's functionality, check out our platform project board and look under the `No Status` column for drafts and closed issues. [Visit Project Board](https://github.com/users/oompas/projects/5)
 
 ## Team
