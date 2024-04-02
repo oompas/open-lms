@@ -29,7 +29,7 @@ The platform is ready to use and will function effectively out of the box after 
 ### Potential Costs
 
 - For most organizations, the Vercel free "Hobby" tier is recommended, but larger organizations or those with specific needs for deployment may use other methods to host the instance with varying costs associated with this.
-- The Firebase paid "Blaze" tier is required, but the costs are [generally very low](https://firebase.google.com/pricing) and may scale more than expected if the instance Firebase environment is significantly modified or misused.
+- The Firebase paid "Blaze" tier is required, but the costs are [generally very low](https://firebase.google.com/pricing), but may scale more than expected if the instance Firebase environment is significantly modified or misused.
 - A domain name is an optional but desirable thing to use in the production deployment of an instance for a cohesive platform look. We recommend [Porkbun](https://porkbun.com) or [Cloudflare Register](https://www.cloudflare.com/products/registrar/) for the lowest priced domains, but almost any domain registrar suffices!
 
 ### Getting Started
@@ -40,12 +40,12 @@ The platform is ready to use and will function effectively out of the box after 
 ## Team
 
 ### Core Team
-| ![Anthony Galassi](https://lh3.googleusercontent.com/drive-viewer/AKGpihaqtMau7HzpGI1RHe64X24sSpjPQmbnql9G2jOuatgaxH6K_kxlMYFq3MM61zjbNxrttktnYb_ZmdRF-vFFy_7CSa8s=s2560) | ![Sara Hall](https://lh3.googleusercontent.com/drive-viewer/AKGpihbPPdTnJ81YvH_nI3qYfxlQw7e2smZa65i4pW1QqqQXNkIK5lmsa8DVn55Jzd1OVii4xu7rlSsih7QnIPw6m0lyO2sZ=s2560) | ![Reid Moffat](https://lh3.googleusercontent.com/drive-viewer/AKGpihbP2JcJN0aFrvgqW4vuMVEa6RwceHGpPaOWkWUqgd1W6Os49Jtwj0C8ff7sK5CKmzgjx2-awQ-O9AvACCNK2ujvGAgKqA=s2560) | ![Graham Carkner](https://lh3.googleusercontent.com/drive-viewer/AKGpiha-c16A1RCSIQh4ozZeF4pacr708eh0c0PHd0iw89EAQEnAYDfz6WOc34agYxJxKYO0YlBsezGqrU_hsmwC4vlT2sVi_g=s2560) | ![Louie Chung](https://lh3.googleusercontent.com/drive-viewer/AKGpihYxrGOgbOYdlFXaIxRhEWPU7twoPqe_E36NfdGzOdxN2R-Rvj4lKd_laQTNLHp_NwlNeIHsH3O43gz_R-2p3Z-e1P1tlg=s2560) |
+| ![Anthony Galassi](https://drive.google.com/uc?export=download&id=1CKWzh3dyAVugYd8g6BBqkkzvGUCVLpqH) | ![Sara Hall](https://drive.google.com/uc?export=download&id=1THsEJCBtPCJl7L3iLRlJKI_KRad1RkW5) | ![Reid Moffat](https://drive.google.com/uc?export=download&id=1onmw4S-C-H1L18v5cRWrneMN6kzKJBFX) | ![Graham Carkner](https://drive.google.com/uc?export=download&id=1j8CEFAl7r4EMzm1IUTODXt64iOFMRx7b) | ![Louie Chung](https://drive.google.com/uc?export=download&id=1ys_YnMh3-PGRhqT3ItlPQtTySZYzu4C3) |
 |:-----------------------------:|:-----------------------:|:-------------------------:|:----------------------------:|:-------------------------:|
 | [Anthony Galassi](https://www.linkedin.com/in/anthonygalassi/) <br> Project Manager & Back-End Developer | [Sara Hall](https://www.linkedin.com/in/sara-hall-canada/) <br> Front-End Developer | [Reid Moffat](https://www.linkedin.com/in/reid-moffat/) <br> Lead Back-End Developer | [Graham Carkner](https://www.linkedin.com/in/gcarkner/) <br> Lead Front-End Developer | Louie Chung <br> Front-End Developer |
 
 ### Stakeholders
-| <img src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaV8mxvYncmUL-eW1HcVFpBgFghRvzUPyiSU4KlASfLXHWDuvncC83TBuT7imZvs-M2nVXP65SiGK-NF2boFgrzTQn92A=s2560" width="200" alt="Steven Ding"/> | <img src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaV8mxvYncmUL-eW1HcVFpBgFghRvzUPyiSU4KlASfLXHWDuvncC83TBuT7imZvs-M2nVXP65SiGK-NF2boFgrzTQn92A=s2560" width="200" alt="Meghan Norris"/> |
+| <img src="https://drive.google.com/uc?export=download&id=1SWz4yMJFJFJKUtBn_a0_WGdA0e4N_vqw" width="200" alt="Steven Ding"/> | <img src="https://drive.google.com/uc?export=download&id=1YlQIOLovDFcG7FGfI9ppW3jHB4r2ZA_k" width="200" alt="Meghan Norris"/> |
 |:-----------------------------:|:-----------------------:|
 | [Steven Ding](https://www.linkedin.com/in/stevenhding/) <br> Supervisor <br> Assistant Professor in Computing at Queen's University  | [Meghan Norris](https://www.linkedin.com/in/meghan-e-norris-0098b729/) <br> Customer <br> Chair of Undergraduate Studies in Psychology at Queen's University |
 
