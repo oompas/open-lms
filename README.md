@@ -20,9 +20,9 @@ The platform is ready to use and will function effectively out of the box after 
 
 #### To streamline our development process and fit the needs of most organizations, we utilize these frameworks and services:
 
-- Next.js is an open-source web meta framework using React to enable hybrid rendering of both the server and client side to significantly improve performance and SEO using Typescript. and we use it because ...
+- Next.js is an open-source web meta framework using React to enable hybrid rendering of both the server and client side to significantly improve performance and SEO using Typescript.
 
-- Vercel is a cloud platform allowing developers to easily deploy web applications enabling a seamless experience by taking care of deployment and scaling so developers can focus on their code. and we use it because ...
+- Vercel is a cloud platform allowing developers to easily deploy web applications enabling a seamless experience by taking care of deployment and scaling so developers can focus on their code.
 
 - Firebase is a collection of Google-powered back-end cloud computing services designed to simplify and enhance API creation, improvement, and growth. It offers key services like authentication, databases, and serverless functions, reducing the complexity and maintenance required for instance management using TypeScript. The OpenLMS core team specifically chose it due to it's reliability, simplisticity, and ease to scale and extend platform functionalities, making it ideal for minimizing technical overlead.
 
