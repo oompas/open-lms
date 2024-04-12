@@ -21,15 +21,15 @@ abstract class DatabaseObject {
 
     /**
      * Adds the object to Firestore as a new object
-     * @param id (Optional) The ID of the document. If not specified, Firestore will generate a random ID
+     * @param withId (Optional) If true, uses the document's id as the document id in Firestore, otherwise Firestore will generate a new id
      */
-    protected addToFirestore(id?: string): Promise<string> {
+    public addToFirestore(withId?: boolean): Promise<string> {
         const collectionName = this.constructor.name;
-        if (id) {
+        if (withId) {
             return db.collection(collectionName)
-                .doc(id)
+                .doc(this.getId())
                 .set(this.getObject(true))
-                .then(() => id)
+                .then(() => this.getId())
                 .catch((err) => {
                     logger.error(`Error setting document in collection '${collectionName}': ${err}`);
                     throw new HttpsError("internal", `Error setting document in collection '${collectionName}'`);
@@ -48,7 +48,7 @@ abstract class DatabaseObject {
     /**
      * Updates this object in Firestore
      */
-    protected updateInFirestore(): Promise<firestore.WriteResult> {
+    public updateInFirestore(): Promise<firestore.WriteResult> {
         return db.collection(this.constructor.name)
             .doc(this.getId())
             .update(this.getObject(true))

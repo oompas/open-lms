@@ -4,7 +4,6 @@ import { sendEmail, USER_UID_LENGTH, verifyIsAdmin, verifyIsAuthenticated } from
 import { auth } from "../helpers/setup";
 import { object, string } from "yup";
 import {
-    addDocWithId,
     CourseDocument,
     DatabaseCollections,
     getCollection,
@@ -12,6 +11,7 @@ import {
     QuizAttemptDocument,
 } from "../helpers/database";
 import { firestore } from "firebase-admin";
+import User from "../helpers/databaseObjects/User";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
@@ -58,12 +58,8 @@ const createAccount = onCall(async (request) => {
         .then(async (user) => {
             logger.info("Successfully created user, adding user document to db & sending verification email...");
 
-            const defaultDoc = {
-                email: email,
-                name: name,
-                signUpTime: firestore.FieldValue.serverTimestamp()
-            };
-            await addDocWithId(DatabaseCollections.User, user.uid, defaultDoc);
+            const userDoc = new User(user.uid, email, name, firestore.Timestamp.now(), false, false);
+            await userDoc.addToFirestore(true);
 
             // Create a verification email
             const verifyLink = await auth

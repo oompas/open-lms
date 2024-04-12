@@ -6,8 +6,6 @@ import { HttpsError } from "firebase-functions/lib/v2/providers/https";
 
 class User extends DatabaseObject {
 
-    private static CollectionName: string = "User";
-
     private readonly email: string;
     private readonly name: string;
     private readonly signUpTime: firestore.Timestamp;
@@ -47,12 +45,13 @@ class User extends DatabaseObject {
     }
 
     public static getAllDocs = (): Promise<User[]> => {
-        return db.collection(User.CollectionName)
+        const collectionName = this.constructor.name;
+        return db.collection(collectionName)
             .get()
             .then((result) => result.docs.map(doc => User.fromFirestore(doc)))
             .catch(err => {
-                logger.error(`Error getting documents from collection '${User.CollectionName}': ${err}`);
-                throw new HttpsError("internal", `Error getting documents from collection '${User.CollectionName}'`);
+                logger.error(`Error getting documents from collection '${collectionName}': ${err}`);
+                throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
             });
     }
 }
