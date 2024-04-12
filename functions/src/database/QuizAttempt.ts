@@ -36,9 +36,9 @@ class QuizAttempt extends DatabaseObject {
         this.markerInfo = markerInfo;
     }
 
-    public getObject = (): { id: string; userId: string; courseId: string; courseAttemptId: string; startTime: number; endTime: number | null; pass: boolean | null; score: number | null; markerInfo: { uid: string; name: string; email: string; markTime: number } | null } => {
+    public getObject = (noId?: boolean): { id?: string; userId: string; courseId: string; courseAttemptId: string; startTime: number; endTime: number | null; pass: boolean | null; score: number | null; markerInfo: { uid: string; name: string; email: string; markTime: number } | null } => {
         return {
-            id: this.getId(),
+            ...(!noId && { id: this.getId() }),
             userId: this.userId,
             courseId: this.courseId,
             courseAttemptId: this.courseAttemptId,

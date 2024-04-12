@@ -25,9 +25,9 @@ class CourseAttempt extends DatabaseObject {
         this.pass = attempt.pass;
     }
 
-    public getObject(): { id: string; userId: string; courseId: string; startTime: number; endTime: number | null; pass: boolean | null } {
+    public getObject(noId?: boolean): { id?: string; userId: string; courseId: string; startTime: number; endTime: number | null; pass: boolean | null } {
         return {
-            id: this.getId(),
+            ...(!noId && { id: this.getId() }),
             userId: this.userId,
             courseId: this.courseId,
             startTime: this.startTime.seconds,

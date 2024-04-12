@@ -2,7 +2,7 @@ import { DatabaseObject } from "./DatabseObject";
 import { firestore } from "firebase-admin";
 
 interface UserObject {
-    id: string;
+    id?: string;
     email: string;
     name: string;
     signUpTime: firestore.Timestamp;
@@ -31,9 +31,9 @@ class User extends DatabaseObject {
         this.developer = user.developer;
     }
 
-    public getObject(): UserObject {
+    public getObject(noId?: boolean): UserObject {
         return {
-            id: this.getId(),
+            ...(!noId && { id: this.getId() }),
             email: this.email,
             name: this.name,
             signUpTime: this.signUpTime,

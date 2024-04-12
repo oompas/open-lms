@@ -42,9 +42,9 @@ class QuizQuestion extends DatabaseObject {
         };
     }
 
-    public getObject(): { id: string; courseId: string; question: string; type: "tf" | "mc" | "sa"; marks: number; answers?: string[]; correctAnswer?: number; order?: number; stats: { numAttempts: number; totalScore: number; answers?: { [key: string]: number }; distribution?: { [key: string]: number } } } {
+    public getObject(noId?: boolean): { id?: string; courseId: string; question: string; type: "tf" | "mc" | "sa"; marks: number; answers?: string[]; correctAnswer?: number; order?: number; stats: { numAttempts: number; totalScore: number; answers?: { [key: string]: number }; distribution?: { [key: string]: number } } } {
         return {
-            id: this.getId(),
+            ...(!noId && { id: this.getId() }),
             courseId: this.courseId,
             question: this.question,
             type: this.type,
