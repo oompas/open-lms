@@ -2,12 +2,11 @@ import { firestore } from "firebase-admin";
 import { DatabaseObject } from "./DatabseObject";
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
-import { db } from "../helpers/setup";
 
 class EnrolledCourse extends DatabaseObject {
 
     public static readonly collectionName = this.constructor.name;
-    public static readonly collection = db.collection(EnrolledCourse.collectionName);
+    public static readonly collection = DatabaseObject.getCollection(this.collectionName);
 
     private readonly courseId: string;
     private readonly userId: string;

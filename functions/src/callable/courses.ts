@@ -13,8 +13,8 @@ import Course from "../database/Course";
 import QuizQuestion from "../database/QuizQuestion";
 import QuizAttempt from "../database/QuizAttempt";
 import EnrolledCourse from "../database/EnrolledCourse";
-import course from "../database/Course";
 import CourseAttempt from "../database/CourseAttempt";
+import User from "../database/User";
 
 /**
  * Adds a course to the database. Includes both metadata and quiz questions
@@ -196,7 +196,7 @@ const getAvailableCourses = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth.uid;
 
-    return Course.collection()
+    return Course.collection
         .where("active", "==", true)
         .get()
         .then(async (courses) => {
@@ -416,13 +416,13 @@ const startCourse = onCall(async (request) => {
     }
 
     const courseAttempt = {
-        userId: request.auth?.uid,
-        courseId: request.data.courseId,
+        userId: request.auth?.uid as string,
+        courseId: request.data.courseId as string,
         startTime: firestore.Timestamp.now(),
         endTime: null,
         pass: null,
     };
-    return new CourseAttempt(course).addToFirestore();
+    return new CourseAttempt(courseAttempt).addToFirestore();
 });
 
 /**
@@ -446,7 +446,7 @@ const deleteCourse = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const courseInfo = await getDocData(DatabaseCollections.Course, request.data.courseId) as CourseDocument;
+    const courseInfo = await Course.fromFirestoreId(request.data.courseId);
 
     if (courseInfo.userId !== request.auth?.uid) {
         throw new HttpsError('permission-denied', "You can't delete a course you didn't create");
@@ -454,7 +454,7 @@ const deleteCourse = onCall(async (request) => {
 
     logger.info("Course exists and user is the creator, deleting...");
 
-    return deleteDoc(DatabaseCollections.Course, request.data.courseId);
+    return Course.delete(request.data.courseId);
 });
 
 /**
@@ -478,10 +478,10 @@ const sendCourseFeedback = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth.uid;
 
-    const userInfo = await getDocData(DatabaseCollections.User, uid) as UserDocument;
+    const userInfo = await User.fromFirestoreId(uid);
 
-    const courseInfo = await getDocData(DatabaseCollections.Course, request.data.courseId) as CourseDocument;
-    const courseCreator = await getDocData(DatabaseCollections.User, courseInfo.userId) as UserDocument;
+    const courseInfo = await Course.fromFirestoreId(request.data.courseId);
+    const courseCreator = await User.fromFirestoreId(courseInfo.userId);
 
     const subject = `Open LMS User Request For Course ${courseInfo.name}`;
     const content = `

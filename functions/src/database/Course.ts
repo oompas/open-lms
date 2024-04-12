@@ -2,9 +2,11 @@ import { firestore } from "firebase-admin";
 import { DatabaseObject } from "./DatabseObject";
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/lib/v2/providers/https";
-import { db } from "../helpers/setup";
 
 class Course extends DatabaseObject {
+
+    public static readonly collectionName = this.constructor.name;
+    public static readonly collection = DatabaseObject.getCollection(this.collectionName);
 
     public readonly name: string;
     public readonly description: string;
@@ -43,8 +45,6 @@ class Course extends DatabaseObject {
         this.retired = course.retired;
         this.version = course.version;
     }
-
-    public static collection = () => db.collection(this.constructor.name);
 
     public getObject(noId?: boolean): {
         id?: string;
@@ -96,7 +96,7 @@ class Course extends DatabaseObject {
     }
 
     public static fromFirestoreId = (id: string): Promise<Course> => {
-        return Course.collection()
+        return Course.collection
             .doc(id)
             .get()
             .then(doc => {
@@ -116,6 +116,7 @@ class Course extends DatabaseObject {
 
     public static getAllDocs = () => this._getAllDocs().then((docs) => docs.map((doc) => Course.fromFirestoreDoc(doc)));
 
+    public static delete = (docId: string) => this._delete(this.collection, docId);
 
     /**
      * Retires this course (if this course is updated, this version is retired)

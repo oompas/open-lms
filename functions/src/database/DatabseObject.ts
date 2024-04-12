@@ -22,6 +22,11 @@ abstract class DatabaseObject {
     }
 
     /**
+     * Gets a reference to a specified Firestore collection
+     */
+    protected static getCollection = (collectionName: string) => db.collection(collectionName);
+
+    /**
      * Returns this object as a JSON object with document data
      * @param noId (Optional) If true, the document ID will not be included in the object
      */
