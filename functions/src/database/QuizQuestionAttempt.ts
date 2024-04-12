@@ -4,6 +4,19 @@ import { db } from "../helpers/setup";
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
 
+interface QuizQuestionAttemptDocument {
+    id?: string;
+    userId: string;
+    courseId: string;
+    courseAttemptId: string;
+    quizAttemptId: string;
+    questionId: string;
+    response: string | number;
+    marksAchieved: number | null;
+    maxMarks: number;
+    timestamp: firestore.Timestamp;
+}
+
 class QuizQuestionAttempt extends DatabaseObject {
 
     public static readonly collectionName = this.constructor.name;
@@ -19,9 +32,7 @@ class QuizQuestionAttempt extends DatabaseObject {
     private readonly maxMarks: number;
     private readonly timestamp: firestore.Timestamp;
 
-    constructor(attempt: { id: string, userId: string, courseId: string, courseAttemptId: string, quizAttemptId: string,
-                questionId: string, response: string | number, marksAchieved: number | null, maxMarks: number,
-                timestamp: firestore.Timestamp }) {
+    constructor(attempt: QuizQuestionAttemptDocument) {
         super(attempt.id);
 
         this.userId = attempt.userId;
@@ -35,7 +46,7 @@ class QuizQuestionAttempt extends DatabaseObject {
         this.timestamp = attempt.timestamp;
     }
 
-    public getObject = (noId?: boolean): { id?: string; userId: string; courseId: string; courseAttemptId: string; quizAttemptId: string; questionId: string; response: string | number; marksAchieved: number | null; maxMarks: number; timestamp: number } => {
+    public getObject(noId?: boolean): QuizQuestionAttemptDocument {
         return {
             ...(!noId && { id: this.getId() }),
             userId: this.userId,
@@ -46,13 +57,13 @@ class QuizQuestionAttempt extends DatabaseObject {
             response: this.response,
             marksAchieved: this.marksAchieved,
             maxMarks: this.maxMarks,
-            timestamp: this.timestamp.seconds
+            timestamp: this.timestamp
         };
     }
 
     public static fromFirestore = (doc: firestore.QueryDocumentSnapshot): QuizQuestionAttempt => {
         const data = doc.data();
-        const attempt = {
+        const attempt: QuizQuestionAttemptDocument = {
             id: doc.id,
             userId: data.userId,
             courseId: data.courseId,

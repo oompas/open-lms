@@ -4,6 +4,15 @@ import { logger } from "firebase-functions";
 import { db } from "../helpers/setup";
 import { firestore } from "firebase-admin";
 
+interface CourseAttemptDocument {
+    id?: string;
+    userId: string;
+    courseId: string;
+    startTime: firestore.Timestamp;
+    endTime: firestore.Timestamp | null;
+    pass: boolean | null;
+}
+
 class CourseAttempt extends DatabaseObject {
 
     public static readonly collectionName = this.constructor.name;
@@ -15,7 +24,7 @@ class CourseAttempt extends DatabaseObject {
     private readonly endTime: firestore.Timestamp | null;
     private readonly pass: boolean | null;
 
-    constructor(attempt: { id?: string, userId: string, courseId: string, startTime: firestore.Timestamp, endTime: firestore.Timestamp | null, pass: boolean | null }) {
+    constructor(attempt: CourseAttemptDocument) {
         super(attempt.id);
 
         this.userId = attempt.userId;
@@ -25,20 +34,20 @@ class CourseAttempt extends DatabaseObject {
         this.pass = attempt.pass;
     }
 
-    public getObject(noId?: boolean): { id?: string; userId: string; courseId: string; startTime: number; endTime: number | null; pass: boolean | null } {
+    public getObject(noId?: boolean): CourseAttemptDocument {
         return {
             ...(!noId && { id: this.getId() }),
             userId: this.userId,
             courseId: this.courseId,
-            startTime: this.startTime.seconds,
-            endTime: this.endTime?.seconds ?? null,
+            startTime: this.startTime,
+            endTime: this.endTime,
             pass: this.pass
         };
     }
 
     public static fromFirestore = (doc: firestore.QueryDocumentSnapshot): CourseAttempt => {
         const data = doc.data();
-        const attempt = {
+        const attempt: CourseAttemptDocument = {
             id: doc.id,
             userId: data.userId,
             courseId: data.courseId,

@@ -3,6 +3,13 @@ import { DatabaseObject } from "./DatabseObject";
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
 
+interface EnrolledCourseDocument {
+    id?: string;
+    userId: string;
+    courseId: string;
+    enrollmentTime: firestore.Timestamp;
+}
+
 class EnrolledCourse extends DatabaseObject {
 
     public static readonly collectionName = this.constructor.name;
@@ -12,7 +19,7 @@ class EnrolledCourse extends DatabaseObject {
     readonly userId: string;
     private readonly enrollmentTime: firestore.Timestamp;
 
-    constructor(enrolledCourse: { id?: string, userId: string, courseId: string, enrollmentTime: firestore.Timestamp }) {
+    constructor(enrolledCourse: EnrolledCourseDocument) {
         super(enrolledCourse.id);
 
         this.courseId = enrolledCourse.courseId;
@@ -20,18 +27,18 @@ class EnrolledCourse extends DatabaseObject {
         this.enrollmentTime = enrolledCourse.enrollmentTime;
     }
 
-    public getObject(noId?: boolean): { id?: string; userId: string; courseId: string; enrollmentTime: number } {
+    public getObject(noId?: boolean): EnrolledCourseDocument {
         return {
             ...(!noId && { id: this.getId() }),
             userId: this.userId,
             courseId: this.courseId,
-            enrollmentTime: this.enrollmentTime.seconds
+            enrollmentTime: this.enrollmentTime
         };
     }
 
     public static fromFirestoreDoc = (doc: firestore.QueryDocumentSnapshot): EnrolledCourse => {
         const data = doc.data();
-        const enrolledCourse = {
+        const enrolledCourse: EnrolledCourseDocument = {
             id: doc.id,
             userId: data.userId,
             courseId: data.courseId,

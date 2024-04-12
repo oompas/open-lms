@@ -4,6 +4,23 @@ import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
 import { db } from "../helpers/setup";
 
+interface QuizQuestionDocument {
+    id?: string;
+    courseId: string;
+    question: string;
+    type: "tf" | "mc" | "sa";
+    marks: number;
+    answers: string[] | null;
+    correctAnswer: number | null;
+    order: number | null;
+    stats: {
+        numAttempts: number;
+        totalScore: number;
+        answers?: { [key: string]: number };
+        distribution?: { [key: string]: number };
+    } | null;
+}
+
 class QuizQuestion extends DatabaseObject {
 
     public static readonly collectionName = this.constructor.name;
@@ -13,9 +30,9 @@ class QuizQuestion extends DatabaseObject {
     private readonly question: string;
     private readonly type: "tf" | "mc" | "sa";
     private readonly marks: number;
-    private readonly answers: string[] | undefined
-    private readonly correctAnswer: number | undefined;
-    private readonly order: number | undefined;
+    private readonly answers: string[] | null;
+    private readonly correctAnswer: number | null;
+    private readonly order: number | null;
     private readonly stats: {
         numAttempts: number;
         totalScore: number;
@@ -23,7 +40,7 @@ class QuizQuestion extends DatabaseObject {
         distribution?: { [key: string]: number }; // Only for sa
     };
 
-    constructor(question: { id: string, courseId: string, question: string, type: "tf" | "mc" | "sa", marks: number, answers?: string[], correctAnswer?: number, order?: number }) {
+    constructor(question: QuizQuestionDocument) {
         super(question.id);
 
         this.courseId = question.courseId;
@@ -34,15 +51,19 @@ class QuizQuestion extends DatabaseObject {
         this.correctAnswer = question.correctAnswer;
         this.order = question.order;
 
-        this.stats = {
-            numAttempts: 0,
-            totalScore: 0,
-            ...(question.type === "tf" || question.type === "mc" ? { answers: {} } : { distribution: {} }),
-            ...(question.type === "sa" ? { distribution: {} } : { answers: {} }),
-        };
+        if (question.stats === null) {
+            this.stats = {
+                numAttempts: 0,
+                totalScore: 0,
+                ...(question.type === "tf" || question.type === "mc" ? { answers: {} } : { distribution: {} }),
+                ...(question.type === "sa" ? { distribution: {} } : { answers: {} }),
+            };
+        } else {
+            this.stats = question.stats;
+        }
     }
 
-    public getObject(noId?: boolean): { id?: string; courseId: string; question: string; type: "tf" | "mc" | "sa"; marks: number; answers?: string[]; correctAnswer?: number; order?: number; stats: { numAttempts: number; totalScore: number; answers?: { [key: string]: number }; distribution?: { [key: string]: number } } } {
+    public getObject(noId?: boolean): QuizQuestionDocument {
         return {
             ...(!noId && { id: this.getId() }),
             courseId: this.courseId,
@@ -58,7 +79,7 @@ class QuizQuestion extends DatabaseObject {
 
     public static fromFirestore = (doc: firestore.QueryDocumentSnapshot): QuizQuestion => {
         const data = doc.data();
-        const question = {
+        const question: QuizQuestionDocument = {
             id: doc.id,
             courseId: data.courseId,
             question: data.question,
@@ -66,7 +87,8 @@ class QuizQuestion extends DatabaseObject {
             marks: data.marks,
             answers: data.answers,
             correctAnswer: data.correctAnswer,
-            order: data.order
+            order: data.order,
+            stats: data.stats,
         };
         return new QuizQuestion(question);
     }

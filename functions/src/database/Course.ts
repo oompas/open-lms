@@ -3,6 +3,26 @@ import { DatabaseObject } from "./DatabseObject";
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/lib/v2/providers/https";
 
+interface CourseDocument {
+    id?: string;
+    name: string;
+    description: string;
+    link: string;
+    active: boolean;
+    minTime: number | null;
+    userId: string;
+    quiz: {
+        maxAttempts: number | null;
+        minScore: number;
+        preserveOrder: boolean;
+        timeLimit: number | null;
+        totalMarks: number;
+    } | null;
+    creationTime: firestore.Timestamp;
+    retired?: firestore.Timestamp;
+    version: number;
+}
+
 class Course extends DatabaseObject {
 
     public static readonly collectionName = this.constructor.name;
@@ -16,7 +36,7 @@ class Course extends DatabaseObject {
     public readonly userId: string;
     public readonly quiz: {
         maxAttempts: number | null;
-        minScore: number | null;
+        minScore: number;
         preserveOrder: boolean;
         timeLimit: number | null;
         totalMarks: number;
@@ -25,13 +45,7 @@ class Course extends DatabaseObject {
     public readonly retired?: firestore.Timestamp;
     public readonly version: number;
 
-    constructor(course: { id?: string, name: string, description: string, link: string, active: boolean, minTime: number | null, userId: string, quiz: {
-        maxAttempts: number | null;
-        minScore: number | null;
-        preserveOrder: boolean;
-        timeLimit: number | null;
-        totalMarks: number;
-    } | null, creationTime: firestore.Timestamp, version: number, retired?: firestore.Timestamp }) {
+    constructor(course: CourseDocument) {
         super(course.id);
 
         this.name = course.name;
@@ -46,22 +60,7 @@ class Course extends DatabaseObject {
         this.version = course.version;
     }
 
-    public getObject(noId?: boolean): {
-        id?: string;
-        name: string;
-        description: string;
-        link: string;
-        active: boolean;
-        minTime: number | null;
-        userId: string;
-        quiz: {
-            maxAttempts: number | null; minScore: number | null; preserveOrder: boolean; timeLimit
-                : number | null; totalMarks: number;
-        } | null;
-        creationTime: number;
-        retired?: number;
-        version: number
-    } {
+    public getObject(noId?: boolean): CourseDocument {
         return {
             ...(!noId && { id: this.getId() }),
             name: this.name,
@@ -71,15 +70,15 @@ class Course extends DatabaseObject {
             minTime: this.minTime,
             userId: this.userId,
             quiz: this.quiz,
-            creationTime: this.creationTime.seconds,
-            ...(this.retired && { retired: this.retired?.seconds }),
+            creationTime: this.creationTime,
+            ...(this.retired && { retired: this.retired }),
             version: this.version
         };
     }
 
     public static fromFirestoreDoc = (doc: firestore.QueryDocumentSnapshot): Course => {
         const data = doc.data();
-        const course = {
+        const course: CourseDocument = {
             id: doc.id,
             name: data.name,
             description: data.description,
@@ -114,7 +113,7 @@ class Course extends DatabaseObject {
     }
 
 
-    public static getAllDocs = () => this._getAllDocs().then((docs) => docs.map((doc) => Course.fromFirestoreDoc(doc)));
+    public static getAllDocs = () => this._getAllDocs(this.collection).then((docs) => docs.map((doc) => Course.fromFirestoreDoc(doc)));
 
     public static delete = (docId: string) => this._delete(this.collection, docId);
 

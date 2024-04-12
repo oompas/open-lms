@@ -4,6 +4,23 @@ import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
 import { firestore } from "firebase-admin";
 
+interface QuizAttemptDocument {
+    id?: string;
+    userId: string;
+    courseId: string;
+    courseAttemptId: string;
+    startTime: firestore.Timestamp;
+    endTime: firestore.Timestamp | null;
+    pass: boolean | null;
+    score: number | null;
+    markerInfo: {
+        uid: string;
+        name: string;
+        email: string;
+        markTime: firestore.Timestamp
+    } | null;
+}
+
 class QuizAttempt extends DatabaseObject {
 
     public static readonly collectionName = this.constructor.name;
@@ -21,43 +38,49 @@ class QuizAttempt extends DatabaseObject {
         name: string;
         email: string;
         markTime: firestore.Timestamp;
-    } | undefined;
+    } | null;
 
-    constructor(id: string, userId: string, courseId: string, courseAttemptId: string, startTime: firestore.Timestamp, endTime: firestore.Timestamp | null, pass: boolean | null, score: number | null, markerInfo?: { uid: string; name: string; email: string; markTime: firestore.Timestamp }) {
-        super(id);
+    constructor(quizAttempt: QuizAttemptDocument) {
+        super(quizAttempt.id);
 
-        this.userId = userId;
-        this.courseId = courseId;
-        this.courseAttemptId = courseAttemptId;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.pass = pass;
-        this.score = score;
-        this.markerInfo = markerInfo;
+        this.userId = quizAttempt.userId;
+        this.courseId = quizAttempt.courseId;
+        this.courseAttemptId = quizAttempt.courseAttemptId;
+        this.startTime = quizAttempt.startTime;
+        this.endTime = quizAttempt.endTime;
+        this.pass = quizAttempt.pass;
+        this.score = quizAttempt.score;
+        this.markerInfo = quizAttempt.markerInfo;
     }
 
-    public getObject = (noId?: boolean): { id?: string; userId: string; courseId: string; courseAttemptId: string; startTime: number; endTime: number | null; pass: boolean | null; score: number | null; markerInfo: { uid: string; name: string; email: string; markTime: number } | null } => {
+    public getObject(noId?: boolean): QuizAttemptDocument {
         return {
             ...(!noId && { id: this.getId() }),
             userId: this.userId,
             courseId: this.courseId,
             courseAttemptId: this.courseAttemptId,
-            startTime: this.startTime.seconds,
-            endTime: this.endTime?.seconds ?? null,
+            startTime: this.startTime,
+            endTime: this.endTime,
             pass: this.pass,
             score: this.score,
-            markerInfo: this.markerInfo ? {
-                uid: this.markerInfo.uid,
-                name: this.markerInfo.name,
-                email: this.markerInfo.email,
-                markTime: this.markerInfo.markTime.seconds
-            } : null
+            markerInfo: this.markerInfo,
         };
     }
 
     public static fromFirestore = (doc: firestore.QueryDocumentSnapshot): QuizAttempt => {
         const data = doc.data();
-        return new QuizAttempt(doc.id, data.userId, data.courseId, data.courseAttemptId, data.startTime, data.endTime, data.pass, data.score, data.markerInfo);
+        const quizAttempt: QuizAttemptDocument = {
+            id: doc.id,
+            userId: data.userId,
+            courseId: data.courseId,
+            courseAttemptId: data.courseAttemptId,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            pass: data.pass,
+            score: data.score,
+            markerInfo: data.markerInfo
+        };
+        return new QuizAttempt(quizAttempt);
     }
 
     public static getAllDocs = (): Promise<QuizAttempt[]> => {
