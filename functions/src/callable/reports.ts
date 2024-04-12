@@ -75,24 +75,24 @@ const getAdminInsights = onCall(async (request) => {
     logger.info("Successfully queried database collections");
 
     const quizAttemptsToMark = quizAttempts
-        .filter((attempt) => attempt.getScore() === null && attempt.getEndTime() !== null)
+        .filter((attempt) => attempt.score === null && attempt.endTime!== null)
         .map((quizAttempt) => {
-            const userName = users.find((user) => user.getId() === quizAttempt.getUserId())?.getName();
-            const courseName = courses.find((course) => course.id === quizAttempt.getCourseId())?.name;
+            const userName = users.find((user) => user.getId() === quizAttempt.userId)?.name;
+            const courseName = courses.find((course) => course.id === quizAttempt.courseId)?.name;
 
             return {
-                courseId: quizAttempt.getCourseId(),
+                courseId: quizAttempt.courseId,
                 courseName: courseName,
-                userId: quizAttempt.getUserId(),
+                userId: quizAttempt.userId,
                 userName: userName,
                 quizAttemptId: quizAttempt.getId(),
-                timestamp: Math.floor(quizAttempt.getEndTime() ?? 0),
+                timestamp: Math.floor(quizAttempt.endTime?.seconds ?? 0),
             };
         });
 
     const courseInsights = courses.map((course) => {
 
-        const courseEnrollments = enrollments.filter((enrollment) => enrollment.getCourseId() === course.id);
+        const courseEnrollments = enrollments.filter((enrollment) => enrollment.courseId === course.id);
 
         const completedAttempts = courseAttempts.filter((attempt) => attempt.getCourseId() === course.id && attempt.getPass() === true);
 
@@ -106,12 +106,12 @@ const getAdminInsights = onCall(async (request) => {
         }
 
         const quizScores: number[] = quizAttempts
-            .filter((attempt) => attempt.getCourseId() === course.id && attempt.getPass() === true)
+            .filter((attempt) => attempt.courseId === course.id && attempt.pass === true)
             .map((attempt) => {
-                if (attempt.getScore() === null) {
+                if (attempt.score === null) {
                     throw new HttpsError('internal', `Completed quiz attempt (${attempt.getId()}) score is null`);
                 }
-                return attempt.getScore() as number;
+                return attempt.score as number;
             });
         let averageScore = null;
         if (quizScores.length > 0 && course.quiz) {
@@ -131,16 +131,16 @@ const getAdminInsights = onCall(async (request) => {
         };
     }).sort((a, b) => b.numEnrolled - a.numEnrolled);
 
-    const learners = users.filter((user) => !user.isAdmin() && !user.isDeveloper()).map((user) => {
+    const learners = users.filter((user) => !user.admin && !user.developer).map((user) => {
 
-        const numEnrollments = enrollments.reduce((count, enrollment) => enrollment.getUserId() === user.getId() ? ++count : count, 0);
+        const numEnrollments = enrollments.reduce((count, enrollment) => enrollment.userId === user.getId() ? ++count : count, 0);
         const numAttempts = courseAttempts.reduce((count, attempt) => attempt.getUserId() === user.getId() ? ++count : count, 0);
         const numComplete = courseAttempts.reduce((count, attempt) => attempt.getUserId() === user.getId() && attempt.getPass() === true ? ++count : count, 0);
 
         return {
             uid: user.getId(),
-            name: user.getName(),
-            email: user.getEmail(),
+            name: user.name,
+            email: user.email,
             role : "Learner",
             coursesEnrolled: numEnrollments,
             coursesAttempted: numAttempts,
@@ -148,16 +148,16 @@ const getAdminInsights = onCall(async (request) => {
         };
     }).sort((a, b) => b.coursesEnrolled - a.coursesEnrolled);
 
-    const admins = users.filter((user) => user.isAdmin() || user.isDeveloper()).map((user) => {
+    const admins = users.filter((user) => user.admin || user.developer).map((user) => {
 
         const numCoursesCreated = courses.reduce((count, course) => course.userId === user.getId() ? ++count : count, 0);
         const numCoursesPublished = courses.reduce((count, course) => course.userId === user.getId() && course.active ? ++count : count, 0);
 
         return {
             uid: user.getId(),
-            name: user.getName(),
-            email: user.getEmail(),
-            role: user.isAdmin() ? "Administrator" : "Developer",
+            name: user.name,
+            email: user.email,
+            role: user.developer ? "Developer" : "Administrator",
             coursesCreated: numCoursesCreated,
             coursesPublished: numCoursesPublished,
         };
@@ -313,7 +313,7 @@ const downloadUserReports = onCall(async (request) => {
     // Get all records at once, then filter through them for each user to reduce queries
     const { userRecords, enrollments, courseAttempts } = await Promise.all([
         auth.listUsers().then((result) => result.users),
-        EnrolledCourse.getAllDocs().then((result) => result.map(doc => ({ userId: doc.getUserId() }))),
+        EnrolledCourse.getAllDocs().then((result) => result.map(doc => ({ userId: doc.userId }))),
         CourseAttempt.getAllDocs().then((result) => result.map(doc => ({ userId: doc.getUserId(), pass: doc.getPass() }))),
     ]).then(([userRecords, enrollments, courseAttempts]) => ({ userRecords, enrollments, courseAttempts }));
 

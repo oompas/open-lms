@@ -1,8 +1,8 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { sendEmail, verifyIsAdmin, verifyIsLearner } from "../helpers/helpers";
-import { DatabaseCollections, getDocData, UserDocument } from "../helpers/database";
 import { array, object, string } from "yup";
 import { logger } from "firebase-functions";
+import User from "../database/User";
 
 /**
  * Sends an email to the developers with platform-specific feedback
@@ -29,7 +29,7 @@ const sendPlatformFeedback = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth.uid;
 
-    const userInfo = await getDocData(DatabaseCollections.User, uid) as UserDocument;
+    const userInfo = await User.fromFirestoreId(uid);
     const content = `
         <style>
             body { background-color: #f9f9f9; }

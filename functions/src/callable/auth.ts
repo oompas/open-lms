@@ -215,7 +215,7 @@ const getUserProfile = onCall(async (request) => {
     const userRecord = await auth.getUser(targetUserUid);
 
     // Query all enrolled courses
-    const enrolledCourses = await EnrolledCourse.collection()
+    const enrolledCourses = await EnrolledCourse.collection
         .where('userId', "==", targetUserUid)
         .get()
         .then((result) => result.docs.map((doc) => doc.data().courseId))

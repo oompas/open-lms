@@ -8,8 +8,8 @@ class EnrolledCourse extends DatabaseObject {
     public static readonly collectionName = this.constructor.name;
     public static readonly collection = DatabaseObject.getCollection(this.collectionName);
 
-    private readonly courseId: string;
-    private readonly userId: string;
+    readonly courseId: string;
+    readonly userId: string;
     private readonly enrollmentTime: firestore.Timestamp;
 
     constructor(enrolledCourse: { id?: string, userId: string, courseId: string, enrollmentTime: firestore.Timestamp }) {
