@@ -14,13 +14,13 @@ import { object, string } from "yup";
 import { CourseStatus } from "./helpers";
 import { auth } from "../helpers/setup";
 import { UserRecord } from "firebase-admin/lib/auth";
-import EnrolledCourse from "../helpers/databaseObjects/EnrolledCourse";
-import CourseAttempt from "../helpers/databaseObjects/CourseAttempt";
-import User from "../helpers/databaseObjects/User";
-import QuizQuestion from "../helpers/databaseObjects/QuizQuestion";
-import QuizAttempt from "../helpers/databaseObjects/QuizAttempt";
-import Course from "../helpers/databaseObjects/Course";
-import QuizQuestionAttempt from "../helpers/databaseObjects/QuizQuestionAttempt";
+import EnrolledCourse from "../database/EnrolledCourse";
+import CourseAttempt from "../database/CourseAttempt";
+import User from "../database/User";
+import QuizQuestion from "../database/QuizQuestion";
+import QuizAttempt from "../database/QuizAttempt";
+import Course from "../database/Course";
+import QuizQuestionAttempt from "../database/QuizQuestionAttempt";
 
 /**
  * Converts an array of objects (with the same keys & no embedded objects) into a CSV string

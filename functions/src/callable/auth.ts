@@ -4,11 +4,11 @@ import { sendEmail, USER_UID_LENGTH, verifyIsAdmin, verifyIsAuthenticated } from
 import { auth } from "../helpers/setup";
 import { object, string } from "yup";
 import { firestore } from "firebase-admin";
-import User from "../helpers/databaseObjects/User";
-import EnrolledCourse from "../helpers/databaseObjects/EnrolledCourse";
-import Course from "../helpers/databaseObjects/Course";
-import CourseAttempt from "../helpers/databaseObjects/CourseAttempt";
-import QuizAttempt from "../helpers/databaseObjects/QuizAttempt";
+import User from "../database/User";
+import EnrolledCourse from "../database/EnrolledCourse";
+import Course from "../database/Course";
+import CourseAttempt from "../database/CourseAttempt";
+import QuizAttempt from "../database/QuizAttempt";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled

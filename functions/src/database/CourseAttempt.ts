@@ -1,7 +1,7 @@
 import { DatabaseObject } from "./DatabseObject";
 import { HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
-import { db } from "../setup";
+import { db } from "../helpers/setup";
 import { firestore } from "firebase-admin";
 
 class CourseAttempt extends DatabaseObject {

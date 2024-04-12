@@ -1,4 +1,4 @@
-import { db } from "../setup";
+import { db } from "../helpers/setup";
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
 import { firestore } from "firebase-admin";

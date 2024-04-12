@@ -2,7 +2,7 @@ import { firestore } from "firebase-admin";
 import { DatabaseObject } from "./DatabseObject";
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/lib/v2/providers/https";
-import { db } from "../setup";
+import { db } from "../helpers/setup";
 
 class Course extends DatabaseObject {
 
