@@ -11,34 +11,20 @@ abstract class DatabaseObject {
         this.id = id;
     }
 
-    public getId(): string {
-        return this.id;
-    }
+    public getId = (): string => this.id;
 
     /**
-     * Returns the database document as a JSON object with document data & id
+     * Returns this object as a JSON object with document data
+     * @param noId (Optional) If true, the document ID will not be included in the object
      */
     abstract getObject(noId?: boolean): object;
 
     /**
      * Adds the object to Firestore as a new object
-     * @param id (Optional) The ID of the document
+     * @param id (Optional) The ID of the document. If not specified, Firestore will generate a random ID
      */
-    protected abstract addtoFirestore(id?: string): Promise<string>;
-
-    // Gets all documents in specified collection
-    protected static _getAllDocs = (collectionName: string): Promise<firestore.QueryDocumentSnapshot[]> => {
-        return db.collection(collectionName)
-            .get()
-            .then((result) => result.docs)
-            .catch(err => {
-                logger.error(`Error getting documents from collection '${collectionName}': ${err}`);
-                throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
-            });
-    }
-
-    // Helper function, allows child classes to specify their own collection name
-    protected _addToFirestore = (collectionName: string, id?: string): Promise<string> => {
+    protected addToFirestore(id?: string): Promise<string> {
+        const collectionName = this.constructor.name;
         if (id) {
             return db.collection(collectionName)
                 .doc(id)
@@ -56,6 +42,43 @@ abstract class DatabaseObject {
             .catch((err) => {
                 logger.error(`Error adding document to collection '${collectionName}': ${err}`);
                 throw new HttpsError("internal", `Error adding document to collection '${collectionName}'`);
+            });
+    }
+
+    /**
+     * Updates this object in Firestore
+     */
+    protected updateInFirestore(): Promise<firestore.WriteResult> {
+        return db.collection(this.constructor.name)
+            .doc(this.getId())
+            .update(this.getObject(true))
+            .catch((err) => {
+                logger.error(`Error updating document in collection '${this.constructor.name}': ${err}`);
+                throw new HttpsError("internal", `Error updating document in collection '${this.constructor.name}'`);
+            });
+    }
+
+    /**
+     * Deletes this object from Firestore
+     */
+    public deleteFromFirestore(): Promise<firestore.WriteResult> {
+        return db.collection(this.constructor.name)
+            .doc(this.getId())
+            .delete()
+            .catch((err) => {
+                logger.error(`Error deleting document from collection '${this.constructor.name}': ${err}`);
+                throw new HttpsError("internal", `Error deleting document from collection '${this.constructor.name}'`);
+            });
+    }
+
+    // Helper to get all documents from a collection
+    protected static _getAllDocs = (collectionName: string): Promise<firestore.QueryDocumentSnapshot[]> => {
+        return db.collection(collectionName)
+            .get()
+            .then((result) => result.docs)
+            .catch(err => {
+                logger.error(`Error getting documents from collection '${collectionName}': ${err}`);
+                throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
             });
     }
 }

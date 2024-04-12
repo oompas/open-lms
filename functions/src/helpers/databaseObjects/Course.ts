@@ -91,6 +91,10 @@ class Course extends DatabaseObject {
         };
     }
 
+    /**
+     * Create a Course object from a Firestore query document
+     * @param doc Firestore QueryDocumentSnapshot
+     */
     public static fromFirestore = (doc: firestore.QueryDocumentSnapshot): Course => {
         const data = doc.data();
         return new Course(doc.id, data.name, data.description, data.link, data.active, data.minTime, data.userId, data.quiz, data.creationTime, data.retired, data.version);
@@ -98,7 +102,6 @@ class Course extends DatabaseObject {
 
 
     public static getAllDocs = () => this._getAllDocs(this.CollectionName).then((docs) => docs.map((doc) => Course.fromFirestore(doc)));
-    public addtoFirestore = (id?: string): Promise<string> => this._addToFirestore(Course.CollectionName, id);
 }
 
 export default Course;
