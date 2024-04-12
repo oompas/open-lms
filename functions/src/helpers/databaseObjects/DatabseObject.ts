@@ -26,6 +26,7 @@ abstract class DatabaseObject {
      */
     protected abstract addtoFirestore(id?: string): Promise<string>;
 
+    // Gets all documents in specified collection
     protected static _getAllDocs = (collectionName: string): Promise<firestore.QueryDocumentSnapshot[]> => {
         return db.collection(collectionName)
             .get()

@@ -24,25 +24,11 @@ class User extends DatabaseObject {
         this.developer = developer;
     }
 
-    public getEmail(): string {
-        return this.email;
-    }
-
-    public getName(): string {
-        return this.name;
-    }
-
-    public getSignUpTime(): number {
-        return this.signUpTime.seconds;
-    }
-
-    public isAdmin(): boolean {
-        return !!this.admin;
-    }
-
-    public isDeveloper(): boolean {
-        return !!this.developer;
-    }
+    public getEmail = (): string => this.email;
+    public getName = (): string => this.name;
+    public getSignUpTime = (): number => this.signUpTime.seconds;
+    public isAdmin = (): boolean => !!this.admin;
+    public isDeveloper = (): boolean => !!this.developer;
 
     public getObject(): { id: string; email: string; name: string; signUpTime: number; admin: boolean; developer: boolean } {
         return {

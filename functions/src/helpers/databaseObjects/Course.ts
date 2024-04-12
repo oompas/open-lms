@@ -97,7 +97,7 @@ class Course extends DatabaseObject {
     }
 
 
-    public static getAllDocs = () => DatabaseObject._getAllDocs(this.CollectionName).then((docs) => docs.map((doc) => Course.fromFirestore(doc)));
+    public static getAllDocs = () => this._getAllDocs(this.CollectionName).then((docs) => docs.map((doc) => Course.fromFirestore(doc)));
     public addtoFirestore = (id?: string): Promise<string> => this._addToFirestore(Course.CollectionName, id);
 }
 

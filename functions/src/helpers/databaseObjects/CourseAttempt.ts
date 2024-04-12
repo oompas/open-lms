@@ -12,7 +12,7 @@ class CourseAttempt extends DatabaseObject {
     private readonly courseId: string;
     private readonly startTime: firestore.Timestamp;
     private endTime: firestore.Timestamp | null;
-    private pass: boolean | null;
+    private readonly pass: boolean | null;
 
     constructor(id: string, userId: string, courseId: string, startTime: firestore.Timestamp, endTime: firestore.Timestamp | null, pass: boolean | null) {
         super(id);
@@ -24,25 +24,11 @@ class CourseAttempt extends DatabaseObject {
         this.pass = pass;
     }
 
-    public getUserId(): string {
-        return this.userId;
-    }
-
-    public getCourseId(): string {
-        return this.courseId;
-    }
-
-    public getStartTime(): number {
-        return this.startTime.seconds;
-    }
-
-    public getEndTime(): number | null {
-        return this.endTime?.seconds ?? null;
-    }
-
-    public getPass(): boolean | null {
-        return this.pass;
-    }
+    public getUserId = (): string => this.userId;
+    public getCourseId = (): string => this.courseId;
+    public getStartTime = (): number => this.startTime.seconds;
+    public getEndTime = (): number | null => this.endTime?.seconds ?? null;
+    public getPass = (): boolean | null => this.pass;
 
     public getObject(): { id: string; userId: string; courseId: string; startTime: number; endTime: number | null; pass: boolean | null } {
         return {

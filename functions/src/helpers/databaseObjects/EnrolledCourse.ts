@@ -20,17 +20,9 @@ class EnrolledCourse extends DatabaseObject {
         this.enrolledDate = enrolledDate;
     }
 
-    public getCourseId(): string {
-        return this.courseId;
-    }
-
-    public getUserId(): string {
-        return this.userId;
-    }
-
-    public getEnrolledDate(): number {
-        return this.enrolledDate.seconds;
-    }
+    public getCourseId = (): string => this.courseId;
+    public getUserId = (): string => this.userId;
+    public getEnrolledDate = (): number => this.enrolledDate.seconds;
 
     public getObject(): { id: string; userId: string; courseId: string; enrolledDate: number } {
         return {
