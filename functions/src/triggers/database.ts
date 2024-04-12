@@ -2,21 +2,23 @@ import { onDocumentDeleted, onDocumentUpdated } from "firebase-functions/v2/fire
 import { auth } from "../helpers/setup";
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
-import { DatabaseCollections, getCollection } from "../helpers/database";
+import { DatabaseCollections, getCollection, updateDoc } from "../helpers/database";
 
 /**
  * Admin permissions are updated by a developer editing the user document in firestore
  */
-const updateAdminPermissions = onDocumentUpdated(`${DatabaseCollections.User}/{userId}`, (event) => {
+const updateAdminPermissions = onDocumentUpdated(`${DatabaseCollections.User}/{userId}`, async (event) => {
 
     // @ts-ignore
     const docAfter = event.data.after.data();
     const permissions: { admin?: true, developer?: true } = { // Developers are automatically admins
-        ...((("admin" in docAfter && docAfter.admin === true) || ("developer" in docAfter && docAfter.developer === true)) && { admin: true }),
-        ...("developer" in docAfter && docAfter.developer === true && { developer: true }),
+        ...(((docAfter.admin === true) || (docAfter.developer === true)) && { admin: true }),
+        ...(docAfter.developer === true && { developer: true }),
     };
 
     const userId = event.params.userId;
+    await updateDoc(DatabaseCollections.User, userId, permissions);
+
     return auth.setCustomUserClaims(userId, permissions)
         .then(() => logger.log(`Successfully set user permissions ${JSON.stringify(permissions)} for user ${userId}`))
         .catch((err) => {

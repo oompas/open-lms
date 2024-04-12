@@ -6,11 +6,11 @@ import { HttpsError } from "firebase-functions/v2/https";
 
 class User extends DatabaseObject {
 
-    private readonly email: string;
-    private readonly name: string;
-    private readonly signUpTime: firestore.Timestamp;
-    private readonly admin: boolean | undefined;
-    private readonly developer: boolean | undefined;
+    public readonly email: string;
+    public readonly name: string;
+    public readonly signUpTime: firestore.Timestamp;
+    public readonly admin: boolean;
+    public readonly developer: boolean;
 
     constructor(id: string, email: string, name: string, signUpTime: firestore.Timestamp, admin: boolean, developer: boolean) {
         super(id);
@@ -22,20 +22,14 @@ class User extends DatabaseObject {
         this.developer = developer;
     }
 
-    public getEmail = (): string => this.email;
-    public getName = (): string => this.name;
-    public getSignUpTime = (): number => this.signUpTime.seconds;
-    public isAdmin = (): boolean => !!this.admin;
-    public isDeveloper = (): boolean => !!this.developer;
-
     public getObject(): { id: string; email: string; name: string; signUpTime: number; admin: boolean; developer: boolean } {
         return {
             id: this.getId(),
             email: this.email,
             name: this.name,
             signUpTime: this.signUpTime.seconds,
-            admin: !!this.admin,
-            developer: !!this.developer
+            admin: this.admin,
+            developer: this.developer
         };
     }
 
