@@ -6,8 +6,6 @@ import { firestore } from "firebase-admin";
 
 class CourseAttempt extends DatabaseObject {
 
-    private static CollectionName: string = "CourseAttempt";
-
     private readonly userId: string;
     private readonly courseId: string;
     private readonly startTime: firestore.Timestamp;
@@ -30,6 +28,8 @@ class CourseAttempt extends DatabaseObject {
     public getEndTime = (): number | null => this.endTime?.seconds ?? null;
     public getPass = (): boolean | null => this.pass;
 
+    public static collection = () => db.collection(this.constructor.name);
+
     public getObject(): { id: string; userId: string; courseId: string; startTime: number; endTime: number | null; pass: boolean | null } {
         return {
             id: this.getId(),
@@ -47,12 +47,13 @@ class CourseAttempt extends DatabaseObject {
     }
 
     public static getAllDocs = (): Promise<CourseAttempt[]> => {
-        return db.collection(CourseAttempt.CollectionName)
+        const collectionName = this.constructor.name;
+        return db.collection(collectionName)
             .get()
             .then((result) => result.docs.map(doc => CourseAttempt.fromFirestore(doc)))
             .catch(err => {
-                logger.error(`Error getting documents from collection '${CourseAttempt.CollectionName}': ${err}`);
-                throw new HttpsError("internal", `Error getting documents from collection '${CourseAttempt.CollectionName}'`);
+                logger.error(`Error getting documents from collection '${collectionName}': ${err}`);
+                throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
             });
     }
 }

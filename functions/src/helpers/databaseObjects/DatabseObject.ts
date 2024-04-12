@@ -72,7 +72,8 @@ abstract class DatabaseObject {
     }
 
     // Helper to get all documents from a collection
-    protected static _getAllDocs = (collectionName: string): Promise<firestore.QueryDocumentSnapshot[]> => {
+    protected static _getAllDocs = (): Promise<firestore.QueryDocumentSnapshot[]> => {
+        const collectionName = this.constructor.name;
         return db.collection(collectionName)
             .get()
             .then((result) => result.docs)

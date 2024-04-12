@@ -1,5 +1,8 @@
 import { firestore } from "firebase-admin";
 import { DatabaseObject } from "./DatabseObject";
+import { logger } from "firebase-functions";
+import { HttpsError } from "firebase-functions/lib/v2/providers/https";
+import { db } from "../setup";
 
 class Course extends DatabaseObject {
 
@@ -60,6 +63,8 @@ class Course extends DatabaseObject {
     public getRetired = (): firestore.Timestamp | undefined => this.retired;
     public getVersion = (): number => this.version;
 
+    public static collection = () => db.collection(this.CollectionName);
+
     public getObject(noId?: boolean): {
         id?: string;
         name: string;
@@ -91,17 +96,31 @@ class Course extends DatabaseObject {
         };
     }
 
-    /**
-     * Create a Course object from a Firestore query document
-     * @param doc Firestore QueryDocumentSnapshot
-     */
-    public static fromFirestore = (doc: firestore.QueryDocumentSnapshot): Course => {
+    public static fromFirestoreDoc = (doc: firestore.QueryDocumentSnapshot): Course => {
         const data = doc.data();
         return new Course(doc.id, data.name, data.description, data.link, data.active, data.minTime, data.userId, data.quiz, data.creationTime, data.retired, data.version);
     }
 
+    public static fromFirestoreId = (id: string): Promise<Course> => {
+        return Course.collection()
+            .doc(id)
+            .get()
+            .then(doc => {
+                if (!doc.exists || doc.data() === undefined) {
+                    logger.error(`Document with id '${id}' not found in collection '${this.constructor.name}'`);
+                    throw new HttpsError("not-found", `Document with id '${id}' not found in collection '${this.constructor.name}'`);
+                }
+                const data = doc.data(); // @ts-ignore
+                return new EnrolledCourse(doc.id, data.userId, data.courseId, data.enrolledDate);
+            })
+            .catch(err => {
+                logger.error(`Error getting document with id '${id}' from collection '${this.constructor.name}': ${err}`);
+                throw new HttpsError("internal", `Error getting document with id '${id}' from collection '${this.constructor.name}'`);
+            });
+    }
 
-    public static getAllDocs = () => this._getAllDocs(this.CollectionName).then((docs) => docs.map((doc) => Course.fromFirestore(doc)));
+
+    public static getAllDocs = () => this._getAllDocs().then((docs) => docs.map((doc) => Course.fromFirestoreDoc(doc)));
 }
 
 export default Course;

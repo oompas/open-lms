@@ -6,8 +6,6 @@ import { HttpsError } from "firebase-functions/v2/https";
 
 class QuizQuestionAttempt extends DatabaseObject {
 
-    private static CollectionName: string = "QuizQuestionAttempt";
-
     private readonly userId: string;
     private readonly courseId: string;
     private readonly courseAttemptId: string;
@@ -77,12 +75,13 @@ class QuizQuestionAttempt extends DatabaseObject {
     }
 
     public static getAllDocs = (): Promise<QuizQuestionAttempt[]> => {
-        return db.collection(QuizQuestionAttempt.CollectionName)
+        const collectionName = this.constructor.name;
+        return db.collection(collectionName)
             .get()
             .then((result) => result.docs.map(doc => QuizQuestionAttempt.fromFirestore(doc)))
             .catch(err => {
-                logger.error(`Error getting documents from collection '${QuizQuestionAttempt.CollectionName}': ${err}`);
-                throw new HttpsError("internal", `Error getting documents from collection '${QuizQuestionAttempt.CollectionName}'`);
+                logger.error(`Error getting documents from collection '${collectionName}': ${err}`);
+                throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
             });
     }
 }

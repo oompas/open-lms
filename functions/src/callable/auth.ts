@@ -3,15 +3,12 @@ import { logger } from "firebase-functions";
 import { sendEmail, USER_UID_LENGTH, verifyIsAdmin, verifyIsAuthenticated } from "../helpers/helpers";
 import { auth } from "../helpers/setup";
 import { object, string } from "yup";
-import {
-    CourseDocument,
-    DatabaseCollections,
-    getCollection,
-    getDocData,
-    QuizAttemptDocument,
-} from "../helpers/database";
 import { firestore } from "firebase-admin";
 import User from "../helpers/databaseObjects/User";
+import EnrolledCourse from "../helpers/databaseObjects/EnrolledCourse";
+import Course from "../helpers/databaseObjects/Course";
+import CourseAttempt from "../helpers/databaseObjects/CourseAttempt";
+import QuizAttempt from "../helpers/databaseObjects/QuizAttempt";
 
 /**
  * Users must create their accounts through our API (more control & security), calling it from the client is disabled
@@ -218,7 +215,7 @@ const getUserProfile = onCall(async (request) => {
     const userRecord = await auth.getUser(targetUserUid);
 
     // Query all enrolled courses
-    const enrolledCourses = await getCollection(DatabaseCollections.EnrolledCourse)
+    const enrolledCourses = await EnrolledCourse.collection()
         .where('userId', "==", targetUserUid)
         .get()
         .then((result) => result.docs.map((doc) => doc.data().courseId))
@@ -228,12 +225,12 @@ const getUserProfile = onCall(async (request) => {
         });
 
     const courseNames: { [key: string]: string } = {};
-    await Promise.all(enrolledCourses.map(async (courseId) => // @ts-ignore
-        getDocData(DatabaseCollections.Course, courseId).then((course: CourseDocument) => courseNames[courseId] = course.name)
+    await Promise.all(enrolledCourses.map(async (courseId) =>
+        Course.fromFirestoreId(courseId).then((course) => courseNames[courseId] = course.getName())
     ));
 
     // Query course & course attempt data
-    const completedCourseIds = await getCollection(DatabaseCollections.CourseAttempt)
+    const completedCourseIds = await CourseAttempt.collection()
         .where('userId', "==", targetUserUid)
         .where("pass", "==", true)
         .get()
@@ -246,28 +243,13 @@ const getUserProfile = onCall(async (request) => {
         });
 
     const completedCourseData = await Promise.all(completedCourseIds.map(async (data) =>
-        getDocData(DatabaseCollections.Course, data.courseId) // @ts-ignore
-            .then((course: CourseDocument) => {
-                return { courseId: course.id, name: course.name, link: course.link, date: data.date._seconds };
-            })
+        Course.fromFirestoreId(data.courseId).then((course) => course.getObject())
     ));
 
-    const quizAttemptData = await getCollection(DatabaseCollections.QuizAttempt)
+    const quizAttemptData = await QuizAttempt.collection()
         .where('userId', "==", targetUserUid)
         .get()
-        .then((result) => result.docs.map((doc) => {
-            const data = doc.data() as QuizAttemptDocument;
-            return {
-                id: doc.id,
-                courseId: data.courseId,
-                courseName: courseNames[data.courseId],
-                userId: data.userId,
-                courseAttemptId: data.courseAttemptId,
-                startTime: data.startTime.seconds,
-                endTime: data.endTime?.seconds,
-                score: data.score,
-            };
-        }))
+        .then((result) => result.docs.map((doc) => QuizAttempt.fromFirestore(doc).getObject()))
         .catch((error) => {
             logger.error(`Error querying quiz attempts: ${error}`);
             throw new HttpsError("internal", "Error getting user data, try again later");
