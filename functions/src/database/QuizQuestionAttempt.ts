@@ -6,6 +6,9 @@ import { HttpsError } from "firebase-functions/v2/https";
 
 class QuizQuestionAttempt extends DatabaseObject {
 
+    public static readonly collectionName = this.constructor.name;
+    public static readonly collection = DatabaseObject.getCollection(this.collectionName);
+
     private readonly userId: string;
     private readonly courseId: string;
     private readonly courseAttemptId: string;
@@ -31,16 +34,6 @@ class QuizQuestionAttempt extends DatabaseObject {
         this.maxMarks = attempt.maxMarks;
         this.timestamp = attempt.timestamp;
     }
-
-    public getUserId = (): string => this.userId;
-    public getCourseId = (): string => this.courseId;
-    public getCourseAttemptId = (): string => this.courseAttemptId;
-    public getQuizAttemptId = (): string => this.quizAttemptId;
-    public getQuestionId = (): string => this.questionId;
-    public getResponse = (): string | number => this.response;
-    public getMarksAchieved = (): number | null => this.marksAchieved;
-    public getMaxMarks = (): number => this.maxMarks;
-    public getTimestamp = (): number => this.timestamp.seconds;
 
     public getObject = (): { id: string; userId: string; courseId: string; courseAttemptId: string; quizAttemptId: string; questionId: string; response: string | number; marksAchieved: number | null; maxMarks: number; timestamp: number } => {
         return {

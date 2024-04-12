@@ -6,6 +6,9 @@ import { db } from "../helpers/setup";
 
 class QuizQuestion extends DatabaseObject {
 
+    public static readonly collectionName = this.constructor.name;
+    public static readonly collection = DatabaseObject.getCollection(this.collectionName);
+
     private readonly courseId: string;
     private readonly question: string;
     private readonly type: "tf" | "mc" | "sa";
@@ -38,8 +41,6 @@ class QuizQuestion extends DatabaseObject {
             ...(question.type === "sa" ? { distribution: {} } : { answers: {} }),
         };
     }
-
-    public static collection = () => db.collection(this.constructor.name);
 
     public getObject(): { id: string; courseId: string; question: string; type: "tf" | "mc" | "sa"; marks: number; answers?: string[]; correctAnswer?: number; order?: number; stats: { numAttempts: number; totalScore: number; answers?: { [key: string]: number }; distribution?: { [key: string]: number } } } {
         return {

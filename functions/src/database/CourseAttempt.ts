@@ -6,6 +6,9 @@ import { firestore } from "firebase-admin";
 
 class CourseAttempt extends DatabaseObject {
 
+    public static readonly collectionName = this.constructor.name;
+    public static readonly collection = DatabaseObject.getCollection(this.collectionName);
+
     private readonly userId: string;
     private readonly courseId: string;
     private readonly startTime: firestore.Timestamp;
@@ -21,14 +24,6 @@ class CourseAttempt extends DatabaseObject {
         this.endTime = attempt.endTime;
         this.pass = attempt.pass;
     }
-
-    public getUserId = (): string => this.userId;
-    public getCourseId = (): string => this.courseId;
-    public getStartTime = (): number => this.startTime.seconds;
-    public getEndTime = (): number | null => this.endTime?.seconds ?? null;
-    public getPass = (): boolean | null => this.pass;
-
-    public static collection = () => db.collection(this.constructor.name);
 
     public getObject(): { id: string; userId: string; courseId: string; startTime: number; endTime: number | null; pass: boolean | null } {
         return {

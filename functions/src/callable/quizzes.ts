@@ -8,14 +8,10 @@ import {
 import { logger } from "firebase-functions";
 import { array, number, object, string } from "yup";
 import { firestore } from "firebase-admin";
-import {
-    DatabaseCollections,
-    CourseDocument,
-    CourseAttemptDocument,
-    QuizAttemptDocument,
-    getCollection, getDocData, updateDoc, addDoc, QuizQuestionAttemptDocument, UserDocument, QuizQuestionDocument,
-} from "../helpers/database";
 import { updateQuizStatus } from "./helpers";
+import QuizAttempt from "../database/QuizAttempt";
+import CourseAttempt from "../database/CourseAttempt";
+import Course from "../database/Course";
 
 /**
  * Gets the quiz questions for a specific course
@@ -40,7 +36,7 @@ const getQuiz = onCall(async (request) => {
 
     const quizAttempt = await getDocData(DatabaseCollections.QuizAttempt, request.data.quizAttemptId) as QuizAttemptDocument;
     const courseAttempt = await getDocData(DatabaseCollections.CourseAttempt, quizAttempt.courseAttemptId) as CourseAttemptDocument;
-    const courseData = await getDocData(DatabaseCollections.Course, quizAttempt.courseId) as CourseDocument;
+    const courseData = await Course.fromFirestoreId(quizAttempt.courseId);
 
     // Verify the course & quiz is still active, the course has valid quiz data and the time limit hasn't been passed
     if (courseAttempt.endTime !== null) {

@@ -6,6 +6,9 @@ import { firestore } from "firebase-admin";
 
 class QuizAttempt extends DatabaseObject {
 
+    public static readonly collectionName = this.constructor.name;
+    public static readonly collection = DatabaseObject.getCollection(this.collectionName);
+
     public readonly userId: string;
     public readonly courseId: string;
     public readonly courseAttemptId: string;
@@ -32,8 +35,6 @@ class QuizAttempt extends DatabaseObject {
         this.score = score;
         this.markerInfo = markerInfo;
     }
-
-    public static collection = () => db.collection(this.constructor.name);
 
     public getObject = (): { id: string; userId: string; courseId: string; courseAttemptId: string; startTime: number; endTime: number | null; pass: boolean | null; score: number | null; markerInfo: { uid: string; name: string; email: string; markTime: number } | null } => {
         return {
