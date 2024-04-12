@@ -71,16 +71,24 @@ abstract class DatabaseObject {
             })
     }
 
-    /**
-     * Deletes this object from Firestore
-     */
-    public deleteFromFirestore(): Promise<firestore.WriteResult> {
-        return db.collection(this.constructor.name)
-            .doc(this.getId())
-            .delete()
-            .catch((err) => {
-                logger.error(`Error deleting document from collection '${this.constructor.name}': ${err}`);
-                throw new HttpsError("internal", `Error deleting document from collection '${this.constructor.name}'`);
+    //
+    // Static helpers - require a call from bass class due to being static
+    //
+
+    protected static _getDocumentById(collection: firestore.CollectionReference, id: string): Promise<firestore.DocumentSnapshot> {
+        return collection
+            .doc(id)
+            .get()
+            .then(doc => {
+                if (!doc.exists) {
+                    logger.error(`Document with id '${id}' not found in collection '${collection.path}'`);
+                    throw new HttpsError("not-found", `Document with id '${id}' not found in collection '${collection.path}'`);
+                }
+                return doc;
+            })
+            .catch(err => {
+                logger.error(`Error getting document with id '${id}' from collection '${collection.path}': ${err}`);
+                throw new HttpsError("internal", `Error getting document with id '${id}' from collection '${collection.path}'`);
             });
     }
 
@@ -89,20 +97,18 @@ abstract class DatabaseObject {
             .doc()
             .delete()
             .catch((err) => {
-                logger.error(`Error deleting document '${docId}' from collection '${collection}': ${err}`);
-                throw new HttpsError("internal", `Error deleting document '${docId}' from collection '${collection}'`);
+                logger.error(`Error deleting document '${docId}' from collection '${collection.path}': ${err}`);
+                throw new HttpsError("internal", `Error deleting document '${docId}' from collection '${collection.path}'`);
             });
     }
 
-    // Helper to get all documents from a collection
-    protected static _getAllDocs = (): Promise<firestore.QueryDocumentSnapshot[]> => {
-        const collectionName = this.constructor.name;
-        return db.collection(collectionName)
+    protected static _getAllDocs(collection: firestore.CollectionReference): Promise<firestore.QueryDocumentSnapshot[]> {
+        return collection
             .get()
             .then((result) => result.docs)
             .catch(err => {
-                logger.error(`Error getting documents from collection '${collectionName}': ${err}`);
-                throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
+                logger.error(`Error getting documents from collection '${collection.path}': ${err}`);
+                throw new HttpsError("internal", `Error getting documents from collection '${collection.path}'`);
             });
     }
 }
