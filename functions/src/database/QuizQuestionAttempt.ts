@@ -1,9 +1,5 @@
 import { DatabaseObject } from "./DatabseObject";
 import { firestore } from "firebase-admin";
-import { db } from "../helpers/setup";
-import { logger } from "firebase-functions";
-import { HttpsError } from "firebase-functions/v2/https";
-
 interface QuizQuestionAttemptDocument {
     id?: string;
     userId: string;
@@ -61,33 +57,27 @@ class QuizQuestionAttempt extends DatabaseObject {
         };
     }
 
-    public static fromFirestore = (doc: firestore.QueryDocumentSnapshot): QuizQuestionAttempt => {
-        const data = doc.data();
+    public static fromFirestore(doc: firestore.QueryDocumentSnapshot | firestore.DocumentSnapshot): QuizQuestionAttempt {
         const attempt: QuizQuestionAttemptDocument = {
             id: doc.id,
-            userId: data.userId,
-            courseId: data.courseId,
-            courseAttemptId: data.courseAttemptId,
-            quizAttemptId: data.quizAttemptId,
-            questionId: data.questionId,
-            response: data.response,
-            marksAchieved: data.marksAchieved,
-            maxMarks: data.maxMarks,
-            timestamp: data.timestamp
+            userId: doc.get("userId"),
+            courseId: doc.get("courseId"),
+            courseAttemptId: doc.get("courseAttemptId"),
+            quizAttemptId: doc.get("quizAttemptId"),
+            questionId: doc.get("questionId"),
+            response: doc.get("response"),
+            marksAchieved: doc.get("marksAchieved"),
+            maxMarks: doc.get("maxMarks"),
+            timestamp: doc.get("timestamp")
         };
         return new QuizQuestionAttempt(attempt);
     }
 
-    public static getAllDocs = (): Promise<QuizQuestionAttempt[]> => {
-        const collectionName = this.constructor.name;
-        return db.collection(collectionName)
-            .get()
-            .then((result) => result.docs.map(doc => QuizQuestionAttempt.fromFirestore(doc)))
-            .catch(err => {
-                logger.error(`Error getting documents from collection '${collectionName}': ${err}`);
-                throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
-            });
-    }
+    public static getDocumentById = (id: string): Promise<QuizQuestionAttempt> => super._getDocumentById(this.collection, id).then(doc => this.fromFirestore(doc));
+
+    public static getAllDocs = () => super._getAllDocs(this.collection).then((docs) => docs.map((doc) => this.fromFirestore(doc)));
+
+    public static delete = (docId: string) => super._delete(this.collection, docId);
 }
 
 export default QuizQuestionAttempt;

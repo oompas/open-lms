@@ -54,9 +54,9 @@ class User extends DatabaseObject {
         return new User(user);
     }
 
-    public static getDocumentById = (id: string): Promise<User> => this._getDocumentById(this.collection, id).then(doc => User.fromFirestore(doc));
+    public static getDocumentById = (id: string): Promise<User> => super._getDocumentById(this.collection, id).then(doc => this.fromFirestore(doc));
 
-    public static getAllDocs = (): Promise<User[]> => this._getAllDocs(this.collection).then(docs => docs.map(doc => User.fromFirestore(doc)));
+    public static getAllDocs = (): Promise<User[]> => super._getAllDocs(this.collection).then(docs => docs.map(doc => User.fromFirestore(doc)));
 }
 
 export default User;

@@ -1,7 +1,4 @@
 import { DatabaseObject } from "./DatabseObject";
-import { HttpsError } from "firebase-functions/v2/https";
-import { logger } from "firebase-functions";
-import { db } from "../helpers/setup";
 import { firestore } from "firebase-admin";
 
 interface CourseAttemptDocument {
@@ -45,29 +42,23 @@ class CourseAttempt extends DatabaseObject {
         };
     }
 
-    public static fromFirestore = (doc: firestore.QueryDocumentSnapshot): CourseAttempt => {
-        const data = doc.data();
+    public static fromFirestore(doc: firestore.QueryDocumentSnapshot | firestore.DocumentSnapshot): CourseAttempt {
         const attempt: CourseAttemptDocument = {
             id: doc.id,
-            userId: data.userId,
-            courseId: data.courseId,
-            startTime: data.startTime.seconds,
-            endTime: data.endTime?.seconds ?? null,
-            pass: data.pass
+            userId: doc.get("userId"),
+            courseId: doc.get("courseId"),
+            startTime: doc.get("startTime"),
+            endTime: doc.get("endTime"),
+            pass: doc.get("pass")
         };
         return new CourseAttempt(attempt);
     }
 
-    public static getAllDocs = (): Promise<CourseAttempt[]> => {
-        const collectionName = this.constructor.name;
-        return db.collection(collectionName)
-            .get()
-            .then((result) => result.docs.map(doc => CourseAttempt.fromFirestore(doc)))
-            .catch(err => {
-                logger.error(`Error getting documents from collection '${collectionName}': ${err}`);
-                throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
-            });
-    }
+    public static getDocumentById = (id: string): Promise<CourseAttempt> => super._getDocumentById(this.collection, id).then(doc => this.fromFirestore(doc));
+
+    public static getAllDocs = () => super._getAllDocs(this.collection).then((docs) => docs.map((doc) => this.fromFirestore(doc)));
+
+    public static delete = (docId: string) => super._delete(this.collection, docId);
 }
 
 export default CourseAttempt;

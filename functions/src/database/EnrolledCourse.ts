@@ -36,45 +36,19 @@ class EnrolledCourse extends DatabaseObject {
         };
     }
 
-    public static fromFirestoreDoc = (doc: firestore.QueryDocumentSnapshot): EnrolledCourse => {
-        const data = doc.data();
+    private static fromFirestore(doc: firestore.QueryDocumentSnapshot | firestore.DocumentSnapshot): EnrolledCourse {
         const enrolledCourse: EnrolledCourseDocument = {
             id: doc.id,
-            userId: data.userId,
-            courseId: data.courseId,
-            enrollmentTime: data.enrollmentTime
+            userId: doc.get("userId"),
+            courseId: doc.get("courseId"),
+            enrollmentTime: doc.get("enrollmentTime"),
         };
         return new EnrolledCourse(enrolledCourse);
     }
 
-    public static fromFirestoreId = (id: string): Promise<EnrolledCourse> => {
-        return EnrolledCourse.collection
-            .doc(id)
-            .get()
-            .then(doc => {
-                if (!doc.exists) {
-                    logger.error(`Document with id '${id}' not found in collection '${this.constructor.name}'`);
-                    throw new HttpsError("not-found", `Document with id '${id}' not found in collection '${this.constructor.name}'`);
-                }
-                const data = doc.data(); // @ts-ignore
-                return new EnrolledCourse(doc.id, data.userId, data.courseId, data.enrolledDate);
-            })
-            .catch(err => {
-                logger.error(`Error getting document with id '${id}' from collection '${this.constructor.name}': ${err}`);
-                throw new HttpsError("internal", `Error getting document with id '${id}' from collection '${this.constructor.name}'`);
-            });
-    }
+    public static getDocumentById = (id: string): Promise<EnrolledCourse> => super._getDocumentById(this.collection, id).then(doc => this.fromFirestore(doc));
 
-    public static getAllDocs = (): Promise<EnrolledCourse[]> => {
-        const collectionName = this.constructor.name;
-        return EnrolledCourse.collection
-            .get()
-            .then((result) => result.docs.map(doc => EnrolledCourse.fromFirestoreDoc(doc)))
-            .catch(err => {
-                logger.error(`Error getting documents from collection '${collectionName}': ${err}`);
-                throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
-            });
-    }
+    public static getAllDocs = () => super._getAllDocs(this.collection).then((docs) => docs.map((doc) => this.fromFirestore(doc)));
 
     public static delete = (docId: string) => super._delete(this.collection, docId);
 

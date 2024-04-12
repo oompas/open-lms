@@ -1,7 +1,5 @@
 import { firestore } from "firebase-admin";
 import { DatabaseObject } from "./DatabseObject";
-import { logger } from "firebase-functions";
-import { HttpsError } from "firebase-functions/lib/v2/providers/https";
 
 interface CourseDocument {
     id?: string;
@@ -76,46 +74,28 @@ class Course extends DatabaseObject {
         };
     }
 
-    public static fromFirestoreDoc = (doc: firestore.QueryDocumentSnapshot): Course => {
-        const data = doc.data();
+    private static fromFirestore(doc: firestore.QueryDocumentSnapshot | firestore.DocumentSnapshot): Course {
         const course: CourseDocument = {
             id: doc.id,
-            name: data.name,
-            description: data.description,
-            link: data.link,
-            active: data.active,
-            minTime: data.minTime,
-            userId: data.userId,
-            quiz: data.quiz,
-            creationTime: data.creationTime.seconds,
-            retired: data.retired?.seconds,
-            version: data.version
+            name: doc.get("name"),
+            description: doc.get("description"),
+            link: doc.get("link"),
+            active: doc.get("active"),
+            minTime: doc.get("minTime"),
+            userId: doc.get("userId"),
+            quiz: doc.get("quiz"),
+            creationTime: doc.get("creationTime"),
+            retired: doc.get("retired"),
+            version: doc.get("version"),
         };
         return new Course(course);
     }
 
-    public static fromFirestoreId = (id: string): Promise<Course> => {
-        return Course.collection
-            .doc(id)
-            .get()
-            .then(doc => {
-                if (!doc.exists || doc.data() === undefined) {
-                    logger.error(`Document with id '${id}' not found in collection '${this.constructor.name}'`);
-                    throw new HttpsError("not-found", `Document with id '${id}' not found in collection '${this.constructor.name}'`);
-                }
-                const data = doc.data(); // @ts-ignore
-                return new EnrolledCourse(doc.id, data.userId, data.courseId, data.enrolledDate);
-            })
-            .catch(err => {
-                logger.error(`Error getting document with id '${id}' from collection '${this.constructor.name}': ${err}`);
-                throw new HttpsError("internal", `Error getting document with id '${id}' from collection '${this.constructor.name}'`);
-            });
-    }
+    public static getDocumentById = (id: string): Promise<Course> => super._getDocumentById(this.collection, id).then(doc => this.fromFirestore(doc));
 
+    public static getAllDocs = () => super._getAllDocs(this.collection).then((docs) => docs.map((doc) => this.fromFirestore(doc)));
 
-    public static getAllDocs = () => this._getAllDocs(this.collection).then((docs) => docs.map((doc) => Course.fromFirestoreDoc(doc)));
-
-    public static delete = (docId: string) => this._delete(this.collection, docId);
+    public static delete = (docId: string) => super._delete(this.collection, docId);
 
     /**
      * Retires this course (if this course is updated, this version is retired)
