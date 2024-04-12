@@ -8,20 +8,9 @@ import {
 import { logger } from "firebase-functions";
 import { array, boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
-import {
-    addDoc,
-    addDocWithId,
-    deleteDoc,
-    getCollection,
-    getDocData,
-    updateDoc,
-    CourseDocument,
-    DatabaseCollections,
-    QuizAttemptDocument,
-    UserDocument,
-    docExists
-} from "../helpers/database";
 import { enrolledCourseId, getCourseStatus, getLatestCourseAttempt } from "./helpers";
+import Course from "../database/Course";
+import QuizQuestion from "../database/QuizQuestion";
 
 /**
  * Adds a course to the database. Includes both metadata and quiz questions
@@ -109,10 +98,10 @@ const addCourse = onCall(async (request) => {
 
     let version = 1;
     if (request.data.previousVersionId) {
-        const previousVersion = await getDocData(DatabaseCollections.Course, request.data.previousVersionId) as CourseDocument;
+        const previousVersion = await Course.fromFirestoreId(request.data.previousVersionId);
         version = previousVersion.version + 1;
 
-        await updateDoc(DatabaseCollections.Course, request.data.previousVersionId, { retired: firestore.FieldValue.serverTimestamp() });
+        await previousVersion.retire();
     }
 
     if (quiz) {
@@ -127,10 +116,9 @@ const addCourse = onCall(async (request) => {
         link: request.data.link,
         minTime: request.data.minTime,
         quiz: quiz,
-        creationTime: firestore.FieldValue.serverTimestamp(),
+        creationTime: firestore.Timestamp.now(),
     };
-
-    const courseId = await addDoc(DatabaseCollections.Course, courseData);
+    const courseId = await new Course(courseData).addToFirestore();
 
     if (!quizQuestions) {
         return courseId;
@@ -160,8 +148,7 @@ const addCourse = onCall(async (request) => {
             ...(request.data.quiz.preserveOrder && { order: index }), // If the quiz is ordered, store the order of the questions
             ...question
         }
-
-        return addDoc(DatabaseCollections.QuizQuestion, questionDoc);
+        return new QuizQuestion(questionDoc).addToFirestore();
     })).then(() => courseId);
 });
 
@@ -189,7 +176,7 @@ const setCourseVisibility = onCall(async (request) => {
 
         logger.info("Schema verification passed");
 
-        return updateDoc(DatabaseCollections.Course, request.data.courseId, { active: request.data.active });
+        return Course.fromFirestoreId(request.data.courseId).then((course) => {  course.updateInFirestore(); });
 });
 
 /**

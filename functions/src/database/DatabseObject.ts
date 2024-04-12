@@ -5,13 +5,18 @@ import { firestore } from "firebase-admin";
 
 abstract class DatabaseObject {
 
-    private readonly id: string;
+    private readonly id: string | undefined;
 
-    protected constructor(id: string) {
+    protected constructor(id: string | undefined) {
         this.id = id;
     }
 
-    public getId = (): string => this.id;
+    public getId = (): string => {
+        if (this.id === undefined) {
+            throw new HttpsError('failed-precondition', `id is undefined for type ${this.constructor.name}`);
+        }
+        return this.id;
+    }
 
     /**
      * Returns this object as a JSON object with document data
@@ -56,6 +61,19 @@ abstract class DatabaseObject {
                 logger.error(`Error updating document in collection '${this.constructor.name}': ${err}`);
                 throw new HttpsError("internal", `Error updating document in collection '${this.constructor.name}'`);
             });
+    }
+
+    /**
+     * Update specific fields in the given object
+     */
+    protected updateFirestore(updates: object): Promise<any> {
+        return db.collection(this.constructor.name)
+            .doc(this.getId())
+            .update(updates)
+            .catch((err) => {
+                logger.error(`Error updating document in collection '${this.constructor.name}': ${err}`);
+                throw new HttpsError("internal", `Error updating document in collection '${this.constructor.name}'`);
+            })
     }
 
     /**

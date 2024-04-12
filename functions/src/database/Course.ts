@@ -6,64 +6,45 @@ import { db } from "../helpers/setup";
 
 class Course extends DatabaseObject {
 
-    private static readonly CollectionName: string = "Course";
-
-    private readonly name: string;
-    private readonly description: string;
-    private readonly link: string;
-    private readonly active: boolean;
-    private readonly minTime: number | null;
-    private readonly userId: string;
-    private readonly quiz: {
+    public readonly name: string;
+    public readonly description: string;
+    public readonly link: string;
+    public readonly active: boolean;
+    public readonly minTime: number | null;
+    public readonly userId: string;
+    public readonly quiz: {
         maxAttempts: number | null;
         minScore: number | null;
         preserveOrder: boolean;
         timeLimit: number | null;
         totalMarks: number;
     } | null;
-    private readonly creationTime: firestore.Timestamp;
-    private readonly retired?: firestore.Timestamp;
-    private readonly version: number;
+    public readonly creationTime: firestore.Timestamp;
+    public readonly retired?: firestore.Timestamp;
+    public readonly version: number;
 
-    constructor(id: string, name: string, description: string, link: string, active: boolean, minTime: number | null, userId: string, quiz: {
+    constructor(course: { id?: string, name: string, description: string, link: string, active: boolean, minTime: number | null, userId: string, quiz: {
         maxAttempts: number | null;
         minScore: number | null;
         preserveOrder: boolean;
         timeLimit: number | null;
         totalMarks: number;
-    } | null, creationTime: firestore.Timestamp, version: number, retired?: firestore.Timestamp) {
-        super(id);
+    } | null, creationTime: firestore.Timestamp, version: number, retired?: firestore.Timestamp }) {
+        super(course.id);
 
-        this.name = name;
-        this.description = description;
-        this.link = link;
-        this.active = active;
-        this.minTime = minTime;
-        this.userId = userId;
-        this.quiz = quiz;
-        this.creationTime = creationTime;
-        this.retired = retired;
-        this.version = version;
+        this.name = course.name;
+        this.description = course.description;
+        this.link = course.link;
+        this.active = course.active;
+        this.minTime = course.minTime;
+        this.userId = course.userId;
+        this.quiz = Object.freeze(course.quiz);
+        this.creationTime = course.creationTime;
+        this.retired = course.retired;
+        this.version = course.version;
     }
 
-    public getName = (): string => this.name;
-    public getDescription = (): string => this.description;
-    public getLink = (): string => this.link;
-    public getActive = (): boolean => this.active;
-    public getMinTime = (): number | null => this.minTime;
-    public getUserId = (): string => this.userId;
-    public getQuiz = (): {
-        maxAttempts: number | null;
-        minScore: number | null;
-        preserveOrder: boolean;
-        timeLimit: number | null;
-        totalMarks: number;
-    } | null => this.quiz;
-    public getCreationTime = (): firestore.Timestamp => this.creationTime;
-    public getRetired = (): firestore.Timestamp | undefined => this.retired;
-    public getVersion = (): number => this.version;
-
-    public static collection = () => db.collection(this.CollectionName);
+    public static collection = () => db.collection(this.constructor.name);
 
     public getObject(noId?: boolean): {
         id?: string;
@@ -98,7 +79,13 @@ class Course extends DatabaseObject {
 
     public static fromFirestoreDoc = (doc: firestore.QueryDocumentSnapshot): Course => {
         const data = doc.data();
-        return new Course(doc.id, data.name, data.description, data.link, data.active, data.minTime, data.userId, data.quiz, data.creationTime, data.retired, data.version);
+        const course = {
+            id: doc.id,
+            name: data.name,
+            description: data.description,
+
+        };
+        return new Course(course);
     }
 
     public static fromFirestoreId = (id: string): Promise<Course> => {
@@ -121,6 +108,21 @@ class Course extends DatabaseObject {
 
 
     public static getAllDocs = () => this._getAllDocs().then((docs) => docs.map((doc) => Course.fromFirestoreDoc(doc)));
+
+
+    /**
+     * Retires this course (if this course is updated, this version is retired)
+     */
+    public retire() {
+        return this.updateFirestore({ retired: firestore.Timestamp.now() });
+    }
+
+    /**
+     * Flips the visibility of the course
+     */
+    public updateVisibility() {
+        return this.updateFirestore({ active: !this.active });
+    }
 }
 
 export default Course;

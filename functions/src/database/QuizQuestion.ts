@@ -22,22 +22,22 @@ class QuizQuestion extends DatabaseObject {
         distribution?: { [key: string]: number }; // Only for sa
     };
 
-    constructor(id: string, courseId: string, question: string, type: "tf" | "mc" | "sa", marks: number, answers?: string[], correctAnswer?: number, order?: number) {
-        super(id);
+    constructor(question: { id: string, courseId: string, question: string, type: "tf" | "mc" | "sa", marks: number, answers?: string[], correctAnswer?: number, order?: number }) {
+        super(question.id);
 
-        this.courseId = courseId;
-        this.question = question;
-        this.type = type;
-        this.marks = marks;
-        this.answers = answers;
-        this.correctAnswer = correctAnswer;
-        this.order = order;
+        this.courseId = question.courseId;
+        this.question = question.question;
+        this.type = question.type;
+        this.marks = question.marks;
+        this.answers = question.answers;
+        this.correctAnswer = question.correctAnswer;
+        this.order = question.order;
 
         this.stats = {
             numAttempts: 0,
             totalScore: 0,
-            ...(type === "tf" || type === "mc" ? { answers: {} } : { distribution: {} }),
-            ...(type === "sa" ? { distribution: {} } : { answers: {} }),
+            ...(question.type === "tf" || question.type === "mc" ? { answers: {} } : { distribution: {} }),
+            ...(question.type === "sa" ? { distribution: {} } : { answers: {} }),
         };
     }
 
@@ -66,7 +66,17 @@ class QuizQuestion extends DatabaseObject {
 
     public static fromFirestore = (doc: firestore.QueryDocumentSnapshot): QuizQuestion => {
         const data = doc.data();
-        return new QuizQuestion(doc.id, data.courseId, data.question, data.type, data.marks, data.answers, data.correctAnswer, data.order);
+        const question = {
+            id: doc.id,
+            courseId: data.courseId,
+            question: data.question,
+            type: data.type,
+            marks: data.marks,
+            answers: data.answers,
+            correctAnswer: data.correctAnswer,
+            order: data.order
+        };
+        return new QuizQuestion(question);
     }
 
     public static getAllDocs = (): Promise<QuizQuestion[]> => {

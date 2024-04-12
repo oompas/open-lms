@@ -226,7 +226,7 @@ const getUserProfile = onCall(async (request) => {
 
     const courseNames: { [key: string]: string } = {};
     await Promise.all(enrolledCourses.map(async (courseId) =>
-        Course.fromFirestoreId(courseId).then((course) => courseNames[courseId] = course.getName())
+        Course.fromFirestoreId(courseId).then((course) => courseNames[courseId] = course.name)
     ));
 
     // Query course & course attempt data
