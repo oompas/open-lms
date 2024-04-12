@@ -72,7 +72,7 @@ class Course extends DatabaseObject {
             userId: this.userId,
             quiz: this.quiz,
             creationTime: this.creationTime.seconds,
-            retired: this.retired?.seconds,
+            ...(this.retired && { retired: this.retired?.seconds }),
             version: this.version
         };
     }
@@ -83,7 +83,14 @@ class Course extends DatabaseObject {
             id: doc.id,
             name: data.name,
             description: data.description,
-
+            link: data.link,
+            active: data.active,
+            minTime: data.minTime,
+            userId: data.userId,
+            quiz: data.quiz,
+            creationTime: data.creationTime.seconds,
+            retired: data.retired?.seconds,
+            version: data.version
         };
         return new Course(course);
     }

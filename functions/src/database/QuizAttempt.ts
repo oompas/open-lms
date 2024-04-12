@@ -6,14 +6,14 @@ import { firestore } from "firebase-admin";
 
 class QuizAttempt extends DatabaseObject {
 
-    private readonly userId: string;
-    private readonly courseId: string;
-    private readonly courseAttemptId: string;
-    private readonly startTime: firestore.Timestamp;
-    private readonly endTime: firestore.Timestamp | null;
-    private readonly pass: boolean | null;
-    private readonly score: number | null;
-    private readonly markerInfo: { // Details about by who and when the quiz was marked
+    public readonly userId: string;
+    public readonly courseId: string;
+    public readonly courseAttemptId: string;
+    public readonly startTime: firestore.Timestamp;
+    public readonly endTime: firestore.Timestamp | null;
+    public readonly pass: boolean | null;
+    public readonly score: number | null;
+    public readonly markerInfo: { // Details about by who and when the quiz was marked
         uid: string;
         name: string;
         email: string;
@@ -32,20 +32,6 @@ class QuizAttempt extends DatabaseObject {
         this.score = score;
         this.markerInfo = markerInfo;
     }
-
-    public getUserId = (): string => this.userId;
-    public getCourseId = (): string => this.courseId;
-    public getCourseAttemptId = (): string => this.courseAttemptId;
-    public getStartTime = (): number => this.startTime.seconds;
-    public getEndTime = (): number | null => this.endTime?.seconds ?? null;
-    public getPass = (): boolean | null => this.pass;
-    public getScore = (): number | null => this.score;
-    public getMarkerInfo = (): { uid: string; name: string; email: string; markTime: number } | null => this.markerInfo ? {
-        uid: this.markerInfo.uid,
-        name: this.markerInfo.name,
-        email: this.markerInfo.email,
-        markTime: this.markerInfo.markTime.seconds
-    } : null;
 
     public static collection = () => db.collection(this.constructor.name);
 

@@ -11,6 +11,8 @@ import { firestore } from "firebase-admin";
 import { enrolledCourseId, getCourseStatus, getLatestCourseAttempt } from "./helpers";
 import Course from "../database/Course";
 import QuizQuestion from "../database/QuizQuestion";
+import QuizAttempt from "../database/QuizAttempt";
+import EnrolledCourse from "../database/EnrolledCourse";
 
 /**
  * Adds a course to the database. Includes both metadata and quiz questions
@@ -176,7 +178,7 @@ const setCourseVisibility = onCall(async (request) => {
 
         logger.info("Schema verification passed");
 
-        return Course.fromFirestoreId(request.data.courseId).then((course) => {  course.updateInFirestore(); });
+        return Course.fromFirestoreId(request.data.courseId).then((course) => course.updateVisibility());
 });
 
 /**
@@ -192,7 +194,7 @@ const getAvailableCourses = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth.uid;
 
-    return getCollection(DatabaseCollections.Course)
+    return Course.collection()
         .where("active", "==", true)
         .get()
         .then(async (courses) => {
@@ -248,7 +250,7 @@ const getCourseInfo = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const courseInfo = await getDocData(DatabaseCollections.Course, request.data.courseId) as CourseDocument;
+    const courseInfo = await Course.fromFirestoreId(request.data.courseId);
 
     /**
      * withQuiz is for the course editor, so it returns the quiz data (including answers, so admin-only).
@@ -260,7 +262,7 @@ const getCourseInfo = onCall(async (request) => {
 
         let quizQuestions = null;
         if (courseInfo.quiz) {
-            quizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
+            quizQuestions = await QuizQuestion.collection()
                 .where("courseId", "==", request.data.courseId)
                 .get()
                 .then((docs) => shuffleArray(docs.docs.map((doc) => {
@@ -306,23 +308,21 @@ const getCourseInfo = onCall(async (request) => {
 
     const courseAttempt = await getLatestCourseAttempt(request.data.courseId, uid);
 
-    const quizAttempts = await getCollection(DatabaseCollections.QuizAttempt)
+    const quizAttempts = await QuizAttempt.collection()
         .where("userId", "==", request.auth?.uid)
         .where("courseId", "==", request.data.courseId)
         .get()
-        .then((docs) => {
-            return docs.docs.map((doc) => ({ id: doc.id, ...doc.data() } as QuizAttemptDocument));
-        })
+        .then((docs) => docs.docs.map((doc) => QuizAttempt.fromFirestore(doc)))
         .catch((error) => {
             logger.error(`Error getting quiz attempts: ${error}`);
             throw new HttpsError("internal", `Error getting courses, please try again later`);
         });
 
-    const status = await getCourseStatus(courseInfo.id, uid);
+    const status = await getCourseStatus(courseInfo.getId(), uid);
 
     let numQuizQuestions;
     if (courseInfo.quiz) {
-        numQuizQuestions = await getCollection(DatabaseCollections.QuizQuestion)
+        numQuizQuestions = await QuizQuestion.collection()
             .where("courseId", "==", request.data.courseId)
             .get()
             .then((docs) => docs.size)
@@ -381,11 +381,12 @@ const courseEnrollment = onCall(async (request) => {
     }
 
     const enrollmentDoc = {
+        id: enrolledId,
         userId: uid,
         courseId: request.data.courseId,
-        enrollmentTime: firestore.FieldValue.serverTimestamp(),
+        enrollmentTime: firestore.Timestamp.now(),
     };
-    return addDocWithId(DatabaseCollections.EnrolledCourse, enrolledId, enrollmentDoc);
+    return new EnrolledCourse(enrollmentDoc).addToFirestore(true);
 });
 
 /**

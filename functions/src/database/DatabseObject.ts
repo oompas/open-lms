@@ -22,7 +22,7 @@ abstract class DatabaseObject {
      * Returns this object as a JSON object with document data
      * @param noId (Optional) If true, the document ID will not be included in the object
      */
-    abstract getObject(noId?: boolean): object;
+    protected abstract getObject(noId?: boolean): object;
 
     /**
      * Adds the object to Firestore as a new object
@@ -47,19 +47,6 @@ abstract class DatabaseObject {
             .catch((err) => {
                 logger.error(`Error adding document to collection '${collectionName}': ${err}`);
                 throw new HttpsError("internal", `Error adding document to collection '${collectionName}'`);
-            });
-    }
-
-    /**
-     * Updates this object in Firestore
-     */
-    public updateInFirestore(): Promise<firestore.WriteResult> {
-        return db.collection(this.constructor.name)
-            .doc(this.getId())
-            .update(this.getObject(true))
-            .catch((err) => {
-                logger.error(`Error updating document in collection '${this.constructor.name}': ${err}`);
-                throw new HttpsError("internal", `Error updating document in collection '${this.constructor.name}'`);
             });
     }
 

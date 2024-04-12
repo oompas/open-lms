@@ -8,34 +8,36 @@ class EnrolledCourse extends DatabaseObject {
 
     private readonly courseId: string;
     private readonly userId: string;
-    private readonly enrolledDate: firestore.Timestamp;
+    private readonly enrollmentTime: firestore.Timestamp;
 
-    constructor(id: string, userId: string, courseId: string, enrolledDate: firestore.Timestamp) {
-        super(id);
+    constructor(enrolledCourse: { id?: string, userId: string, courseId: string, enrollmentTime: firestore.Timestamp }) {
+        super(enrolledCourse.id);
 
-        this.courseId = courseId;
-        this.userId = userId;
-        this.enrolledDate = enrolledDate;
+        this.courseId = enrolledCourse.courseId;
+        this.userId = enrolledCourse.userId;
+        this.enrollmentTime = enrolledCourse.enrollmentTime;
     }
-
-    public getCourseId = (): string => this.courseId;
-    public getUserId = (): string => this.userId;
-    public getEnrolledDate = (): number => this.enrolledDate.seconds;
 
     public static collection = () => db.collection(this.constructor.name);
 
-    public getObject(): { id: string; userId: string; courseId: string; enrolledDate: number } {
+    public getObject(noId?: boolean): { id?: string; userId: string; courseId: string; enrollmentTime: number } {
         return {
-            id: this.getId(),
+            ...(!noId && { id: this.getId() }),
             userId: this.userId,
             courseId: this.courseId,
-            enrolledDate: this.enrolledDate.seconds
+            enrollmentTime: this.enrollmentTime.seconds
         };
     }
 
     public static fromFirestoreDoc = (doc: firestore.QueryDocumentSnapshot): EnrolledCourse => {
         const data = doc.data();
-        return new EnrolledCourse(doc.id, data.userId, data.courseId, data.enrolledDate);
+        const enrolledCourse = {
+            id: doc.id,
+            userId: data.userId,
+            courseId: data.courseId,
+            enrollmentTime: data.enrollmentTime
+        };
+        return new EnrolledCourse(enrolledCourse);
     }
 
     public static fromFirestoreId = (id: string): Promise<EnrolledCourse> => {
@@ -43,7 +45,7 @@ class EnrolledCourse extends DatabaseObject {
             .doc(id)
             .get()
             .then(doc => {
-                if (!doc.exists || doc.data() === undefined) {
+                if (!doc.exists) {
                     logger.error(`Document with id '${id}' not found in collection '${this.constructor.name}'`);
                     throw new HttpsError("not-found", `Document with id '${id}' not found in collection '${this.constructor.name}'`);
                 }
@@ -65,6 +67,20 @@ class EnrolledCourse extends DatabaseObject {
                 logger.error(`Error getting documents from collection '${collectionName}': ${err}`);
                 throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
             });
+    }
+
+    /**
+     * Gets the enrollment id (document ID in firestore for an enrollment) ofr a given user and course
+     */
+    public static enrollmentId(userId: string, courseId: string): string {
+        return `${userId}|${courseId}`;
+    }
+
+    /**
+     * Returns a boolean representing if an enrollment exists
+     */
+    public static enrollmentExists(): boolean {
+        return true;
     }
 }
 

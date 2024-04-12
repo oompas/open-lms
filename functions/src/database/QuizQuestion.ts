@@ -6,8 +6,6 @@ import { db } from "../helpers/setup";
 
 class QuizQuestion extends DatabaseObject {
 
-    private static CollectionName: string = "QuizQuestion";
-
     private readonly courseId: string;
     private readonly question: string;
     private readonly type: "tf" | "mc" | "sa";
@@ -41,14 +39,7 @@ class QuizQuestion extends DatabaseObject {
         };
     }
 
-    public getCourseId = (): string => this.courseId;
-    public getQuestion = (): string => this.question;
-    public getType = (): "tf" | "mc" | "sa" => this.type;
-    public getMarks = (): number => this.marks;
-    public getAnswers = (): string[] | undefined => this.answers;
-    public getCorrectAnswer = (): number | undefined => this.correctAnswer;
-    public getOrder = (): number | undefined => this.order;
-    public getStats = (): { numAttempts: number; totalScore: number; answers?: { [key: string]: number }; distribution?: { [key: string]: number } } => this.stats;
+    public static collection = () => db.collection(this.constructor.name);
 
     public getObject(): { id: string; courseId: string; question: string; type: "tf" | "mc" | "sa"; marks: number; answers?: string[]; correctAnswer?: number; order?: number; stats: { numAttempts: number; totalScore: number; answers?: { [key: string]: number }; distribution?: { [key: string]: number } } } {
         return {
@@ -80,12 +71,13 @@ class QuizQuestion extends DatabaseObject {
     }
 
     public static getAllDocs = (): Promise<QuizQuestion[]> => {
-        return db.collection(QuizQuestion.CollectionName)
+        const collectionName = this.constructor.name;
+        return db.collection(collectionName)
             .get()
             .then((result) => result.docs.map(doc => QuizQuestion.fromFirestore(doc)))
             .catch(err => {
-                logger.error(`Error getting documents from collection '${QuizQuestion.CollectionName}': ${err}`);
-                throw new HttpsError("internal", `Error getting documents from collection '${QuizQuestion.CollectionName}'`);
+                logger.error(`Error getting documents from collection '${collectionName}': ${err}`);
+                throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
             });
     }
 }
