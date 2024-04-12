@@ -8,6 +8,9 @@ abstract class DatabaseObject {
     private readonly id: string | undefined;
 
     protected constructor(id: string | undefined) {
+        if (typeof id === 'string' && !(id.match(/^[a-zA-Z0-9]{20}$/) || id.match(/^[a-zA-Z0-9]{28}$/))) {
+            throw new HttpsError("invalid-argument", `Document IDs must be a 20 (or 28 for UIDs) alphanumeric characters (value: ${id})`);
+        }
         this.id = id;
     }
 
@@ -73,6 +76,16 @@ abstract class DatabaseObject {
             .catch((err) => {
                 logger.error(`Error deleting document from collection '${this.constructor.name}': ${err}`);
                 throw new HttpsError("internal", `Error deleting document from collection '${this.constructor.name}'`);
+            });
+    }
+
+    protected static _delete(collection: firestore.CollectionReference, docId: string): Promise<firestore.WriteResult> {
+        return collection
+            .doc()
+            .delete()
+            .catch((err) => {
+                logger.error(`Error deleting document '${docId}' from collection '${collection}': ${err}`);
+                throw new HttpsError("internal", `Error deleting document '${docId}' from collection '${collection}'`);
             });
     }
 

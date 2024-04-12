@@ -9,17 +9,17 @@ class CourseAttempt extends DatabaseObject {
     private readonly userId: string;
     private readonly courseId: string;
     private readonly startTime: firestore.Timestamp;
-    private endTime: firestore.Timestamp | null;
+    private readonly endTime: firestore.Timestamp | null;
     private readonly pass: boolean | null;
 
-    constructor(id: string, userId: string, courseId: string, startTime: firestore.Timestamp, endTime: firestore.Timestamp | null, pass: boolean | null) {
-        super(id);
+    constructor(attempt: { id?: string, userId: string, courseId: string, startTime: firestore.Timestamp, endTime: firestore.Timestamp | null, pass: boolean | null }) {
+        super(attempt.id);
 
-        this.userId = userId;
-        this.courseId = courseId;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.pass = pass;
+        this.userId = attempt.userId;
+        this.courseId = attempt.courseId;
+        this.startTime = attempt.startTime;
+        this.endTime = attempt.endTime;
+        this.pass = attempt.pass;
     }
 
     public getUserId = (): string => this.userId;
@@ -43,7 +43,15 @@ class CourseAttempt extends DatabaseObject {
 
     public static fromFirestore = (doc: firestore.QueryDocumentSnapshot): CourseAttempt => {
         const data = doc.data();
-        return new CourseAttempt(doc.id, data.userId, data.courseId, data.startTime, data.endTime, data.pass);
+        const attempt = {
+            id: doc.id,
+            userId: data.userId,
+            courseId: data.courseId,
+            startTime: data.startTime.seconds,
+            endTime: data.endTime?.seconds ?? null,
+            pass: data.pass
+        };
+        return new CourseAttempt(attempt);
     }
 
     public static getAllDocs = (): Promise<CourseAttempt[]> => {

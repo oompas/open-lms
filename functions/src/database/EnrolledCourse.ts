@@ -6,6 +6,9 @@ import { db } from "../helpers/setup";
 
 class EnrolledCourse extends DatabaseObject {
 
+    public static readonly collectionName = this.constructor.name;
+    public static readonly collection = db.collection(EnrolledCourse.collectionName);
+
     private readonly courseId: string;
     private readonly userId: string;
     private readonly enrollmentTime: firestore.Timestamp;
@@ -17,8 +20,6 @@ class EnrolledCourse extends DatabaseObject {
         this.userId = enrolledCourse.userId;
         this.enrollmentTime = enrolledCourse.enrollmentTime;
     }
-
-    public static collection = () => db.collection(this.constructor.name);
 
     public getObject(noId?: boolean): { id?: string; userId: string; courseId: string; enrollmentTime: number } {
         return {
@@ -41,7 +42,7 @@ class EnrolledCourse extends DatabaseObject {
     }
 
     public static fromFirestoreId = (id: string): Promise<EnrolledCourse> => {
-        return EnrolledCourse.collection()
+        return EnrolledCourse.collection
             .doc(id)
             .get()
             .then(doc => {
@@ -60,7 +61,7 @@ class EnrolledCourse extends DatabaseObject {
 
     public static getAllDocs = (): Promise<EnrolledCourse[]> => {
         const collectionName = this.constructor.name;
-        return EnrolledCourse.collection()
+        return EnrolledCourse.collection
             .get()
             .then((result) => result.docs.map(doc => EnrolledCourse.fromFirestoreDoc(doc)))
             .catch(err => {
@@ -68,6 +69,8 @@ class EnrolledCourse extends DatabaseObject {
                 throw new HttpsError("internal", `Error getting documents from collection '${collectionName}'`);
             });
     }
+
+    public static delete = (docId: string) => super._delete(this.collection, docId);
 
     /**
      * Gets the enrollment id (document ID in firestore for an enrollment) ofr a given user and course
@@ -79,8 +82,17 @@ class EnrolledCourse extends DatabaseObject {
     /**
      * Returns a boolean representing if an enrollment exists
      */
-    public static enrollmentExists(): boolean {
-        return true;
+    public static enrollmentExists(userId: string, courseId: string): Promise<boolean> {
+        const enrollmentId = EnrolledCourse.enrollmentId(userId, courseId);
+
+        return this.collection
+            .doc(EnrolledCourse.enrollmentId(userId, courseId))
+            .get()
+            .then((doc) => doc.exists)
+            .catch((err) => {
+                logger.error(`Error checking if enrollment '${enrollmentId}' exists: ${err}`);
+                throw new HttpsError("internal", `Error checking if enrollment '${enrollmentId}' exists`);
+            });
     }
 }
 

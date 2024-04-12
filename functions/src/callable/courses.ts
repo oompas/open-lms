@@ -8,11 +8,13 @@ import {
 import { logger } from "firebase-functions";
 import { array, boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
-import { enrolledCourseId, getCourseStatus, getLatestCourseAttempt } from "./helpers";
+import { getCourseStatus, getLatestCourseAttempt } from "./helpers";
 import Course from "../database/Course";
 import QuizQuestion from "../database/QuizQuestion";
 import QuizAttempt from "../database/QuizAttempt";
 import EnrolledCourse from "../database/EnrolledCourse";
+import course from "../database/Course";
+import CourseAttempt from "../database/CourseAttempt";
 
 /**
  * Adds a course to the database. Includes both metadata and quiz questions
@@ -373,11 +375,10 @@ const courseEnrollment = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth?.uid;
 
-    const enrolledId: string = enrolledCourseId(uid, request.data.courseId);
-
     // If the user is enrolled -> unenroll them, otherwise enroll them
-    if (await docExists(DatabaseCollections.EnrolledCourse, enrolledId)) {
-        return deleteDoc(DatabaseCollections.EnrolledCourse, enrolledId);
+    const enrolledId = EnrolledCourse.enrollmentId(uid, request.data.courseId);
+    if (await EnrolledCourse.enrollmentExists(uid, request.data.courseId)) {
+        return EnrolledCourse.delete(enrolledId);
     }
 
     const enrollmentDoc = {
@@ -410,17 +411,18 @@ const startCourse = onCall(async (request) => {
         });
 
     // Verify the user is enrolled in the course
-    await getDocData(DatabaseCollections.EnrolledCourse, enrolledCourseId(uid, request.data.courseId));
+    if (!await EnrolledCourse.enrollmentExists(uid, request.data.courseId)) {
+        throw new HttpsError('permission-denied', `You must be enrolled in course '${request.data.courseId}' to start it`);
+    }
 
     const courseAttempt = {
         userId: request.auth?.uid,
         courseId: request.data.courseId,
-        startTime: firestore.FieldValue.serverTimestamp(),
+        startTime: firestore.Timestamp.now(),
         endTime: null,
         pass: null,
-    }
-
-    return addDoc(DatabaseCollections.CourseAttempt, courseAttempt);
+    };
+    return new CourseAttempt(course).addToFirestore();
 });
 
 /**
