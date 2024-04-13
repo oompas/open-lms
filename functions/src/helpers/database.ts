@@ -14,27 +14,6 @@ const getDocRef = (collection: DatabaseCollections, docId: string) => db.doc(`/$
 // Emails are metadata - should only be needed in special cases (e.g. cron jobs)
 const getEmailCollection = () => db.collection(`/Email/`);
 
-// Adds a document to a given collection (random id given)
-const addDoc = (collection: DatabaseCollections, data: any): Promise<string> => {
-    return getCollection(collection).add(data)
-        .then((docRef) => docRef.id)
-        .catch(err => {
-            logger.error(`Error adding document to collection '${collection}': ${err}`);
-            throw new HttpsError("internal", `Error adding document to collection '${collection}'`);
-        });
-}
-
-// Adds a document to a given collection with a specific id
-const addDocWithId = (collection: DatabaseCollections, docId: string, data: any): Promise<string> => {
-    return getDocRef(collection, docId)
-        .set(data)
-        .then(() => "Document added successfully")
-        .catch(err => {
-            logger.error(`Error adding document '${docId}' to collection '${collection}': ${err}`);
-            throw new HttpsError("internal", `Error adding document '${docId}' to collection '${collection}'`);
-        });
-}
-
 // Checks if a document exists in a collection
 const docExists = async (collection: DatabaseCollections, docId: string): Promise<boolean> => {
     return getDocRef(collection, docId).get()
@@ -195,8 +174,6 @@ export {
     getCollection,
     getEmailCollection,
     getDocRef,
-    addDoc,
-    addDocWithId,
     docExists,
     getDocData,
     updateDoc,

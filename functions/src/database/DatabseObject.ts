@@ -22,6 +22,30 @@ abstract class DatabaseObject {
     }
 
     /**
+     * Throws an error if a given string is not a valid document ID (20 alphanumeric characters long; not for user UID documents)
+     */
+    protected static validDocumentId = (docId: string) => {
+        if (!docId || typeof docId !== "string") {
+            throw new HttpsError("invalid-argument", `Invalid document id '${docId}' - must be a valid string (value: ${JSON.stringify(docId)})`);
+        }
+        if (!docId.match(/^[a-zA-Z0-9]{20}$/)) {
+            throw new HttpsError("invalid-argument", `Invalid document id '${docId}' - must be a 20 character alphanumeric string (value: ${JSON.stringify(docId)})`);
+        }
+    }
+
+    /**
+     * Throws an error if a given string is not a valid user ID (28 alphanumeric characters long)
+     */
+    protected static validUserId = (userId: string) => {
+        if (!userId || typeof userId !== "string") {
+            throw new HttpsError("invalid-argument", `Invalid user id '${userId}' - must be a valid string (value: ${JSON.stringify(userId)})`);
+        }
+        if (!userId.match(/^[a-zA-Z0-9]{28}$/)) {
+            throw new HttpsError("invalid-argument", `Invalid user id '${userId}' - must be a 28 character alphanumeric string (value: ${JSON.stringify(userId)})`);
+        }
+    }
+
+    /**
      * Gets a reference to a specified Firestore collection
      */
     protected static getCollection = (collectionName: string) => db.collection(collectionName);

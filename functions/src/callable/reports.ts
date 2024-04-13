@@ -94,10 +94,10 @@ const getAdminInsights = onCall(async (request) => {
 
         const courseEnrollments = enrollments.filter((enrollment) => enrollment.courseId === course.id);
 
-        const completedAttempts = courseAttempts.filter((attempt) => attempt.getCourseId() === course.id && attempt.getPass() === true);
+        const completedAttempts = courseAttempts.filter((attempt) => attempt.courseId === course.id && attempt.pass === true);
 
         const completionTimes: number[] = completedAttempts.map((attempt) => {
-            const seconds = (attempt.getEndTime() ?? 0) - attempt.getStartTime();
+            const seconds = (attempt.endTime?.seconds ?? 0) - attempt.startTime.seconds;
             return Math.floor(seconds / 60); // In minutes
         });
         let averageTime = null;
@@ -134,8 +134,8 @@ const getAdminInsights = onCall(async (request) => {
     const learners = users.filter((user) => !user.admin && !user.developer).map((user) => {
 
         const numEnrollments = enrollments.reduce((count, enrollment) => enrollment.userId === user.getId() ? ++count : count, 0);
-        const numAttempts = courseAttempts.reduce((count, attempt) => attempt.getUserId() === user.getId() ? ++count : count, 0);
-        const numComplete = courseAttempts.reduce((count, attempt) => attempt.getUserId() === user.getId() && attempt.getPass() === true ? ++count : count, 0);
+        const numAttempts = courseAttempts.reduce((count, attempt) => attempt.userId === user.getId() ? ++count : count, 0);
+        const numComplete = courseAttempts.reduce((count, attempt) => attempt.userId === user.getId() && attempt.pass === true ? ++count : count, 0);
 
         return {
             uid: user.getId(),
@@ -210,8 +210,8 @@ const downloadCourseReports = onCall(async (request) => {
                     'Minimum course time (minutes)': course.minTime ?? "None",
 
                     'Active?': course.active ? "Yes" : "No",
-                    'Creation time': new Date(course.creationTime).toUTCString().replace(/,/g, ''),
-                    'Retired?': course.retired ? new Date(course.retired).toUTCString().replace(/,/g, '') : "No",
+                    'Creation time': course.creationTime.toDate().toUTCString().replace(/,/g, ''),
+                    'Retired?': course.retired ? course.retired.toDate().toUTCString().replace(/,/g, '') : "No",
                     'Version': course.version,
                     'Creator user ID': course.userId,
 
@@ -247,8 +247,8 @@ const downloadCourseReports = onCall(async (request) => {
                     'Course ID': attempt.courseId,
                     'User ID': attempt.userId,
 
-                    'Start time': new Date(attempt.startTime).toUTCString().replace(/,/g, ''),
-                    'End time': attempt.endTime ? new Date(attempt.endTime).toUTCString().replace(/,/g, '') : null,
+                    'Start time': attempt.startTime.toDate().toUTCString().replace(/,/g, ''),
+                    'End time': attempt.endTime ? attempt.endTime.toDate().toUTCString().replace(/,/g, '') : null,
                     'Pass?': attempt.pass === true ? "Passed" : attempt.pass === false ? "Failed" : "Not completed",
                 };
             }));
@@ -262,8 +262,8 @@ const downloadCourseReports = onCall(async (request) => {
                     'Course attempt ID': attempt.courseAttemptId,
                     'User ID': attempt.userId,
 
-                    'Start time': new Date(attempt.startTime).toUTCString().replace(/,/g, ''),
-                    'End time': attempt.endTime ? new Date(attempt.endTime).toUTCString().replace(/,/g, '') : null,
+                    'Start time': attempt.startTime.toDate().toUTCString().replace(/,/g, ''),
+                    'End time': attempt.endTime ? attempt.endTime.toDate().toUTCString().replace(/,/g, '') : null,
                     'Pass?': attempt.pass === true ? "Passed" : attempt.pass === false ? "Failed" : "Not completed",
                     'Score': attempt.score ? attempt.score : "Not marked",
                 };
@@ -314,7 +314,7 @@ const downloadUserReports = onCall(async (request) => {
     const { userRecords, enrollments, courseAttempts } = await Promise.all([
         auth.listUsers().then((result) => result.users),
         EnrolledCourse.getAllDocs().then((result) => result.map(doc => ({ userId: doc.userId }))),
-        CourseAttempt.getAllDocs().then((result) => result.map(doc => ({ userId: doc.getUserId(), pass: doc.getPass() }))),
+        CourseAttempt.getAllDocs().then((result) => result.map(doc => ({ userId: doc.userId, pass: doc.pass }))),
     ]).then(([userRecords, enrollments, courseAttempts]) => ({ userRecords, enrollments, courseAttempts }));
 
     const userData = await Promise.all(userRecords.map((user: UserRecord) => {

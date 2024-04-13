@@ -241,13 +241,13 @@ const startQuiz = onCall(async (request) => {
 
     // Verify the user doesn't have an active quiz attempt
     if (lastQuizAttempt && lastQuizAttempt.endTime === null) {
-        logger.error(`User has an active quiz attempt for course ${courseId}: ${lastQuizAttempt.id}`);
+        logger.error(`User has an active quiz attempt for course ${courseId}: ${lastQuizAttempt.getId()}`);
         throw new HttpsError("failed-precondition", `You have an active quiz attempt for course ${courseId}`);
     }
 
     // Verify the user doesn't have a quiz attempt awaiting marking
     if (lastQuizAttempt && lastQuizAttempt.pass === null) {
-        logger.error(`User has a quiz attempt awaiting marking for course ${courseId}: ${lastQuizAttempt.id}`);
+        logger.error(`User has a quiz attempt awaiting marking for course ${courseId}: ${lastQuizAttempt.getId()}`);
         throw new HttpsError("failed-precondition", `You have a quiz attempt awaiting marking for course ${courseId}`);
     }
 

@@ -8,7 +8,7 @@ import {
 import { logger } from "firebase-functions";
 import { array, boolean, number, object, string } from 'yup';
 import { firestore } from "firebase-admin";
-import { getCourseStatus, getLatestCourseAttempt } from "./helpers";
+import { getCourseStatus } from "./helpers";
 import Course from "../database/Course";
 import QuizQuestion from "../database/QuizQuestion";
 import QuizAttempt from "../database/QuizAttempt";
@@ -308,7 +308,7 @@ const getCourseInfo = onCall(async (request) => {
         throw new HttpsError("invalid-argument", "Cannot view inactive course");
     }
 
-    const courseAttempt = await getLatestCourseAttempt(request.data.courseId, uid);
+    const courseAttempt = await CourseAttempt.getLatestCourseAttempt(request.data.courseId, uid);
 
     const quizAttempts = await QuizAttempt.collection
         .where("userId", "==", request.auth?.uid)
@@ -347,7 +347,7 @@ const getCourseInfo = onCall(async (request) => {
         startTime: courseAttempt?.startTime.seconds ?? null,
         quizAttempts: quizAttempts.length,
         currentQuiz: quizAttempts.find((attempt) => !attempt.endTime) ?? null,
-        courseAttemptId: courseAttempt?.id ?? null,
+        courseAttemptId: courseAttempt?.getId() ?? null,
     };
 });
 

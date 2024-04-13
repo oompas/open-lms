@@ -1,7 +1,7 @@
 import { logger } from "firebase-functions";
 import { HttpsError } from "firebase-functions/v2/https";
 import {
-    CourseAttemptDocument, CourseDocument,
+    CourseDocument,
     DatabaseCollections,
     docExists,
     getCollection,
@@ -9,6 +9,7 @@ import {
     updateDoc, UserDocument
 } from "../helpers/database";
 import { firestore } from "firebase-admin";
+import CourseAttempt from "../database/CourseAttempt";
 
 /**
  * The status of a course for a given user
@@ -73,13 +74,13 @@ const getCourseStatus = async (courseId: string, userId: string) => {
         return CourseStatus.NotEnrolled;
     }
 
-    const courseAttempt: CourseAttemptDocument | null = await getLatestCourseAttempt(courseId, userId);
+    const courseAttempt: CourseAttempt | null = await CourseAttempt.getLatestCourseAttempt(courseId, userId);
 
     if (courseAttempt === null) {
         return  CourseStatus.Enrolled;
     } else if (courseAttempt?.pass === null) {
         const awaitingMarking = await getCollection(DatabaseCollections.QuizAttempt)
-            .where("courseAttemptId", "==", courseAttempt.id)
+            .where("courseAttemptId", "==", courseAttempt.getId())
             .where("endTime", "!=", null)
             .where("pass", "==", null)
             .get()
@@ -97,32 +98,6 @@ const getCourseStatus = async (courseId: string, userId: string) => {
     } else {
         throw new HttpsError("internal", `Course is in an invalid state - can't get status`);
     }
-}
-
-/**
- * Gets the current course attempt for a user & course, returning null if no current attempt
- */
-const getLatestCourseAttempt = async (courseId: string, userId: string) => {
-
-    validDocumentId(courseId);
-    validUserId(userId);
-
-    return getCollection(DatabaseCollections.CourseAttempt)
-        .where("courseId", "==", courseId)
-        .where("userId", "==", userId)
-        .orderBy("startTime", "desc")
-        .limit(1)
-        .get()
-        .then((docs) => {
-            if (docs.empty) {
-                return null;
-            }
-            return { id: docs.docs[0].id, ...docs.docs[0].data() } as CourseAttemptDocument;
-        })
-        .catch((error) => {
-            logger.error(`Error getting latest course attempt: ${error}`);
-            throw new HttpsError('internal', "Error getting course attempt, please try again later");
-        });
 }
 
 /**
@@ -207,4 +182,4 @@ const updateQuizStatus = async (quizAttemptId: string, markerUid: string | null)
     return Promise.all(promises).then(() => `Quiz attempt '${quizAttemptId}' status updated successfully`);
 }
 
-export { CourseStatus, enrolledCourseId, getCourseStatus, getLatestCourseAttempt, updateQuizStatus };
+export { CourseStatus, enrolledCourseId, getCourseStatus, updateQuizStatus };

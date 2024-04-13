@@ -1,5 +1,7 @@
 import { DatabaseObject } from "./DatabseObject";
 import { firestore } from "firebase-admin";
+import { HttpsError } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions";
 
 interface CourseAttemptDocument {
     id?: string;
@@ -59,6 +61,33 @@ class CourseAttempt extends DatabaseObject {
     public static getAllDocs = () => super._getAllDocs(this.collection).then((docs) => docs.map((doc) => this.fromFirestore(doc)));
 
     public static delete = (docId: string) => super._delete(this.collection, docId);
+
+
+    /**
+     * Gets the latest course attempt for a user & course, returning null if no current attempt
+     */
+    public static getLatestCourseAttempt = async (courseId: string, userId: string): Promise<CourseAttempt | null> => {
+
+        super.validDocumentId(courseId);
+        super.validUserId(userId);
+
+        return this.collection
+            .where("courseId", "==", courseId)
+            .where("userId", "==", userId)
+            .orderBy("startTime", "desc")
+            .limit(1)
+            .get()
+            .then((docs) => {
+                if (docs.empty) {
+                    return null;
+                }
+                return CourseAttempt.fromFirestore(docs.docs[0]);
+            })
+            .catch((error) => {
+                logger.error(`Error getting latest course attempt for user '${userId}' and course '${courseId}': ${error}`);
+                throw new HttpsError('internal', `Error getting latest course attempt for user '${userId}' and course '${courseId}`);
+            });
+    }
 }
 
 export default CourseAttempt;
