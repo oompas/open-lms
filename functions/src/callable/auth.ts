@@ -55,8 +55,15 @@ const createAccount = onCall(async (request) => {
         .then(async (user) => {
             logger.info("Successfully created user, adding user document to db & sending verification email...");
 
-            const userDoc = new User(user.uid, email, name, firestore.Timestamp.now(), false, false);
-            await userDoc.addToFirestore(true);
+            const userDoc = {
+                uid: user.uid,
+                email: email,
+                name: name,
+                signUpTime: firestore.Timestamp.now(),
+                admin: false,
+                developer: false
+            };
+            await new User(userDoc).addToFirestore(true);
 
             // Create a verification email
             const verifyLink = await auth
@@ -226,11 +233,11 @@ const getUserProfile = onCall(async (request) => {
 
     const courseNames: { [key: string]: string } = {};
     await Promise.all(enrolledCourses.map(async (courseId) =>
-        Course.fromFirestoreId(courseId).then((course) => courseNames[courseId] = course.name)
+        Course.getDocumentById(courseId).then((course) => courseNames[courseId] = course.name)
     ));
 
     // Query course & course attempt data
-    const completedCourseIds = await CourseAttempt.collection()
+    const completedCourseIds = await CourseAttempt.collection
         .where('userId', "==", targetUserUid)
         .where("pass", "==", true)
         .get()
@@ -243,10 +250,10 @@ const getUserProfile = onCall(async (request) => {
         });
 
     const completedCourseData = await Promise.all(completedCourseIds.map(async (data) =>
-        Course.fromFirestoreId(data.courseId).then((course) => course.getObject())
+        Course.getDocumentById(data.courseId).then((course) => course.getObject())
     ));
 
-    const quizAttemptData = await QuizAttempt.collection()
+    const quizAttemptData = await QuizAttempt.collection
         .where('userId', "==", targetUserUid)
         .get()
         .then((result) => result.docs.map((doc) => QuizAttempt.fromFirestore(doc).getObject()))

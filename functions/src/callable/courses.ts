@@ -102,7 +102,7 @@ const addCourse = onCall(async (request) => {
 
     let version = 1;
     if (request.data.previousVersionId) {
-        const previousVersion = await Course.fromFirestoreId(request.data.previousVersionId);
+        const previousVersion = await Course.getDocumentById(request.data.previousVersionId);
         version = previousVersion.version + 1;
 
         await previousVersion.retire();
@@ -180,7 +180,7 @@ const setCourseVisibility = onCall(async (request) => {
 
         logger.info("Schema verification passed");
 
-        return Course.fromFirestoreId(request.data.courseId).then((course) => course.updateVisibility());
+        return Course.getDocumentById(request.data.courseId).then((course) => course.updateVisibility());
 });
 
 /**
@@ -252,7 +252,7 @@ const getCourseInfo = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const courseInfo = await Course.fromFirestoreId(request.data.courseId);
+    const courseInfo = await Course.getDocumentById(request.data.courseId);
 
     /**
      * withQuiz is for the course editor, so it returns the quiz data (including answers, so admin-only).
@@ -264,7 +264,7 @@ const getCourseInfo = onCall(async (request) => {
 
         let quizQuestions = null;
         if (courseInfo.quiz) {
-            quizQuestions = await QuizQuestion.collection()
+            quizQuestions = await QuizQuestion.collection
                 .where("courseId", "==", request.data.courseId)
                 .get()
                 .then((docs) => shuffleArray(docs.docs.map((doc) => {
@@ -310,7 +310,7 @@ const getCourseInfo = onCall(async (request) => {
 
     const courseAttempt = await getLatestCourseAttempt(request.data.courseId, uid);
 
-    const quizAttempts = await QuizAttempt.collection()
+    const quizAttempts = await QuizAttempt.collection
         .where("userId", "==", request.auth?.uid)
         .where("courseId", "==", request.data.courseId)
         .get()
@@ -324,7 +324,7 @@ const getCourseInfo = onCall(async (request) => {
 
     let numQuizQuestions;
     if (courseInfo.quiz) {
-        numQuizQuestions = await QuizQuestion.collection()
+        numQuizQuestions = await QuizQuestion.collection
             .where("courseId", "==", request.data.courseId)
             .get()
             .then((docs) => docs.size)
@@ -446,7 +446,7 @@ const deleteCourse = onCall(async (request) => {
 
     logger.info("Schema verification passed");
 
-    const courseInfo = await Course.fromFirestoreId(request.data.courseId);
+    const courseInfo = await Course.getDocumentById(request.data.courseId);
 
     if (courseInfo.userId !== request.auth?.uid) {
         throw new HttpsError('permission-denied', "You can't delete a course you didn't create");
@@ -478,10 +478,10 @@ const sendCourseFeedback = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth.uid;
 
-    const userInfo = await User.fromFirestoreId(uid);
+    const userInfo = await User.getDocumentById(uid);
 
-    const courseInfo = await Course.fromFirestoreId(request.data.courseId);
-    const courseCreator = await User.fromFirestoreId(courseInfo.userId);
+    const courseInfo = await Course.getDocumentById(request.data.courseId);
+    const courseCreator = await User.getDocumentById(courseInfo.userId);
 
     const subject = `Open LMS User Request For Course ${courseInfo.name}`;
     const content = `

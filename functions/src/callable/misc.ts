@@ -29,7 +29,7 @@ const sendPlatformFeedback = onCall(async (request) => {
     // @ts-ignore
     const uid: string = request.auth.uid;
 
-    const userInfo = await User.fromFirestoreId(uid);
+    const userInfo = await User.getDocumentById(uid);
     const content = `
         <style>
             body { background-color: #f9f9f9; }

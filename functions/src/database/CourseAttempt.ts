@@ -15,11 +15,11 @@ class CourseAttempt extends DatabaseObject {
     public static readonly collectionName = this.constructor.name;
     public static readonly collection = DatabaseObject.getCollection(this.collectionName);
 
-    private readonly userId: string;
-    private readonly courseId: string;
-    private readonly startTime: firestore.Timestamp;
-    private readonly endTime: firestore.Timestamp | null;
-    private readonly pass: boolean | null;
+    public readonly userId: string;
+    public readonly courseId: string;
+    public readonly startTime: firestore.Timestamp;
+    public readonly endTime: firestore.Timestamp | null;
+    public readonly pass: boolean | null;
 
     constructor(attempt: CourseAttemptDocument) {
         super(attempt.id);

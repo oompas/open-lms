@@ -23,14 +23,14 @@ class QuizQuestion extends DatabaseObject {
     public static readonly collectionName = this.constructor.name;
     public static readonly collection = DatabaseObject.getCollection(this.collectionName);
 
-    private readonly courseId: string;
-    private readonly question: string;
-    private readonly type: "tf" | "mc" | "sa";
-    private readonly marks: number;
-    private readonly answers: string[] | null;
-    private readonly correctAnswer: number | null;
-    private readonly order: number | null;
-    private readonly stats: {
+    public readonly courseId: string;
+    public readonly question: string;
+    public readonly type: "tf" | "mc" | "sa";
+    public readonly marks: number;
+    public readonly answers: string[] | null;
+    public readonly correctAnswer: number | null;
+    public readonly order: number | null;
+    public readonly stats: {
         numAttempts: number;
         totalScore: number;
         answers?: { [key: string]: number }; // Only for t/f & mc

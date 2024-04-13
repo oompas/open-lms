@@ -7,7 +7,7 @@ interface QuizQuestionAttemptDocument {
     courseAttemptId: string;
     quizAttemptId: string;
     questionId: string;
-    response: string | number;
+    response: string | number | null;
     marksAchieved: number | null;
     maxMarks: number;
     timestamp: firestore.Timestamp;
@@ -18,15 +18,15 @@ class QuizQuestionAttempt extends DatabaseObject {
     public static readonly collectionName = this.constructor.name;
     public static readonly collection = DatabaseObject.getCollection(this.collectionName);
 
-    private readonly userId: string;
-    private readonly courseId: string;
-    private readonly courseAttemptId: string;
-    private readonly quizAttemptId: string;
-    private readonly questionId: string;
-    private readonly response: string | number;
-    private readonly marksAchieved: number | null;
-    private readonly maxMarks: number;
-    private readonly timestamp: firestore.Timestamp;
+    public readonly userId: string;
+    public readonly courseId: string;
+    public readonly courseAttemptId: string;
+    public readonly quizAttemptId: string;
+    public readonly questionId: string;
+    public readonly response: string | number | null;
+    public readonly marksAchieved: number | null;
+    public readonly maxMarks: number;
+    public readonly timestamp: firestore.Timestamp;
 
     constructor(attempt: QuizQuestionAttemptDocument) {
         super(attempt.id);

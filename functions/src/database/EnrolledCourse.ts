@@ -15,9 +15,9 @@ class EnrolledCourse extends DatabaseObject {
     public static readonly collectionName = this.constructor.name;
     public static readonly collection = DatabaseObject.getCollection(this.collectionName);
 
-    readonly courseId: string;
-    readonly userId: string;
-    private readonly enrollmentTime: firestore.Timestamp;
+    public readonly courseId: string;
+    public readonly userId: string;
+    public readonly enrollmentTime: firestore.Timestamp;
 
     constructor(enrolledCourse: EnrolledCourseDocument) {
         super(enrolledCourse.id);
