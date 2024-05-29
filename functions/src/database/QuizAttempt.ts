@@ -1,5 +1,6 @@
 import { DatabaseObject } from "./DatabseObject";
 import { firestore } from "firebase-admin";
+import Course from "./Course";
 
 interface QuizAttemptDocument {
     id?: string;
@@ -84,6 +85,57 @@ class QuizAttempt extends DatabaseObject {
     public static getAllDocs = () => super._getAllDocs(this.collection).then((docs) => docs.map((doc) => this.fromFirestore(doc)));
 
     public static delete = (docId: string) => super._delete(this.collection, docId);
+
+
+    /**
+     * Check if the quiz attempt has expired (not submitted in time) before getting the quiz attempt
+     */
+    public async checkExpired(): Promise<boolean> {
+
+        const courseData = await Course.getDocumentById(this.courseAttemptId);
+
+        if (courseData.quiz?.timeLimit && Date.now() > this.startTime.toMillis() + (courseData.quiz.timeLimit * 60 * 1000)) {
+
+            // If the attempt has expired -> fail the attempt
+            const quizAttemptUpdate = {
+                endTime: firestore.Timestamp.now(),
+                pass: false,
+                score: 0,
+            };
+            await super.updateFirestore(quizAttemptUpdate);
+
+            // If this was the last quiz attempt, fail the course attempt
+            if (courseData.quiz.maxAttempts) {
+                const quizAttempts = await QuizAttempt.collection
+                    .where("courseId", "==", courseAttempt.courseId)
+                    .where("userId", "==", request.auth?.uid)
+                    .get()
+                    .then((snapshot) => {
+                        if (snapshot.empty) {
+                            logger.error(`No quiz attempts found for course ${courseAttempt.courseId}`);
+                            throw new HttpsError("not-found", `No quiz attempts found for course ${courseAttempt.courseId}`);
+                        }
+                        return snapshot.docs;
+                    })
+                    .catch((err) => {
+                        logger.info(`Error getting quiz attempts: ${err}`);
+                        throw new HttpsError("internal", `Error getting quiz attempts: ${err}`);
+                    });
+
+                if (quizAttempts.length >= courseData.quiz.maxAttempts) {
+                    const updateCourseAttempt = {
+                        endTime: firestore.FieldValue.serverTimestamp(),
+                        pass: false,
+                    };
+                    await updateDoc(DatabaseCollections.CourseAttempt, courseAttempt.getId(), updateCourseAttempt);
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 }
 
 export default QuizAttempt;

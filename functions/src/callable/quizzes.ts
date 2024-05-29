@@ -54,6 +54,9 @@ const getQuiz = onCall(async (request) => {
         logger.error(`Quiz attempt with ID ${request.data.quizAttemptId} is already completed`);
         throw new HttpsError("failed-precondition", `Quiz attempt with ID ${request.data.quizAttemptId} is already completed`);
     }
+
+    await quizAttempt.checkExpired();
+
     if (courseData.quiz.timeLimit && Date.now() > quizAttempt.startTime.toMillis() + (courseData.quiz.timeLimit * 60 * 1000)) {
 
         // If the attempt has expired -> fail the attempt
