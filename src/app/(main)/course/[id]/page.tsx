@@ -72,7 +72,7 @@ export default function Course({ params }: { params: { id: string } }) {
                 />
 
                 <div className="mt-8 text-2xl">
-                    <h1 className="mb-4">Required completion verification:</h1>
+                    <h1 className="mb-4">To complete the course:</h1>
                     {course.minTime &&
                         <div className="flex flex-row items-center mt-2">
                             <Checkbox checked={timeDone} setChecked={null} style="mr-3"/>
@@ -82,7 +82,7 @@ export default function Course({ params }: { params: { id: string } }) {
                     {course.quiz &&
                         <div className="flex flex-row items-center mt-2">
                             <Checkbox checked={course.status === 6} setChecked={null} style="mr-3"/>
-                            <div>{"Pass the required quiz"}</div>
+                            <div>{"Pass the quiz"}</div>
                         </div>
                     }
                 </div>
@@ -117,7 +117,7 @@ export default function Course({ params }: { params: { id: string } }) {
             <Link href="/home"
                   className="flex flex-row space-x-2 items-center mb-6 -mt-4 text-lg hover:opacity-60 duration-150">
                 <MdArrowBack size="28" className="text-red-800"/>
-                <div>return to my courses</div>
+                <div>Return To My Courses</div>
             </Link>
 
             {getCourse.loading && <div>Loading...</div>}

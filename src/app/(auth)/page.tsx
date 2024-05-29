@@ -33,7 +33,7 @@ export default function AuthPage() {
             <div className="flex max-w-[1000px] bg-white p-12 rounded-2xl shadow-custom">
                 <div className="flex flex-col h-full w-3/5 space-y-4">
                     <div className="border-2 p-6 rounded-2xl">
-                        <div className="text-xl font-bold mb-4">Log in with email</div>
+                        <div className="text-xl font-bold mb-4">Login</div>
                         <AuthForm
                             email={email}
                             setEmail={setEmail}
@@ -45,7 +45,7 @@ export default function AuthPage() {
                         <div className="flex justify-between mt-4">
                             <Button text="Sign Up" onClick={() => router.push('/signup')}
                                     style="border-[3px] border-red-800" filled={false}/>
-                            <Button text="Log In" onClick={async () => await submitLogin()} style="ml-4" icon="arrow"
+                            <Button text="Login" onClick={async () => await submitLogin()} style="ml-4" icon="arrow"
                                     filled/>
                         </div>
                         {error && (
@@ -62,7 +62,7 @@ export default function AuthPage() {
                 </div>
                 <div className="flex-col h-full w-2/5 ml-10 space-y-4">
                     <div className="text-2xl">Welcome to <b>OpenLMS</b></div>
-                    <div>OpenLMS is a generic open-source education platform. Log in with your account to get started.</div>
+                    <div>OpenLMS is a generic open-source education platform. Login with your account to get started.</div>
                     <div>Created at Queen’s University in Kingston Ontario, Canada.</div>
                     <img 
                         src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaKJ6WNZbIVmwI2H2DhOpcEjPI20dv54xarsGWLL7Dqpr2YdwjoWz1iJbCXDFjyGA4XsIswyuyiBToe8QTA9Mvddj4Dyw=s2560" 

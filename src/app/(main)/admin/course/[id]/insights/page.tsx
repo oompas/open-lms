@@ -145,7 +145,7 @@ export default function Insights({ params }: { params: { id: string } }) {
                         {/* @ts-ignore */}
                         <div className="text-xl font-bold mb-4">{data ? data.courseName : ""}</div>
                         {/* @ts-ignore */}
-                        <div className="text-xl mb-4">Average completion time: {getAverageTime()}</div>
+                        <div className="text-xl mb-4">Average Completion Time: {getAverageTime()}</div>
                         <div className="flex flex-row space-x-6">
                             <div className="flex flex-col items-center">
                                 <div>Learners Enrolled</div>
