@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -9,10 +11,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>ca.openlms</groupId>
-	<artifactId>api</artifactId>
+	<artifactId>open-lms-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>api</name>
-	<description>api</description>
+	<name>open-lms-api</name>
+	<description>open-lms-api</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -20,11 +22,19 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<version>3.3.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-function-adapter-gcp</artifactId>
+			<version>4.1.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
+			<version>3.3.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -34,6 +44,33 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>3.3.0</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>3.3.0</version>
+				<configuration>
+					<outputDirectory>target/deploy</outputDirectory>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.springframework.cloud</groupId>
+						<artifactId>spring-cloud-function-adapter-gcp</artifactId>
+						<version>4.1.1</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+			<plugin>
+				<groupId>com.google.cloud.functions</groupId>
+				<artifactId>function-maven-plugin</artifactId>
+				<version>0.9.1</version>
+				<configuration>
+					<functionTarget>org.springframework.cloud.function.adapter.gcp.GcfJarLauncher</functionTarget>
+					<port>8080</port>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
