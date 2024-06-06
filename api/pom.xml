@@ -24,13 +24,22 @@
 	</properties>
 
 	<dependencies>
+
+		<!-- API annotations -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<!-- Deploying to gcloud-->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-function-adapter-gcp</artifactId>
-			<version>4.0.0-SNAPSHOT</version>
+			<version>${spring-cloud-function.version}</version>
 		</dependency>
 
-		<!-- test dependencies -->
+
+		<!-- Test dependencies -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
@@ -56,6 +65,10 @@
 			<artifactId>java-function-invoker</artifactId>
 			<version>1.0.0-alpha-2-rc5</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
 		</dependency>
 	</dependencies>
 
