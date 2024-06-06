@@ -1,1 +1,2 @@
-Main-Class: com.example.CloudFunctionMain
+Main-Class: org.springframework.boot.loader.JarLauncher
+Start-Class: com.example.CloudFunctionMain
