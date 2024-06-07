@@ -20,30 +20,32 @@
 	</parent>
 
 	<properties>
+		<spring-web.version>6.1.8</spring-web.version>
+		<spring-boot-starter-web.version>3.3.0</spring-boot-starter-web.version>
 		<spring-cloud-function.version>4.1.2</spring-cloud-function.version>
 	</properties>
 
 	<dependencies>
 
-		<!-- API annotations -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-
+		<!-- Web features like API annotations and HTTP -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
+			<version>${spring-web.version}</version>
 		</dependency>
 
-		<!-- Deploying to gcloud-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<version>${spring-boot-starter-web.version}</version>
+		</dependency>
+
+		<!-- Adapter to deploy to Google Cloud-->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-function-adapter-gcp</artifactId>
 			<version>${spring-cloud-function.version}</version>
 		</dependency>
-
-
 
 
 		<!-- Test dependencies -->
@@ -69,17 +71,12 @@
 			<scope>test</scope>
 		</dependency>
 
-
-
 	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
 				<artifactId>maven-deploy-plugin</artifactId>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
