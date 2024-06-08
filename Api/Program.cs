@@ -1,3 +1,5 @@
+using Supabase;
+
 namespace Api;
 
 public class Program
@@ -12,6 +14,14 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        // Setup Supabase
+        builder.Services.AddScoped<Supabase.Client>(_ => new Supabase.Client(builder.Configuration["SupabaseUrl"], builder.Configuration["SupabaseKey"],
+            new SupabaseOptions
+            {
+                AutoConnectRealtime = true,
+                AutoRefreshToken = true
+            }));
 
         var app = builder.Build();
 
