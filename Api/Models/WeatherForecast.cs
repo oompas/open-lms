@@ -1,12 +1,22 @@
+using Supabase.Postgrest.Attributes;
+using Supabase.Postgrest.Models;
+
 namespace Api;
 
-public class WeatherForecast
+[Table("WeatherForecast")]
+public class WeatherForecast : BaseModel
 {
-    public DateOnly Date { get; set; }
+    [PrimaryKey("Id", false)]
+    public long Id { get; set; }
 
+    [Column]
+    public DateTime Date { get; set; }
+
+    [Column]
     public int TemperatureC { get; set; }
 
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 
+    [Column]
     public string? Summary { get; set; }
 }
