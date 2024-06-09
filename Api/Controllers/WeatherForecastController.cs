@@ -1,3 +1,4 @@
+using Api.Views;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -19,14 +20,29 @@ public class WeatherForecastController : ControllerBase
     }
 
     [HttpGet(Name = "GetWeatherForecast")]
-    public IEnumerable<WeatherForecast> Get()
+    public async Task<IResult> Get(long id, Supabase.Client client)
     {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        var response = await client
+            .From<WeatherForecast>()
+            .Where(w => w.Id == id)
+            .Get();
+
+        var forecast = response.Models.FirstOrDefault();
+
+        if (forecast == null)
         {
-            Date = DateTime.Now.AddDays(index),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-        })
-        .ToArray();
+            return Results.NotFound();
+        }
+
+        var rsp = new GetWeatherForecastResponse
+        {
+            Id = forecast.Id,
+            Date = forecast.Date,
+            TemperatureC = forecast.TemperatureC,
+            TemperatureF = forecast.TemperatureF,
+            Summary = forecast.Summary,
+        };
+
+        return Results.Ok(rsp);
     }
 }
