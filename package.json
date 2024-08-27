@@ -5,8 +5,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "dev": "next dev",
-    "deployDev": "firebase deploy --only functions --project dev",
-    "deployTest": "firebase deploy --only functions --project test"
+    "deployDev": "supabase functions deploy --project-ref mgiuchjdjqnuljfpjemb"
   },
   "dependencies": {
     "@firebase/auth": "^1.7.7",
