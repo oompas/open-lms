@@ -5,6 +5,7 @@ import { ApiEndpoints, callApi } from "@/config/firebase";
 import Button from "@/components/Button";
 import AuthForm from "@/components/AuthForm";
 import VerifyEmailPopup from "@/app/(auth)/signup/VerifyEmail";
+import callAPI from "@/config/supabase.ts";
 
 export default function SignUpPage() {
 
@@ -20,48 +21,52 @@ export default function SignUpPage() {
     const [redirectAfterPopupClosed, setRedirectAfterPopupClosed] = useState(false);
 
     const signUp = async () => {
-        setInvalidPass(false);
-        setInvalidName(false);
-        setInvalidEmail(false);
-        const hasUpperCase = /[A-Z]/;
-        const hasLowerCase = /[a-z]/;
-        const hasNumbers = /[0-9]/;
-        const hasSpecialChars = /[!#$%&@?]/;
 
-        if (!(hasUpperCase.test(password) && hasLowerCase.test(password) && hasNumbers.test(password) && hasSpecialChars.test(password) && password.length >= 10)) {
-            console.error("Password must be at least ten characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character");
-            setInvalidPass(true);
-            return;
-        }
+        const rsp = await callAPI('createAccount', { email, password });
+        console.log(JSON.stringify(rsp, null, 4));
 
-        if (name.length < 1) {
-            console.error("Name must be at least one character long.");
-            setInvalidName(true);
-            return;
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            console.error("Invalid email format.");
-            setInvalidEmail(true);
-            return;
-        }
-
-        try {
-            const response = await callApi(ApiEndpoints.CreateAccount, {
-                name: name,
-                email: email,
-                password: password
-            });
-            if (response && response.data) {
-                console.log("Account created successfully.");
-                setShowVerifyEmailPopup(true);
-            } else {
-                console.error("Error creating account:", response);
-            }
-        } catch (error) {
-            console.error("Error creating account:", error);
-        }
+        // setInvalidPass(false);
+        // setInvalidName(false);
+        // setInvalidEmail(false);
+        // const hasUpperCase = /[A-Z]/;
+        // const hasLowerCase = /[a-z]/;
+        // const hasNumbers = /[0-9]/;
+        // const hasSpecialChars = /[!#$%&@?]/;
+        //
+        // if (!(hasUpperCase.test(password) && hasLowerCase.test(password) && hasNumbers.test(password) && hasSpecialChars.test(password) && password.length >= 10)) {
+        //     console.error("Password must be at least ten characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character");
+        //     setInvalidPass(true);
+        //     return;
+        // }
+        //
+        // if (name.length < 1) {
+        //     console.error("Name must be at least one character long.");
+        //     setInvalidName(true);
+        //     return;
+        // }
+        //
+        // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // if (!emailRegex.test(email)) {
+        //     console.error("Invalid email format.");
+        //     setInvalidEmail(true);
+        //     return;
+        // }
+        //
+        // try {
+        //     const response = await callApi(ApiEndpoints.CreateAccount, {
+        //         name: name,
+        //         email: email,
+        //         password: password
+        //     });
+        //     if (response && response.data) {
+        //         console.log("Account created successfully.");
+        //         setShowVerifyEmailPopup(true);
+        //     } else {
+        //         console.error("Error creating account:", response);
+        //     }
+        // } catch (error) {
+        //     console.error("Error creating account:", error);
+        // }
     };
 
     const handlePopupClose = () => {
