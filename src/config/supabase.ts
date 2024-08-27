@@ -58,13 +58,11 @@ const client =
  * @param body The body of the request
  */
 const callAPI = async (endpoint: string, body: object = {}) => {
-
     try {
         const response = await client.functions.invoke(endpoint, { body });
-
-        return JSON.parse(JSON.stringify(response.data));
+        return { data: JSON.parse(response.data), error: JSON.parse(response.error) };
     } catch (error) {
-        console.error(`Error calling Supabase Edge Function: ${error}`);
+        console.error(`Error calling Supabase Edge Function (${endpoint}): ${error}`);
         return null;
     }
 }
