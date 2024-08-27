@@ -64,10 +64,11 @@ export default function AuthPage() {
                     <div className="text-2xl">Welcome to <b>OpenLMS</b></div>
                     <div>OpenLMS is a generic open-source education platform. Login with your account to get started.</div>
                     <div>Created at Queen’s University in Kingston Ontario, Canada.</div>
-                    <img 
-                        src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaKJ6WNZbIVmwI2H2DhOpcEjPI20dv54xarsGWLL7Dqpr2YdwjoWz1iJbCXDFjyGA4XsIswyuyiBToe8QTA9Mvddj4Dyw=s2560" 
+                    <img
+                        src="/openlms.png"
                         alt="OpenLMS Logo" 
-                        className="w-1/2 mx-auto" />
+                        className="w-1/2 mx-auto"
+                    />
                 </div>
             </div>
         </main>
