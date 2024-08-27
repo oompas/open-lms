@@ -1,6 +1,7 @@
 'use server'
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { FunctionsHttpError } from '@supabase/supabase-js'
 
 const cookieStore = cookies();
 
@@ -52,18 +53,42 @@ const client =
         },
     );
 
+type APIResponse = {
+    success: boolean,
+    serverError?: boolean,
+    data?: any,
+    error?: any,
+}
+
 /**
  * Calls a Supabase Edge Function
  * @param endpoint The endpoint name
  * @param body The body of the request
  */
-const callAPI = async (endpoint: string, body: object = {}) => {
+const callAPI = async (endpoint: string, body: object = {}): Promise<APIResponse> => {
     try {
-        const response = await client.functions.invoke(endpoint, { body });
-        return { data: JSON.parse(response.data), error: JSON.parse(response.error) };
+        const { data, error } = await client.functions.invoke(endpoint, { body });
+
+        if (error && error instanceof FunctionsHttpError) {
+            return {
+                success: false,
+                serverError: false,
+                error: await error.context.json(),
+            };
+        }
+
+        return {
+            success: true,
+            serverError: false,
+            data: data
+        };
     } catch (error) {
-        console.error(`Error calling Supabase Edge Function (${endpoint}): ${error}`);
-        return null;
+        console.error(`Error invoking Supabase Edge Function '${endpoint}': ${JSON.stringify(error)} ${error instanceof SyntaxError} '${error.message}'`);
+        return {
+            success: false,
+            serverError: true,
+            error: error,
+        };
     }
 }
 
