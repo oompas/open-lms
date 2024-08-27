@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@firebase/auth':
+        specifier: ^1.7.7
+        version: 1.7.7(@firebase/app@0.10.0)
       '@supabase/supabase-js':
         specifier: ^2.45.2
         version: 2.45.2
@@ -152,8 +155,20 @@ packages:
       '@react-native-async-storage/async-storage':
         optional: true
 
+  '@firebase/auth@1.7.7':
+    resolution: {integrity: sha512-gMB0uRRNiIvYorEDLtIq1mc7x5D080EsoghTIph9xnbLqcQS3qRBREEC2o21nMEhviAeiGJMelRkKhAkkggjmA==}
+    peerDependencies:
+      '@firebase/app': 0.x
+      '@react-native-async-storage/async-storage': ^1.18.1
+    peerDependenciesMeta:
+      '@react-native-async-storage/async-storage':
+        optional: true
+
   '@firebase/component@0.6.6':
     resolution: {integrity: sha512-pp7sWqHmAAlA3os6ERgoM3k5Cxff510M9RLXZ9Mc8KFKMBc2ct3RkZTWUF7ixJNvMiK/iNgRLPDrLR2gtRJ9iQ==}
+
+  '@firebase/component@0.6.8':
+    resolution: {integrity: sha512-LcNvxGLLGjBwB0dJUsBGCej2fqAepWyBubs4jt1Tiuns7QLbXHuyObZ4aMeBjZjWx4m8g1LoVI9QFpSaq/k4/g==}
 
   '@firebase/database-compat@1.0.4':
     resolution: {integrity: sha512-GEEDAvsSMAkqy0BIFSVtFzoOIIcKHFfDM4aXHtWL/JCaNn4OOjH7td73jDfN3ALvpIN4hQki0FcxQ89XjqaTjQ==}
@@ -212,6 +227,9 @@ packages:
   '@firebase/logger@0.4.1':
     resolution: {integrity: sha512-tTIixB5UJbG9ZHSGZSZdX7THr3KWOLrejZ9B7jYsm6fpwgRNngKznQKA2wgYVyvBc1ta7dGFh9NtJ8n7qfiYIw==}
 
+  '@firebase/logger@0.4.2':
+    resolution: {integrity: sha512-Q1VuA5M1Gjqrwom6I6NUU4lQXdo9IAQieXlujeHZWvRt1b7qQ0KwBaNAjgxG27jgF9/mUwsNmO8ptBCGVYhB0A==}
+
   '@firebase/messaging-compat@0.2.7':
     resolution: {integrity: sha512-29eeNzkjJPNc1RAVmxocaA8PzkbtuNvabX8jKw3N8VdAmyugx7+dYB+jCnereiWqIwivIZ2xSbCUQ24vC7+HaQ==}
     peerDependencies:
@@ -269,6 +287,9 @@ packages:
 
   '@firebase/util@1.9.5':
     resolution: {integrity: sha512-PP4pAFISDxsf70l3pEy34Mf3GkkUcVQ3MdKp6aSVb7tcpfUQxnsdV7twDd8EkfB6zZylH6wpUAoangQDmCUMqw==}
+
+  '@firebase/util@1.9.7':
+    resolution: {integrity: sha512-fBVNH/8bRbYjqlbIhZ+lBtdAAS4WqZumx03K06/u7fJSpz1TGjEMm1ImvKD47w+xaFKIP2ori6z8BrbakRfjJA==}
 
   '@firebase/webchannel-wrapper@0.10.6':
     resolution: {integrity: sha512-EnfRJvrnzkHwN3BPMCayCFT5lCqInzg3RdlRsDjDvB1EJli6Usj26T6lJ67BU2UcYXBS5xcp1Wj4+zRzj2NaZg==}
@@ -1629,6 +1650,10 @@ packages:
     resolution: {integrity: sha512-3ItfzbrhDlINjaP0duwnNsKpDQk3acHI3gVJ1z4fmwMK31k5G9OVIAMLSIaP6w4FaGkaAkN6zaQO9LUvZ1t7VA==}
     engines: {node: '>=14.0'}
 
+  undici@5.28.4:
+    resolution: {integrity: sha512-72RFADWFqKmUb2hmmvNODKL3p9hcB6Gt2DOQMis1SEBaV6a4MH8soBvzg+95CYhCKPFedut2JY9bMfrDl9D23g==}
+    engines: {node: '>=14.0'}
+
   unpipe@1.0.0:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
     engines: {node: '>= 0.8'}
@@ -1848,9 +1873,23 @@ snapshots:
       tslib: 2.6.2
       undici: 5.28.3
 
+  '@firebase/auth@1.7.7(@firebase/app@0.10.0)':
+    dependencies:
+      '@firebase/app': 0.10.0
+      '@firebase/component': 0.6.8
+      '@firebase/logger': 0.4.2
+      '@firebase/util': 1.9.7
+      tslib: 2.6.2
+      undici: 5.28.4
+
   '@firebase/component@0.6.6':
     dependencies:
       '@firebase/util': 1.9.5
+      tslib: 2.6.2
+
+  '@firebase/component@0.6.8':
+    dependencies:
+      '@firebase/util': 1.9.7
       tslib: 2.6.2
 
   '@firebase/database-compat@1.0.4':
@@ -1958,6 +1997,10 @@ snapshots:
     dependencies:
       tslib: 2.6.2
 
+  '@firebase/logger@0.4.2':
+    dependencies:
+      tslib: 2.6.2
+
   '@firebase/messaging-compat@0.2.7(@firebase/app-compat@0.2.30)(@firebase/app@0.10.0)':
     dependencies:
       '@firebase/app-compat': 0.2.30
@@ -2052,6 +2095,10 @@ snapshots:
       undici: 5.28.3
 
   '@firebase/util@1.9.5':
+    dependencies:
+      tslib: 2.6.2
+
+  '@firebase/util@1.9.7':
     dependencies:
       tslib: 2.6.2
 
@@ -3611,6 +3658,10 @@ snapshots:
   undici-types@5.26.5: {}
 
   undici@5.28.3:
+    dependencies:
+      '@fastify/busboy': 2.1.1
+
+  undici@5.28.4:
     dependencies:
       '@fastify/busboy': 2.1.1
 
