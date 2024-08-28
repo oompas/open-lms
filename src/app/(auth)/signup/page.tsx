@@ -1,15 +1,16 @@
 "use client"
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ApiEndpoints, callApi } from "@/config/firebase";
 import Button from "@/components/Button";
 import AuthForm from "@/components/AuthForm";
 import VerifyEmailPopup from "@/app/(auth)/signup/VerifyEmail";
 import { callAPI } from "@/config/supabase.ts";
+import { handleLoginStatus } from "@/config/clientSupabase.ts";
 
 export default function SignUpPage() {
 
     const router = useRouter();
+    handleLoginStatus(router);
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
