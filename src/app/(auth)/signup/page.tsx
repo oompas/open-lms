@@ -22,7 +22,7 @@ export default function SignUpPage() {
 
     const signUp = async () => {
 
-        const rsp = await callAPI('createAccount', { email, password });
+        const rsp = await callAPI('create-account', { email, password });
         console.log(JSON.stringify(rsp, null, 4));
 
         // setInvalidPass(false);
