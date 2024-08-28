@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from "@/components/Button";
 import AuthForm from '@/components/AuthForm';
-import { signIn, handleLoginStatus } from "@/config/clientSupabase.ts";
+import { signIn, handleLoginStatus } from "@/config/supabase.ts";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export default function AuthPage() {

@@ -5,7 +5,8 @@ import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import { ApiEndpoints, useAsyncApiCall, auth } from '@/config/firebase';
 import {  } from "@/config/firebase";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function Home() {
 
@@ -19,6 +20,14 @@ export default function Home() {
                 .catch((error) => console.log(`Error fetching user ID token: ${error}`));
         }
     });
+
+    useEffect(() => {
+        callAPI('get-courses')
+            .then((rsp) => {
+                console.log("Get course response: " + JSON.stringify(rsp, null, 4));
+            });
+        return;
+    }, []);
 
     const courses = useAsyncApiCall(ApiEndpoints.GetAvailableCourses, {});
 

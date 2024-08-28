@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import Button from "@/components/Button";
 import AuthForm from "@/components/AuthForm";
 import VerifyEmailPopup from "@/app/(auth)/signup/VerifyEmail";
-import { callAPI } from "@/config/serverSupabase.ts";
-import { handleLoginStatus } from "@/config/clientSupabase.ts";
+import { callAPI } from "@/config/supabase.ts";
+import { handleLoginStatus } from "@/config/supabase.ts";
 
 export default function SignUpPage() {
 
