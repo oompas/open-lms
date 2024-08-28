@@ -3,20 +3,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from "@/components/Button";
 import AuthForm from '@/components/AuthForm';
-import { auth } from "@/config/firebase";
-import { signInWithEmailAndPassword } from "@firebase/auth";
-import { signIn } from "@/config/clientSupabase.ts";
+import { signIn, handleLoginStatus } from "@/config/clientSupabase.ts";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export default function AuthPage() {
 
-    const router = useRouter();
-
-    // If a user logs in, closes the app, then re-opens it, they're still logged in, so redirect them to the home page
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            router.push('/home');
-        }
-    });
+    const router: AppRouterInstance = useRouter();
+    handleLoginStatus(router);
 
     const [email, setEmail] = useState("")
     const [password, setPass] = useState("")
@@ -31,6 +24,8 @@ export default function AuthPage() {
         const { data, error } = await signIn(email, password);
         if (error) {
             setError(error.code);
+        } else {
+            router.push('/home')
         }
         console.log(JSON.stringify(data, null, 4));
     };
