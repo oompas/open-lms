@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { adminClient } from "../_config/adminClient.ts";
+import { errorResponse, successResponse } from "../_helpers/response.ts";
 
 Deno.serve(async (req) => {
     const { email, password } = await req.json();
@@ -7,10 +8,7 @@ Deno.serve(async (req) => {
     console.log(`(1/3) Entering createAccount function with email: ${email}`);
 
     if (!email || !password) {
-      return new Response(
-          JSON.stringify({ error: "Email and password are required" }),
-          { status: 400 }
-      );
+        return errorResponse("Email and password are required");
     }
 
     console.log(`(2/3) Email & password verified`);
@@ -19,9 +17,9 @@ Deno.serve(async (req) => {
 
     if (error) {
         console.log(`Error creating user: ${error.message}`);
-        return new Response(JSON.stringify({ error: error.message }), { status: 400 });
+        return errorResponse(error.message);
     }
 
     console.log(`(3/3) User created successfully: ${data.user.email}`);
-    return new Response(JSON.stringify({ user: data.user }), { status: 200 });
+    return successResponse(data);
 });
