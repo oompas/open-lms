@@ -5,7 +5,7 @@ import { ApiEndpoints, callApi } from "@/config/firebase";
 import Button from "@/components/Button";
 import AuthForm from "@/components/AuthForm";
 import VerifyEmailPopup from "@/app/(auth)/signup/VerifyEmail";
-import callAPI from "@/config/supabase.ts";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function SignUpPage() {
 

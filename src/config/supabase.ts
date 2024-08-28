@@ -8,7 +8,7 @@ const cookieStore = cookies();
 /**
  * Create a new Supabase Client for server-side usage (this won't work for client-side rendering)
  */
-const client =
+const serverClient =
     createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -67,29 +67,17 @@ type APIResponse = {
  */
 const callAPI = async (endpoint: string, body: object = {}): Promise<APIResponse> => {
     try {
-        const { data, error } = await client.functions.invoke(endpoint, { body });
+        const { data, error } = await serverClient.functions.invoke(endpoint, { body });
 
         if (error && error instanceof FunctionsHttpError) {
-            return {
-                success: false,
-                serverError: false,
-                error: await error.context.json(),
-            };
+            return { error: await error.context.json() };
         }
 
-        return {
-            success: true,
-            serverError: false,
-            data: data
-        };
+        return { data: data };
     } catch (error) {
         console.error(`Error invoking Supabase Edge Function '${endpoint}': ${JSON.stringify(error)} ${error instanceof SyntaxError} '${error.message}'`);
-        return {
-            success: false,
-            serverError: true,
-            error: error.message,
-        };
+        return { error: error.message };
     }
 }
 
-export default callAPI;
+export { callAPI };

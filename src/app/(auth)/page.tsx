@@ -5,6 +5,7 @@ import Button from "@/components/Button";
 import AuthForm from '@/components/AuthForm';
 import { auth } from "@/config/firebase";
 import { signInWithEmailAndPassword } from "@firebase/auth";
+import { signIn } from "@/config/clientSupabase.ts";
 
 export default function AuthPage() {
 
@@ -23,9 +24,15 @@ export default function AuthPage() {
 
     const submitLogin = async () => {
         setError(null);
-        await signInWithEmailAndPassword(auth, email, password)
-            .then(() => router.push('/home'))
-            .catch((error: any) => setError(error.code));
+        // await signInWithEmailAndPassword(auth, email, password)
+        //     .then(() => router.push('/home'))
+        //     .catch((error: any) => setError(error.code));
+
+        const { data, error } = await signIn(email, password);
+        if (error) {
+            setError(error.code);
+        }
+        console.log(JSON.stringify(data, null, 4));
     };
 
     return (
