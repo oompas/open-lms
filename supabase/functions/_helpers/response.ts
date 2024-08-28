@@ -1,7 +1,7 @@
 import { corsHeaders } from "../_config/cors.ts";
 
 const errorResponse = (errorMessage: string) => new Response(
-    JSON.stringify({ error: errorMessage }),
+    JSON.stringify(errorMessage),
     { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
 );
 

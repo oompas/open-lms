@@ -87,7 +87,7 @@ const callAPI = async (endpoint: string, body: object = {}): Promise<APIResponse
         return {
             success: false,
             serverError: true,
-            error: error,
+            error: error.message,
         };
     }
 }
