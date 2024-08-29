@@ -8,6 +8,10 @@ import {  } from "@/config/firebase";
 import { useState } from "react";
 import { callAPI } from "@/config/supabase.ts";
 import { useAsync } from "react-async-hook";
+import Link from "next/link";
+import { MdArrowBack } from "react-icons/md";
+import TextField from "@/components/TextField.tsx";
+import AvailableCourse from "@/app/(main)/course_search/AvailableCourse.tsx";
 
 export default function Home() {
 
@@ -28,7 +32,8 @@ export default function Home() {
         { title: "CISC 423", description: "Jan 1, 2023", urgency: "URGENT", link: "no", id: 1 },
     ]
 
-    const [filters, setFilters] = useState([0, 1, 2, 3, 4]);
+    const [filters, setFilters] = useState<number[]>([0, 1, 2, 3, 4]);
+    const [search, setSearch] = useState<string | null>(null);
 
     const enrolledCourses = () => {
         if (courses.loading) {
@@ -110,35 +115,89 @@ export default function Home() {
         setFilters(temp)
     }
 
+    const availableCourses = () => {
+        if (courses.loading) {
+            return <div>Loading...</div>;
+        }
+        if (courses.error) {
+            return <div>Error loading courses</div>;
+        }
+
+        // @ts-ignore
+        return courses.result.data
+            .filter((course: any) => course.status === 1 && (course.name.toLowerCase().includes(search.toLowerCase())
+                || course.description.toLowerCase().includes(search.toLowerCase())))
+            .map((course: any, key: number) => (
+                <AvailableCourse
+                    key={key}
+                    title={course.name}
+                    description={course.description}
+                    id={course.id}
+                />
+            ));
+    }
+
+    const renderPage = () => {
+        if (search === null) {
+            return (
+                <div className="flex flex-col bg-white w-full p-12 rounded-2xl shadow-custom">
+                    <div className="flex flex-row items-center mb-2">
+                        <div className="flex flex-row items-center">
+                            <div className="text-lg mr-4">My Enrolled Courses</div>
+                            <div className="flex flex-row space-x-2">
+                                {statusValues.map((value, key) => (
+                                    <button
+                                        key={key}
+                                        className="border-2 rounded-full px-4 py-1 cursor-pointer"
+                                        style={{
+                                            // @ts-ignore
+                                            borderColor: filters.includes(key) ? statusColors[key] : null,
+                                            opacity: filters.includes(key) ? 1 : 0.5,
+                                        }}
+                                        onClick={() => handleUpdateFilter(key)}
+                                    >
+                                        {value}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <Button
+                            text="Browse Available Courses"
+                            onClick={() => setSearch("")}
+                            style="ml-auto"
+                        />
+                    </div>
+                    <div className="flex flex-row flex-wrap justify-between mt-4 overflow-y-scroll sm:no-scrollbar">
+                        {enrolledCourses()}
+                    </div>
+                </div>
+            )
+        } else {
+            return (
+                <div className="flex flex-col w-full h-full bg-white p-12 rounded-2xl shadow-custom">
+                    <div
+                        className="flex flex-row space-x-2 items-center mb-2 -mt-4 text-lg hover:opacity-60 duration-150"
+                        onClick={() => setSearch(null)}
+                    >
+                        <MdArrowBack size="28" className="text-red-800"/>
+                        <div>Return To My Courses</div>
+                    </div>
+                    <div className="flex flex-row items-center">
+                        <div className="text-lg mb-4">Available Courses</div>
+                        <TextField text={search} onChange={setSearch} placeholder='Search for a course title...'
+                                   style="mb-4 ml-auto w-1/3"/>
+                    </div>
+                    <div className="flex flex-col gap-4 justify-between overflow-y-scroll sm:no-scrollbar">
+                        {availableCourses()}
+                    </div>
+                </div>
+            )
+        }
+    }
+
     return (
         <main className="flex w-full justify-center mb-4">
-            <div className="flex flex-col bg-white w-full p-12 rounded-2xl shadow-custom">
-                <div className="flex flex-row items-center mb-2">
-                    <div className="flex flex-row items-center">
-                        <div className="text-lg mr-4">My Enrolled Courses</div>
-                        <div className="flex flex-row space-x-2">
-                            {statusValues.map((value, key) => (
-                                <button
-                                    key={key}
-                                    className="border-2 rounded-full px-4 py-1 cursor-pointer"
-                                    style={{
-                                        // @ts-ignore
-                                        borderColor: filters.includes(key) ? statusColors[key] : null,
-                                        opacity: filters.includes(key) ? 1 : 0.5,
-                                    }}
-                                    onClick={() => handleUpdateFilter(key)}
-                                >
-                                    {value}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                    <Button text="Browse Available Courses" onClick={() => router.push("/course_search")} style="ml-auto" />
-                </div>
-                <div className="flex flex-row flex-wrap justify-between mt-4 overflow-y-scroll sm:no-scrollbar">
-                    {enrolledCourses()}
-                </div>
-            </div>
+            {renderPage()}
         </main>
     )
 }
