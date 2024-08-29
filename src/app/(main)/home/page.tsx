@@ -11,7 +11,7 @@ import { useAsync } from "react-async-hook";
 import Link from "next/link";
 import { MdArrowBack } from "react-icons/md";
 import TextField from "@/components/TextField.tsx";
-import AvailableCourse from "@/app/(main)/course_search/AvailableCourse.tsx";
+import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
 
 export default function Home() {
 
