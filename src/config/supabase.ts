@@ -49,17 +49,15 @@ type APIResponse = {
 const callAPI = async (endpoint: string, body: object = {}): Promise<APIResponse> => {
     try {
         const { data, error } = await supabaseClient.functions.invoke(endpoint, { body });
-        console.log(`Data: ${JSON.stringify(data)} Error: ${JSON.stringify(error)}`);
 
         if (error && error instanceof FunctionsHttpError) {
             const errorResponse = await error.response.json();
-            console.error(`Error invoking Supabase Edge Function '${endpoint}': ${JSON.stringify(errorResponse)}`);
             return { error: errorResponse };
         }
 
         return { data: data };
     } catch (error) {
-        console.error(`Error invoking Supabase Edge Function '${endpoint}': ${JSON.stringify(error)} ${error instanceof SyntaxError} '${error.message}'`);
+        console.error(`Error invoking Supabase Edge Function '${endpoint}': ${JSON.stringify(error)} '${error.message}'`);
         return { error: error.message };
     }
 }

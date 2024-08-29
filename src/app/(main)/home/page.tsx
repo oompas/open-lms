@@ -5,8 +5,9 @@ import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import { ApiEndpoints, useAsyncApiCall, auth } from '@/config/firebase';
 import {  } from "@/config/firebase";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { callAPI } from "@/config/supabase.ts";
+import { useAsync } from "react-async-hook";
 
 export default function Home() {
 
@@ -21,15 +22,7 @@ export default function Home() {
         }
     });
 
-    useEffect(() => {
-        callAPI('get-courses')
-            .then((rsp) => {
-                console.log("Get course response: " + JSON.stringify(rsp, null, 4));
-            });
-        return;
-    }, []);
-
-    const courses = useAsyncApiCall(ApiEndpoints.GetAvailableCourses, {});
+    const courses = useAsync(() => callAPI('get-courses'), []);
 
     const TEMP_NOTIFICATION_DATA = [
         { title: "CISC 423", description: "Jan 1, 2023", urgency: "URGENT", link: "no", id: 1 },
