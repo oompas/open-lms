@@ -6,12 +6,14 @@ import Button from "@/components/Button";
 import StatusBadge from "@/components/StatusBadge";
 import { generateDummyData } from "@/app/(main)/admin/tools/generateData";
 import { ApiEndpoints, auth, useAsyncApiCall } from '@/config/firebase';
+import { callAPI } from "@/config/supabase.ts";
+import { useAsync } from "react-async-hook";
 
 export default function Profile() {
 
-    const router = useRouter()
+    const router = useRouter();
 
-    const userData = useAsyncApiCall(ApiEndpoints.GetUserProfile, {}, (rsp) => { setUser(rsp.data); return rsp; });
+    const userData = useAsync(() => callAPI('get-profile'), {}, (rsp) => { setUser(rsp.data); return rsp; });
 
     const [user, setUser] = useState();
     const [status, setStatus] = useState("");
@@ -85,7 +87,7 @@ export default function Profile() {
                         {/* @ts-ignore */}
                         <div className="mr-auto text-lg mb-4">{user && user.email}</div>
                         {/* @ts-ignore */}
-                        <div className="mr-auto text-lg">Joined: <i>{user && unixToString(user.signUpDate)}</i></div>
+                        <div className="mr-auto text-lg">Joined: <i>{user && user.signUpDate}</i></div>
                     </div>
                     <Button text="Log Out" onClick={async () => await logout()}/>
                     {/* <Button text="Add dummy data (WILL CLEAN DATABASE)" onClick={async () => await generateData()}/> */}
