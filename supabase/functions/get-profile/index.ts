@@ -18,6 +18,7 @@ Deno.serve(async (req) => {
     const userData = {
         name: data.user.user_metadata.name,
         email: data.user.email,
+        role: data.user.user_metadata.role,
         signUpDate: data.user.created_at,
         completedCourses: [],
     }
