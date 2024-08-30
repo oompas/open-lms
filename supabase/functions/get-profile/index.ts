@@ -10,7 +10,17 @@ Deno.serve(async (req) => {
 
     const authHeader = req.headers.get('Authorization')!;
     const token = authHeader.replace('Bearer ', '');
+    console.log(`Token: ${token}`);
     const { data, error } = await adminClient.auth.getUser(token);
 
-    return successResponse(data.user);
+    console.log(`Error: ${error}`);
+
+    const userData = {
+        name: data.user.user_metadata.name,
+        email: data.user.email,
+        signUpDate: data.user.created_at,
+        completedCourses: [],
+    }
+
+    return successResponse(userData);
 });
