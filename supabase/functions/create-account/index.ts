@@ -22,7 +22,8 @@ Deno.serve(async (req) => {
         email: email,
         password: password,
         user_metadata: {
-            name: name
+            name: name,
+            role: "Learner"
         }
     };
     const { data, error } = await adminClient.auth.admin.createUser(userData);
