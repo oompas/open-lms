@@ -1,4 +1,7 @@
-import { corsHeaders } from "../_config/cors.ts";
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 const errorResponse = (errorMessage: string) => new Response(
     JSON.stringify(errorMessage),
@@ -10,4 +13,4 @@ const successResponse = (data: any) => new Response(
     { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
 );
 
-export { errorResponse, successResponse };
+export { corsHeaders, errorResponse, successResponse };
