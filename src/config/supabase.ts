@@ -45,10 +45,18 @@ type APIResponse = {
  * Calls a Supabase Edge Function
  * @param endpoint The endpoint name
  * @param body The body of the request
+ * @param withAuth Whether or not to include the user's auth token in the request headers
  */
-const callAPI = async (endpoint: string, body: object = {}): Promise<APIResponse> => {
+const callAPI = async (endpoint: string, body: object = {}, withAuth: boolean = true): Promise<APIResponse> => {
     try {
-        const { data, error } = await supabaseClient.functions.invoke(endpoint, { body });
+        // Get the user's session token (for endpoints that require user auth)
+        const session = withAuth ? await supabaseClient.auth.getSession() : null;
+
+        const options = {
+            body: body,
+            ...(withAuth && { headers: { 'Authorization': `Bearer ${session?.data.session.access_token}` } })
+        }
+        const { data, error } = await supabaseClient.functions.invoke(endpoint, options);
 
         if (error && error instanceof FunctionsHttpError) {
             const errorResponse = await error.response.json();
