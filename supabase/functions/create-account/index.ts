@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { adminClient } from "../_config/adminClient.ts";
-import { errorResponse, successResponse } from "../_helpers/response.ts";
+import { adminClient } from "../_shared/adminClient.ts";
+import { errorResponse, successResponse } from "../_shared/helpers.ts";
 
 Deno.serve(async (req) => {
     const { email, password } = await req.json();

@@ -1,10 +1,14 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { successResponse, errorResponse } from "../_helpers/response.ts";
-import { adminClient } from "../_config/adminClient.ts";
+import { corsHeaders, successResponse, errorResponse } from "../_shared/helpers.ts";
+import { adminClient } from "../_shared/adminClient.ts";
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
 
     // TODO: Verify user is logged in
+
+    if (req.method === 'OPTIONS') {
+        return new Response('ok', { headers: corsHeaders })
+    }
 
     console.log("Staring func...");
 
