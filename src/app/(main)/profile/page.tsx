@@ -13,39 +13,38 @@ export default function Profile() {
 
     const router = useRouter();
 
-    const userData = useAsync(() => callAPI('get-profile'), {}, (rsp) => { setUser(rsp.data); return rsp; });
+    const userData = useAsync(() => callAPI('get-profile').then(r => setUser(r.data)), {});
 
-    const [user, setUser] = useState();
-    const [status, setStatus] = useState("");
+    const [user, setUser] = useState(undefined);
 
-    const unixToString = (unix: number) => {
-        if (unix === -1) {
-            return "Never";
-        }
+    // const unixToString = (unix: number) => {
+    //     if (unix === -1) {
+    //         return "Never";
+    //     }
+    //
+    //     return new Date(unix).toDateString() + ", " + new Date(unix).toLocaleTimeString();
+    // }
 
-        return new Date(unix).toDateString() + ", " + new Date(unix).toLocaleTimeString();
-    }
-
-    useEffect(() => {
-        let unsubscribe: () => void;
-        unsubscribe = auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                try {
-                    const idTokenResult = await user.getIdTokenResult();
-                    if (idTokenResult.claims.admin && idTokenResult.claims.developer) {
-                        setStatus("DEVELOPER");
-                    } else if (idTokenResult.claims.admin && !idTokenResult.claims.developer) {
-                        setStatus("ADMINISTRATOR");
-                    } else {
-                        setStatus("LEARNER");
-                    }
-                } catch (error) {
-                    console.error("Error getting custom claims: ", error);
-                }
-            }
-        });
-        return unsubscribe;
-    }, []);
+    // useEffect(() => {
+    //     let unsubscribe: () => void;
+    //     unsubscribe = auth.onAuthStateChanged(async (user) => {
+    //         if (user) {
+    //             try {
+    //                 const idTokenResult = await user.getIdTokenResult();
+    //                 if (idTokenResult.claims.admin && idTokenResult.claims.developer) {
+    //                     setStatus("DEVELOPER");
+    //                 } else if (idTokenResult.claims.admin && !idTokenResult.claims.developer) {
+    //                     setStatus("ADMINISTRATOR");
+    //                 } else {
+    //                     setStatus("LEARNER");
+    //                 }
+    //             } catch (error) {
+    //                 console.error("Error getting custom claims: ", error);
+    //             }
+    //         }
+    //     });
+    //     return unsubscribe;
+    // }, []);
 
     const generateData = async () => {
         await generateDummyData()
@@ -59,7 +58,7 @@ export default function Profile() {
     }
 
     const loadingPopup = () => {
-        if (userData.result?.data) {
+        if (user) {
             return <></>;
         }
 
@@ -77,10 +76,10 @@ export default function Profile() {
 
     return (
         <main className="flex w-full h-full pb-[2vh]">
-            <div className={`flex flex-col h-[80vh] bg-white ${status === "LEARNER" ? 'w-[60%]' : 'w-full'} p-12 rounded-2xl shadow-custom`}>
+            <div className={`flex flex-col h-[80vh] bg-white ${user?.role === "Learner" ? 'w-[60%]' : 'w-full'} p-12 rounded-2xl shadow-custom`}>
                 <div className="text-lg mb-4">Your Account Details</div>
                 <div className="flex flex-col h-full">
-                    {status && <StatusBadge status={status} style="mb-2"/>}
+                    {user?.role && <StatusBadge status={user?.role} style="mb-2"/>}
                     {/* @ts-ignore */}
                     <div className="text-2xl font-bold mt-2">{user && user.name}</div>
                     <div className="flex flex-col h-full items-end mb-auto">
@@ -93,7 +92,7 @@ export default function Profile() {
                     {/* <Button text="Add dummy data (WILL CLEAN DATABASE)" onClick={async () => await generateData()}/> */}
                 </div>
             </div>
-            {status && status === "LEARNER" && (
+            {user?.role === "Learner" && (
                 <div className="flex flex-col h-[80vh] bg-white w-[38%] ml-[2%] p-12 rounded-2xl shadow-custom">
                     <div className="flex flex-row mb-4">
                         <div className="text-lg mr-auto">Completed Courses</div>
