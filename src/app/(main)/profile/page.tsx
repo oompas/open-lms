@@ -6,7 +6,7 @@ import Button from "@/components/Button";
 import StatusBadge from "@/components/StatusBadge";
 import { generateDummyData } from "@/app/(main)/admin/tools/generateData";
 import { ApiEndpoints, auth, useAsyncApiCall } from '@/config/firebase';
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI, signOut } from "@/config/supabase.ts";
 import { useAsync } from "react-async-hook";
 
 export default function Profile() {
@@ -53,8 +53,7 @@ export default function Profile() {
     };
 
     const logout = async () => {
-        await auth.signOut()
-            .then(() => router.push('/'));
+        await signOut();
     }
 
     const loadingPopup = () => {

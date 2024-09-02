@@ -21,6 +21,19 @@ const signIn = async (email: string, password: string) => {
 }
 
 /**
+ * Signs out a user client-side
+ */
+const signOut = async () => {
+    const { error } = await supabaseClient.auth.signOut();
+
+    if (error) {
+        console.error(`Error signing out: ${error.message}`);
+    }
+
+    return { error };
+}
+
+/**
  * Call on each page to handle login routing (if you're logged in, route to hte homepage, if not, route to the login page)
  * @param router useRouter() hook instance
  */
@@ -70,4 +83,4 @@ const callAPI = async (endpoint: string, body: object = {}, withAuth: boolean = 
     }
 }
 
-export { signIn, handleLoginStatus, callAPI };
+export { signIn, signOut, handleLoginStatus, callAPI, supabaseClient };
