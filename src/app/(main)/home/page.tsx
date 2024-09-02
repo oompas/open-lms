@@ -26,7 +26,9 @@ export default function Home() {
         }
     });
 
-    const courses = useAsync(() => callAPI('get-courses'), []);
+    const getCourseData = useAsync(() => callAPI('get-courses').then(r => setCourseData(r.data)), []);
+
+    const [courseData, setCourseData] = useState<undefined | any[]>(undefined);
 
     const TEMP_NOTIFICATION_DATA = [
         { title: "CISC 423", description: "Jan 1, 2023", urgency: "URGENT", link: "no", id: 1 },
@@ -36,18 +38,17 @@ export default function Home() {
     const [search, setSearch] = useState<string | null>(null);
 
     const enrolledCourses = () => {
-        if (courses.loading) {
+        if (getCourseData.loading) {
             return <div>Loading...</div>;
         }
-        if (courses.error) {
+        if (courseData !== undefined && getCourseData.error) {
             return <div>Error loading courses</div>;
         }
-        // @ts-ignore
-        if (courses.result?.data.filter((course: any) => course.status !== 1).length === 0) {
+
+        if (courseData.filter((course: any) => course.status !== 1).length === 0) {
             return <div className="text-gray-600 text-center">Enroll in courses to get started!</div>
         }
-        // @ts-ignore
-        var temp_courses = [...courses.result.data.filter((course: any) => filters.includes(course.status-2))]
+        const temp_courses = [...courseData.filter((course: any) => filters.includes(course.status-2))]
         if (temp_courses.length % 3 === 2) {
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
@@ -107,7 +108,7 @@ export default function Home() {
     }
 
     const handleUpdateFilter = (key: number) => {
-        var temp = [...filters]
+        const temp = [...filters]
         if (temp.includes(key)) 
             temp.splice(temp.indexOf(key), 1)
         else 
@@ -116,15 +117,14 @@ export default function Home() {
     }
 
     const availableCourses = () => {
-        if (courses.loading) {
+        if (getCourseData.loading) {
             return <div>Loading...</div>;
         }
-        if (courses.error) {
+        if (courseData !== undefined && getCourseData.error) {
             return <div>Error loading courses</div>;
         }
 
-        // @ts-ignore
-        return courses.result.data
+        return courseData
             .filter((course: any) => course.status === 1 && (course.name.toLowerCase().includes(search.toLowerCase())
                 || course.description.toLowerCase().includes(search.toLowerCase())))
             .map((course: any, key: number) => (

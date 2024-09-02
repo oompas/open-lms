@@ -13,7 +13,7 @@ export default function Profile() {
 
     const router = useRouter();
 
-    const userData = useAsync(() => callAPI('get-profile').then(r => setUser(r.data)), {});
+    const getUserData = useAsync(() => callAPI('get-profile').then(r => setUser(r.data)), {});
 
     const [user, setUser] = useState(undefined);
 
@@ -67,7 +67,7 @@ export default function Profile() {
                 className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
                 <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
                     <div className="text-lg">
-                        {userData.loading ? "Loading user data..." : "Error loading user data."}
+                        {getUserData.loading ? "Loading user data..." : "Error loading user data."}
                     </div>
                 </div>
             </div>
