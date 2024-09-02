@@ -1,5 +1,7 @@
 "use client";
 import "./globals.css";
+import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { supabaseClient } from "../config/supabase";
 
 export default function RootLayout({ children }: { children: any }) {
     return (
@@ -11,7 +13,9 @@ export default function RootLayout({ children }: { children: any }) {
             <link rel="icon" href="/openlms.png"/>
         </head>
         <body>
-            {children}
+            <SessionContextProvider supabaseClient={supabaseClient}>
+                {children}
+            </SessionContextProvider>
         </body>
         </html>
     );
