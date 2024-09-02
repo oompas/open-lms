@@ -34,21 +34,6 @@ const signOut = async () => {
     return { error };
 }
 
-/**
- * Call first on each page to handle auth routing (sign in users -> home, sign out users -> signIn)
- * @param router useRouter() hook instance
- * @param isAuthPage If this is an auth page (sign in, sign up, etc.)
- */
-const handleLoginStatus = (router: AppRouterInstance, isAuthPage: boolean) => {
-    const session = useSession();
-
-    if (session?.user && isAuthPage) {
-        router.push('/home');
-    } else if (session === null && !isAuthPage) {
-        router.push('/');
-    }
-}
-
 type APIResponse = {
     success: boolean,
     serverError?: boolean,
@@ -85,4 +70,4 @@ const callAPI = async (endpoint: string, body: object = {}, withAuth: boolean = 
     }
 }
 
-export { signIn, signOut, handleLoginStatus, callAPI, supabaseClient };
+export { signIn, signOut, callAPI, supabaseClient };

@@ -7,10 +7,17 @@ import { useState } from 'react';
 import Button from "@/components/Button";
 import { MdChevronLeft } from 'react-icons/md';
 import TextField from '@/components/TextField';
+import { useSession } from "@supabase/auth-helpers-react";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
     const router = useRouter();
+    const session = useSession();
+
+    if (session === null) {
+        router.push('/');
+    }
+
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
     const [userName, setUserName] = useState<string | null>(null);
     const [selectedLink, setSelectedLink] = useState('/admin/tools');

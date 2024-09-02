@@ -3,13 +3,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from "@/components/Button";
 import AuthForm from '@/components/AuthForm';
-import { signIn, handleLoginStatus } from "@/config/supabase.ts";
+import { signIn } from "@/config/supabase.ts";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export default function AuthPage() {
 
     const router: AppRouterInstance = useRouter();
-    handleLoginStatus(router);
 
     const [email, setEmail] = useState("")
     const [password, setPass] = useState("")
