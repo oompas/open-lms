@@ -1,20 +1,16 @@
 "use client";
-
-import { auth } from '@/config/firebase';
 import { useRouter } from "next/navigation";
+import { useSession } from "@supabase/auth-helpers-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
 
     const router = useRouter();
+    const session = useSession();
 
-    // if user is Learner - go to home
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            auth.currentUser?.getIdTokenResult()
-                .then((idTokenResult) => !idTokenResult.claims.admin ? router.replace("/home") : null)
-                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
-        }
-    });
+    const role = session?.user?.user_metadata?.role;
+    if (role !== 'Admin' && role !== 'Developer') {
+        router.push('/');
+    }
 
-    return (children)
+    return (children);
 }
