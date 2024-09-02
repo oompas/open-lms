@@ -5,7 +5,6 @@ import Button from "@/components/Button";
 import AuthForm from "@/components/AuthForm";
 import VerifyEmailPopup from "@/app/(auth)/signup/VerifyEmail";
 import { callAPI } from "@/config/supabase.ts";
-import { handleLoginStatus } from "@/config/supabase.ts";
 
 export default function SignUpPage() {
 
@@ -23,7 +22,6 @@ export default function SignUpPage() {
     const signUp = async () => {
 
         const rsp = await callAPI('create-account', { email, password, name });
-        console.log(JSON.stringify(rsp, null, 4));
 
         // setInvalidPass(false);
         // setInvalidName(false);

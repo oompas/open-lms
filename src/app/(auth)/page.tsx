@@ -4,11 +4,10 @@ import { useRouter } from 'next/navigation';
 import Button from "@/components/Button";
 import AuthForm from '@/components/AuthForm';
 import { signIn } from "@/config/supabase.ts";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export default function AuthPage() {
 
-    const router: AppRouterInstance = useRouter();
+    const router = useRouter();
 
     const [email, setEmail] = useState("")
     const [password, setPass] = useState("")
@@ -16,17 +15,13 @@ export default function AuthPage() {
 
     const submitLogin = async () => {
         setError(null);
-        // await signInWithEmailAndPassword(auth, email, password)
-        //     .then(() => router.push('/home'))
-        //     .catch((error: any) => setError(error.code));
 
-        const { data, error } = await signIn(email, password);
+        const { error } = await signIn(email, password);
         if (error) {
             setError(error.code);
         } else {
             router.push('/home')
         }
-        console.log(JSON.stringify(data, null, 4));
     };
 
     return (
