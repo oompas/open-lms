@@ -69,9 +69,15 @@ importers:
       autoprefixer:
         specifier: ^10.4.17
         version: 10.4.17(postcss@8.4.35)
+      generate-arrays:
+        specifier: ^2.0.0
+        version: 2.0.0
       postcss:
         specifier: ^8.4.35
         version: 8.4.35
+      suite-metrics:
+        specifier: ^1.3.1
+        version: 1.3.1
       supabase:
         specifier: ^1.191.3
         version: 1.191.3
@@ -959,6 +965,9 @@ packages:
     resolution: {integrity: sha512-Jh/AIwwgaxan+7ZUUmRLCjtchyDiqh4KjBJ5tW3plBZb5iL/BPcso8A5DlzeD9qlw0duCamnNdpFjxwaT0KyKg==}
     engines: {node: '>=14'}
 
+  generate-arrays@2.0.0:
+    resolution: {integrity: sha512-hnjOcwiYW9D6GuZLKnPknW2d5Gw7bRNej4pGzhFEyxhWFOFxtfmGJR+JKQ/vvevSTcCmyzbcsm8Z7my3/V4D7Q==}
+
   get-caller-file@2.0.5:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
     engines: {node: 6.* || 8.* || >= 10.*}
@@ -1201,6 +1210,10 @@ packages:
     resolution: {integrity: sha512-DMy+ERcEW2q8Z2Po+WNXuw3c5YaUSFjAO5GsJqfEl7UjvtIuFKO6ZrKvcItdy98dwFI2N1tg3zNIdKaQT+aNdA==}
     engines: {node: '>=8.6'}
 
+  microtime@3.1.1:
+    resolution: {integrity: sha512-to1r7o24cDsud9IhN6/8wGmMx5R2kT0w2Xwm5okbYI3d1dk6Xv0m+Z+jg2vS9pt+ocgQHTCtgs/YuyJhySzxNg==}
+    engines: {node: '>= 14.13.0'}
+
   mime-db@1.52.0:
     resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
     engines: {node: '>= 0.6'}
@@ -1276,6 +1289,9 @@ packages:
       sass:
         optional: true
 
+  node-addon-api@5.1.0:
+    resolution: {integrity: sha512-eh0GgfEkpnoWDq+VY8OyvYhFEzBk6jIYbRKdIlyTiAXIVJ8PyBaKb0rp7oDtoddbdoHWhq8wwr+XZ81F1rpNdA==}
+
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
@@ -1296,6 +1312,10 @@ packages:
   node-forge@1.3.1:
     resolution: {integrity: sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA==}
     engines: {node: '>= 6.13.0'}
+
+  node-gyp-build@4.8.2:
+    resolution: {integrity: sha512-IRUxE4BVsHWXkV/SFOut4qTlagw2aM8T5/vnTsmrHJvVoKueJHRc/JaFND7QDDc61kLYUJ6qlZM3sqTSyx2dTw==}
+    hasBin: true
 
   node-releases@2.0.14:
     resolution: {integrity: sha512-y10wOWt8yZpqXmOgRo77WaHEmhYQYGNA6y421PKsKYWEK8aW+cqAphborZDhqfyKrbZEN92CN1X2KbafY2s7Yw==}
@@ -1609,6 +1629,9 @@ packages:
     resolution: {integrity: sha512-8EbVDiu9iN/nESwxeSxDKe0dunta1GOlHufmSSXxMD2z2/tMZpDMpvXQGsc+ajGo8y2uYUmixaSRUc/QPoQ0GA==}
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
+
+  suite-metrics@1.3.1:
+    resolution: {integrity: sha512-ysXmRMprLqmLEPWCLV6l8OwAsSrVqcm+TYKal3gP1t0ZvlsNw9bvGiEfLx21eI7SXEer2lJpH0GpY5d1uJyp7g==}
 
   supabase@1.191.3:
     resolution: {integrity: sha512-5tIG7mPc5lZ9QRbkZssyHiOsx42qGFaVqclauXv+1fJAkZnfA28d0pzEDvfs33+w8YTReO5nNaWAgyzkWQQwfA==}
@@ -2919,6 +2942,8 @@ snapshots:
       - supports-color
     optional: true
 
+  generate-arrays@2.0.0: {}
+
   get-caller-file@2.0.5: {}
 
   get-intrinsic@1.2.4:
@@ -3201,6 +3226,11 @@ snapshots:
       braces: 3.0.2
       picomatch: 2.3.1
 
+  microtime@3.1.1:
+    dependencies:
+      node-addon-api: 5.1.0
+      node-gyp-build: 4.8.2
+
   mime-db@1.52.0: {}
 
   mime-types@2.1.35:
@@ -3269,6 +3299,8 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
+  node-addon-api@5.1.0: {}
+
   node-domexception@1.0.0: {}
 
   node-fetch@2.7.0:
@@ -3282,6 +3314,8 @@ snapshots:
       formdata-polyfill: 4.0.10
 
   node-forge@1.3.1: {}
+
+  node-gyp-build@4.8.2: {}
 
   node-releases@2.0.14: {}
 
@@ -3607,6 +3641,10 @@ snapshots:
       mz: 2.7.0
       pirates: 4.0.6
       ts-interface-checker: 0.1.13
+
+  suite-metrics@1.3.1:
+    dependencies:
+      microtime: 3.1.1
 
   supabase@1.191.3:
     dependencies:
