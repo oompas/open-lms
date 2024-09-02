@@ -35,15 +35,17 @@ const signOut = async () => {
 }
 
 /**
- * Call on each page to handle login routing (if you're logged in, route to hte homepage, if not, route to the login page)
+ * Call first on each page to handle auth routing (sign in users -> home, sign out users -> signIn)
  * @param router useRouter() hook instance
+ * @param isAuthPage If this is an auth page (sign in, sign up, etc.)
  */
-const handleLoginStatus = (router: AppRouterInstance) => {
-
+const handleLoginStatus = (router: AppRouterInstance, isAuthPage: boolean) => {
     const session = useSession();
 
-    if (session?.user) {
+    if (session?.user && isAuthPage) {
         router.push('/home');
+    } else if (session === null && !isAuthPage) {
+        router.push('/');
     }
 }
 

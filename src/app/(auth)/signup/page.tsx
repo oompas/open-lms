@@ -10,7 +10,7 @@ import { handleLoginStatus } from "@/config/supabase.ts";
 export default function SignUpPage() {
 
     const router = useRouter();
-    handleLoginStatus(router);
+    handleLoginStatus(router, true);
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
