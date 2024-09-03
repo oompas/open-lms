@@ -14,7 +14,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const router = useRouter();
     const session = useSession();
 
-    if (document.readyState === 'complete' && session === null) {
+    if (document?.readyState === 'complete' && session === null) {
         router.push('/');
     }
 
