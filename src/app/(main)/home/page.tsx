@@ -10,7 +10,15 @@ import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
 
 export default function Home() {
 
-    const getCourseData = useAsync(() => callAPI('get-courses').then(r => setCourseData(r.data)), []);
+    const getCourseData = useAsync(() => {
+        return callAPI('get-courses')
+            .then(r => {
+                setCourseData(r.data);
+                if (r.data.filter(c => c.status !== 1).length === 0) {
+                    setSearch("");
+                }
+            });
+    }, []);
 
     const [courseData, setCourseData] = useState<undefined | any[]>(undefined);
 
