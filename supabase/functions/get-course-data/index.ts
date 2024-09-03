@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { corsHeaders, successResponse, errorResponse } from "../_shared/helpers.ts";
+import { corsHeaders, successResponse, errorResponse, log } from "../_shared/helpers.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 
 Deno.serve(async (req: Request) => {
@@ -16,9 +16,36 @@ Deno.serve(async (req: Request) => {
         return errorResponse(error.message);
     }
 
+    // TODO: return error if course in inactive
     if (data.length === 0) {
-        return new Response("Course not found", { status: 404 });
+        return errorResponse(`Course with id ${id} not found`);
+    }
+    if (data.length > 1) {
+        log(`Multiple courses found with the same ID (${id}) - invalid DB state`);
+        return errorResponse(`Multiple courses found with the same ID (${id}) - invalid DB state`);
+    }
+    const course = data[0];
+
+    let quizData = null;
+    if (course.total_quiz_marks !== null) {
+        quizData = {
+            totalMarks: course.total_quiz_marks,
+            maxAttempts: course.max_quiz_attempts,
+            minScore: course.min_quiz_score,
+            timeLimit: course.quiz_time_limit,
+            numQuestions: course.num_quiz_questions,
+        };
     }
 
-    return successResponse(data[0]);
+    const rsp = {
+        id: course.id,
+        name: course.name,
+        description: course.description,
+        link: course.link,
+        status: 1,
+        minTime: course.min_time,
+
+        quiz: quizData,
+    };
+    return successResponse(rsp);
 });

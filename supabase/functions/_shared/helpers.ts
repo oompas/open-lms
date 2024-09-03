@@ -13,4 +13,6 @@ const successResponse = (data: any) => new Response(
     { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
 );
 
-export { corsHeaders, errorResponse, successResponse };
+const log = (message: string) => console.log(message);
+
+export { corsHeaders, errorResponse, successResponse, log };
