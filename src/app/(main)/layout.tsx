@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 import '../globals.css';
-import { ApiEndpoints, auth, callApi } from '@/config/firebase';
+import { ApiEndpoints, callApi } from '@/config/firebase';
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from 'react';
 import Button from "@/components/Button";
@@ -19,7 +19,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     }
 
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-    const [userName, setUserName] = useState<string | null>(null);
     const [selectedLink, setSelectedLink] = useState('/admin/tools');
 
     const handleLinkClick = (path: string) => {
@@ -27,16 +26,12 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         router.push(path);
     };
 
-    // Takes time to detect if the user is logged in; if so, check if they're an admin
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            auth.currentUser?.getIdTokenResult()
-                .then((idTokenResult) => setIsAdmin(!!idTokenResult.claims.admin))
-                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
-
-            setUserName(user.displayName);
+    useEffect(() => {
+       const role = session?.user?.user_metadata?.role;
+        if (role === 'Admin' || role === 'Developer') {
+            setIsAdmin(true);
         }
-    });
+    }, [session]);
 
     const [showSupportForm, setShowSupportForm] = useState(false);
     const [feedback, setFeedback] = useState('');
