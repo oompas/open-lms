@@ -23,7 +23,7 @@ export default function SignIn({ email, setEmail, setPageType }) {
     };
 
     return (
-        <>
+        <div className="relative min-h-[41.2vh]">
             <div className="text-xl font-bold mb-4">Login</div>
             <AuthForm
                 email={email}
@@ -33,20 +33,6 @@ export default function SignIn({ email, setEmail, setPageType }) {
                 showName={false}
                 onForgotPassword={() => setPageType("forgot-password")}
             />
-            <div className="flex justify-between mt-4">
-                <Button
-                    text="Sign Up" onClick={() => setPageType("signup")}
-                    style="border-[3px] border-red-800"
-                    filled={false}
-                />
-                <Button
-                    text="Login"
-                    onClick={async () => await submitLogin()}
-                    style="ml-4"
-                    icon="arrow"
-                    filled
-                />
-            </div>
             {error && (
                 <p className="text-red-500 mt-2">
                     {error === "auth/invalid-credential" && "Invalid credentials. Please check your email and password."}
@@ -57,6 +43,24 @@ export default function SignIn({ email, setEmail, setPageType }) {
                     {error === "auth/missing-password" && "Missing password. Please enter a password."}
                 </p>
             )}
-        </>
+
+            <div className="absolute bottom-0 w-full">
+                <div className="flex justify-between mt-4">
+                    <Button
+                        text="Sign Up"
+                        onClick={() => setPageType("signup")}
+                        style="border-[3px] border-red-800"
+                        filled={false}
+                    />
+                    <Button
+                        text="Login"
+                        onClick={async () => await submitLogin()}
+                        style="ml-4"
+                        icon="arrow"
+                        filled
+                    />
+                </div>
+            </div>
+        </div>
     );
 }
