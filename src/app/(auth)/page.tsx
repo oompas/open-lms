@@ -20,7 +20,7 @@ export default function AuthPage() {
                 if (error) alert("There was an error updating your password.")
             }
         })
-    }, [])
+    }, []);
 
     const renderComponent = () => {
         switch (pageType) {
