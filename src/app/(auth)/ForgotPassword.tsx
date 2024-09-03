@@ -1,10 +1,22 @@
 import TextField from "@/components/TextField.tsx";
 import Button from "@/components/Button.tsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabaseClient } from "@/config/supabase.ts";
 
 export default function ForgotPassword({ email, setEmail, setPageType }) {
 
     const [isSent, setIsSent] = useState(false);
+
+    const sendResetEmail = async () => {
+        const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email);
+
+        if (!error) {
+            setIsSent(true);
+        }
+
+        console.log(`Data: ${JSON.stringify(data, null, 4)}`);
+        console.log(`Error: ${JSON.stringify(error, null, 4)}`);
+    }
 
     return (
         <div className="flex flex-col h-full w-3/5 space-y-4">
@@ -27,9 +39,7 @@ export default function ForgotPassword({ email, setEmail, setPageType }) {
                         />
                         <Button
                             text="Send Reset Link"
-                            onClick={() => {
-                                console.log("TODO: implement password reset");
-                            }}
+                            onClick={() => sendResetEmail()}
                             filled={true}
                             icon="arrow"
                             style="mt-2"

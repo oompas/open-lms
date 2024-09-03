@@ -1,7 +1,5 @@
 "use client";
 import { createClient, FunctionsHttpError } from "@supabase/supabase-js";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { useSession } from "@supabase/auth-helpers-react";
 
 const supabaseClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

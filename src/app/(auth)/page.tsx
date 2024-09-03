@@ -1,13 +1,26 @@
 "use client"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import SignIn from "@/app/(auth)/SignIn.tsx";
 import ForgotPassword from "@/app/(auth)/ForgotPassword.tsx";
 import SignUp from "@/app/(auth)/SignUp.tsx";
+import { supabaseClient } from "@/config/supabase.ts";
 
 export default function AuthPage() {
 
     const [pageType, setPageType] = useState<"signin" | "signup" | "forgot-password">("signin");
     const [email, setEmail] = useState("");
+
+    useEffect(() => {
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            if (event == "PASSWORD_RECOVERY") {
+                const newPassword = prompt("What would you like your new password to be?");
+                const { data, error } = await supabaseClient.auth.updateUser({ password: newPassword })
+
+                if (data) alert("Password updated successfully!")
+                if (error) alert("There was an error updating your password.")
+            }
+        })
+    }, [])
 
     const renderComponent = () => {
         switch (pageType) {
