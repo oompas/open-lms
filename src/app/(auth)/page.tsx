@@ -7,7 +7,7 @@ import { supabaseClient } from "@/config/supabase.ts";
 
 export default function AuthPage() {
 
-    const [pageType, setPageType] = useState<"signin" | "signup" | "forgot-password">("signin");
+    const [isLogin, setIsLogin] = useState<boolean>(true);
     const [email, setEmail] = useState("");
 
     useEffect(() => {
@@ -23,33 +23,22 @@ export default function AuthPage() {
     }, []);
 
     const renderComponent = () => {
-        switch (pageType) {
-            case "signin":
-                return (
-                    <SignIn
-                        email={email}
-                        setEmail={setEmail}
-                        setPageType={setPageType}
-                    />
-                );
-            case "signup":
-                return (
-                    <SignUp
-                        email={email}
-                        setEmail={setEmail}
-                        setPageType={setPageType}
-                    />
-                );
-            case "forgot-password":
-                return (
-                    <ForgotPassword
-                        email={email}
-                        setEmail={setEmail}
-                        setPageType={setPageType}
-                    />
-                );
-            default:
-                throw new Error(`Invalid page type: ${pageType}`);
+        if (isLogin) {
+            return (
+                <SignIn
+                    email={email}
+                    setEmail={setEmail}
+                    setPageType={setIsLogin}
+                />
+            );
+        } else {
+            return (
+                <SignUp
+                    email={email}
+                    setEmail={setEmail}
+                    setPageType={setIsLogin}
+                />
+            );
         }
     }
 
