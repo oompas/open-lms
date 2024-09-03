@@ -1,30 +1,14 @@
 "use client";
 import EnrolledCourse from "./EnrolledCourse";
-import "../../../config/firebase";
 import Button from "@/components/Button";
-import { useRouter } from "next/navigation";
-import { ApiEndpoints, useAsyncApiCall, auth } from '@/config/firebase';
-import {  } from "@/config/firebase";
 import { useState } from "react";
 import { callAPI } from "@/config/supabase.ts";
 import { useAsync } from "react-async-hook";
-import Link from "next/link";
 import { MdArrowBack } from "react-icons/md";
 import TextField from "@/components/TextField.tsx";
 import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
 
 export default function Home() {
-
-    const router = useRouter();
-
-    // if user is Admin - go to admin tools
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            auth.currentUser?.getIdTokenResult()
-                .then((idTokenResult) => !!idTokenResult.claims.admin ? router.replace('/admin/tools') : null)
-                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
-        }
-    });
 
     const getCourseData = useAsync(() => callAPI('get-courses').then(r => setCourseData(r.data)), []);
 
