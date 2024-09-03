@@ -42,9 +42,23 @@ export default function SignUp({ email, setEmail, setPageType }) {
                 {/*        lowercase letter, one number, and one special character.*/}
                 {/*    </p>*/}
                 {/*)}*/}
-                <Button text="Sign Up" onClick={signUp} style="mt-4 ml-auto" icon="arrow" filled/>
-                <Button text="Back to Login" onClick={() => setPageType('signin')} style="border-[3px] border-red-800"
-                        filled={false}/>
+
+                <div className="flex justify-between mt-6">
+                    <Button
+                        text="Back to Login"
+                        onClick={() => setPageType('signin')}
+                        style="border-[3px] border-red-800"
+                        filled={false}
+                    />
+
+                    <Button
+                        text="Sign Up"
+                        onClick={signUp}
+                        style=""
+                        icon="arrow"
+                        filled
+                    />
+                </div>
             </div>
         </div>
     );
