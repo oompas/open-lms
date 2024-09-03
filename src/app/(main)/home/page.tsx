@@ -14,10 +14,6 @@ export default function Home() {
 
     const [courseData, setCourseData] = useState<undefined | any[]>(undefined);
 
-    const TEMP_NOTIFICATION_DATA = [
-        { title: "CISC 423", description: "Jan 1, 2023", urgency: "URGENT", link: "no", id: 1 },
-    ]
-
     const [filters, setFilters] = useState<number[]>([0, 1, 2, 3, 4]);
     const [search, setSearch] = useState<string | null>(null);
 
