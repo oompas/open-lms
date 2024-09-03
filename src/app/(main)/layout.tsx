@@ -3,7 +3,7 @@ import Link from 'next/link';
 import '../globals.css';
 import { ApiEndpoints, auth, callApi } from '@/config/firebase';
 import { useRouter } from "next/navigation";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from "@/components/Button";
 import { MdChevronLeft } from 'react-icons/md';
 import TextField from '@/components/TextField';
@@ -14,7 +14,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const router = useRouter();
     const session = useSession();
 
-    if (session === null) {
+    if (document.readyState === 'complete' && session === null) {
         router.push('/');
     }
 
