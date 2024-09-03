@@ -21,6 +21,19 @@ Deno.serve(async (req: Request) => {
         return errorResponse(error.message);
     }
 
+    const courses = data
+        .filter((course) => course.active === true)
+        .map((course: any) => {
+            return {
+                id: course.id,
+                name: course.name,
+                description: course.description,
+                status: 1, // TODO: Update when enrolling and all that works
+                minTime: course.min_time,
+                maxQuizTime: course.max_quiz_time,
+            }
+        });
+
     console.log("Returning success...");
-    return successResponse(data);
+    return successResponse(courses);
 });

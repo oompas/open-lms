@@ -152,27 +152,31 @@ export default function Home() {
                     </div>
                 </div>
             )
-        } else {
-            return (
-                <div className="flex flex-col w-full h-full bg-white p-12 rounded-2xl shadow-custom">
-                    <div
-                        className="flex flex-row space-x-2 items-center mb-2 -mt-4 text-lg hover:opacity-60 duration-150"
-                        onClick={() => setSearch(null)}
-                    >
-                        <MdArrowBack size="28" className="text-red-800"/>
-                        <div>Return To My Courses</div>
-                    </div>
-                    <div className="flex flex-row items-center">
-                        <div className="text-lg mb-4">Available Courses</div>
-                        <TextField text={search} onChange={setSearch} placeholder='Search for a course title...'
-                                   style="mb-4 ml-auto w-1/3"/>
-                    </div>
-                    <div className="flex flex-col gap-4 justify-between overflow-y-scroll sm:no-scrollbar">
-                        {availableCourses()}
-                    </div>
-                </div>
-            )
         }
+
+        return (
+            <div className="flex flex-col w-full h-full bg-white p-12 rounded-2xl shadow-custom">
+                <div
+                    className="flex flex-row space-x-2 items-center mb-2 -mt-4 text-lg hover:opacity-60 duration-150"
+                    onClick={() => setSearch(null)}
+                >
+                    <MdArrowBack size="28" className="text-red-800"/>
+                    <div>Return To My Courses</div>
+                </div>
+                <div className="flex flex-row items-center">
+                    <div className="text-lg mb-4">Available Courses</div>
+                    <TextField
+                        text={search}
+                        onChange={setSearch}
+                        placeholder='Search for a course title...'
+                        style="mb-4 ml-auto w-1/3"
+                    />
+                </div>
+                <div className="flex flex-col gap-4 justify-between overflow-y-scroll sm:no-scrollbar">
+                    {availableCourses()}
+                </div>
+            </div>
+        );
     }
 
     return (
