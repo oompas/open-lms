@@ -64,10 +64,11 @@ export default function SignUp({ email, setEmail, setPageType }) {
 
             <div className="flex justify-between mt-6">
                 <Button
-                    text="Back to Login"
+                    text="Login"
                     onClick={() => setPageType('signin')}
                     style="border-[3px] border-red-800"
-                    filled={false}
+                    icon="arrow-back"
+                    iconBefore
                 />
 
                 <Button
