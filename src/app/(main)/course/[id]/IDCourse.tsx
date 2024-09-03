@@ -151,9 +151,12 @@ export default function IDCourse({
                     </div>
                 </div>
                 { showSupportForm && (
-                    <div className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
+                    <div
+                        className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50"
+                    >
                         <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                            <div className="text-lg mb-2">Request course support or report issue</div>
+                            <div className="text-lg font-bold mb-2">Request support or report issue for <i>'{course.name}'</i></div>
+                            <div className="mb-2"><i>If you have an issue with the platform, click 'Request Technical Support' on the bottom pop-up</i></div>
                             <TextField text={feedback} onChange={setFeedback} area placeholder="Type your message here..." />
                             <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-left">
                                 <div className="flex flex-row ml-auto mt-4">
