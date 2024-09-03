@@ -4,32 +4,26 @@ import IDCourse from "./IDCourse";
 import Quiz from "./Quiz"
 import { MdArrowBack } from "react-icons/md";
 import { useEffect, useState } from "react";
-import { ApiEndpoints, auth, useAsyncApiCall } from "@/config/firebase";
 import Checkbox from "@/components/Checkbox";
-import { useRouter } from "next/navigation";
+import { useAsync } from "react-async-hook";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function Course({ params }: { params: { id: string } }) {
 
-    const router = useRouter();
-  
-    // if user is Admin - go to course insights
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            auth.currentUser?.getIdTokenResult()
-                .then((idTokenResult) => !!idTokenResult.claims.admin ? router.replace('/admin/course/'+params.id+"/insights") : null)
-                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
-        }
-    });
+    const getCourseData = useAsync(() => callAPI('get-course-data', { id: params.id })
+        .then(r => setCourseData(r.data)), []);
     
-    const getCourse = useAsyncApiCall(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: false },
-        (result) => {
-            setStatus(result.data.status);
-            setCourseAttemptId(result.data.courseAttemptId);
-            if (result.data.currentQuiz) {
-                setQuizAttemptId(result.data.currentQuiz.id);
-            }
-            return result;
-        });
+    // const getCourse = useAsyncApiCall(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: false },
+    //     (result) => {
+    //         setStatus(result.data.status);
+    //         setCourseAttemptId(result.data.courseAttemptId);
+    //         if (result.data.currentQuiz) {
+    //             setQuizAttemptId(result.data.currentQuiz.id);
+    //         }
+    //         return result;
+    //     });
+
+    const [courseData, setCourseData] = useState<undefined | object>(undefined);
 
     const [status, setStatus] = useState(0);
     const [timeDone, setTimeDone] = useState(false);
@@ -38,19 +32,19 @@ export default function Course({ params }: { params: { id: string } }) {
     const [quizStarted, setQuizStarted] = useState<null|boolean>(null);
 
     useEffect(() => {
-        if (!getCourse.result?.data) {
+        if (!getCourseData.result?.data) {
             return;
         }
 
         setQuizStarted(status <= 2 || status === 6 || !timeDone
             ? null // @ts-ignore
-            : getCourse.result.data.currentQuiz !== null);
+            : getCourseData.result.data.currentQuiz !== null);
 
     }, [status, timeDone]);
 
     const renderCourse = () => {
         // @ts-ignore
-        const course: any = getCourse.result.data;
+        const course: any = getCourseData.result.data;
 
         const getCourseTimeString = () => {
             if (course.minTime < 60) {
@@ -120,9 +114,9 @@ export default function Course({ params }: { params: { id: string } }) {
                 <div>Return To My Courses</div>
             </Link>
 
-            {getCourse.loading && <div>Loading...</div>}
-            {getCourse.error && <div>Error loading course</div>}
-            {getCourse.result && renderCourse()}
+            {getCourseData.loading && <div>Loading...</div>}
+            {getCourseData.error && <div>Error loading course</div>}
+            {getCourseData.result && renderCourse()}
         </main>
     )
 }
