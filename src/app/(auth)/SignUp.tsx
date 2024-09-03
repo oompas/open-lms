@@ -3,7 +3,7 @@ import Button from "@/components/Button.tsx";
 import { callAPI } from "@/config/supabase.ts";
 import React, { useState } from "react";
 
-export default function SignUp({ email, setEmail, setPageType }) {
+export default function SignUp({ email, setEmail, setIsLogin }) {
 
     const [name, setName] = useState("");
     const [password, setPassword] = useState("");
@@ -65,7 +65,7 @@ export default function SignUp({ email, setEmail, setPageType }) {
             <div className="flex justify-between mt-6">
                 <Button
                     text="Login"
-                    onClick={() => setPageType('signin')}
+                    onClick={() => setIsLogin(true)}
                     style="border-[3px] border-red-800"
                     icon="arrow-back"
                     iconBefore

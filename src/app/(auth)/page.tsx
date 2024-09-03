@@ -27,7 +27,7 @@ export default function AuthPage() {
                 <SignIn
                     email={email}
                     setEmail={setEmail}
-                    setPageType={setIsLogin}
+                    setIsLogin={setIsLogin}
                 />
             );
         } else {
@@ -35,7 +35,7 @@ export default function AuthPage() {
                 <SignUp
                     email={email}
                     setEmail={setEmail}
-                    setPageType={setIsLogin}
+                    setIsLogin={setIsLogin}
                 />
             );
         }

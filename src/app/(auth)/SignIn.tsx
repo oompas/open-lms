@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import TextField from "@/components/TextField.tsx";
 
-export default function SignIn({ email, setEmail, setPageType }) {
+export default function SignIn({ email, setEmail, setIsLogin }) {
 
     const router = useRouter();
 
@@ -94,7 +94,7 @@ export default function SignIn({ email, setEmail, setPageType }) {
                     <div className="flex justify-between mt-4">
                         <Button
                             text="Sign Up"
-                            onClick={() => setPageType("signup")}
+                            onClick={() => setIsLogin(false)}
                             style="border-[3px] border-red-800"
                             filled={false}
                         />
