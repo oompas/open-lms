@@ -40,11 +40,12 @@ export default function SignIn({ email, setEmail, setPageType }) {
                         style="border-[3px] border-red-800"
                         filled={false}
                     />
-                    <Button text="Login"
-                            onClick={async () => await submitLogin()}
-                            style="ml-4"
-                            icon="arrow"
-                            filled
+                    <Button
+                        text="Login"
+                        onClick={async () => await submitLogin()}
+                        style="ml-4"
+                        icon="arrow"
+                        filled
                     />
                 </div>
                 {error && (

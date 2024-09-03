@@ -1,7 +1,7 @@
 "use client"
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import SignIn from "@/app/(auth)/SignIn.tsx";
+import ForgotPassword from "@/app/(auth)/ForgotPassword.tsx";
 
 export default function AuthPage() {
 
@@ -44,7 +44,7 @@ export default function AuthPage() {
             <div className="flex max-w-[1000px] bg-white p-12 rounded-2xl shadow-custom">
 
                 {renderComponent()}
-                
+
                 <div className="flex-col h-full w-2/5 ml-10 space-y-4">
                     <div className="text-2xl">Welcome to <b>OpenLMS</b></div>
                     <div>OpenLMS is a generic open-source education platform. Login with your account to get started.</div>
