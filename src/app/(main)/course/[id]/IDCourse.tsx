@@ -168,10 +168,8 @@ export default function IDCourse({
                         </div>
                     </div>
                 )}
-                {/* @ts-ignore */}
                 <div className="flex flex-col justify-center items-center ml-auto border-4 rounded-xl px-10 py-4 shadow-lg" style={{borderColor: statusColors[status]}}>
                     <div className="text-sm -mb-1">Status:</div>
-                    { /* @ts-ignore */ }
                     <div className="text-2xl text-center">{statusNames[status]}</div>
                     {course.minTime && (
                         <>

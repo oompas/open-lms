@@ -43,21 +43,18 @@ export default function Course({ params }: { params: { id: string } }) {
     }, [status, timeDone]);
 
     const renderCourse = () => {
-        // @ts-ignore
-        const course: any = getCourseData.result.data;
-
         const getCourseTimeString = () => {
-            if (course.minTime < 60) {
-                return course.minTime + " minute" + (course.minTime === 1 ? "" : "s");
+            if (courseData.minTime < 60) {
+                return courseData.minTime + " minute" + (courseData.minTime === 1 ? "" : "s");
             }
-            return Math.floor(course.minTime / 60) + " hour" + (Math.floor(course.minTime / 60) > 1 ? "s" : "")
-                + (course.minTime % 60 > 0 ? " and " + course.minTime % 60 + " minute" + (course.minTime % 60 === 1 ? "" : "s") : "");
+            return Math.floor(courseData.minTime / 60) + " hour" + (Math.floor(courseData.minTime / 60) > 1 ? "s" : "")
+                + (courseData.minTime % 60 > 0 ? " and " + courseData.minTime % 60 + " minute" + (courseData.minTime % 60 === 1 ? "" : "s") : "");
         }
 
         return (
             <>
                 <IDCourse
-                    course={course}
+                    course={courseData}
                     timeDone={timeDone}
                     setTimeDone={setTimeDone}
                     status={status}
@@ -67,13 +64,13 @@ export default function Course({ params }: { params: { id: string } }) {
 
                 <div className="mt-8 text-2xl">
                     <h1 className="mb-4">To complete the course:</h1>
-                    {course.minTime &&
+                    {courseData.minTime &&
                         <div className="flex flex-row items-center mt-2">
                             <Checkbox checked={timeDone} setChecked={null} style="mr-3"/>
                             <div>{`Spend at least ${getCourseTimeString()} on the course`}</div>
                         </div>
                     }
-                    {course.quiz &&
+                    {courseData.quiz &&
                         <div className="flex flex-row items-center mt-2">
                             <Checkbox checked={course.status === 6} setChecked={null} style="mr-3"/>
                             <div>{"Pass the quiz"}</div>
@@ -81,21 +78,21 @@ export default function Course({ params }: { params: { id: string } }) {
                     }
                 </div>
 
-                { course.quiz &&
+                { courseData.quiz &&
                     <div className="mt-4">
                         <div className="flex flex-col w-fit">
                             <Quiz
                                 key={1}
-                                length={course.quiz.timeLimit}
-                                numAttempts={course.quizAttempts}
-                                maxAttempts={course.quiz.maxAttempts}
-                                numQuestions={course.quiz.numQuestions}
-                                totalMarks={course.quiz.totalMarks}
-                                minimumScore={course.quiz.minScore}
+                                length={courseData.quiz.timeLimit}
+                                numAttempts={courseData.quizAttempts}
+                                maxAttempts={courseData.quiz.maxAttempts}
+                                numQuestions={courseData.quiz.numQuestions}
+                                totalMarks={courseData.quiz.totalMarks}
+                                minimumScore={courseData.quiz.minScore}
                                 quizStarted={quizStarted}
                                 courseAttemptId={courseAttemptId}
                                 quizAttemptId={quizAttemptId}
-                                courseStatus={course.status}
+                                courseStatus={courseData.status}
                                 courseId={params.id}
                             />
                         </div>
@@ -116,7 +113,7 @@ export default function Course({ params }: { params: { id: string } }) {
 
             {getCourseData.loading && <div>Loading...</div>}
             {getCourseData.error && <div>Error loading course</div>}
-            {getCourseData.result && renderCourse()}
+            {courseData && renderCourse()}
         </main>
     )
 }
