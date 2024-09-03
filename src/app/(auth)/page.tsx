@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import SignIn from "@/app/(auth)/SignIn.tsx";
 import ForgotPassword from "@/app/(auth)/ForgotPassword.tsx";
+import SignUp from "@/app/(auth)/SignUp.tsx";
 
 export default function AuthPage() {
 
