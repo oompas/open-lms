@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { corsHeaders, successResponse, errorResponse, log } from "../_shared/helpers.ts";
-import { adminClient } from "../_shared/adminClient.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
+import { getRows } from "../_shared/database.ts";
 
 Deno.serve(async (req: Request) => {
 
@@ -13,7 +13,7 @@ Deno.serve(async (req: Request) => {
 
     const { id } = await req.json();
 
-    const { data, error } = await adminClient.from('course').select().eq('id', id);
+    const { data, error } = await getRows('course', [['id', id]]);
 
     if (error) {
         return errorResponse(error.message);
@@ -40,7 +40,7 @@ Deno.serve(async (req: Request) => {
         };
     }
 
-    const { data: data2, error: error2 } = await adminClient.from('enrolled_course').select().eq('user_id', userId).eq('course_id', id);
+    const { data: data2, error: error2 } = await getRows('enrolled_course', [['user_id', userId], ['course_id', id]]);
 
     if (error2) {
         return errorResponse(error2.message);
