@@ -106,7 +106,7 @@ export default function Tools() {
                                 coursesEnrolled={learner.coursesEnrolled}
                                 coursesAttempted={learner.coursesAttempted}
                                 coursesCompleted={learner.coursesComplete}
-                                id={learner.uid}
+                                id={learner.id}
                             />
                         ))}
                     </tbody>
@@ -175,7 +175,7 @@ export default function Tools() {
                                 role={admin.role}
                                 coursesCreated={admin.coursesCreated}
                                 coursesPublished={admin.coursesPublished}
-                                id={admin.uid}
+                                id={admin.id}
                             />
                         ))}
                     </tbody>
