@@ -34,6 +34,6 @@ const getRequestUser = async (req: Request): Promise<object> => {
  * @param req The incoming request
  * @returns The user ID, or null if no user authorization in the request
  */
-const getRequestUserId = async (req: Request): Promise<string> => await getRequestUser(req)?.id;
+const getRequestUserId = async (req: Request): Promise<string> => (await getRequestUser(req))?.id;
 
 export { corsHeaders, errorResponse, successResponse, log, getRequestUser, getRequestUserId };
