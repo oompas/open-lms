@@ -105,7 +105,7 @@ export default function Tools() {
                                 email={learner.email}
                                 coursesEnrolled={learner.coursesEnrolled}
                                 coursesAttempted={learner.coursesAttempted}
-                                coursesCompleted={learner.coursesComplete}
+                                coursesCompleted={learner.coursesCompleted}
                                 id={learner.id}
                             />
                         ))}
