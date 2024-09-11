@@ -5,16 +5,18 @@ import CourseInsight from "@/app/(main)/admin/tools/CourseInsight";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ApiEndpoints, callApi, useAsyncApiCall } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import TextField from "@/components/TextField";
 import { downloadZip } from "client-zip";
 import AdminInsight from "@/app/(main)/admin/tools/AdminInsight";
+import { callAPI } from "@/config/supabase.ts";
+import { useAsync } from "react-async-hook";
 
 export default function Tools() {
 
     const router = useRouter();
 
-    const adminInsights = useAsyncApiCall(ApiEndpoints.GetAdminInsights, {});
+    const adminInsights = useAsync(() => callAPI('get-admin-insights'));
 
     enum PopupType {
         InviteLearner,
