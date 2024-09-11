@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { corsHeaders, successResponse } from "../_shared/helpers.ts";
 import { getAllUsers, verifyAdministrator } from "../_shared/auth.ts";
+import { getRows } from "../_shared/database.ts";
 
 Deno.serve(async (req) => {
 
@@ -10,6 +11,21 @@ Deno.serve(async (req) => {
 
     const adminVerify = verifyAdministrator(req);
     if (adminVerify instanceof Response) return adminVerify;
+
+    const courses = await getRows({ table: 'course' });
+    if (courses instanceof Response) return courses;
+
+    const courseInsights = courses.map((course: any) => {
+        return {
+            id: course.id,
+            name: course.name,
+
+            numEnrolled: 0,
+            numComplete: 0,
+            avgTime: 0,
+            avgQuizScore: 0
+        }
+    });
 
     const users = await getAllUsers();
     if (users instanceof Response) return users;
@@ -43,7 +59,7 @@ Deno.serve(async (req) => {
 
     const rspData = {
         quizAttemptsToMark: [],
-        courseInsights: [],
+        courseInsights,
         learners,
         admins
     };

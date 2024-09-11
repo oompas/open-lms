@@ -5,19 +5,18 @@ export default function CourseInsight({
     courseData
 } : {
     courseData: {
-        courseId: string,
+        id: string,
         name: string,
         numEnrolled: number,
         numComplete: number,
         avgTime: number,
         avgQuizScore: number
-
     }
 }) {
     return (
-        <tr key={courseData.courseId} className="border">
+        <tr key={courseData.id} className="border">
             <td className="border p-2">
-                <Link href={"/admin/course/"+courseData.courseId+"/insights"} className="flex flex-row items-center hover:opacity-60">
+                <Link href={"/admin/course/" + courseData.id + "/insights"} className="flex flex-row items-center hover:opacity-60">
                     {courseData.name}
                     <LuExternalLink className="ml-1" color="rgb(153 27 27" />
                 </Link>
