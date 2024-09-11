@@ -5,7 +5,6 @@ import CompletedCourse from "./CompletedCourse";
 import Button from "@/components/Button";
 import StatusBadge from "@/components/StatusBadge";
 import { generateDummyData } from "@/app/(main)/admin/tools/generateData";
-import { ApiEndpoints, auth, useAsyncApiCall } from '@/config/firebase';
 import { callAPI, signOut } from "@/config/supabase.ts";
 import { useAsync } from "react-async-hook";
 
@@ -75,7 +74,7 @@ export default function Profile() {
 
     return (
         <main className="flex w-full h-full pb-[2vh]">
-            <div className={`flex flex-col h-[80vh] bg-white ${user?.role === "Learner" ? 'w-[60%]' : 'w-full'} p-12 rounded-2xl shadow-custom`}>
+            <div className={`flex flex-col h-[80vh] bg-white w-[60%] p-12 rounded-2xl shadow-custom`}>
                 <div className="text-lg mb-4">Your Account Details</div>
                 <div className="flex flex-col h-full">
                     {user?.role && <StatusBadge status={user?.role} style="mb-2"/>}
@@ -91,24 +90,23 @@ export default function Profile() {
                     {/* <Button text="Add dummy data (WILL CLEAN DATABASE)" onClick={async () => await generateData()}/> */}
                 </div>
             </div>
-            {user?.role === "Learner" && (
-                <div className="flex flex-col h-[80vh] bg-white w-[38%] ml-[2%] p-12 rounded-2xl shadow-custom">
-                    <div className="flex flex-row mb-4">
-                        <div className="text-lg mr-auto">Completed Courses</div>
-                    </div>
-                    <div className="flex flex-col justify-between overflow-y-scroll sm:no-scrollbar">
-                        {/* @ts-ignore */}
-                        {user && user.completedCourses.map((course, key) => (
-                            <CompletedCourse
-                                key={key}
-                                title={course.name}
-                                date={course.date}
-                                id={course.courseId}
-                            />
-                        ))}
-                    </div>
+            <div className="flex flex-col h-[80vh] bg-white w-[38%] ml-[2%] p-12 rounded-2xl shadow-custom">
+                <div className="flex flex-row mb-4">
+                    <div className="text-lg mr-auto">Completed Courses</div>
                 </div>
-            )}
+                <div className="flex flex-col justify-between overflow-y-scroll sm:no-scrollbar">
+                    {/* @ts-ignore */}
+                    {user && user.completedCourses.map((course, key) => (
+                        <CompletedCourse
+                            key={key}
+                            title={course.name}
+                            date={course.date}
+                            id={course.courseId}
+                        />
+                    ))}
+                </div>
+            </div>
+
             { loadingPopup() }
 
         </main>
