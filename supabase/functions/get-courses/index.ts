@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { corsHeaders, successResponse, errorResponse, log } from "../_shared/helpers.ts";
-import { adminClient } from "../_shared/adminClient.ts";
+import { getRows } from "../_shared/database.ts";
 
 Deno.serve(async (req: Request) => {
 
@@ -10,7 +10,7 @@ Deno.serve(async (req: Request) => {
 
     log("Staring func...");
 
-    const { data, error } = await adminClient.from('course').select();
+    const { data, error } = await getRows('course');
 
     log("Called course select...");
 

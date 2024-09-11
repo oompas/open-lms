@@ -15,6 +15,4 @@ const successResponse = (data: any) => new Response(
 
 const log = (message: string) => console.log(message);
 
-
-
 export { corsHeaders, errorResponse, successResponse, log };
