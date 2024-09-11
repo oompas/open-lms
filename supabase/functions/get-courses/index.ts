@@ -4,8 +4,6 @@ import { adminClient } from "../_shared/adminClient.ts";
 
 Deno.serve(async (req: Request) => {
 
-    // TODO: Verify user is logged in
-
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }

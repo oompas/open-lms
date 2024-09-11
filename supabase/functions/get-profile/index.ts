@@ -1,6 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, successResponse } from "../_shared/helpers.ts";
-import { adminClient } from "../_shared/adminClient.ts";
+import { corsHeaders, successResponse, getRequestUser } from "../_shared/helpers.ts";
 
 Deno.serve(async (req) => {
 
@@ -8,18 +7,12 @@ Deno.serve(async (req) => {
         return new Response('ok', { headers: corsHeaders })
     }
 
-    const authHeader = req.headers.get('Authorization')!;
-    const token = authHeader.replace('Bearer ', '');
-    log(`Token: ${token}`);
-    const { data, error } = await adminClient.auth.getUser(token);
-
-    log(`Error: ${error}`);
-
+    const user = await getRequestUser(req);
     const userData = {
-        name: data.user.user_metadata.name,
-        email: data.user.email,
-        role: data.user.user_metadata.role,
-        signUpDate: data.user.created_at,
+        name: user.user_metadata.name,
+        email: user.email,
+        role: user.user_metadata.role,
+        signUpDate: user.created_at,
         completedCourses: [],
     }
 
