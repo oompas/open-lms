@@ -12,6 +12,18 @@ Deno.serve(async (req) => {
     const adminVerify = verifyAdministrator(req);
     if (adminVerify instanceof Response) return adminVerify;
 
+    const quizzesToMark = await getRows({ table: 'quiz_attempt', conditions: [['null', 'pass'], ['notnull', 'end_time']] });
+    if (quizzesToMark instanceof Response) return quizzesToMark;
+
+    const quizAttemptsToMark = quizzesToMark.map((quizAttempt: any) => {
+        return {
+            id: quizAttempt.id,
+            courseName: '_placeholder_course_name',
+            timestamp: 0,
+            userName: '_placeholder_user'
+        }
+    });
+
     const courses = await getRows({ table: 'course' });
     if (courses instanceof Response) return courses;
 
@@ -58,7 +70,7 @@ Deno.serve(async (req) => {
     });
 
     const rspData = {
-        quizAttemptsToMark: [],
+        quizAttemptsToMark,
         courseInsights,
         learners,
         admins
