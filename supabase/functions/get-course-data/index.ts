@@ -11,7 +11,7 @@ Deno.serve(async (req: Request) => {
     // Get user data
     const authHeader = req.headers.get('Authorization')!;
     const token = authHeader.replace('Bearer ', '');
-    console.log(`Token: ${token}`);
+    log(`Token: ${token}`);
     const userRsp = await adminClient.auth.getUser(token);
     const userId = userRsp.data.user.id;
 

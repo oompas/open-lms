@@ -1,8 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, errorResponse, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, errorResponse, log, successResponse } from "../_shared/helpers.ts";
 import { adminClient } from "../_shared/adminClient.ts";
-
-console.log("Hello from Functions!")
 
 Deno.serve(async (req) => {
 
@@ -13,7 +11,7 @@ Deno.serve(async (req) => {
     // Check if already enrolled
     const authHeader = req.headers.get('Authorization')!;
     const token = authHeader.replace('Bearer ', '');
-    console.log(`Token: ${token}`);
+    log(`Token: ${token}`);
     const rsp = await adminClient.auth.getUser(token);
     const userId = rsp.data.user.id;
 
