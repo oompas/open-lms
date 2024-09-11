@@ -13,7 +13,7 @@ Deno.serve(async (req: Request) => {
 
     const { id } = await req.json();
 
-    const course = await getRows({ table: 'course', filters: [['eq', 'course_id', id], ['eq', 'active', true]], expectResults: ['eq', 1] });
+    const course = await getRows({ table: 'course', conditions: [['eq', 'course_id', id], ['eq', 'active', true]], expectResults: ['eq', 1] });
     if (course instanceof Response) return course;
 
     const courseData = course[0];
@@ -28,7 +28,7 @@ Deno.serve(async (req: Request) => {
         };
     }
 
-    const enrollment = await getRows({ table: 'enrolled_course', filters: [['eq', 'user_id', userId], ['eq', 'course_id', id]], expectResults: ['range', [0, 1]] });
+    const enrollment = await getRows({ table: 'enrolled_course', conditions: [['eq', 'user_id', userId], ['eq', 'course_id', id]], expectResults: ['range', [0, 1]] });
     if (enrollment instanceof Response) return enrollment;
 
     const enrolled = enrollment.length > 0;

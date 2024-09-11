@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, successResponse, errorResponse, log } from "../_shared/helpers.ts";
+import { corsHeaders, successResponse, log } from "../_shared/helpers.ts";
 import { getRows } from "../_shared/database.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 
@@ -13,12 +13,12 @@ Deno.serve(async (req: Request) => {
 
     const userId = await getRequestUserId(req);
 
-    const courses = await getRows({ table: 'course', filters: ['eq', 'active', true] });
+    const courses = await getRows({ table: 'course', conditions: ['eq', 'active', true] });
     if (courses instanceof Response) return courses;
 
     log("Called course select...");
 
-    const enrollment = await getRows({ table: 'enrolled_course', filters: ['eq', 'user_id', userId] });
+    const enrollment = await getRows({ table: 'enrolled_course', conditions: ['eq', 'user_id', userId] });
     if (enrollment instanceof Response) return enrollment;
 
     const courseData = courses
