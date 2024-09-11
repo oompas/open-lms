@@ -149,7 +149,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         }
 
         try {
-            await callApi(ApiEndpoints.AddCourse, courseData).then((result) => router.push(`/admin/course/${result.data}`));
+            await callAPI('create-course', { course: courseData }).then((result) => router.push(`/admin/course/${result.data}`));
         } catch (error: any) {
             const errorMessage = error.toString().split(':').slice(-1)[0].trim();
             setShowAddCourseErrorPopup(true);
