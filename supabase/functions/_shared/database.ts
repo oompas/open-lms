@@ -43,9 +43,9 @@ const getRows = async ({ table, conditions = [], expectResults, limit = 1000 }: 
     const query = adminClient.from(table).select();
     conditions.forEach(([filter, key, value]) => {
         if (filter === 'null') {
-            query.is(key, value);
+            query.is(key, null);
         } else if (filter === 'notnull') {
-            query.not(key, 'is', value);
+            query.not(key, 'is', null);
         } else {
             query[filter](key, value);
         }
