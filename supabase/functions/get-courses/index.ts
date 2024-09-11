@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { corsHeaders, successResponse, errorResponse, log } from "../_shared/helpers.ts";
 import { getRows } from "../_shared/database.ts";
+import { getRequestUserId } from "../_shared/auth.ts";
 
 Deno.serve(async (req: Request) => {
 
@@ -10,10 +11,15 @@ Deno.serve(async (req: Request) => {
 
     log("Staring func...");
 
+    const userId = await getRequestUserId(req);
+
     const courses = await getRows({ table: 'course', filters: ['eq', 'active', true] });
     if (courses instanceof Response) return courses;
 
     log("Called course select...");
+
+    const enrollment = await getRows({ table: 'enrolled_course', filters: ['eq', 'user_id', userId] });
+    if (enrollment instanceof Response) return enrollment;
 
     const courseData = courses
         .filter((course) => course.active === true)
@@ -22,7 +28,7 @@ Deno.serve(async (req: Request) => {
                 id: course.id,
                 name: course.name,
                 description: course.description,
-                status: 1, // TODO: Update when enrolling and all that works
+                status: enrollment.some((enrolledCourse: any) => enrolledCourse.course_id === course.id) ? 2 : 1,
                 minTime: course.min_time,
                 maxQuizTime: course.max_quiz_time,
             }
