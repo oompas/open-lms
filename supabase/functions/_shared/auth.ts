@@ -1,5 +1,5 @@
 import { adminClient } from "./adminClient.ts";
-import { errorResponse } from "./helpers.ts";
+import { errorResponse, log } from "./helpers.ts";
 
 type UserData = {
     email: string,
@@ -59,14 +59,15 @@ const getRequestUserId = async (req: Request): Promise<string> => (await getRequ
 /**
  * Check if the user is an administrator (or developer)
  * @param req The incoming request
- * @returns null if the user is an admin/dev, an error response if not
+ * @returns The user ID if the user is an admin/dev, an error response if not
  */
-const verifyAdministrator = async (req: Request): Promise<null | Response> => {
+const verifyAdministrator = async (req: Request): Promise<string | Response> => {
     const user = await getRequestUser(req);
-    if (user?.user_metadata.role !== "Admin" || user?.user_metadata.role !== "Developer") {
+    log(`User role: ${user?.user_metadata.role} User: ${JSON.stringify(user, null, 4)}`);
+    if (user?.user_metadata.role !== "Admin" && user?.user_metadata.role !== "Developer") {
         return errorResponse("You must be an administrator to perform this action");
     }
-    return null;
+    return user.id;
 }
 
 export { createUser, getAllUsers, getRequestUser, getRequestUserId, verifyAdministrator };
