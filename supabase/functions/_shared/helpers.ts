@@ -3,6 +3,11 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const internalError = () => new Response(
+    JSON.stringify("Internal error - please try again later or contact support"),
+    { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
+);
+
 const errorResponse = (errorMessage: string) => new Response(
     JSON.stringify(errorMessage),
     { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
@@ -15,4 +20,4 @@ const successResponse = (data: any) => new Response(
 
 const log = (message: string) => console.log(message);
 
-export { corsHeaders, errorResponse, successResponse, log };
+export { corsHeaders, internalError, errorResponse, successResponse, log };
