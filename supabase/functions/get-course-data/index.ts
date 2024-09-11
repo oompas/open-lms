@@ -13,7 +13,7 @@ Deno.serve(async (req: Request) => {
 
     const { id } = await req.json();
 
-    const course = await getRows({ table: 'course', conditions: [['eq', 'course_id', id], ['eq', 'active', true]], expectResults: ['eq', 1] });
+    const course = await getRows({ table: 'course', conditions: [['eq', 'id', id], ['eq', 'active', true]], expectResults: ['eq', 1] });
     if (course instanceof Response) return course;
 
     const courseData = course[0];
