@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
 
     const { id } = await req.json();
 
-    const { data, error } = await getRows('enrolled_course', [['user_id', userId], ['course_id', id]]);
+    const { data, error } = await getRows('enrolled_course', [['eq', 'user_id', userId], ['eq', 'course_id', id]]);
 
     if (error) {
         return errorResponse(error.message);

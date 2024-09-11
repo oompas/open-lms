@@ -13,7 +13,7 @@ Deno.serve(async (req: Request) => {
 
     const { id } = await req.json();
 
-    const { data, error } = await getRows('course', [['id', id]]);
+    const { data, error } = await getRows('course', [['eq', 'id', id]]);
 
     if (error) {
         return errorResponse(error.message);
@@ -40,7 +40,7 @@ Deno.serve(async (req: Request) => {
         };
     }
 
-    const { data: data2, error: error2 } = await getRows('enrolled_course', [['user_id', userId], ['course_id', id]]);
+    const { data: data2, error: error2 } = await getRows('enrolled_course', [['eq', 'user_id', userId], ['eq', 'course_id', id]]);
 
     if (error2) {
         return errorResponse(error2.message);
