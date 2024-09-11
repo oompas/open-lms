@@ -12,7 +12,7 @@ export default function SignUp({ email, setEmail, setIsLogin }) {
 
     const signUp = () => {
         console.log(`Email: ${email}, Password: ${password}, Name: ${name}`);
-        callAPI('create-account', { email, password, name }, false)
+        callAPI('create-account', { email, password, name })
             .then((r) => {
                 if (!r.error) {
                     setShowVerifyEmailPopup(true);
