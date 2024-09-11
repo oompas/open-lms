@@ -8,7 +8,7 @@ type Filter = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'i
 
 type QueryParams = {
     table: TableName,
-    conditions?: [Filter, string, any][],
+    conditions?: [Filter, string, any] | [Filter, string, any][],
     expectResults?: ['eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte', number] | ['range', [number, number]],
     limit?: number,
 };
@@ -24,16 +24,27 @@ type QueryParams = {
  */
 const getRows = async ({ table, conditions = [], expectResults, limit = 1000 }: QueryParams): Promise<{}[]> => {
 
+    // Supabase has a max of 1000 query results
     if (limit > 1000) {
         log(`Database query limit cannot exceed 1000: '${limit}' is too much`);
-        return errorResponse(`Database query limit cannot exceed 1000: '${limit}' is too much`);
+        return internalError();
+    }
+    if (limit < 1) {
+        log(`Database query limit must be at least 1: '${limit}' is too low`);
+        return internalError();
     }
 
+    // Wrap single conditions in an array for consistency
+    if (conditions.length && !Array.isArray(conditions[0])) {
+        conditions = [conditions];
+    }
+
+    // Setup and call query
     const query = adminClient.from(table).select();
     conditions.forEach(([filter, key, value]) => query[filter](key, value));
-
     const { data, error } = await query.limit(limit);
 
+    // Handle errors & return data
     if (error) {
         log(`Error querying data (table: ${table} conditions: ${JSON.stringify(conditions)} limit: ${limit}): ${error.message}`);
         return errorResponse(error.message);

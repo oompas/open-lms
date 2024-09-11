@@ -10,16 +10,12 @@ Deno.serve(async (req: Request) => {
 
     log("Staring func...");
 
-    const { data, error } = await getRows('course');
+    const courses = await getRows({ table: 'course', filters: ['eq', 'active', true] });
+    if (courses instanceof Response) return courses;
 
     log("Called course select...");
 
-    if (error) {
-        log("Error! " + error.message);
-        return errorResponse(error.message);
-    }
-
-    const courses = data
+    const courseData = courses
         .filter((course) => course.active === true)
         .map((course: any) => {
             return {
@@ -33,5 +29,5 @@ Deno.serve(async (req: Request) => {
         });
 
     log("Returning success...");
-    return successResponse(courses);
+    return successResponse(courseData);
 });

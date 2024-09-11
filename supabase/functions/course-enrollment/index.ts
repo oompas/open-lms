@@ -14,13 +14,10 @@ Deno.serve(async (req) => {
 
     const { id } = await req.json();
 
-    const { data, error } = await getRows('enrolled_course', [['eq', 'user_id', userId], ['eq', 'course_id', id]]);
+    const course = await getRows({ table: 'enrolled_course', filters: [['eq', 'user_id', userId], ['eq', 'course_id', id]], expectResults: ['range', [0, 1]] });
+    if (course instanceof Response) return course;
 
-    if (error) {
-        return errorResponse(error.message);
-    }
-
-    if (data.length === 0) {
+    if (course.length === 0) {
         const { error: error2 } = await adminClient.from('enrolled_course').insert({ user_id: userId, course_id: id });
 
         if (error2) {
@@ -34,5 +31,5 @@ Deno.serve(async (req) => {
         }
     }
 
-    return successResponse({ enrolled: data.length === 0 });
+    return successResponse({ enrolled: course.length === 0 });
 });
