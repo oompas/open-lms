@@ -49,10 +49,11 @@ const callAPI = async (endpoint: string, body: object = {}): Promise<APIResponse
     try {
         // Get the user's session token
         const session = await supabaseClient.auth.getSession();
+        const accessToken = session?.data?.session?.access_token;
 
         const options = {
             body: body,
-            headers: { 'Authorization': `Bearer ${session?.data.session.access_token}` }
+            ...(accessToken && { headers: { 'Authorization': `Bearer ${accessToken}` } })
         }
         const { data, error } = await supabaseClient.functions.invoke(endpoint, options);
 
