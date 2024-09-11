@@ -3,6 +3,7 @@ import Button from "@/components/Button"
 import { useEffect, useState } from "react";
 import { ApiEndpoints, callApi } from "@/config/firebase";
 import TextField from "@/components/TextField";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function IDCourse({
     course,
@@ -53,9 +54,9 @@ export default function IDCourse({
     }, [countdown]);
 
     const enrollment = () => {
-        return callApi(ApiEndpoints.CourseEnrollment, { courseId: course.courseId })
+        return callAPI('course-enrollment', { id: course.id })
             .then(() => setStatus(status === 1 ? 2 : 1))
-            .catch((err) => { throw new Error(`Error enrolling in course: ${err}`) });
+            .catch((err) => { throw new Error(`Error getting course data: ${err}`) });
     };
 
     const start = () => {
