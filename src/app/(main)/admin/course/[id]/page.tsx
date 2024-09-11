@@ -7,7 +7,8 @@ import { MdAdd } from "react-icons/md";
 import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
 import { ApiEndpoints, callApi } from "@/config/firebase";
-import { useRouter } from "next/navigation"; // @ts-ignore
+import { useRouter } from "next/navigation";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function AdminCourse({ params }: { params: { id: string } }) {
 
@@ -95,7 +96,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     useEffect(() => {
         if (!loading || newCourse) return;
 
-        callApi(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: true })
+        callAPI('get-course-data', { id: params.id, withQuiz: true })
             .then((result) => {
                 const data: any = result.data;
 
