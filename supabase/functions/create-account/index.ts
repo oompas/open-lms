@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { adminClient } from "../_shared/adminClient.ts";
 import { corsHeaders, errorResponse, log, successResponse } from "../_shared/helpers.ts";
+import { createUser } from "../_shared/auth.ts";
 
 Deno.serve(async (req) => {
 
@@ -21,12 +21,9 @@ Deno.serve(async (req) => {
     const userData = {
         email: email,
         password: password,
-        user_metadata: {
-            name: name,
-            role: "Learner"
-        }
+        name: name
     };
-    const { data, error } = await adminClient.auth.admin.createUser(userData);
+    const { data, error } = await createUser(userData);
 
     if (error) {
         log(`Error creating user: ${error.message}`);
