@@ -60,7 +60,7 @@ export default function IDCourse({
     };
 
     const start = () => {
-        return callApi(ApiEndpoints.StartCourse, { courseId: course.courseId })
+        return callAPI('start-course', { id: course.id })
             .then((result) => {
                 setCourseAttemptId(result.data);
                 setCountDown(60 * course.minTime);
