@@ -8,6 +8,13 @@ Deno.serve(async (req: Request) => {
       return new Response('ok', { headers: corsHeaders })
     }
 
+    // Get user data
+    const authHeader = req.headers.get('Authorization')!;
+    const token = authHeader.replace('Bearer ', '');
+    console.log(`Token: ${token}`);
+    const userRsp = await adminClient.auth.getUser(token);
+    const userId = userRsp.data.user.id;
+
     const { id } = await req.json();
 
     const { data, error } = await adminClient.from('course').select().eq('id', id);
@@ -37,12 +44,19 @@ Deno.serve(async (req: Request) => {
         };
     }
 
+    const { data: data2, error: error2 } = await adminClient.from('enrolled_course').select().eq('user_id', userId).eq('course_id', id);
+
+    if (error2) {
+        return errorResponse(error2.message);
+    }
+    const enrolled = data2.length > 0;
+
     const rsp = {
         id: course.id,
         name: course.name,
         description: course.description,
         link: course.link,
-        status: 1,
+        status: enrolled ? 2 : 1,
         minTime: course.min_time,
 
         quiz: quizData,
