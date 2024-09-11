@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, errorResponse, getRequestUserId, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, errorResponse, successResponse } from "../_shared/helpers.ts";
 import { adminClient } from "../_shared/adminClient.ts";
+import { getRequestUserId } from "../_shared/auth.ts";
 
 Deno.serve(async (req) => {
 
