@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, successResponse, errorResponse } from "../_shared/helpers.ts";
+import { corsHeaders, successResponse, errorResponse, log } from "../_shared/helpers.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 
 Deno.serve(async (req: Request) => {
@@ -10,14 +10,14 @@ Deno.serve(async (req: Request) => {
         return new Response('ok', { headers: corsHeaders })
     }
 
-    console.log("Staring func...");
+    log("Staring func...");
 
     const { data, error } = await adminClient.from('course').select();
 
-    console.log("Called course select...");
+    log("Called course select...");
 
     if (error) {
-        console.log("Error! " + error.message);
+        log("Error! " + error.message);
         return errorResponse(error.message);
     }
 
@@ -34,6 +34,6 @@ Deno.serve(async (req: Request) => {
             }
         });
 
-    console.log("Returning success...");
+    log("Returning success...");
     return successResponse(courses);
 });
