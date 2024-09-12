@@ -22,6 +22,7 @@ Deno.serve(async (req: Request) => {
     log(`Course data: ${JSON.stringify(courseData)}`);
     const courseObj = new Course(courseData);
     log(`Course object data: ${courseObj.toJSON(true)}`);
+    log(`Data and object data are equal: ${JSON.stringify(courseData, null, 4) === courseObj.toJSON(true)}`);
 
     let quizData = null;
     if (courseData.total_quiz_marks !== null) {

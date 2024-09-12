@@ -47,7 +47,7 @@ abstract class DatabaseTable {
      */
     public toJSON(stringify: boolean = false): object | string {
         const obj = {};
-        Object.getOwnPropertyNames(this).forEach((key) => {
+        Object.keys(this).forEach((key) => {
             if (!this.nonSerializedFields.includes(key)) {
                 obj[key] = this[key];
             }
