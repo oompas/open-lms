@@ -1,13 +1,19 @@
-type ExpectedType = {
+interface ExpectedType {
     name: string;
     type: string;
     nullable: boolean;
-};
+}
 
 abstract class DatabaseTable {
 
-    protected abstract expectedTypes: ExpectedTypes[];
-    private nonSerializedFields: string[] = ['nonSerializedFields', 'expectedTypes'];
+    // Each subclass defines the expected structure
+    protected abstract readonly expectedTypes: ExpectedTypes[];
+
+    // Non-data fields (helpers) that shouldn't be serialized
+    private readonly nonSerializedFields: string[] = [
+        'nonSerializedFields',
+        'expectedTypes'
+    ];
 
     protected constructor() {}
 
