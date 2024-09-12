@@ -185,7 +185,7 @@ export default function Tools() {
     }
 
     const downloadCourseReports = async () => {
-        await callApi(ApiEndpoints.DownloadCourseReports, {}) // @ts-ignore
+        await callAPI('get-course-reports') // @ts-ignore
             .then(async (response: { data: { courses: string, quizQuestions: string, courseAttempts: string, quizAttempts: string, quizQuestionAttempts: string } }) => {
 
                 // Since there's multiple files, create a zip file
