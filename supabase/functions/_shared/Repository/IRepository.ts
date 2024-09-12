@@ -1,6 +1,11 @@
 import DatabaseTable from "../DatabaseObjects/DatabaseTable.ts";
 
+type QueryConditionType = "eq" | "null" | "notnull";
+type QueryCondition = { column: string, condition: QueryConditionType, value?: any };
+
 interface IRepository<T extends DatabaseTable> {
+    query: (conditions?: QueryCondition | QueryCondition[]) => Promise<T[]>;
+
     findAll: (conditions?: object) => Promise<T[]>;
     findOne: (conditions: object) => Promise<T | null>;
     update: (entity: T) => Promise<void>;
@@ -9,3 +14,4 @@ interface IRepository<T extends DatabaseTable> {
 }
 
 export default IRepository;
+export { QueryCondition, QueryConditionType };

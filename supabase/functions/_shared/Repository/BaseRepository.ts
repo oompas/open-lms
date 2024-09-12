@@ -1,8 +1,48 @@
 import DatabaseTable from "../DatabaseObjects/DatabaseTable.ts";
-import IRepository from "./IRepository.ts";
+import IRepository, { QueryCondition } from "./IRepository.ts";
+import { adminClient } from "../adminClient.ts";
+import { errorResponse, log } from "../helpers.ts";
 
 abstract class BaseRepository<T extends DatabaseTable> implements IRepository<T> {
-    protected abstract tableName: string;
+
+    protected abstract readonly tableName: string;
+    protected abstract readonly entityClass: new (data: any) => T;
+
+    private readonly QUERY_LIMIT = 1000; // Default limit from supabase
+
+    public async query(conditions: QueryCondition | QueryCondition[] = []): Promise<T[]> {
+
+        // Wrap single condition in array for consistency
+        if (!Array.isArray(conditions)) {
+            conditions = [conditions];
+        }
+
+        const query = adminClient.from(table).select('*');
+        for (const condition of conditions) {
+            switch (condition.condition) {
+                case 'eq':
+                    query.eq(condition.column, condition.value);
+                    break;
+                case 'null':
+                    query.is(condition.column, null);
+                    break;
+                case 'notnull':
+                    query.not(condition.column, 'is', null);
+                    break;
+                default:
+                    throw new Error(`Invalid query condition type: ${condition.condition}`);
+            }
+        }
+
+        const { data, error } = await query.limit(QUERY_LIMIT);
+
+        if (error) {
+            log(`Error querying data (table: ${table} conditions: ${JSON.stringify(conditions)} limit: ${QUERY_LIMIT}): ${error.message}`);
+            return errorResponse(error.message);
+        }
+
+        return data.map((row: any) => new this.entityClass(row));
+    }
 
     // Generic database query function
     protected async query<Result>(query: string, params?: any[]): Promise<Result> {
