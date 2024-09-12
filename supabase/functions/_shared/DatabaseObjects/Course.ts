@@ -19,7 +19,7 @@ class Course extends DatabaseTable {
     private readonly total_quiz_marks: number | null;
     private readonly num_quiz_questions: number | null;
 
-    expectedTypes = [
+    protected expectedTypes: ExpectedTypes[] = [
         { name: 'id', type: 'number', nullable: false },
         { name: 'created_at', type: 'string', nullable: false },
         { name: 'user_id', type: 'string', nullable: false },

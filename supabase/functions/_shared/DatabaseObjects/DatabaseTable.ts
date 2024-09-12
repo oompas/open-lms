@@ -6,12 +6,16 @@ type ExpectedType = {
 
 abstract class DatabaseTable {
 
-    protected expectedTypes: ExpectedTypes[] = null;
+    protected abstract expectedTypes: ExpectedTypes[];
     private nonSerializedFields: string[] = ['nonSerializedFields', 'expectedTypes'];
 
     protected constructor() {}
 
     protected validateData(data: object) {
+
+        if (!this.expectedTypes || this.expectedTypes.length === 0) {
+            throw new Error(`Field 'expectedTypes' must be explicitly defined in all DatabaseTable subclasses. Value '${JSON.stringify(this.expectedTypes)}' is invalid`);
+        }
 
         const expectedFields = this.expectedTypes.map((field) => field.name);
         const actualFields = Object.getOwnPropertyNames(data);
