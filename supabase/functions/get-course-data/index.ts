@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { corsHeaders, successResponse, errorResponse, log } from "../_shared/helpers.ts";
+import { corsHeaders, successResponse } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 
