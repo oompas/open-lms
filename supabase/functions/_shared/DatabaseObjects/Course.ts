@@ -19,10 +19,29 @@ class Course extends DatabaseTable {
     private readonly total_quiz_marks: number | null;
     private readonly num_quiz_questions: number | null;
 
+    expectedTypes = [
+        { name: 'id', type: 'number', nullable: false },
+        { name: 'created_at', type: 'string', nullable: false },
+        { name: 'user_id', type: 'string', nullable: false },
+        { name: 'name', type: 'string', nullable: false },
+        { name: 'description', type: 'string', nullable: false },
+        { name: 'link', type: 'string', nullable: false },
+        { name: 'active', type: 'boolean', nullable: false },
+        { name: 'version', type: 'number', nullable: false },
+        { name: 'min_time', type: 'number', nullable: true },
+
+        { name: 'max_quiz_attempts', type: 'number', nullable: true },
+        { name: 'min_quiz_score', type: 'number', nullable: true },
+        { name: 'preserve_quiz_question_order', type: 'boolean', nullable: true },
+        { name: 'quiz_time_limit', type: 'number', nullable: true },
+        { name: 'total_quiz_marks', type: 'number', nullable: true },
+        { name: 'num_quiz_questions', type: 'number', nullable: true },
+    ];
+
     constructor(data: object) {
         super();
 
-        this.validateData(data);
+        super.validateData(data);
 
         this.id = data.id;
         this.created_at = data.created_at;
@@ -39,29 +58,6 @@ class Course extends DatabaseTable {
         this.quiz_time_limit = data.quiz_time_limit;
         this.total_quiz_marks = data.total_quiz_marks;
         this.num_quiz_questions = data.num_quiz_questions;
-    }
-
-    private validateData(data) {
-        const expectedTypes: ExpectedType[] = [
-            { name: 'id', type: 'number', nullable: false },
-            { name: 'created_at', type: 'string', nullable: false },
-            { name: 'user_id', type: 'string', nullable: false },
-            { name: 'name', type: 'string', nullable: false },
-            { name: 'description', type: 'string', nullable: false },
-            { name: 'link', type: 'string', nullable: false },
-            { name: 'active', type: 'boolean', nullable: false },
-            { name: 'version', type: 'number', nullable: false },
-            { name: 'min_time', type: 'number', nullable: true },
-
-            { name: 'max_quiz_attempts', type: 'number', nullable: true },
-            { name: 'min_quiz_score', type: 'number', nullable: true },
-            { name: 'preserve_quiz_question_order', type: 'boolean', nullable: true },
-            { name: 'quiz_time_limit', type: 'number', nullable: true },
-            { name: 'total_quiz_marks', type: 'number', nullable: true },
-            { name: 'num_quiz_questions', type: 'number', nullable: true },
-        ]
-
-        super.validateData(expectedTypes);
     }
 }
 

@@ -6,12 +6,23 @@ type ExpectedType = {
 
 abstract class DatabaseTable {
 
+    protected expectedTypes: ExpectedTypes[] = null;
+
     protected constructor() {}
 
-    protected validateData(data: ExpectedType[]) {
-        data.forEach((expectedType) => {
-            const actualType = typeof this[expectedType.name];
-            const isTypeValid = actualType === expectedType.type || (expectedType.nullable && this[expectedType.name] === null);
+    protected validateData(data: object) {
+
+        const expectedFields = this.expectedTypes.map((field) => field.name);
+        const actualFields = Object.getOwnPropertyNames(data);
+
+        const extraFields = actualFields.filter((field) => !expectedFields.includes(field));
+        if (extraFields.length > 0) {
+            throw new Error(`Unexpected fields in database object input: ${extraFields.join(', ')} (object: ${JSON.stringify(data)})`);
+        }
+
+        this.expectedTypes.forEach((expectedType) => {
+            const actualType = typeof data[expectedType.name];
+            const isTypeValid = actualType === expectedType.type || (expectedType.nullable && data[expectedType.name] === null);
 
             if (!isTypeValid) {
                 throw new Error(`Field ${expectedType.name} has incorrect type: ${actualType}`);
@@ -19,6 +30,7 @@ abstract class DatabaseTable {
         });
     }
 
+    // TODO: add stringify option
     public toJSON() {
         const obj = {};
         Object.getOwnPropertyNames(this).forEach((key) => {
