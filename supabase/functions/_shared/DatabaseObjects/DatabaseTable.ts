@@ -1,18 +1,20 @@
-class DatabaseTable {
-    constructor(data = {}) {
-        if (new.target === DatabaseTable) {
-            throw new Error('DatabaseTable is an abstract class and cannot be instantiated directly');
-        }
-        this.validateData(data);
-        this.initFields(data);
-    }
+type ExpectedType = {
+    name: string;
+    type: string;
+    nullable: boolean;
+};
 
-    validateData(data) {
-        throw new Error('Subclasses must implement validateData method');
-    }
+abstract class DatabaseTable {
 
-    initFields(data) {
-        throw new Error('Subclasses must implement initFields method');
+    validateData(data: ExpectedType[]) {
+        data.forEach((expectedType) => {
+            const actualType = typeof this[expectedType.name];
+            const isTypeValid = actualType === expectedType.type || (expectedType.nullable && this[expectedType.name] === null);
+
+            if (!isTypeValid) {
+                throw new Error(`Field ${expectedType.name} has incorrect type: ${actualType}`);
+            }
+        });
     }
 
     toJSON() {
@@ -25,3 +27,4 @@ class DatabaseTable {
 }
 
 export default DatabaseTable;
+export { ExpectedType };
