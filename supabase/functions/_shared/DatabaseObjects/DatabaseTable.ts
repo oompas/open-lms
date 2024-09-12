@@ -7,6 +7,7 @@ type ExpectedType = {
 abstract class DatabaseTable {
 
     protected expectedTypes: ExpectedTypes[] = null;
+    private nonSerializedFields: string[] = ['expectedTypes'];
 
     protected constructor() {}
 
@@ -37,7 +38,9 @@ abstract class DatabaseTable {
     public toJSON(stringify: boolean = false): object | string {
         const obj = {};
         Object.getOwnPropertyNames(this).forEach((key) => {
-            obj[key] = this[key];
+            if (!this.nonSerializedFields.includes(key)) {
+                obj[key] = this[key];
+            }
         });
         return stringify ? JSON.stringify(obj, null, 4) : obj;
     }
