@@ -30,6 +30,10 @@ abstract class DatabaseTable {
         });
     }
 
+    /**
+     * Convert the object to a JSON object
+     * @param stringify Stringifies the returned object (with 4-indent) if true
+     */
     public toJSON(stringify: boolean = false): object | string {
         const obj = {};
         Object.getOwnPropertyNames(this).forEach((key) => {
