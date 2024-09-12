@@ -30,13 +30,12 @@ abstract class DatabaseTable {
         });
     }
 
-    // TODO: add stringify option
-    public toJSON() {
+    public toJSON(stringify: boolean = false): object | string {
         const obj = {};
         Object.getOwnPropertyNames(this).forEach((key) => {
             obj[key] = this[key];
         });
-        return obj;
+        return stringify ? JSON.stringify(obj, null, 4) : obj;
     }
 }
 
