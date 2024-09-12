@@ -7,7 +7,7 @@ type ExpectedType = {
 abstract class DatabaseTable {
 
     protected expectedTypes: ExpectedTypes[] = null;
-    private nonSerializedFields: string[] = ['expectedTypes'];
+    private nonSerializedFields: string[] = ['nonSerializedFields', 'expectedTypes'];
 
     protected constructor() {}
 
