@@ -20,6 +20,8 @@ class Course extends DatabaseTable {
     private readonly num_quiz_questions: number | null;
 
     constructor(data: object) {
+        super();
+
         this.validateData(data);
 
         this.id = data.id;
@@ -39,7 +41,7 @@ class Course extends DatabaseTable {
         this.num_quiz_questions = data.num_quiz_questions;
     }
 
-    validateData(data) {
+    private validateData(data) {
         const expectedTypes: ExpectedType[] = [
             { name: 'id', type: 'number', nullable: false },
             { name: 'created_at', type: 'string', nullable: false },

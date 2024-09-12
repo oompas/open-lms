@@ -1,7 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { corsHeaders, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, log, successResponse } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
+import Course from "../_shared/DatabaseObjects/Course.ts";
 
 Deno.serve(async (req: Request) => {
 
@@ -17,6 +18,11 @@ Deno.serve(async (req: Request) => {
     if (course instanceof Response) return course;
 
     const courseData = course[0];
+
+    log(`Course data: ${JSON.stringify(courseData)}`);
+    const courseObj = new Course(courseData);
+    log(`Course object data: ${JSON.stringify(courseObj)}`);
+
     let quizData = null;
     if (courseData.total_quiz_marks !== null) {
         quizData = {
