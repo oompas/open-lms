@@ -50,10 +50,10 @@ Deno.serve(async (req) => {
                   'Creator user ID': course.userId,
 
                   'Has quiz?': course.quiz ? "Yes" : "No",
-                  'Quiz max attempts': course.quiz?.maxAttempts ?? "Unlimited",
-                  'Quiz min score': course.quiz?.minScore ?? "None",
-                  'Quiz preserve order?': course.quiz?.preserveOrder ? "Yes" : "No",
-                  'Quiz time limit (minutes)': course.quiz?.timeLimit ?? "Unlimited",
+                  'Quiz max attempts': course.quiz ? course.quiz?.maxAttempts ?? "Unlimited" : "-",
+                  'Quiz min score': course.quiz ? course.quiz?.minScore ?? "None" : "-",
+                  'Quiz preserve order?': course.quiz ? course.quiz?.preserveOrder ? "Yes" : "No" : "-",
+                  'Quiz time limit (minutes)': course.quiz ? course.quiz?.timeLimit ?? "Unlimited" : "-",
                 };
             }));
         }),
