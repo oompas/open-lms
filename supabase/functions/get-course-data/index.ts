@@ -38,13 +38,27 @@ Deno.serve(async (req: Request) => {
     const enrollment = await getRows({ table: 'enrolled_course', conditions: [['eq', 'user_id', userId], ['eq', 'course_id', id]], expectResults: ['range', [0, 1]] });
     if (enrollment instanceof Response) return enrollment;
 
-    const enrolled = enrollment.length > 0;
+    const courseAttempts = await getRows({ table: 'course_attempt', conditions: [['eq', 'user_id', userId], ['eq', 'course_id', id]] });
+    if (courseAttempts instanceof Response) return courseAttempts;
+
+    let status;
+    if (courseAttempts.length !== 0) {
+        const current = courseAttempts.find(c => c.pass === null);
+        if (current) {
+            status = 3; // In progress
+        } else {
+            // TODO: awaiting marking, failed, completed
+        }
+    } else {
+        status = enrollment.length > 0 ? 2 : 1;
+    }
+
     const rsp = {
         id: courseData.id,
         name: courseData.name,
         description: courseData.description,
         link: courseData.link,
-        status: enrolled ? 2 : 1,
+        status: status,
         minTime: courseData.min_time,
 
         quiz: quizData,
