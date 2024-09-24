@@ -14,16 +14,15 @@ Deno.serve(async (req) => {
     if (user instanceof Response) return user;
 
     const userData = {
-        name: "joe",
+        name: user.user_metadata.name,
         email: user.email,
-        role: "big learner",
+        role: user.user_metadata.role,
         disabled: false,
         signUpDate: user.created_at,
         lastSignIn: user.last_sign_in_at ?? -1,
         enrolledCourses: [],
         completedCourses: [],
         quizAttempts: [],
-        full: user
     };
 
     return successResponse(userData);
