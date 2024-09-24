@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
 
     const { userId } = await req.json();
 
-    const user = await getUserById(userId);
+    const user = await getUserById(req, userId);
     if (user instanceof Response) return user;
 
     const userData = {
