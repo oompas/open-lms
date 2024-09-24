@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { corsHeaders, successResponse } from "../_shared/helpers.ts";
-import { verifyAdministrator } from "../_shared/auth.ts";
+import { getUserById, verifyAdministrator } from "../_shared/auth.ts";
 
 Deno.serve(async (req) => {
 
@@ -8,20 +8,22 @@ Deno.serve(async (req) => {
         return new Response('ok', { headers: corsHeaders })
     }
 
-    // This function gets a specific user's profile - must be an admin to do so
-    const adminCheck = await verifyAdministrator(req);
-    if (adminCheck instanceof Response) return adminCheck;
+    const { userId } = await req.json();
+
+    const user = await getUserById(userId);
+    if (user instanceof Response) return user;
 
     const userData = {
         name: "joe",
-        email: "joe@joe.com",
+        email: user.email,
         role: "big learner",
         disabled: false,
-        signUpDate: 1,
-        lastSignIn: -1,
+        signUpDate: user.created_at,
+        lastSignIn: user.last_sign_in_at ?? -1,
         enrolledCourses: [],
         completedCourses: [],
-        quizAttempts: []
+        quizAttempts: [],
+        full: user
     };
 
     return successResponse(userData);

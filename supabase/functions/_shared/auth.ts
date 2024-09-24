@@ -57,6 +57,24 @@ const getRequestUser = async (req: Request): Promise<object> => {
 const getRequestUserId = async (req: Request): Promise<string> => (await getRequestUser(req))?.id;
 
 /**
+ * Gets a user object that has the specific ID. Note this should only be done by admins
+ * @param req The incoming request
+ * @param userId User ID of the user to get
+ */
+const getUserById = async (req: Request, userId: string): Promise<object> => {
+    const adminCheck = await verifyAdministrator(req);
+    if (adminCheck instanceof Response) return adminCheck;
+
+    const { data, error } = await adminClient.auth.admin.getUserById(userId);
+
+    if (error) {
+        return errorResponse(error.message);
+    }
+
+    return data.user;
+}
+
+/**
  * Check if the user is an administrator (or developer)
  * @param req The incoming request
  * @returns The user ID if the user is an admin/dev, an error response if not
@@ -70,4 +88,4 @@ const verifyAdministrator = async (req: Request): Promise<string | Response> => 
     return user.id;
 }
 
-export { createUser, getAllUsers, getRequestUser, getRequestUserId, verifyAdministrator };
+export { createUser, getAllUsers, getRequestUser, getRequestUserId, getUserById, verifyAdministrator };
