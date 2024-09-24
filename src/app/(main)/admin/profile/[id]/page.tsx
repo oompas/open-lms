@@ -12,7 +12,7 @@ import { callAPI } from "@/config/supabase.ts";
 
 export default function Profile({ params }: { params: { id: string } }) {
 
-    const userData = useAsync(() => callAPI('get-user-profile'));
+    const userData = useAsync(() => callAPI('get-user-profile', { userId: params.id }));
 
     const [status, setStatus] = useState("");
 
