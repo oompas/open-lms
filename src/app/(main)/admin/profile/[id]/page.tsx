@@ -3,21 +3,21 @@ import IDProfile from "./IDProfile";
 import IDCourse from "./IDCourse";
 import IDEnrolled from "./IDEnrolled"
 import { useState } from "react";
-import { ApiEndpoints, useAsyncApiCall } from "@/config/firebase";
 import Link from "next/link";
 import { LuExternalLink } from "react-icons/lu";
 import StatusBadge from "@/components/StatusBadge";
+import { useAsync } from "react-async-hook";
+import { callAPI } from "@/config/supabase.ts";
 
 
 export default function Profile({ params }: { params: { id: string } }) {
 
-    const userData = useAsyncApiCall(ApiEndpoints.GetUserProfile, { targetUid: params.id }, (rsp) => { setUser(rsp.data); return rsp; });
+    const userData = useAsync(() => callAPI('get-user-profile'));
 
-
-    const [user, setUser] = useState()
     const [status, setStatus] = useState("");
 
     const profileData = () => {
+        const user = userData?.result?.data;
         if (user) {
 
             const unixToString = (unix: number) => {
@@ -47,6 +47,7 @@ export default function Profile({ params }: { params: { id: string } }) {
     }
 
     const coursesEnrolledData = () => {
+        const user = userData?.result?.data;
         if (user) {
             // @ts-ignore
             const temp_courses = [...user.enrolledCourses]
@@ -71,6 +72,7 @@ export default function Profile({ params }: { params: { id: string } }) {
     }
 
     const courseCompletedData = () => {
+        const user = userData?.result?.data;
         if (user) {
             // @ts-ignore
             return user.completedCourses.map((coursesEnrolled, key) => (
@@ -84,6 +86,7 @@ export default function Profile({ params }: { params: { id: string } }) {
     }
 
     const quizAttempts = () => {
+        const user = userData?.result?.data;
         if (user) {
             // @ts-ignore
             return user.quizAttempts.map((quiz, key) => (

@@ -43,7 +43,6 @@ export default function AuthForm({
     useEffect(() => {
         setPasswordValidationMessages(validatePassword(password));
     }, []);
- 
 
     return (
         <div className="flex flex-col space-y-4">
@@ -67,7 +66,7 @@ export default function AuthForm({
                     <p key={index} className="mt-1 text-sm text-red-500">{message}</p>
                 ))}
                 {onForgotPassword && (
-                    <p className="mt-2 text-gray-500 cursor-pointer" onClick={onForgotPassword}>Forgot your password?</p>
+                    <div className="mt-2 text-gray-500 cursor-pointer" onClick={onForgotPassword}>Forgot your password?</div>
                 )}
             </div>
         </div>
