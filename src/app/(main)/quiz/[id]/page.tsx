@@ -145,7 +145,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
         for (const entry of Object.entries(userAnswers)) {
 
             const key = parseInt(entry[0]);
-            const value = isNaN(parseInt(entry[1])) ? entry[1] : parseInt(entry[1]);
+            const value = entry[1];
             if (!value) {
                 continue;
             }
@@ -154,9 +154,9 @@ export default function Quiz({ params }: { params: { id: string } }) {
             if (questionData.type === "SA") {
                 responses.push({ questionId: key, answer: value });
             } else if (questionData.type === "TF") {
-                responses.push({ questionId: key, answer: value === "True" ? "0" : "1" });
+                responses.push({ questionId: key, answer: value === "True" ? 0 : 1 });
             } else {
-                responses.push({ questionId: key, answer: questionData.answers.indexOf(value) + "" });
+                responses.push({ questionId: key, answer: questionData.answers.indexOf(value) });
             }
         }
 
