@@ -93,7 +93,7 @@ export default function Course({ params }: { params: { id: string } }) {
                                 numQuestions={courseData.quiz.numQuestions}
                                 totalMarks={courseData.quiz.totalMarks}
                                 minimumScore={courseData.quiz.minScore}
-                                quizStarted={quizStarted}
+                                quizStarted={courseData.attempts.currentQuizAttemptId ?? (timeDone ? false : undefined)}
                                 courseAttemptId={courseAttemptId}
                                 quizAttemptId={quizAttemptId}
                                 courseStatus={courseData.status}
