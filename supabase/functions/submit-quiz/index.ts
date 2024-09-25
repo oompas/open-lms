@@ -76,15 +76,15 @@ Deno.serve(async (req) => {
 
     // Update quiz attempt
     const update = {
-        endTime: timestamp,
+        end_time: timestamp,
         ...(autoMark && { pass: totalMarks >= course.min_quiz_score }),
         score: totalMarks
     };
-    const { data, error } = await adminClient.from('quiz_attempt').update(update).eq('id', quizAttemptId);
+    const { data: data2, error: error2 } = await adminClient.from('quiz_attempt').update(update).eq('id', quizAttemptId);
 
-    if (error) {
-        return errorResponse(`Error updating quiz attempts: ${error.message}`);
+    if (error2) {
+        return errorResponse(`Error updating quiz attempts: ${error2.message}`);
     }
 
-    return successResponse(data);
+    return successResponse(data2);
 });
