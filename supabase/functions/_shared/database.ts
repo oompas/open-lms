@@ -75,9 +75,6 @@ const getRows = async ({ table, conditions = [], expectResults, limit = 1000 }: 
         else if (operator === 'range' && (data.length < value[0] || data.length > value[1])) error();
     }
 
-    if (data.length === 1) {
-        return data[0]; // Simplify handling
-    }
     return data;
 }
 
