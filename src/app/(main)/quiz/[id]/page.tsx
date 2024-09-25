@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import React, { useState, useEffect } from 'react';
-import { ApiEndpoints, auth, callApi, useAsyncApiCall } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import { MdCheckCircleOutline } from "react-icons/md";
 import { RiCheckboxCircleFill, RiCheckboxBlankCircleLine } from "react-icons/ri";
 import { useAsync } from "react-async-hook";
@@ -11,36 +11,24 @@ import { callAPI } from "@/config/supabase.ts";
 export default function Quiz({ params }: { params: { id: string } }) {
 
     const router = useRouter();
-
-    // if user is Admin - go to admin tools
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            auth.currentUser?.getIdTokenResult()
-                .then((idTokenResult) => !!idTokenResult.claims.admin ? router.replace("/admin/tools") : null)
-                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
-        }
-    });
   
     const [countdown, setCountDown] = useState(0);
     const [showConfim, setShowConfirm] = useState(false);
     const [emptySubmit, setEmptySubmit] = useState(false);
 
-    const getQuizData = useAsync(() => callAPI('get-quiz', { quizAttemptId: params.id.split('-')[1] }));
-    const getQuizData2 = useAsyncApiCall(ApiEndpoints.GetQuiz, { quizAttemptId: params.id.split('-')[1] },
-            (rsp) => {
-                if (rsp.data === "Invalid") {
-                    return rsp;
-                }
+    const getQuizData = useAsync(() => callAPI('get-quiz', { quizAttemptId: params.id.split('-')[1] }).then((rsp) => {
+        if (rsp.data === "Invalid") {
+            return rsp;
+        }
 
-                setCountDown(Math.floor(rsp.data.startTime + (60 * rsp.data.timeLimit) - (Date.now() / 1000)));
-                if (rsp.data.questions && rsp.data.questions[0].order) {
-                    rsp.data.questions.sort((a: any, b: any) => a.order - b.order);
-                }
-                // @ts-ignore
-                setUserAnswers(rsp.data.questions.map(question => question.id).reduce((prev: any, cur: any) => ({ ...prev, [cur]: null }), {}));
-                return rsp;
-            }
-        );
+        setCountDown(Math.floor(rsp.data.startTime + (60 * rsp.data.timeLimit) - (Date.now() / 1000)));
+        if (rsp.data.questions && rsp.data.questions[0].order) {
+            rsp.data.questions.sort((a: any, b: any) => a.order - b.order);
+        }
+        // @ts-ignore
+        setUserAnswers(rsp.data.questions.map(question => question.id).reduce((prev: any, cur: any) => ({ ...prev, [cur]: null }), {}));
+        return rsp;
+    }));
 
     // @ts-ignore
     const quizData: undefined | "Invalid" | { questions: any[], timeLimit: number, courseName: number, numAttempts: number, maxAttempts: number, startTime: number }
