@@ -1,10 +1,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, errorResponse, log, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, errorResponse, getCurrentTimestampTz, log, successResponse } from "../_shared/helpers.ts";
 import { getRows } from "../_shared/database.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 
 Deno.serve(async (req) => {
+
+    const timestamp = getCurrentTimestampTz();
 
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
@@ -21,6 +23,10 @@ Deno.serve(async (req) => {
 
     const quizQuestions = await getRows({ table: 'quiz_question', conditions: ['eq', 'course_id', quizAttempt.course_id] });
     if (quizQuestions instanceof Response) return quizQuestions;
+
+    const courseQuery = await getRows({ table: 'course', conditions: ['eq', 'id', quizAttempt.course_id] });
+    if (courseQuery instanceof Response) return courseQuery;
+    const course = courseQuery[0];
 
     if (quizQuestions.length !== responses.length) {
         return errorResponse(`There are ${quizQuestions.length} quiz questions, but only ${responses.length} responses were provided`);
@@ -66,6 +72,18 @@ Deno.serve(async (req) => {
 
     if (error) {
         return errorResponse(`Error adding quiz questions attempts: ${error.message}`);
+    }
+
+    // Update quiz attempt
+    const update = {
+        endTime: timestamp,
+        ...(autoMark && { pass: totalMarks >= course.min_quiz_score }),
+        score: totalMarks
+    };
+    const { data, error } = await adminClient.from('quiz_attempt').update(update).eq('id', quizAttemptId);
+
+    if (error) {
+        return errorResponse(`Error updating quiz attempts: ${error.message}`);
     }
 
     return successResponse(data);
