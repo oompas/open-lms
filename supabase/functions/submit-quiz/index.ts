@@ -61,6 +61,8 @@ Deno.serve(async (req) => {
             course_attempt_id: quizAttempt.course_attempt_id,
             quiz_attempt_id: quizAttemptId,
 
+            type: q.type,
+
             response: response.answer,
             max_marks: q.marks,
             marks_achieved: marks
