@@ -119,10 +119,9 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                             >
                                 {notifications.map((notification, index) =>
                                     <>
-                                        <div>
+                                        <div onClick={() => { setNotificationsOpen(false); router.push(notification.link); }}>
                                             <div className="text-sm">
                                                 {notification.name}
-                                                {/*{notification.link}*/}
                                             </div>
 
                                             <div className="text-xs text-gray-500 flex justify-between">
