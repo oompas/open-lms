@@ -27,12 +27,15 @@ Deno.serve(async (req) => {
     const courses = await getRows({ table: 'course' });
     if (courses instanceof Response) return courses;
 
+    const enrollments = await getRows({ table: 'enrolled_course' });
+    if (enrollments instanceof Response) return enrollments;
+
     const courseInsights = courses.map((course: any) => {
         return {
             id: course.id,
             name: course.name,
 
-            numEnrolled: 0,
+            numEnrolled: enrollments.filter((e) => e.course_id === course.id).length,
             numComplete: 0,
             avgTime: 0,
             avgQuizScore: 0
