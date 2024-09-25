@@ -52,7 +52,7 @@ export default function IDCourse({
 
         const interval = setInterval(() =>
             setCountDown(Math.round(course.attempts.currentStartTime + (60 * 1000 * course.minTime) - new Date().getTime())),
-            100);
+            200);
         return () => clearInterval(interval);
     }, [countdown]);
 
