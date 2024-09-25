@@ -54,7 +54,7 @@ Deno.serve(async (req: Request) => {
 
         attempts = {
             numAttempts: courseAttempts.length,
-            current: current ? current.start_time : null
+            currentStartTime: current ? new Date(current.start_time).getTime() : null
         }
     } else {
         status = enrollment.length > 0 ? 2 : 1;

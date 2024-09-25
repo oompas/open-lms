@@ -17,10 +17,13 @@ export default function IDCourse({
         name: string,
         status: 1 | 2 | 3 | 4 | 5,
         description: string,
-        startTime: number,
         minTime: number,
         link: string,
-        courseId: number
+        courseId: number,
+        attempts: {
+            numAttempts: number,
+            currentStartTime: string
+        } | null
     },
     timeDone: boolean,
     setTimeDone: any,
@@ -30,11 +33,11 @@ export default function IDCourse({
 }) {
 
     const startingCountdown = () => {
-        const currentSeconds = new Date().getTime() / 1000;
-        const timeSinceStart = Math.floor(currentSeconds - course.startTime);
-        const minimumSeconds = 60 * course.minTime;
+        const currentMillis = new Date().getTime();
+        const timeSinceStart = Math.floor(currentMillis - course.attempts.currentStartTime);
+        const minimumMillis = 60 * 1000 * course.minTime;
 
-        return minimumSeconds - timeSinceStart;
+        return minimumMillis - timeSinceStart;
     }
 
     const [countdown, setCountDown] = useState(startingCountdown());
@@ -48,8 +51,8 @@ export default function IDCourse({
         }
 
         const interval = setInterval(() =>
-            setCountDown(Math.round(course.startTime + (60 * course.minTime) - (new Date().getTime() / 1000))),
-            1000);
+            setCountDown(Math.round(course.attempts.currentStartTime + (60 * 1000 * course.minTime) - new Date().getTime())),
+            100);
         return () => clearInterval(interval);
     }, [countdown]);
 
@@ -64,7 +67,7 @@ export default function IDCourse({
             .then((result) => {
                 setCourseAttemptId(result.data);
                 setCountDown(60 * course.minTime);
-                course.startTime = new Date().getTime() / 1000;
+                course.attempts.currentStartTime = new Date().getTime();
                 setStatus(3);
             })
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });
@@ -112,13 +115,18 @@ export default function IDCourse({
     }
 
     const getTime = () => {
-        const format = (time: number) => (Math.floor(time / 3600) + "").padStart(2, '0') + ":"
-            + (Math.floor(time / 60) % 60 + "").padStart(2, '0') + ":" + (time % 60 + "").padStart(2, '0');
+        const format = (time: number) => {
+            const hours = (Math.floor(time / 3600) + "").padStart(2, '0');
+            const minutes = (Math.floor(time / 60) % 60 + "").padStart(2, '0');
+            const seconds = (Math.floor(time % 60) + "").padStart(2, '0');
+
+            return `${hours}:${minutes}:${seconds}`;
+        }
 
         if (status === 1 || status === 2) {
             return format(60 * course.minTime);
         }
-        return format(countdown);
+        return format(countdown / 1000);
     }
 
     const [showSupportForm, setShowSupportForm] = useState(false);
