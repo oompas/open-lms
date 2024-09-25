@@ -5,6 +5,8 @@ import React, { useState, useEffect } from 'react';
 import { ApiEndpoints, auth, callApi, useAsyncApiCall } from "@/config/firebase";
 import { MdCheckCircleOutline } from "react-icons/md";
 import { RiCheckboxCircleFill, RiCheckboxBlankCircleLine } from "react-icons/ri";
+import { useAsync } from "react-async-hook";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function Quiz({ params }: { params: { id: string } }) {
 
@@ -23,7 +25,8 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const [showConfim, setShowConfirm] = useState(false);
     const [emptySubmit, setEmptySubmit] = useState(false);
 
-    const getQuizData = useAsyncApiCall(ApiEndpoints.GetQuiz, { quizAttemptId: params.id.split('-')[1] },
+    const getQuizData = useAsync(() => callAPI('get-quiz', { quizAttemptId: params.id.split('-')[1] }));
+    const getQuizData2 = useAsyncApiCall(ApiEndpoints.GetQuiz, { quizAttemptId: params.id.split('-')[1] },
             (rsp) => {
                 if (rsp.data === "Invalid") {
                     return rsp;
