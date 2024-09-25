@@ -23,5 +23,14 @@ Deno.serve(async (req) => {
     const questions = await getRows({ table: 'quiz_question', conditions: ['eq', 'course_id', course.id] });
     if (questions instanceof Response) return questions;
 
-    return successResponse(questions);
+    const data = {
+        courseName: course.name,
+        numAttempts: -1,
+        maxAttempts: course.max_quiz_attempts,
+        timeLimit: course.quiz_time_limit,
+        startTime: new Date(quizAttempt.start_time).getTime(),
+        questions: questions
+    }
+
+    return successResponse(data);
 });
