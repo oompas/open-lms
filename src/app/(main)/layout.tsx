@@ -11,6 +11,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { IoNotifications } from "react-icons/io5";
 import { CgProfile } from "react-icons/cg";
 import { FiTrash } from "react-icons/fi";
+import { FaRegNewspaper } from "react-icons/fa6";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
@@ -30,14 +31,15 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
     // Toggle pop-up on icon click
     const handleIconClick = (event) => {
-        event.stopPropagation();
-        setNotificationsOpen(!notificationsOpen);
+        if (!notificationsOpen) {
+            setNotificationsOpen(true);
+        }
     };
 
     // Close pop-up when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (popUpRef.current && !popUpRef.current.contains(event.target) && popUpBellRef.current && !popUpBellRef.current.contains(event.target)) {
+            if (popUpRef.current && !popUpRef.current.contains(event.target)) {
                 setNotificationsOpen(false);
             }
         };
@@ -87,7 +89,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
             date: "Sept. 22nd, 9:23 AM"
         },
         {
-            name: "Your quiz results for Machine Learning Basics are ready for review",
+            name: "Your Machine Learning Basics quiz has been marked",
             link: '/quiz/2',
             date: "Sept. 24th, 10:07 PM"
         }
@@ -119,18 +121,25 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                             >
                                 {notifications.map((notification, index) =>
                                     <>
-                                        <div onClick={() => { setNotificationsOpen(false); router.push(notification.link); }}>
-                                            <div className="text-sm">
+                                        <div
+                                            className="hover:opacity-75 duration-75 cursor-pointer"
+                                            onClick={() => { setNotificationsOpen(false); router.push(notification.link); }}
+                                        >
+                                            <div className="text-sm flex">
+                                                <FaRegNewspaper className="w-6 h-6 mt-3 mr-3"/>
                                                 {notification.name}
                                             </div>
 
-                                            <div className="text-xs text-gray-500 flex justify-between">
+                                            <div className="text-xs text-gray-500 flex justify-between my-2">
                                                 {notification.date}
-                                                <FiTrash />
+                                                <FiTrash
+                                                    className="w-4 h-4"
+                                                    onClick={() => {}}
+                                                />
                                             </div>
                                         </div>
 
-                                        {index !== notifications.length - 1 && <div className="border-[1px] rounded-xl my-2"/>}
+                                        {index !== notifications.length - 1 && <div className="border-[1px] rounded-full my-3"/>}
                                     </>
                                 )}
                             </div>
