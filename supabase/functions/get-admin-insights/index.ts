@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { corsHeaders, successResponse } from "../_shared/helpers.ts";
-import { getAllUsers, verifyAdministrator } from "../_shared/auth.ts";
+import { getAllUsers, getUserById, verifyAdministrator } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 
 Deno.serve(async (req) => {
@@ -15,17 +15,25 @@ Deno.serve(async (req) => {
     const quizzesToMark = await getRows({ table: 'quiz_attempt', conditions: [['null', 'pass'], ['notnull', 'end_time']] });
     if (quizzesToMark instanceof Response) return quizzesToMark;
 
-    const quizAttemptsToMark = quizzesToMark.map((quizAttempt: any) => {
-        return {
-            id: quizAttempt.id,
-            courseName: '_placeholder_course_name',
-            timestamp: 0,
-            userName: '_placeholder_user'
-        }
-    });
-
     const courses = await getRows({ table: 'course' });
     if (courses instanceof Response) return courses;
+
+    const users = await getAllUsers();
+    if (users instanceof Response) return users;
+
+    const quizAttemptsToMark = quizzesToMark.map((quizAttempt: any) => {
+
+        const course = courses.find((c) => c.id === quizAttempt.course_id);
+
+        const user = users.find((u) => u.id === quizAttempt.user_id);
+
+        return {
+            id: quizAttempt.id,
+            courseName: course.name,
+            timestamp: new Date(quizAttempt.end_time).getTime(),
+            userName: user.user_metadata.name
+        }
+    });
 
     const enrollments = await getRows({ table: 'enrolled_course' });
     if (enrollments instanceof Response) return enrollments;
@@ -41,9 +49,6 @@ Deno.serve(async (req) => {
             avgQuizScore: 0
         }
     });
-
-    const users = await getAllUsers();
-    if (users instanceof Response) return users;
 
     const learners = users.filter((user) => user.user_metadata.role === "Learner")
         .map((user: any) => {
