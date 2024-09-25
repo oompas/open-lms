@@ -142,11 +142,14 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const handleSubmit = async () => {
 
         const responses = [];
-        for (const [key, value] of Object.entries(userAnswers)) {
+        for (const entry of Object.entries(userAnswers)) {
 
-            if (!value) continue;
+            const key = parseInt(entry[0]);
+            const value = isNaN(parseInt(entry[1])) ? entry[1] : parseInt(entry[1]);
+            if (!value) {
+                continue;
+            }
 
-            // @ts-ignore
             const questionData = quizData?.questions.find((question) => question.id === key);
             if (questionData.type === "SA") {
                 responses.push({ questionId: key, answer: value });
@@ -157,8 +160,9 @@ export default function Quiz({ params }: { params: { id: string } }) {
             }
         }
 
-        await callApi(ApiEndpoints.SubmitQuiz, { quizAttemptId: params.id.split('-')[1], responses: responses })
-            .catch((err) => console.log(`Error calling submitQuiz: ${err}`));
+        await callAPI('submit-quiz', { quizAttemptId: parseInt(params.id.split('-')[1]), responses: responses });
+        // await callApi(ApiEndpoints.SubmitQuiz, { quizAttemptId: params.id.split('-')[1], responses: responses })
+        //     .catch((err) => console.log(`Error calling submitQuiz: ${err}`));
     }
 
     const loadingPopup = () => {

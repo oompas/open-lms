@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     const { data, error } = await adminClient.from('quiz_question_attempt').insert(quizQuestionAttempts);
 
     if (error) {
-        return errorResponse(`Error adding quiz questions attempts: ${error}`);
+        return errorResponse(`Error adding quiz questions attempts: ${error.message}`);
     }
 
     return successResponse(data);
