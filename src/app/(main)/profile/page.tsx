@@ -57,11 +57,8 @@ export default function Profile() {
 
                 <div className="text-lg mb-4">Your Account Details</div>
                 <div className="flex flex-col h-full">
-                    <div className="flex">
-                        <div className="text-2xl font-bold mt-2">{user?.name}</div>
-                        {user?.role && <StatusBadge status={user?.role} style="mb-2"/>}
-                    </div>
-
+                    {user?.role && <StatusBadge status={user?.role} style=""/>}
+                    <div className="text-2xl font-bold mt-2">{user?.name}</div>
                     <div className="mr-auto text-lg mb-4">{user?.email}</div>
                     <div className="flex flex-col h-full items-end mb-auto">
                         <div className="mr-auto text-lg">Joined: <i>{user?.signUpDate}</i></div>
