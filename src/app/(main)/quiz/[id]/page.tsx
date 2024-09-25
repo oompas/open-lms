@@ -44,7 +44,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
             return;
         }
 
-        const interval = setInterval(() => setCountDown(Math.floor(quizData.startTime + (60 * quizData.timeLimit) - (Date.now() / 1000))), 1000);
+        const interval = setInterval(() => setCountDown(Math.floor(quizData.startTime + (60 * 1000 * quizData.timeLimit) - Date.now())), 200);
         return () => clearInterval(interval);
     }, [countdown, quizData]);
 
