@@ -117,10 +117,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                 ref={popUpRef}
                                 className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border-gray-300 border-[1px]"
                             >
-                                <div
-                                    className="absolute right-2 -top-2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-white border-[1px]"
-                                />
-
                                 {notifications.map((notification, index) =>
                                     <>
                                         <div>
@@ -135,7 +131,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                             </div>
                                         </div>
 
-                                        {index !== notifications.length - 1 && <div className="border-[1px] rounded-xl"/>}
+                                        {index !== notifications.length - 1 && <div className="border-[1px] rounded-xl my-2"/>}
                                     </>
                                 )}
                             </div>
