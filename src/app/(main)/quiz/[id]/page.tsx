@@ -52,9 +52,9 @@ export default function Quiz({ params }: { params: { id: string } }) {
         return (
             <div>
                 {quizData && quizData !== "Invalid" && quizData.questions.map((question, key) => {
-                    const answers = question.type === "mc"
+                    const answers = question.type === "MC"
                         ? question.answers
-                        : question.type === "tf"
+                        : question.type === "TF"
                             ? ["True", "False"]
                             : [];
 
@@ -148,9 +148,9 @@ export default function Quiz({ params }: { params: { id: string } }) {
 
             // @ts-ignore
             const questionData = quizData?.questions.find((question) => question.id === key);
-            if (questionData.type === "sa") {
+            if (questionData.type === "SA") {
                 responses.push({ questionId: key, answer: value });
-            } else if (questionData.type === "tf") {
+            } else if (questionData.type === "TF") {
                 responses.push({ questionId: key, answer: value === "True" ? "0" : "1" });
             } else {
                 responses.push({ questionId: key, answer: questionData.answers.indexOf(value) + "" });
