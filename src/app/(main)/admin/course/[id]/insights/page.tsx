@@ -1,12 +1,10 @@
 "use client"
-
 import Button from "@/components/Button"
-import { ApiEndpoints, useAsyncApiCall } from "@/config/firebase";
 import Link from "next/link";
 import { useRouter } from "next/navigation"
-import { useState } from "react";
 import { LuExternalLink } from "react-icons/lu";
-
+import { useAsync } from "react-async-hook";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function Insights({ params }: { params: { id: string } }) {
 
@@ -20,18 +18,10 @@ export default function Insights({ params }: { params: { id: string } }) {
 
     const router = useRouter();
 
-    const courseData = useAsyncApiCall(ApiEndpoints.GetCourseInsightReport, { courseId: params.id },
-        (rsp) => {
-        if (rsp.data.questions.length > 0 && rsp.data.questions[0].order) {
-            rsp.data.questions.sort((a: any, b: any) => a.order - b.order);
-        }
-        setData(rsp.data);
-        return rsp;
-    });
-
-    const [data, setData] = useState();
+    const courseData = useAsync(() => callAPI('get-course-insight-report', { courseId: params.id }));
 
     const getEnrolledLearners = () => {
+        const data = courseData?.result?.data;
         if (!data) return;
 
         return (
@@ -75,6 +65,7 @@ export default function Insights({ params }: { params: { id: string } }) {
     }
 
     const getQuizQuestions = () => {
+        const data = courseData?.result?.data;
         if (!data) return;
 
         return (
@@ -125,6 +116,7 @@ export default function Insights({ params }: { params: { id: string } }) {
     }
 
     const getAverageTime = () => {
+        const data = courseData?.result?.data;
         if (!data) {
             return;
         } // @ts-ignore
@@ -137,6 +129,7 @@ export default function Insights({ params }: { params: { id: string } }) {
         return time > 3600 ? `${Math.floor(time / 3600)}h ${Math.floor((time % 3600) / 60)}m` : `${Math.floor(time / 60)}m`;
     }
 
+    const data = courseData?.result?.data;
     return (
         <main className="w-full h-full pb-4">
             <div className="h-full overflow-y-scroll rounded-2xl sm:no-scrollbar">
