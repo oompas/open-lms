@@ -22,7 +22,8 @@ export default function IDCourse({
         courseId: number,
         attempts: {
             numAttempts: number,
-            currentStartTime: string
+            currentStartTime: string,
+            currentQuizAttemptId: number
         } | null
     },
     timeDone: boolean,

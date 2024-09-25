@@ -52,9 +52,14 @@ Deno.serve(async (req: Request) => {
             // TODO: awaiting marking, failed, completed
         }
 
+        const quizAttempt = await getRows({ table: 'quiz_attempt', conditions:
+                [['eq', 'course_id', courseId], ['eq', 'user_id', userId], ['eq', 'course_attempt_id', current.id]] });
+        if (quizAttempt instanceof Response) return quizAttempt;
+
         attempts = {
             numAttempts: courseAttempts.length,
-            currentStartTime: current ? new Date(current.start_time).getTime() : null
+            currentStartTime: current ? new Date(current.start_time).getTime() : null,
+            currentQuizAttemptId: quizAttempt?.id ?? null
         }
     } else {
         status = enrollment.length > 0 ? 2 : 1;

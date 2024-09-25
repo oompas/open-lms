@@ -11,7 +11,10 @@ import { callAPI } from "@/config/supabase.ts";
 export default function Course({ params }: { params: { id: string } }) {
 
     const getCourseData = useAsync(() => callAPI('get-course-data', { courseId: params.id })
-        .then((r) => { setCourseData(r.data); setStatus(r.data.status); }), []);
+        .then((r) => {
+            setCourseData(r.data);
+            setStatus(r.data.status);
+        }), []);
     
     // const getCourse = useAsyncApiCall(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: false },
     //     (result) => {
@@ -36,10 +39,11 @@ export default function Course({ params }: { params: { id: string } }) {
             return;
         }
 
+        console.log(`Status: ${status} Time done: ${timeDone}`);
         setQuizStarted(status <= 2 || status === 6 || !timeDone
             ? null // @ts-ignore
-            : getCourseData.result.data.currentQuiz !== null);
-
+            : getCourseData.result.data.currentQuiz !== null
+        );
     }, [status, timeDone]);
 
     const renderCourse = () => {

@@ -72,7 +72,7 @@ export default function Quiz({
                 </div>
                 {quizStarted !== null && courseStatus !== 5 &&
                     <Button
-                        text={quizStarted ? "Continue quiz" : "Click to start"}
+                        text={quizStarted ? "Continue quiz" : "Start quiz"}
                         onClick={async () => await goToQuiz()}
                         style="mt-6"
                     />
