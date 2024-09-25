@@ -58,16 +58,16 @@ Deno.serve(async (req) => {
 
     const admins = users.filter((user) => user.user_metadata.role === "Admin" || user.user_metadata.role === "Developer")
         .map((user: any) => {
-        return {
-            id: user.id,
-            email: user.email,
-            name: user.user_metadata.name,
-            role: user.user_metadata.role,
+            return {
+                id: user.id,
+                email: user.email,
+                name: user.user_metadata.name,
+                role: user.user_metadata.role,
 
-            coursesCreated: 0,
-            coursesPublished: 0
-        };
-    });
+                coursesCreated: courses.filter(c => c.user_id === user.id).length,
+                coursesPublished: courses.filter(c => c.user_id === user.id && c.active).length
+            };
+        });
 
     const rspData = {
         quizAttemptsToMark,
