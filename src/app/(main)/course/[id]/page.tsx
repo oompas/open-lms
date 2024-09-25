@@ -14,7 +14,7 @@ export default function Course({ params }: { params: { id: string } }) {
         .then((r) => {
             setCourseData(r.data);
             setStatus(r.data.status);
-            //setCourseAttemptId(r.data);
+            setCourseAttemptId(r.data.attempts.currentAttemptId);
         }), []);
     
     // const getCourse = useAsyncApiCall(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: false },
