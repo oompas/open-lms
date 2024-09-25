@@ -7,6 +7,8 @@ import StatusBadge from "@/components/StatusBadge";
 import { generateDummyData } from "@/app/(main)/admin/tools/generateData";
 import { callAPI, signOut } from "@/config/supabase.ts";
 import { useAsync } from "react-async-hook";
+import { MdArrowBack } from "react-icons/md";
+import Link from "next/link";
 
 export default function Profile() {
 
@@ -75,19 +77,25 @@ export default function Profile() {
     return (
         <main className="flex w-full h-full pb-[2vh]">
             <div className={`flex flex-col h-[80vh] bg-white w-[60%] p-12 rounded-2xl shadow-custom`}>
+                <Link href="/home"
+                      className="flex flex-row space-x-2 items-center mb-6 -mt-4 italic hover:opacity-60 duration-150">
+                    <MdArrowBack size="24" className="text-red-800"/>
+                    <div>Return To Courses</div>
+                </Link>
+
                 <div className="text-lg mb-4">Your Account Details</div>
                 <div className="flex flex-col h-full">
-                    {user?.role && <StatusBadge status={user?.role} style="mb-2"/>}
-                    {/* @ts-ignore */}
-                    <div className="text-2xl font-bold mt-2">{user && user.name}</div>
-                    <div className="flex flex-col h-full items-end mb-auto">
-                        {/* @ts-ignore */}
-                        <div className="mr-auto text-lg mb-4">{user && user.email}</div>
-                        {/* @ts-ignore */}
-                        <div className="mr-auto text-lg">Joined: <i>{user && user.signUpDate}</i></div>
+                    <div className="flex">
+                        <div className="text-2xl font-bold mt-2">{user?.name}</div>
+                        {user?.role && <StatusBadge status={user?.role} style="mb-2"/>}
                     </div>
+
+                    <div className="mr-auto text-lg mb-4">{user?.email}</div>
+                    <div className="flex flex-col h-full items-end mb-auto">
+                        <div className="mr-auto text-lg">Joined: <i>{user?.signUpDate}</i></div>
+                    </div>
+
                     <Button text="Log Out" onClick={async () => await logout()}/>
-                    {/* <Button text="Add dummy data (WILL CLEAN DATABASE)" onClick={async () => await generateData()}/> */}
                 </div>
             </div>
             <div className="flex flex-col h-[80vh] bg-white w-[38%] ml-[2%] p-12 rounded-2xl shadow-custom">
