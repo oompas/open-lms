@@ -55,6 +55,7 @@ Deno.serve(async (req: Request) => {
 
     const rsp = {
         id: courseData.id,
+        active: courseData.active,
         name: courseData.name,
         description: courseData.description,
         link: courseData.link,
