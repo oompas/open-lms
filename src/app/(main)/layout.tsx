@@ -8,6 +8,7 @@ import Button from "@/components/Button";
 import { MdChevronLeft } from 'react-icons/md';
 import TextField from '@/components/TextField';
 import { useSession } from "@supabase/auth-helpers-react";
+import { IoNotifications } from "react-icons/io5";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
@@ -68,6 +69,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 <div className="flex ml-auto space-x-10 text-2xl">
                     {isAdmin && <a onClick={() => handleLinkClick('/admin/tools')} className={`hover:opacity-50 duration-75 cursor-pointer ${selectedLink === '/admin/tools' ? 'underline' : ''}`}>Admin Tools</a>}
                     <a onClick={() => handleLinkClick('/profile')} className={`hover:opacity-50 duration-75 cursor-pointer ${selectedLink === '/profile' ? 'underline' : ''}`}>View Profile</a>
+                    <IoNotifications className="mt-[6px]"/>
                 </div>
             </div>
             
