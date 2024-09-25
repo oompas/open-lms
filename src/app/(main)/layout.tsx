@@ -25,25 +25,25 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const popUpRef = useRef(null);
+    const popUpBellRef = useRef(null);
 
     // Toggle pop-up on icon click
-    const handleIconClick = () => {
-        setNotificationsOpen((prevState) => !prevState);
+    const handleIconClick = (event) => {
+        event.stopPropagation();
+        setNotificationsOpen(!notificationsOpen);
     };
 
     // Close pop-up when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (popUpRef.current && !popUpRef.current.contains(event.target)) {
+            if (popUpRef.current && !popUpRef.current.contains(event.target) && popUpBellRef.current && !popUpBellRef.current.contains(event.target)) {
                 setNotificationsOpen(false);
             }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [popUpRef]);
+        return () => { document.removeEventListener('mousedown', handleClickOutside); };
+    }, [popUpRef, popUpBellRef]);
 
 
 
@@ -94,8 +94,9 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 <div className="flex ml-auto text-2xl">
                     <div className="relative">
                         <IoNotifications
+                            ref={popUpBellRef}
                             className="mt-[6px] hover:opacity-75 duration-75 cursor-pointer"
-                            onClick={handleIconClick}
+                            onClick={(e) => handleIconClick(e)}
                         />
                         {notificationsOpen && (
                             <div
