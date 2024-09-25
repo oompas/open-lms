@@ -3,15 +3,17 @@ import {useRouter} from "next/navigation";
 import QuizAnswer from "@/app/(main)/admin/mark/[id]/QuizAnswer";
 import Button from "@/components/Button";
 import React, { useEffect, useState } from "react";
-import { ApiEndpoints, callApi, useAsyncApiCall } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import { RiCheckboxBlankCircleLine, RiCheckboxCircleFill } from "react-icons/ri";
 import { FaRegTimesCircle } from "react-icons/fa";
+import { callAPI } from "@/config/supabase.ts";
+import { useAsync } from "react-async-hook";
 
 export default function Mark({ params }: { params: { id: string } }) {
 
     const router = useRouter();
 
-    const quizQuestions = useAsyncApiCall(ApiEndpoints.GetQuizAttempt, { quizAttemptId: params.id }, (rsp) => { setQuestions(rsp.data); return rsp; });
+    const quizQuestions = useAsync(() => callAPI('get-quiz-attempt', { quizAttemptId: params.id }, (rsp) => { setQuestions(rsp.data); return rsp; }));
 
     const [questions, setQuestions] = useState(null);
     const [marks, setMarks] = useState<any[]>([]);
