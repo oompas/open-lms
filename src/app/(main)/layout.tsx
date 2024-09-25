@@ -3,7 +3,7 @@ import Link from 'next/link';
 import '../globals.css';
 import { ApiEndpoints, callApi } from '@/config/firebase';
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Button from "@/components/Button";
 import { MdAdminPanelSettings, MdChevronLeft } from 'react-icons/md';
 import TextField from '@/components/TextField';
@@ -22,6 +22,30 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
     const [selectedLink, setSelectedLink] = useState('/admin/tools');
+
+    const [notificationsOpen, setNotificationsOpen] = useState(false);
+    const popUpRef = useRef(null);
+
+    // Toggle pop-up on icon click
+    const handleIconClick = () => {
+        setNotificationsOpen((prevState) => !prevState);
+    };
+
+    // Close pop-up when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (popUpRef.current && !popUpRef.current.contains(event.target)) {
+                setNotificationsOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [popUpRef]);
+
+
 
     const handleLinkClick = (path: string) => {
         setSelectedLink(path);
@@ -68,30 +92,46 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                     OpenLMS
                 </Link>
                 <div className="flex ml-auto text-2xl">
-                    <IoNotifications
-                        className="mt-[6px] hover:opacity-75 duration-75 cursor-pointer"
-                        onClick={() => {}}
-                    />
-                    <MdAdminPanelSettings
-                        className="w-8 h-8 ml-6 mr-6 hover:opacity-75 duration-75 cursor-pointer"
-                        onClick={() => handleLinkClick('/admin/tools')}
-                    />
+                    <div className="relative">
+                        <IoNotifications
+                            className="mt-[6px] hover:opacity-75 duration-75 cursor-pointer"
+                            onClick={handleIconClick}
+                        />
+                        {notificationsOpen && (
+                            <div
+                                ref={popUpRef}
+                                className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-4"
+                            >
+                                <p>Your notifications</p>
+                                {/* Add notification items here */}
+                            </div>
+                        )}
+                    </div>
+
+                    {isAdmin &&
+                        <MdAdminPanelSettings
+                            className="w-8 h-8 ml-6 hover:opacity-75 duration-75 cursor-pointer"
+                            onClick={() => handleLinkClick('/admin/tools')}
+                        />
+                    }
+
                     <CgProfile
-                        className="w-8 h-8 hover:opacity-75 duration-75 cursor-pointer"
+                        className="w-8 h-8 ml-6 hover:opacity-75 duration-75 cursor-pointer"
                         onClick={() => handleLinkClick('/profile')}
                     />
                 </div>
             </div>
-            
+
             <div className='flex h-[85vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar'>
                 {children}
             </div>
 
-            { showSupportForm && (
-                <div className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
+            {showSupportForm && (
+                <div
+                    className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
                     <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
                         <div className="text-lg mb-2">Request platform support or report technical issues</div>
-                        <TextField text={feedback} onChange={setFeedback} area placeholder="Type your message here..." />
+                        <TextField text={feedback} onChange={setFeedback} area placeholder="Type your message here..."/>
                         <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-left">
                             <div className="flex flex-row ml-auto mt-4">
                                 <Button text="Cancel" onClick={() => {
