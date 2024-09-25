@@ -29,7 +29,16 @@ Deno.serve(async (req) => {
         maxAttempts: course.max_quiz_attempts,
         timeLimit: course.quiz_time_limit,
         startTime: new Date(quizAttempt.start_time).getTime(),
-        questions: questions
+        questions: questions.map((q) => {
+            return {
+                id: q.id,
+                order: q.question_order,
+                question: q.question,
+                marks: q.marks,
+                type: q.type,
+                answers: q.answers
+            };
+        })
     }
 
     return successResponse(data);
