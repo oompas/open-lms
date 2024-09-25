@@ -6,7 +6,7 @@ import { getRows } from "../_shared/database.ts";
 Deno.serve(async (req) => {
 
     if (req.method === 'OPTIONS') {
-      return new Response('ok', { headers: corsHeaders })
+        return new Response('ok', { headers: corsHeaders })
     }
 
     const adminStatus = await verifyAdministrator(req);
