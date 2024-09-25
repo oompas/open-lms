@@ -25,18 +25,17 @@ Deno.serve(async (req) => {
     const user = await getUserById(req, quizAttempt.user_id);
     if (user instanceof Response) return user;
 
-    const questionAttemptsQuery = await getRows({ table: 'quiz_question_attempt', conditions: ['eq', 'quiz_attempt_id', quizAttemptId] });
-    if (questionAttemptsQuery instanceof Response) return questionAttemptsQuery;
+    const questionAttempts = await getRows({ table: 'quiz_question_attempt', conditions: ['eq', 'quiz_attempt_id', quizAttemptId] });
+    if (questionAttempts instanceof Response) return questionAttempts;
 
     const response = {
         courseName: course.name,
         learnerName: user.name,
         completionTime: new Date(quizAttempt.end_time).getTime(),
-
-        saQuestions: attemptData.filter((attempt) => attempt.type === "sa"),
-        otherQuestions: attemptData.filter((attempt) => attempt.type !== "sa"),
-        score: quizAttemptData.score,
-        markingInfo: quizAttemptData.markerInfo
+        saQuestions: questionAttempts.filter((q) => q.type === "SA"),
+        otherQuestions: questionAttempts.filter((q) => q.type !== "SA"),
+        score: quizAttempt.score,
+        markingInfo: quizAttempt.markerInfo
     };
 
     return successResponse(response);
