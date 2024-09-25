@@ -113,7 +113,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     setQuizAttempts(data.quiz.maxAttempts);
                     setQuizMaxTime(data.quiz.timeLimit);
 
-                    setQuizTotalScore(data.quizQuestions.reduce((acc: number, q: any) => acc + q.marks, 0));
+                    setQuizTotalScore(data.quizQuestions?.reduce((acc: number, q: any) => acc + q.marks, 0));
 
                     if (data.quizQuestions && data.quizQuestions[0].order) {
                         data.quizQuestions.sort((a: any, b: any) => a.order - b.order);
@@ -145,7 +145,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 timeLimit: toNumber(quizMaxTime),
                 preserveOrder: preserveOrder,
             },
-            quizQuestions: !quizQuestions.length ? null : quizQuestions.map(({ id, ...rest }) => rest)
+            quizQuestions: !quizQuestions?.length ? null : quizQuestions?.map(({ id, ...rest }) => rest)
         }
 
         try {
@@ -477,14 +477,14 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                         <div className="text-lg border-2 p-6 rounded-xl">
                             <div className="flex flex-row items-center space-x-2 mb-4">
                                 <div>Quiz Questions</div>
-                                <div className="text-sm text-gray-500">({quizQuestions.length} questions)</div>
+                                <div className="text-sm text-gray-500">({quizQuestions?.length} questions)</div>
                             </div>
                             <div className="flex flex-col space-y-4">
-                                {quizQuestions.map((question, key) => (
+                                {quizQuestions?.map((question, key) => (
                                     <QuizQuestion
                                         key={key}
                                         first={key === 0}
-                                        last={key === quizQuestions.length - 1}
+                                        last={key === quizQuestions?.length - 1}
                                         num={key + 1}
                                         inData={question}
                                         editData={handleEditQuestion}
