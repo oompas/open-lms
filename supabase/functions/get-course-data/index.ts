@@ -7,7 +7,7 @@ import Course from "../_shared/DatabaseObjects/Course.ts";
 Deno.serve(async (req: Request) => {
 
     if (req.method === 'OPTIONS') {
-      return new Response('ok', { headers: corsHeaders })
+        return new Response('ok', { headers: corsHeaders })
     }
 
     const userId = await getRequestUserId(req);
