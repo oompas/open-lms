@@ -21,14 +21,30 @@ Deno.serve(async (req: Request) => {
     const enrollment = await getRows({ table: 'enrolled_course', conditions: ['eq', 'user_id', userId] });
     if (enrollment instanceof Response) return enrollment;
 
+    const attempts = await getRows({ table: 'course_attempt', conditions: ['eq', 'user_id', userId] });
+    if (attempts instanceof Response) return attempts;
+
     const courseData = courses
         .filter((course) => course.active === true)
         .map((course: any) => {
+
+            const enrolled = enrollment.some((enrolledCourse: any) => enrolledCourse.course_id === course.id);
+            const started = attempts.some((attempt: any) => attempt.course_id === course.id);
+
+            let status;
+            if (started) {
+                status = 3;
+            } else if (enrolled) {
+                status = 2;
+            } else {
+                status = 1;
+            }
+
             return {
                 id: course.id,
                 name: course.name,
                 description: course.description,
-                status: enrollment.some((enrolledCourse: any) => enrolledCourse.course_id === course.id) ? 2 : 1,
+                status: status,
                 minTime: course.min_time,
                 maxQuizTime: course.max_quiz_time,
             }
