@@ -1,10 +1,9 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import CompletedCourse from "./CompletedCourse";
 import Button from "@/components/Button";
 import StatusBadge from "@/components/StatusBadge";
-import { generateDummyData } from "@/app/(main)/admin/tools/generateData";
 import { callAPI, signOut } from "@/config/supabase.ts";
 import { useAsync } from "react-async-hook";
 import { MdArrowBack } from "react-icons/md";
@@ -25,33 +24,6 @@ export default function Profile() {
     //
     //     return new Date(unix).toDateString() + ", " + new Date(unix).toLocaleTimeString();
     // }
-
-    // useEffect(() => {
-    //     let unsubscribe: () => void;
-    //     unsubscribe = auth.onAuthStateChanged(async (user) => {
-    //         if (user) {
-    //             try {
-    //                 const idTokenResult = await user.getIdTokenResult();
-    //                 if (idTokenResult.claims.admin && idTokenResult.claims.developer) {
-    //                     setStatus("DEVELOPER");
-    //                 } else if (idTokenResult.claims.admin && !idTokenResult.claims.developer) {
-    //                     setStatus("ADMINISTRATOR");
-    //                 } else {
-    //                     setStatus("LEARNER");
-    //                 }
-    //             } catch (error) {
-    //                 console.error("Error getting custom claims: ", error);
-    //             }
-    //         }
-    //     });
-    //     return unsubscribe;
-    // }, []);
-
-    const generateData = async () => {
-        await generateDummyData()
-            .then(() => console.log("Dummy data generated"))
-            .catch((error) => console.error("Error generating dummy data: ", error));
-    };
 
     const logout = async () => {
         await signOut();
