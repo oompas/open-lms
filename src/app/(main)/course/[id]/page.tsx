@@ -10,7 +10,7 @@ import { callAPI } from "@/config/supabase.ts";
 
 export default function Course({ params }: { params: { id: string } }) {
 
-    const getCourseData = useAsync(() => callAPI('get-course-data', { id: params.id })
+    const getCourseData = useAsync(() => callAPI('get-course-data', { courseId: params.id })
         .then((r) => { setCourseData(r.data); setStatus(r.data.status); }), []);
     
     // const getCourse = useAsyncApiCall(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: false },

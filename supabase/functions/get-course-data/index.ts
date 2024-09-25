@@ -12,9 +12,9 @@ Deno.serve(async (req: Request) => {
 
     const userId = await getRequestUserId(req);
 
-    const { id } = await req.json();
+    const { courseId } = await req.json();
 
-    const course = await getRows({ table: 'course', conditions: ['eq', 'id', id], expectResults: ['eq', 1] });
+    const course = await getRows({ table: 'course', conditions: ['eq', 'id', courseId] });
     if (course instanceof Response) return course;
 
     const courseData = course[0];
@@ -35,11 +35,13 @@ Deno.serve(async (req: Request) => {
         };
     }
 
-    const enrollment = await getRows({ table: 'enrolled_course', conditions: [['eq', 'user_id', userId], ['eq', 'course_id', id]], expectResults: ['range', [0, 1]] });
+    const enrollment = await getRows({ table: 'enrolled_course', conditions: [['eq', 'user_id', userId], ['eq', 'course_id', courseId]], expectResults: ['range', [0, 1]] });
     if (enrollment instanceof Response) return enrollment;
 
-    const courseAttempts = await getRows({ table: 'course_attempt', conditions: [['eq', 'user_id', userId], ['eq', 'course_id', id]] });
+    const courseAttempts = await getRows({ table: 'course_attempt', conditions: [['eq', 'user_id', userId], ['eq', 'course_id', courseId]] });
     if (courseAttempts instanceof Response) return courseAttempts;
+
+    let attempts = null;
 
     let status;
     if (courseAttempts.length !== 0) {
@@ -48,6 +50,11 @@ Deno.serve(async (req: Request) => {
             status = 3; // In progress
         } else {
             // TODO: awaiting marking, failed, completed
+        }
+
+        attempts = {
+            numAttempts: courseAttempts.length,
+            current: current ? current.start_time : null
         }
     } else {
         status = enrollment.length > 0 ? 2 : 1;
@@ -63,6 +70,8 @@ Deno.serve(async (req: Request) => {
         minTime: courseData.min_time,
 
         quiz: quizData,
+
+        attempts: attempts
     };
     return successResponse(rsp);
 });
