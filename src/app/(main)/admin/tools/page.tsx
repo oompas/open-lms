@@ -56,7 +56,7 @@ export default function Tools() {
                     <QuizToMark
                         key={key}
                         title={quiz.courseName}
-                        date={new Date(quiz.timestamp * 1000).toLocaleString()}
+                        date={new Date(quiz.timestamp).toLocaleString()}
                         learner={quiz.userName}
                         id={quiz.id}
                     />
