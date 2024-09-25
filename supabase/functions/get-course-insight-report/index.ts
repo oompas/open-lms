@@ -19,14 +19,14 @@ Deno.serve(async (req) => {
 
 
     const responseData = {
-        courseName: courseData.name,
+        courseName: courseData[0].name,
         learners: [],
         questions: [],
         numEnrolled: [],
         numStarted: [],
         numComplete: [],
         avgTime: 0, // In seconds
-    }
+    };
 
     return successResponse(responseData);
 });
