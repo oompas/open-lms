@@ -18,11 +18,11 @@ Deno.serve(async (req) => {
         course_attempt_id: courseAttemptId
     };
 
-    const { data, error } = await adminClient.from('quiz_attempt').insert(quizAttempt);
+    const { data, error } = await adminClient.from('quiz_attempt').insert(quizAttempt).select();
 
     if (error) {
       return errorResponse(error.message);
     }
 
-    return successResponse(data);
+    return successResponse(data[0].id);
 });
