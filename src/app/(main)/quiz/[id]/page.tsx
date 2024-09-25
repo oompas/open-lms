@@ -21,7 +21,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
             return rsp;
         }
 
-        setCountDown(Math.floor(rsp.data.startTime + (60 * rsp.data.timeLimit) - (Date.now() / 1000)));
+        setCountDown(Math.floor(rsp.data.startTime + (60 * 1000 * rsp.data.timeLimit) - Date.now()));
         if (rsp.data.questions && rsp.data.questions[0].order) {
             rsp.data.questions.sort((a: any, b: any) => a.order - b.order);
         }
@@ -103,8 +103,9 @@ export default function Quiz({ params }: { params: { id: string } }) {
             );
         }
 
-        const timeFormat = (Math.floor(countdown / 3600) + "").padStart(2, '0') + ":"
-            + (Math.floor(countdown / 60) % 60 + "").padStart(2, '0') + ":" + (countdown % 60 + "").padStart(2, '0');
+        const seconds = Math.floor(countdown / 1000);
+        const timeFormat = (Math.floor(seconds / 3600) + "").padStart(2, '0') + ":"
+            + (Math.floor(seconds / 60) % 60 + "").padStart(2, '0') + ":" + (seconds % 60 + "").padStart(2, '0');
 
         return (
             <>
