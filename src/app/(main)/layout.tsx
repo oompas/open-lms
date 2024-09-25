@@ -10,6 +10,7 @@ import TextField from '@/components/TextField';
 import { useSession } from "@supabase/auth-helpers-react";
 import { IoNotifications } from "react-icons/io5";
 import { CgProfile } from "react-icons/cg";
+import { FiTrash } from "react-icons/fi";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
@@ -79,6 +80,19 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         setShowSupportForm(true);
     };
 
+    const notifications = [
+        {
+            name: "New course available: Intro to Programming",
+            link: '/course/1',
+            date: "Sept. 22nd, 9:23 AM"
+        },
+        {
+            name: "Your quiz results for Machine Learning Basics are ready for review",
+            link: '/quiz/2',
+            date: "Sept. 24th, 10:07 PM"
+        }
+    ];
+
     return (
         <html lang="en">
         <body className="h-[100vh] px-20 bg-gray-100 overflow-x-hidden">
@@ -101,10 +115,29 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                         {notificationsOpen && (
                             <div
                                 ref={popUpRef}
-                                className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-4 border-[1px]"
+                                className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border-gray-300 border-[1px]"
                             >
-                                <p>Your notifications</p>
-                                {/* Add notification items here */}
+                                <div
+                                    className="absolute right-2 -top-2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-white border-[1px]"
+                                />
+
+                                {notifications.map((notification, index) =>
+                                    <>
+                                        <div>
+                                            <div className="text-sm">
+                                                {notification.name}
+                                                {/*{notification.link}*/}
+                                            </div>
+
+                                            <div className="text-xs text-gray-500 flex justify-between">
+                                                {notification.date}
+                                                <FiTrash />
+                                            </div>
+                                        </div>
+
+                                        {index !== notifications.length - 1 && <div className="border-[1px] rounded-xl"/>}
+                                    </>
+                                )}
                             </div>
                         )}
                     </div>
