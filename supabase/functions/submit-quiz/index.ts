@@ -39,8 +39,8 @@ Deno.serve(async (req) => {
         const response = responses.find((r) => r.questionId === q.id);
         let marks;
         if (q.type === "MC" || q.type === "TF") {
-            marks = q.correct_answer === response.answer;
-          totalMarks += marks;
+            marks = q.correct_answer === response.answer ? q.marks : 0;
+            totalMarks += marks;
         } else if (q.type === "SA") {
             marks = null;
             autoMark = false;
