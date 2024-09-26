@@ -1,4 +1,5 @@
 import { MdCheck } from "react-icons/md"
+import { RxCross2 } from "react-icons/rx";
 
 export default function Checkbox({
     style,
@@ -7,7 +8,7 @@ export default function Checkbox({
     disabled
 } : {
     style?: string,
-    checked: boolean,
+    checked: boolean | null,
     setChecked?: any,
     disabled?: boolean
 }) {
@@ -17,7 +18,7 @@ export default function Checkbox({
             disabled={disabled}
             onClick={setChecked ? () => setChecked(!checked) : void(0)}
         >
-            { checked ? <MdCheck size={28} color="rgb(153 27 27)"/> : null }
+            { checked === true ? <MdCheck size={28} color="rgb(153 27 27)"/> : (checked === false ? null : <RxCross2  size={28} color="rgb(153 27 27)"/>) }
         </button>
     )
 }

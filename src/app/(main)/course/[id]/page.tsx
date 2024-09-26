@@ -84,7 +84,11 @@ export default function Course({ params }: { params: { id: string } }) {
                     }
                     {courseData.quizData &&
                         <div className="flex flex-row items-center mt-2">
-                            <Checkbox checked={courseData.status === CourseStatus.COMPLETED} setChecked={null} style="mr-3"/>
+                            <Checkbox
+                                checked={courseData.status === CourseStatus.COMPLETED ? true : (courseData.status === CourseStatus.FAILED ? null: false)}
+                                setChecked={null}
+                                style="mr-3"
+                            />
                             <div>{"Pass the quiz"}</div>
                         </div>
                     }
