@@ -72,9 +72,9 @@ Deno.serve(async (req: Request) => {
         status: courseStatus,
         minTime: courseData.min_time,
 
-        quiz: quizData,
-
-        attempts: attempts
+        quizData: quizData,
+        courseAttempts: attempts,
+        quizAttempts: 1
     };
     return successResponse(rsp);
 });

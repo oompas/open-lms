@@ -23,7 +23,7 @@ export default function Course({ params }: { params: { id: string } }) {
         .then((r) => {
             setCourseData(r.data);
             setStatus(r.data.status);
-            setCourseAttemptId(r.data.attempts.currentAttemptId);
+            setCourseAttemptId(r.data.courseAttempts.currentAttemptId);
         }), []);
 
     const [courseData, setCourseData] = useState<undefined | object>(undefined);
@@ -82,7 +82,7 @@ export default function Course({ params }: { params: { id: string } }) {
                             <div>{`Spend at least ${getCourseTimeString()} on the course`}</div>
                         </div>
                     }
-                    {courseData.quiz &&
+                    {courseData.quizData &&
                         <div className="flex flex-row items-center mt-2">
                             <Checkbox checked={courseData.status === CourseStatus.COMPLETED} setChecked={null} style="mr-3"/>
                             <div>{"Pass the quiz"}</div>
@@ -90,17 +90,17 @@ export default function Course({ params }: { params: { id: string } }) {
                     }
                 </div>
 
-                { courseData.quiz &&
+                { courseData.quizData &&
                     <div className="mt-4">
                         <div className="flex flex-col w-fit">
                             <Quiz
                                 key={1}
-                                length={courseData.quiz.timeLimit}
+                                length={courseData.quizData.timeLimit}
                                 numAttempts={courseData.quizAttempts}
-                                maxAttempts={courseData.quiz.maxAttempts}
-                                numQuestions={courseData.quiz.numQuestions}
-                                totalMarks={courseData.quiz.totalMarks}
-                                minimumScore={courseData.quiz.minScore}
+                                maxAttempts={courseData.quizData.maxAttempts}
+                                numQuestions={courseData.quizData.numQuestions}
+                                totalMarks={courseData.quizData.totalMarks}
+                                minimumScore={courseData.quizData.minScore}
                                 quizStarted={quizStarted()}
                                 courseAttemptId={courseAttemptId}
                                 quizAttemptId={quizAttemptId}
