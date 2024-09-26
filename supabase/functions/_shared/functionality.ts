@@ -86,6 +86,8 @@ const handleMarkedQuiz = async (quizAttemptId: number) => {
             log(`Error updating course attempt to pass: ${error.message}`);
             return errorResponse(`Error updating course attempt to pass: ${error.message}`);
         }
+
+        return;
     }
 
     // If the quiz attempt fails, check if they're out of attempts (fail the course), otherwise they can try again
