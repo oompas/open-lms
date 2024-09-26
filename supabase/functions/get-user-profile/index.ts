@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     const completedCourses = await getRows({ table: 'course_attempt', conditions: [['eq', 'user_id', user.id], ['eq', 'pass', true]] });
     if (completedCourses instanceof Response) return completedCourses;
 
-    const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: ['eq', 'user_id', user.id] });
+    const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: [['eq', 'user_id', user.id], ['notnull', 'end_time']] });
     if (quizAttempts instanceof Response) return quizAttempts;
 
     const enrolledData = await Promise.all(enrollments.map(async (enrolled) => {
@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
         };
     }));
 
-    const quizAttemptData = await Promise.all(quizAttempts.map(async (quizAttempt) => {
+    const quizAttemptData = (await Promise.all(quizAttempts.map(async (quizAttempt) => {
         const courses = await getRows({ table: 'course', conditions: ['eq', 'id', quizAttempt.course_id] });
         return {
             id: quizAttempt.id,
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
             score: quizAttempt.score,
             maxScore: courses[0].total_quiz_marks
         };
-    }));
+    }))).sort((a, b) =>  new Date(b.end_time) - new Date(a.end_time));
 
     const userData = {
         name: user.user_metadata.name,
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
 
         enrolledCourses: enrolledData,
         completedCourses: completedCourseData,
-        quizAttempts: quizAttemptData,
+        quizAttempts: quizAttemptData
     };
 
     return successResponse(userData);
