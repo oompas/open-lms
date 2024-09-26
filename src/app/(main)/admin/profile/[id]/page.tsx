@@ -64,7 +64,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                 <IDEnrolled
                     key={key}
                     title={course.name}
-                    id={course.id}
+                    id={course.courseId}
                 />
             ))
         }
