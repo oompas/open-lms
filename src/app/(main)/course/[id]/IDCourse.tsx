@@ -22,7 +22,7 @@ export default function IDCourse({
         courseId: number,
         courseAttempt: {
             numAttempts: number,
-            currentStartTime: number,
+            currentStartTime: string,
             currentQuizAttemptId: number
         } | null
     },
@@ -35,7 +35,7 @@ export default function IDCourse({
 
     const startingCountdown = () => {
         const currentMillis = new Date().getTime();
-        const timeSinceStart = Math.floor(currentMillis - course.courseAttempt?.currentStartTime);
+        const timeSinceStart = Math.floor(currentMillis - (course.courseAttempt ? new Date(course.courseAttempt.currentStartTime).getTime() : 0));
         const minimumMillis = 60 * 1000 * course.minTime;
 
         return minimumMillis - timeSinceStart;
@@ -52,7 +52,7 @@ export default function IDCourse({
         }
 
         const interval = setInterval(() =>
-            setCountDown(Math.round(course.courseAttempt?.currentStartTime + (60 * 1000 * course.minTime) - new Date().getTime())),
+            setCountDown(Math.round((course.courseAttempt ? new Date(course.courseAttempt.currentStartTime).getTime() : 0) + (60 * 1000 * course.minTime) - new Date().getTime())),
             200);
         return () => clearInterval(interval);
     }, [countdown]);
