@@ -78,7 +78,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                 <IDEnrolled 
                     key={key}
                     title={coursesEnrolled.name}
-                    completionDate={new Date(coursesEnrolled.date*1000).toLocaleString()}
+                    completionDate={new Date(coursesEnrolled.completionDate).toLocaleString()}
                 />
             ))
         }

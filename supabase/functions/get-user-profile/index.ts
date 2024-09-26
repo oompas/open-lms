@@ -23,6 +23,17 @@ Deno.serve(async (req) => {
     const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: ['eq', 'user_id', user.id] });
     if (quizAttempts instanceof Response) return quizAttempts;
 
+    const enrolledData = await Promise.all(enrollments.map(async (enrolled) => {
+        const courses = await getRows({ table: 'course', conditions: ['eq', 'id', enrolled.course_id] });
+        const completion = completedCourses.find((c) => c.course_id === enrolled.course_id);
+
+        return {
+            courseId: enrolled.course_id,
+            name: courses[0].name,
+            completionDate: completion?.end_time ?? null
+        };
+    }));
+
     const userData = {
         name: user.user_metadata.name,
         email: user.email,
@@ -30,7 +41,8 @@ Deno.serve(async (req) => {
         disabled: false,
         signUpDate: user.created_at,
         lastUpdated: user.updated_at ?? -1,
-        enrolledCourses: enrollments,
+
+        enrolledCourses: enrolledData,
         completedCourses: completedCourses,
         quizAttempts: quizAttempts,
     };
