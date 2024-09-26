@@ -36,9 +36,6 @@ Deno.serve(async (req: Request) => {
         };
     }
 
-    const enrollment = await getRows({ table: 'enrolled_course', conditions: [['eq', 'user_id', userId], ['eq', 'course_id', courseId]], expectResults: ['range', [0, 1]] });
-    if (enrollment instanceof Response) return enrollment;
-
     const courseAttempts = await getRows({ table: 'course_attempt', conditions: [['eq', 'user_id', userId], ['eq', 'course_id', courseId]] });
     if (courseAttempts instanceof Response) return courseAttempts;
 
