@@ -8,6 +8,15 @@ import Checkbox from "@/components/Checkbox";
 import { useAsync } from "react-async-hook";
 import { callAPI } from "@/config/supabase.ts";
 
+enum CourseStatus {
+    NOT_ENROLLED = "NOT_ENROLLED",
+    ENROLLED = "ENROLLED",
+    IN_PROGRESS = "IN_PROGRESS",
+    AWAITING_MARKING = "AWAITING_MARKING",
+    FAILED = "FAILED",
+    COMPLETED = "COMPLETED"
+}
+
 export default function Course({ params }: { params: { id: string } }) {
 
     const getCourseData = useAsync(() => callAPI('get-course-data', { courseId: params.id })
@@ -29,7 +38,7 @@ export default function Course({ params }: { params: { id: string } }) {
 
     const [courseData, setCourseData] = useState<undefined | object>(undefined);
 
-    const [status, setStatus] = useState(0);
+    const [status, setStatus] = useState(CourseStatus.NOT_ENROLLED);
     const [timeDone, setTimeDone] = useState(false);
     const [courseAttemptId, setCourseAttemptId] = useState(null);
     const [quizAttemptId, setQuizAttemptId] = useState(null);
@@ -41,7 +50,7 @@ export default function Course({ params }: { params: { id: string } }) {
         }
 
         console.log(`Status: ${status} Time done: ${timeDone}`);
-        setQuizStarted(status <= 2 || status === 6 || !timeDone
+        setQuizStarted(status === CourseStatus.NOT_ENROLLED || status === CourseStatus.ENROLLED || status === CourseStatus.COMPLETED || !timeDone
             ? null // @ts-ignore
             : getCourseData.result.data.currentQuiz !== null
         );
@@ -77,7 +86,7 @@ export default function Course({ params }: { params: { id: string } }) {
                     }
                     {courseData.quiz &&
                         <div className="flex flex-row items-center mt-2">
-                            <Checkbox checked={courseData.status === 6} setChecked={null} style="mr-3"/>
+                            <Checkbox checked={courseData.status === CourseStatus.COMPLETED} setChecked={null} style="mr-3"/>
                             <div>{"Pass the quiz"}</div>
                         </div>
                     }
