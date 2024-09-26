@@ -96,7 +96,7 @@ export default function Course({ params }: { params: { id: string } }) {
                             <Quiz
                                 key={1}
                                 length={courseData.quizData.timeLimit}
-                                numAttempts={courseData.quizAttempts}
+                                numAttempts={courseData.quizAttempts.number}
                                 maxAttempts={courseData.quizData.maxAttempts}
                                 numQuestions={courseData.quizData.numQuestions}
                                 totalMarks={courseData.quizData.totalMarks}
