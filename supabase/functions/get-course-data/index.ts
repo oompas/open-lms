@@ -48,13 +48,16 @@ Deno.serve(async (req: Request) => {
     if (courseAttempts.length !== 0) {
         const current = courseAttempts.find(c => c.pass === null);
 
-        const quizAttempt = await getRows({ table: 'quiz_attempt', conditions:
-                [['eq', 'course_id', courseId], ['eq', 'user_id', userId], ['eq', 'course_attempt_id', current.id]] });
-        if (quizAttempt instanceof Response) return quizAttempt;
+        let quizAttempt = null;
+        if (current) {
+            quizAttempt = await getRows({ table: 'quiz_attempt', conditions:
+                    [['eq', 'course_id', courseId], ['eq', 'user_id', userId], ['eq', 'course_attempt_id', current.id]] });
+            if (quizAttempt instanceof Response) return quizAttempt;
+        }
 
         attempts = {
             numAttempts: courseAttempts.length,
-            currentAttemptId: current.id,
+            currentAttemptId: current?.id,
             currentStartTime: current ? new Date(current.start_time).getTime() : null,
             currentQuizAttemptId: quizAttempt?.id ?? null
         }
