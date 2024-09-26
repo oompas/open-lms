@@ -91,18 +91,18 @@ export default function Profile({ params }: { params: { id: string } }) {
             return user.quizAttempts.map((quiz, key) => (
                 <tr className="border">
                     <td className="border p-2">
-                        <Link href={"/admin/mark/"+quiz.id} className="flex flex-row items-center hover:opacity-60">
+                        <Link href={`/admin/mark/${quiz.id}`} className="flex flex-row items-center hover:opacity-60">
                             {new Date(quiz.endTime).toLocaleString()}
                             <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
                         </Link>
                     </td>
                     <td className="border p-2">
-                        <Link href={"/admin/course/"+quiz.courseId+"/insights"} className="flex flex-row items-center hover:opacity-60">
+                        <Link href={`/admin/course/${quiz.courseId}/insights`} className="flex flex-row items-center hover:opacity-60">
                             {quiz.courseName}
                             <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
                         </Link>
                     </td>
-                    <td className="border p-2">{quiz.score ? quiz.score : "Unmarked"}</td>
+                    <td className="border p-2">{quiz.score ? (`${quiz.score}/${quiz.maxScore} (${(quiz.score / quiz.maxScore * 100).toFixed(1)}%)`) : "Unmarked"}</td>
                 </tr>
             ))
         }
