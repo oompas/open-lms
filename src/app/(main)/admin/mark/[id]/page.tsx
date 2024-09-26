@@ -163,7 +163,7 @@ export default function Mark({ params }: { params: { id: string } }) {
                             <div className="flex flex-col w-full">
                                 <div className="text-lg w-full mb-2">{question.question}</div>
                                 <div>
-                                    {question.type === "tf" ?
+                                    {question.type === "TF" ?
                                         <>
                                             <div className="text-lg w-full">
                                                 {renderQuestionAnswer("True", question.response === 0, question.correctAnswer === 0)}
