@@ -3,7 +3,6 @@ import {useRouter} from "next/navigation";
 import QuizAnswer from "@/app/(main)/admin/mark/[id]/QuizAnswer";
 import Button from "@/components/Button";
 import React, { useEffect, useState } from "react";
-import { ApiEndpoints, callApi } from "@/config/firebase";
 import { RiCheckboxBlankCircleLine, RiCheckboxCircleFill } from "react-icons/ri";
 import { FaRegTimesCircle } from "react-icons/fa";
 import { callAPI } from "@/config/supabase.ts";
@@ -80,8 +79,8 @@ export default function Mark({ params }: { params: { id: string } }) {
     const handleSubmit = async () => {
         const responses = [];
         questions.saQuestions.map((q, key) => responses.push({ questionAttemptId: q.questionAttemptId, marksAchieved: marks[key] }));
-        callApi(ApiEndpoints.MarkQuizAttempt, { quizAttemptId: params.id, responses: responses })
-            .then(() => router.replace("/admin/tools"));
+        callAPI('mark-quiz-attempt', { quizAttemptId: params.id, responses: responses })
+            .then(() => router.push("/admin/tools"));
     }
 
     /**
