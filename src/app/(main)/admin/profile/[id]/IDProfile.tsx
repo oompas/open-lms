@@ -2,9 +2,11 @@
 import Button from "@/components/Button"
 import { useState } from "react";
 import { callAPI } from "@/config/supabase.ts";
+import StatusBadge from "@/components/StatusBadge.tsx";
 
 export default function IDProfile({
     name,
+    role,
     signUpDate,
     lastUpdatedTime,
     email,
@@ -12,6 +14,7 @@ export default function IDProfile({
     disabled
 } : {
     name: string,
+    role: string,
     signUpDate: number,
     lastUpdatedTime: number,
     email: string,
@@ -66,6 +69,7 @@ export default function IDProfile({
     return (
         <>
             <div className="flex flex-col h-full">
+                <StatusBadge status={role} style="my-1"/>
                 <div className="text-2xl font-bold mt-2">{name}</div>
                 <div className="flex flex-col h-full items-end mb-auto">
                     <div className="mr-auto text-lg mb-4">{email}</div>

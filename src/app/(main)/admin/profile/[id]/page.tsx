@@ -32,6 +32,8 @@ export default function Profile({ params }: { params: { id: string } }) {
                     // @ts-ignore
                     name={user.name}
                     // @ts-ignore
+                    role={user.role}
+                    // @ts-ignore
                     signUpDate={unixToString(user.signUpDate)}
                     // @ts-ignore
                     lastUpdatedTime={unixToString(user.lastUpdated)}
