@@ -70,7 +70,7 @@ export default function Quiz({
                         <div className="text-sm">marks</div>
                     </div>
                 </div>
-                {quizStarted !== null && courseStatus !== 5 &&
+                {quizStarted !== null && courseStatus !== "COMPLETED" &&
                     <Button
                         text={quizStarted ? "Continue quiz" : "Start quiz"}
                         onClick={async () => await goToQuiz()}

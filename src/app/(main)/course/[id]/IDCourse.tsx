@@ -15,7 +15,7 @@ export default function IDCourse({
 } : {
     course: {
         name: string,
-        status: 1 | 2 | 3 | 4 | 5,
+        status: string,
         description: string,
         minTime: number,
         link: string,
@@ -45,7 +45,7 @@ export default function IDCourse({
 
     useEffect(() => {
         if (countdown <= 0) {
-            if (status > 2 && !timeDone) {
+            if (status !== "NOT_ENROLLED" && status !== "ENROLLED" && !timeDone) {
                 setTimeDone(true);
             }
             return;
@@ -59,7 +59,7 @@ export default function IDCourse({
 
     const enrollment = () => {
         return callAPI('course-enrollment', { id: course.id })
-            .then(() => setStatus(status === 1 ? 2 : 1))
+            .then(() => setStatus(status === "ENROLLED" ? "NOT_ENROLLED" : "ENROLLED"))
             .catch((err) => { throw new Error(`Error getting course data: ${err}`) });
     };
 
@@ -72,16 +72,16 @@ export default function IDCourse({
                     course.attempts = {};
                 }
                 course.attempts.currentStartTime = new Date().getTime();
-                setStatus(3);
+                setStatus("IN_PROGRESS");
             })
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });
     }
 
 
     const renderButton = () => {
-        if (status === 1) {
+        if (status === "NOT_ENROLLED") {
             return <Button text="Enroll" onClick={enrollment} icon="plus" />;
-        } else if (status === 2) {
+        } else if (status === "ENROLLED") {
             return (
                 <>
                     <a href={course.link} target={"_blank"}>
@@ -102,20 +102,12 @@ export default function IDCourse({
         );
     }
 
-    const statusNames = {
-        1: "Not Enrolled",
-        2: "To Do",
-        3: "In Progress",
-        4: "Awaiting Marking",
-        5: "Failed",
-        6: "Completed",
-    }
     const statusColors = {
-        2: "#468DF0",
-        3: "#EEBD31",
-        4: "#0fa9bb",
-        5: "#ab0303",
-        6: "#47AD63",
+        "ENROLLED": "#468DF0",
+        "IN_PROGRESS": "#EEBD31",
+        "AWAITING_MARKING": "#0fa9bb",
+        "FAILED": "#ab0303",
+        "COMPLETED": "#47AD63",
     }
 
     const getTime = () => {
@@ -127,7 +119,7 @@ export default function IDCourse({
             return `${hours}:${minutes}:${seconds}`;
         }
 
-        if (status === 1 || status === 2) {
+        if (status === "NOT_ENROLLED" || status === "ENROLLED") {
             return format(60 * course.minTime);
         }
         return format(countdown / 1000);
@@ -186,12 +178,12 @@ export default function IDCourse({
                 )}
                 <div className="flex flex-col justify-center items-center ml-auto border-4 rounded-xl px-10 py-4 shadow-lg" style={{borderColor: statusColors[status]}}>
                     <div className="text-sm -mb-1">Status:</div>
-                    <div className="text-2xl text-center">{statusNames[status]}</div>
+                    <div className="text-2xl text-center">{status.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}</div>
                     {course.minTime && (
                         <>
-                            <div className="text-sm mt-2">{status === 1 ? "Minimum" : "Required"} Time:</div>
+                            <div className="text-sm mt-2">{status === "NOT_ENROLLED" ? "Minimum" : "Required"} Time:</div>
                             <div className="text-3xl">
-                                {countdown > 0 || status < 3 ? getTime() : "Completed"}
+                                {countdown > 0 || status === "NOT_ENROLLED" || status === "ENROLLED" ? getTime() : "Completed"}
                             </div>
                         </>
                     )}
