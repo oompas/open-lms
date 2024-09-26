@@ -110,30 +110,33 @@ export default function Mark({ params }: { params: { id: string } }) {
         );
     }
 
+    const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: true,
+    };
+
     return (
         <main className="flex h-auto w-full mb-4 justify-between">
             <div className="flex flex-col w-[75%] overflow-y-scroll sm:no-scrollbar">
                 <div className="flex">
                     <div className="flex flex-col w-full bg-white p-12 rounded-2xl shadow-custom">
-                        {/* @ts-ignore */}
                         <div className="text-2xl font-bold mb-2">{questions && questions.courseName}</div>
-                        {/* @ts-ignore */}
                         <div className="flex flex-col text-lg space-y-8 w-[30rem]">Submitter: {questions && questions.submitterName}</div>
-                        {/* @ts-ignore */}
-                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Completion Date: {questions && new Date(questions.completionTime).toLocaleString()}</div>
-                        {/* @ts-ignore */}
-                        { questions && questions.markingInfo && 
+                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Completion Date: {questions && new Date(questions.completionTime).toLocaleString('en-US', options)}</div>
+                        { questions && questions.markingInfo &&
                         <div> 
-                            {/* @ts-ignore */}
                             <div className="flex flex-col text-lg space-y-8 w-[30rem] mt-2">Marked by: {questions && `${questions.markingInfo?.name} (${questions.markingInfo?.email})`}</div>
-                            {/* @ts-ignore */}
                             <div className="flex flex-col text-lg space-y-8 w-[30rem]">Marked on: {questions && new Date(questions.markingInfo?.markTime._seconds * 1000).toLocaleString()}</div>
                         </div> }
                     </div>
                 </div>
 
                 <div className="flex flex-col">
-                    {/* @ts-ignore */}
                     {!viewOnly && questions && questions.saQuestions.map((question, key) => (
                         <QuizAnswer
                             key={key}
@@ -147,7 +150,6 @@ export default function Mark({ params }: { params: { id: string } }) {
                 </div>
                 {!viewOnly && <div className="text-center mt-4">Automatically Marked Questions</div> }
                 <div className="flex flex-col mt-4 space-y-4">
-                    {/* @ts-ignore */}
                     {viewOnly && questions && questions.saQuestions.map((question, key) => (
                         <div className="flex flex-row bg-white py-4 px-12 rounded-xl">
                             <div className="flex flex-col w-full">
@@ -157,7 +159,6 @@ export default function Mark({ params }: { params: { id: string } }) {
                             <div className="text-xl w-16">{question.marksAchieved}/{question.marks}</div>
                         </div>
                     ))}
-                    {/* @ts-ignore */}
                     {questions && questions.otherQuestions.map((question, key) => (
                         <div className="flex flex-row items-center bg-white py-4 px-12 rounded-xl">
                             <div className="flex flex-col w-full">
