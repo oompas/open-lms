@@ -1,7 +1,6 @@
 "use client";
 import Button from "@/components/Button"
 import { useRouter } from 'next/navigation'
-import { ApiEndpoints, callApi } from "@/config/firebase";
 import { callAPI } from "@/config/supabase.ts";
 
 export default function Quiz({

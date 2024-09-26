@@ -25,16 +25,6 @@ export default function Course({ params }: { params: { id: string } }) {
             setStatus(r.data.status);
             setCourseAttemptId(r.data.attempts.currentAttemptId);
         }), []);
-    
-    // const getCourse = useAsyncApiCall(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: false },
-    //     (result) => {
-    //         setStatus(result.data.status);
-    //         setCourseAttemptId(result.data.courseAttemptId);
-    //         if (result.data.currentQuiz) {
-    //             setQuizAttemptId(result.data.currentQuiz.id);
-    //         }
-    //         return result;
-    //     });
 
     const [courseData, setCourseData] = useState<undefined | object>(undefined);
 
