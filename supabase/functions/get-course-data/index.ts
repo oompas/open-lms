@@ -42,7 +42,9 @@ Deno.serve(async (req: Request) => {
     const courseStatus = await getCourseStatus(courseId, userId);
 
     let attempts = null;
-    const currentCourseAttempt = courseAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest);
+    const currentCourseAttempt = courseAttempts.length > 0
+        ? courseAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest)
+        : null;
     if (courseAttempts.length !== 0) {
 
         let quizAttempt = null;
@@ -63,7 +65,9 @@ Deno.serve(async (req: Request) => {
     const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: ['eq', 'course_attempt_id', currentCourseAttempt.id] });
     if (quizAttempts instanceof Response) return quizAttempts;
 
-    const currentQuizAttempt = quizAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest);
+    const currentQuizAttempt = quizAttempts.length > 0
+        ? quizAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest)
+        : null;
     const quizAttemptData = {
         number: quizAttempts.length,
         currentId: currentQuizAttempt.id
