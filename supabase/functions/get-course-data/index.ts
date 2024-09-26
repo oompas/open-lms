@@ -42,23 +42,32 @@ Deno.serve(async (req: Request) => {
     const courseStatus = await getCourseStatus(courseId, userId);
 
     let attempts = null;
+    const currentCourseAttempt = courseAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest);
     if (courseAttempts.length !== 0) {
-        const current = courseAttempts.find(c => c.pass === null);
 
         let quizAttempt = null;
-        if (current) {
+        if (currentCourseAttempt) {
             quizAttempt = await getRows({ table: 'quiz_attempt', conditions:
-                    [['eq', 'course_id', courseId], ['eq', 'user_id', userId], ['eq', 'course_attempt_id', current.id]] });
+                    [['eq', 'course_id', courseId], ['eq', 'user_id', userId], ['eq', 'course_attempt_id', currentCourseAttempt.id]] });
             if (quizAttempt instanceof Response) return quizAttempt;
         }
 
         attempts = {
             numAttempts: courseAttempts.length,
-            currentAttemptId: current?.id,
-            currentStartTime: current ? new Date(current.start_time).getTime() : null,
+            currentAttemptId: currentCourseAttempt?.id,
+            currentStartTime: currentCourseAttempt ? new Date(currentCourseAttempt.start_time).getTime() : null,
             currentQuizAttemptId: quizAttempt?.id ?? null
         }
     }
+
+    const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: ['eq', 'course_attempt_id', currentCourseAttempt.id] });
+    if (quizAttempts instanceof Response) return quizAttempts;
+
+    const currentQuizAttempt = quizAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest);
+    const quizAttemptData = {
+        number: quizAttempts.length,
+        currentId: currentQuizAttempt.id
+    };
 
     const rsp = {
         id: courseData.id,
@@ -71,7 +80,7 @@ Deno.serve(async (req: Request) => {
 
         quizData: quizData,
         courseAttempt: attempts,
-        quizAttempts: 1
+        quizAttempts: quizAttemptData
     };
     return successResponse(rsp);
 });
