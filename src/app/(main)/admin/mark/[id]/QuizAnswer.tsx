@@ -27,15 +27,9 @@ export default function QuizAnswer({
         setMark(mark);
     }
 
-    const isValid = (str: string) => {
-        const n = Math.floor(Number(str));
-        return n !== Infinity && String(n) === str && n >= 0;
-    }
-
     useEffect(() => {
-        if (isValid(mark))
-            handleMark(index, Number(mark))
-    }, [mark])
+        handleMark(index, Number(mark));
+    }, [mark]);
 
     return (
         <div className="flex mt-4">
