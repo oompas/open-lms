@@ -9,7 +9,6 @@ import StatusBadge from "@/components/StatusBadge";
 import { useAsync } from "react-async-hook";
 import { callAPI } from "@/config/supabase.ts";
 
-
 export default function Profile({ params }: { params: { id: string } }) {
 
     const userData = useAsync(() => callAPI('get-user-profile', { userId: params.id }));
@@ -35,7 +34,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                     // @ts-ignore
                     signUpDate={unixToString(user.signUpDate)}
                     // @ts-ignore
-                    lastLoginDate={unixToString(user.lastSignIn)}
+                    lastActiveTime={unixToString(user.lastActive)}
                     // @ts-ignore
                     email={user.email}
                     uid={params.id}
@@ -130,28 +129,28 @@ export default function Profile({ params }: { params: { id: string } }) {
         <main className="flex flex-col w-full h-full overflow-y-scroll sm:no-scrollbar mb-4">
 
             <div className="flex flex-row w-full mb-4">
-                    {/* Account Details section */}
-                    <div className="flex flex-col bg-white w-[50%] h-[50vh] p-12 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar">
-                        <div className="text-lg mb-2">Account Details</div>
-                        {status && <StatusBadge status={status} style="mt-2" />}
-                        { profileData() }
-                    </div>
+                {/* Account Details section */}
+                <div className="flex flex-col bg-white w-[50%] h-[50vh] p-12 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar">
+                    <div className="text-lg mb-2">Account Details</div>
+                    {status && <StatusBadge status={status} style="mt-2" />}
+                    { profileData() }
+                </div>
 
-                    <div className="flex flex-col h-[50vh] bg-white w-[50%] p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar">
-                        {/* Completed Courses section */}
-                        <div className="text-lg mb-4">Completed Courses</div>
-                        <div className="flex flex-col mr-auto text-lg w-[100%]">
-                            <table className="flex-col border-collapse w-full">
-                                <thead>
-                                    <tr className="border-b-2 border-black text-left">
-                                        <th className="p-2">Name</th>
-                                        <th className="p-2">Date of Completion</th>
-                                    </tr>
-                                </thead>
-                                { courseCompletedData() }
-                            </table>
-                        </div>
+                <div className="flex flex-col h-[50vh] bg-white w-[50%] p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar">
+                    {/* Completed Courses section */}
+                    <div className="text-lg mb-4">Completed Courses</div>
+                    <div className="flex flex-col mr-auto text-lg w-[100%]">
+                        <table className="flex-col border-collapse w-full">
+                            <thead>
+                                <tr className="border-b-2 border-black text-left">
+                                    <th className="p-2">Name</th>
+                                    <th className="p-2">Date of Completion</th>
+                                </tr>
+                            </thead>
+                            { courseCompletedData() }
+                        </table>
                     </div>
+                </div>
             </div>
 
             {/* Enrolled Courses Section */}
