@@ -70,7 +70,7 @@ Deno.serve(async (req: Request) => {
         : null;
     const quizAttemptData = {
         number: quizAttempts.length,
-        currentId: currentQuizAttempt.id
+        currentId: currentQuizAttempt?.id
     };
 
     const rsp = {
