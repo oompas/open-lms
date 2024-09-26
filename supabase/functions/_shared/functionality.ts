@@ -47,9 +47,11 @@ const getCourseStatus = async (courseId: number, userId: string): CourseStatus =
     const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: [['eq', 'course_id', courseId], ['eq', 'user_id', userId]] });
     if (quizAttempts instanceof Response) return quizAttempts;
 
-    const latestQuizAttempt = quizAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest);
-    if (latestQuizAttempt.end_time !== null && latestQuizAttempt.pass === null) {
-        return CourseStatus.AWAITING_MARKING;
+    if (quizAttempts.length !== 0) {
+        const latestQuizAttempt = quizAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest);
+        if (latestQuizAttempt.end_time !== null && latestQuizAttempt.pass === null) {
+            return CourseStatus.AWAITING_MARKING;
+        }
     }
 
     // In progress has a lot of cases, i.e. everything else
