@@ -31,7 +31,7 @@ export default function Home() {
 
     const [courseData, setCourseData] = useState<undefined | any[]>(undefined);
 
-    const [filters, setFilters] = useState<number[]>([0, 1, 2, 3, 4]);
+    const [filters, setFilters] = useState<number[]>(Object.values(CourseStatus).filter(s => s !== "NOT_ENROLLED"));
     const [search, setSearch] = useState<string | null>(null);
 
     const enrolledCourses = () => {
@@ -97,13 +97,14 @@ export default function Home() {
         COMPLETED: "#47AD63",
     }
 
-    const handleUpdateFilter = (key: number) => {
+    const handleUpdateFilter = (key: string) => {
         const temp = [...filters]
-        if (temp.includes(key)) 
-            temp.splice(temp.indexOf(key), 1)
-        else 
-            temp.push(key)
-        setFilters(temp)
+        if (temp.includes(key)) {
+            temp.splice(temp.indexOf(key), 1);
+        } else {
+            temp.push(key);
+        }
+        setFilters(temp);
     }
 
     const availableCourses = () => {
@@ -140,11 +141,10 @@ export default function Home() {
                                         key={key}
                                         className="border-2 rounded-full px-4 py-1 cursor-pointer"
                                         style={{
-                                            // @ts-ignore
-                                            borderColor: filters.includes(key) ? statusColors[value] : null,
-                                            opacity: filters.includes(key) ? 1 : 0.5,
+                                            borderColor: filters.includes(value) ? statusColors[value] : null,
+                                            opacity: filters.includes(value) ? 1 : 0.5,
                                         }}
-                                        onClick={() => handleUpdateFilter(key)}
+                                        onClick={() => handleUpdateFilter(value)}
                                     >
                                         {value.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}
                                     </button>
