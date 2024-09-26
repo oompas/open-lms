@@ -9,12 +9,12 @@ Deno.serve(async (req) => {
         return new Response('ok', { headers: corsHeaders });
     }
 
-    const { userId, active } = await req.json();
+    const { userId, disable } = await req.json();
 
     await verifyAdministrator(req);
 
     const { data, error } = await adminClient.auth.admin.updateUserById(userId, {
-        ban_duration: active ? "none" : "876600h" // Bans for 100 years
+        ban_duration: disable ? "876600h": "none" // Bans for 100 years
     });
 
     if (error) {
