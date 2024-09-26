@@ -8,13 +8,22 @@ import { MdArrowBack } from "react-icons/md";
 import TextField from "@/components/TextField.tsx";
 import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
 
+enum CourseStatus {
+    NOT_ENROLLED = "NOT_ENROLLED",
+    ENROLLED = "ENROLLED",
+    IN_PROGRESS = "IN_PROGRESS",
+    AWAITING_MARKING = "AWAITING_MARKING",
+    FAILED = "FAILED",
+    COMPLETED = "COMPLETED"
+}
+
 export default function Home() {
 
     const getCourseData = useAsync(() => {
         return callAPI('get-courses')
             .then(r => {
                 setCourseData(r.data);
-                if (r.data.filter(c => c.status !== 1).length === 0) {
+                if (r.data.filter(c => c.status !== CourseStatus.NOT_ENROLLED).length === 0) {
                     setSearch("");
                 }
             });
@@ -33,10 +42,10 @@ export default function Home() {
             return <div>Error loading courses</div>;
         }
 
-        if (courseData.filter((course: any) => course.status !== 1).length === 0) {
+        if (courseData.filter((course: any) => course.status !== CourseStatus.NOT_ENROLLED).length === 0) {
             return <div className="text-gray-600 text-center">Enroll in courses to get started!</div>
         }
-        const temp_courses = [...courseData.filter((course: any) => filters.includes(course.status-2))]
+        const temp_courses = [...courseData.filter((course: any) => filters.includes(course.status - 2))]
         if (temp_courses.length % 3 === 2) {
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
@@ -71,7 +80,7 @@ export default function Home() {
                     <EnrolledCourse
                         key={key}
                         title={course.name}
-                        status={course.status }
+                        status={course.status}
                         description={course.description}
                         time={time}
                         id={course.id}
@@ -80,19 +89,12 @@ export default function Home() {
             });
     }
 
-    const statusValues = [
-        "To Do",
-        "In Progress",
-        "Awaiting Marking",
-        "Failed",
-        "Completed",
-    ]
     const statusColors = {
-        0: "#468DF0",
-        1: "#EEBD31",
-        2: "#0fa9bb",
-        3: "#ab0303",
-        4: "#47AD63",
+        ENROLLED: "#468DF0",
+        IN_PROGRESS: "#EEBD31",
+        AWAITING_MARKING: "#0fa9bb",
+        FAILED: "#ab0303",
+        COMPLETED: "#47AD63",
     }
 
     const handleUpdateFilter = (key: number) => {
@@ -113,7 +115,7 @@ export default function Home() {
         }
 
         return courseData
-            .filter((course: any) => course.status === 1 && (course.name.toLowerCase().includes(search.toLowerCase())
+            .filter((course: any) => course.status === CourseStatus.NOT_ENROLLED && (course.name.toLowerCase().includes(search.toLowerCase())
                 || course.description.toLowerCase().includes(search.toLowerCase())))
             .map((course: any, key: number) => (
                 <AvailableCourse
@@ -133,18 +135,18 @@ export default function Home() {
                         <div className="flex flex-row items-center">
                             <div className="text-lg mr-4">My Enrolled Courses</div>
                             <div className="flex flex-row space-x-2">
-                                {statusValues.map((value, key) => (
+                                {Object.values(CourseStatus).filter(s => s !== "NOT_ENROLLED").map((value, key) => (
                                     <button
                                         key={key}
                                         className="border-2 rounded-full px-4 py-1 cursor-pointer"
                                         style={{
                                             // @ts-ignore
-                                            borderColor: filters.includes(key) ? statusColors[key] : null,
+                                            borderColor: filters.includes(key) ? statusColors[value] : null,
                                             opacity: filters.includes(key) ? 1 : 0.5,
                                         }}
                                         onClick={() => handleUpdateFilter(key)}
                                     >
-                                        {value}
+                                        {value.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}
                                     </button>
                                 ))}
                             </div>
