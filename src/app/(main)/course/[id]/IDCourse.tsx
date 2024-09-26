@@ -20,9 +20,9 @@ export default function IDCourse({
         minTime: number,
         link: string,
         courseId: number,
-        attempts: {
+        courseAttempt: {
             numAttempts: number,
-            currentStartTime: string,
+            currentStartTime: number,
             currentQuizAttemptId: number
         } | null
     },
@@ -35,7 +35,7 @@ export default function IDCourse({
 
     const startingCountdown = () => {
         const currentMillis = new Date().getTime();
-        const timeSinceStart = Math.floor(currentMillis - course.attempts?.currentStartTime);
+        const timeSinceStart = Math.floor(currentMillis - course.courseAttempt?.currentStartTime);
         const minimumMillis = 60 * 1000 * course.minTime;
 
         return minimumMillis - timeSinceStart;
@@ -52,7 +52,7 @@ export default function IDCourse({
         }
 
         const interval = setInterval(() =>
-            setCountDown(Math.round(course.attempts?.currentStartTime + (60 * 1000 * course.minTime) - new Date().getTime())),
+            setCountDown(Math.round(course.courseAttempt?.currentStartTime + (60 * 1000 * course.minTime) - new Date().getTime())),
             200);
         return () => clearInterval(interval);
     }, [countdown]);
@@ -68,10 +68,10 @@ export default function IDCourse({
             .then((result) => {
                 setCourseAttemptId(result.data);
                 setCountDown(60 * course.minTime);
-                if (!course.attempts) {
-                    course.attempts = {};
+                if (!course.courseAttempt) {
+                    course.courseAttempt = {};
                 }
-                course.attempts.currentStartTime = new Date().getTime();
+                course.courseAttempt.currentStartTime = new Date().getTime();
                 setStatus("IN_PROGRESS");
             })
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });
