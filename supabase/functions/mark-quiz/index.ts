@@ -3,6 +3,7 @@ import { corsHeaders, errorResponse, getCurrentTimestampTz, log, successResponse
 import { adminClient } from "../_shared/adminClient.ts";
 import { verifyAdministrator } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
+import { handleMarkedQuiz } from "../_shared/functionality.ts";
 
 Deno.serve(async (req) => {
 
@@ -43,6 +44,9 @@ Deno.serve(async (req) => {
         log(`Error updating quiz attempt: ${error.message}`);
         return errorResponse(`Error updating quiz attempt: ${error.message}`);
     }
+
+    const markRsp = await handleMarkedQuiz(quizAttemptId);
+    if (markRsp instanceof Response) return markRsp;
 
     return successResponse(data);
 });
