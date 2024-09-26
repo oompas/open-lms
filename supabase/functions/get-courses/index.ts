@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { corsHeaders, successResponse, log } from "../_shared/helpers.ts";
 import { getRows } from "../_shared/database.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
+import { getCourseStatus } from "../_shared/functionality.ts";
 
 Deno.serve(async (req: Request) => {
 
@@ -24,31 +25,21 @@ Deno.serve(async (req: Request) => {
     const attempts = await getRows({ table: 'course_attempt', conditions: ['eq', 'user_id', userId] });
     if (attempts instanceof Response) return attempts;
 
-    const courseData = courses
-        .filter((course) => course.active === true)
-        .map((course: any) => {
-
-            const enrolled = enrollment.some((enrolledCourse: any) => enrolledCourse.course_id === course.id);
-            const started = attempts.some((attempt: any) => attempt.course_id === course.id);
-
-            let status;
-            if (started) {
-                status = 3;
-            } else if (enrolled) {
-                status = 2;
-            } else {
-                status = 1;
-            }
-
-            return {
-                id: course.id,
-                name: course.name,
-                description: course.description,
-                status: status,
-                minTime: course.min_time,
-                maxQuizTime: course.max_quiz_time,
-            }
-        });
+    const courseData = await Promise.all(
+        courses
+            .filter((course) => course.active === true)
+            .map(async (course: any) => {
+                const courseStatus = await getCourseStatus(course.id, userId);
+                return {
+                    id: course.id,
+                    name: course.name,
+                    description: course.description,
+                    status: courseStatus,
+                    minTime: course.min_time,
+                    maxQuizTime: course.max_quiz_time,
+                }
+            })
+    );
 
     log("Returning success...");
     return successResponse(courseData);
