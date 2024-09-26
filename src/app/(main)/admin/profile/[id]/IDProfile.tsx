@@ -1,7 +1,7 @@
 "use client";
 import Button from "@/components/Button"
-import { ApiEndpoints, callApi } from "@/config/firebase";
 import { useState } from "react";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function IDProfile({
     name,
@@ -22,8 +22,8 @@ export default function IDProfile({
     const [isDisabled, setIsDisabled] = useState(disabled);
 
     const handleUpdateUserEnabled = async () => {
-        await callApi(ApiEndpoints.UpdateUserEnabled, { targetUid: uid })
-            .then(() => setIsDisabled(!isDisabled))
+        await callAPI('disable-user', { userId: uid, active: !isDisabled })
+            .then(() => setIsDisabled(!isDisabled));
     }
 
     return (
