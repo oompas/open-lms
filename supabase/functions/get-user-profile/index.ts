@@ -6,7 +6,7 @@ import { getRows } from "../_shared/database.ts";
 Deno.serve(async (req) => {
 
     if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders })
+        return new Response('ok', { headers: corsHeaders });
     }
 
     const { userId } = await req.json();
@@ -52,6 +52,7 @@ Deno.serve(async (req) => {
     }))).sort((a, b) =>  new Date(b.end_time) - new Date(a.end_time));
 
     const userData = {
+        userId: user.id,
         name: user.user_metadata.name,
         email: user.email,
         role: user.user_metadata.role,
