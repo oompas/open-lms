@@ -17,10 +17,18 @@ export default function QuizAnswer({
     handleMark: any
 }) {
 
-    const [mark, setMark] = useState("0")
+    const [mark, setMark] = useState("0");
+
+    const updateMark = (mark: string) => {
+        const intResult = parseInt(mark, 10);
+        if (mark !== "" &&(!Number.isInteger(intResult) || intResult < 0 || intResult > marks)) {
+            return;
+        }
+        setMark(mark);
+    }
 
     const isValid = (str: string) => {
-        var n = Math.floor(Number(str));
+        const n = Math.floor(Number(str));
         return n !== Infinity && String(n) === str && n >= 0;
     }
 
@@ -38,7 +46,7 @@ export default function QuizAnswer({
                 </div>
                 <div className="flex items-center">
                     <div className="flex flex-row items-baseline">
-                        <TextField text={mark} onChange={setMark} style="text-right w-20" />
+                        <TextField text={mark} onChange={updateMark} style="text-right w-20" />
                         <div className="ml-2 text-xl">/{marks}</div>
                     </div>
                 </div>
