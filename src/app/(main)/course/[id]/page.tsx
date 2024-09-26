@@ -124,7 +124,7 @@ export default function Course({ params }: { params: { id: string } }) {
             </Link>
 
             {getCourseData.loading && <div>Loading...</div>}
-            {getCourseData.error && <div>Error loading course</div>}
+            {(getCourseData.error && JSON.stringify(getCourseData.error) !== '{}') && <div>Error loading course</div>}
             {courseData && renderCourse()}
         </main>
     )
