@@ -1,6 +1,6 @@
 import { getRows } from "./database.ts";
 import { adminClient } from "./adminClient.ts";
-import { errorResponse, log } from "./helpers.ts";
+import { errorResponse, getCurrentTimestampTz, log } from "./helpers.ts";
 
 enum CourseStatus {
     NOT_ENROLLED = "NOT_ENROLLED",
@@ -70,6 +70,8 @@ const getCourseStatus = async (courseId: number, userId: string): CourseStatus =
  * @param quizAttemptId ID of the marked quiz attempt to handle
  */
 const handleMarkedQuiz = async (quizAttemptId: number) => {
+    const timestamp = getCurrentTimestampTz();
+
     const quizAttemptQuery = await getRows({ table: 'quiz_attempt', conditions: ['eq', 'id', quizAttemptId] });
     if (quizAttemptQuery instanceof Response) return quizAttemptQuery;
     const quizAttempt = quizAttemptQuery[0];
@@ -80,7 +82,7 @@ const handleMarkedQuiz = async (quizAttemptId: number) => {
 
     // If the quiz passes, the course attempt passes
     if (quizAttempt.pass === true) {
-        const { data, error } = await adminClient.from('course_attempt').update({ pass: true }).eq('id', courseAttempt.id);
+        const { data, error } = await adminClient.from('course_attempt').update({ pass: true, end_time: timestamp }).eq('id', courseAttempt.id);
 
         if (error) {
             log(`Error updating course attempt to pass: ${error.message}`);
@@ -97,7 +99,7 @@ const handleMarkedQuiz = async (quizAttemptId: number) => {
 
     const maxQuizAttempts = course.max_quiz_attempts;
     if (quizAttemptQuery.length >= maxQuizAttempts) {
-        const { data, error } = await adminClient.from('course_attempt').update({ pass: false }).eq('id', courseAttempt.id);
+        const { data, error } = await adminClient.from('course_attempt').update({ pass: false, end_time: timestamp }).eq('id', courseAttempt.id);
 
         if (error) {
             log(`Error updating course attempt to failure: ${error.message}`);
