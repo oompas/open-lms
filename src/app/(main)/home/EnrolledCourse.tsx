@@ -33,7 +33,12 @@ export default function EnrolledCourse({
             href={"/course/"+id}
         >
             <div className="text-3xl">{title}</div>
-            <div className="text-white w-fit px-3 py-1 rounded-full mt-2" style={{ backgroundColor: statusColors[status] }}>{status.toLowerCase().replace(/_/g, ' ')}</div>
+            <div
+                className="text-white w-fit px-3 py-1 rounded-full mt-2"
+                style={{ backgroundColor: statusColors[status] }}
+            >
+                {status.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}
+            </div>
             <div className="mt-4 text-xl">{description}</div>
             <div className="mt-4">{time}</div>
         </Link>

@@ -45,7 +45,7 @@ export default function Home() {
         if (courseData.filter((course: any) => course.status !== CourseStatus.NOT_ENROLLED).length === 0) {
             return <div className="text-gray-600 text-center">Enroll in courses to get started!</div>
         }
-        const temp_courses = [...courseData.filter((course: any) => filters.includes(course.status - 2))]
+        const temp_courses = [...courseData.filter((course: any) => filters.includes(course.status))]
         if (temp_courses.length % 3 === 2) {
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
@@ -129,6 +129,7 @@ export default function Home() {
     }
 
     const renderPage = () => {
+        // My enrolled courses page
         if (search === null) {
             return (
                 <div className="flex flex-col bg-white w-full p-12 rounded-2xl shadow-custom">
@@ -164,6 +165,7 @@ export default function Home() {
             )
         }
 
+        // Available courses page
         return (
             <div className="flex flex-col w-full h-full bg-white p-12 rounded-2xl shadow-custom">
                 <div className="max-w-xs">
