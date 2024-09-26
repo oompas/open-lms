@@ -2,18 +2,14 @@
 import IDProfile from "./IDProfile";
 import IDEnrolled from "./IDEnrolled.tsx";
 import IDCompleted from "./IDCompleted.tsx"
-import { useState } from "react";
 import Link from "next/link";
 import { LuExternalLink } from "react-icons/lu";
-import StatusBadge from "@/components/StatusBadge";
 import { useAsync } from "react-async-hook";
 import { callAPI } from "@/config/supabase.ts";
 
 export default function Profile({ params }: { params: { id: string } }) {
 
     const userData = useAsync(() => callAPI('get-user-profile', { userId: params.id }));
-
-    const [status, setStatus] = useState("");
 
     const profileData = () => {
         const user = userData?.result?.data;
@@ -133,8 +129,6 @@ export default function Profile({ params }: { params: { id: string } }) {
             <div className="flex flex-row w-full mb-4">
                 {/* Account Details section */}
                 <div className="flex flex-col bg-white w-[50%] h-[50vh] p-12 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar">
-                    <div className="text-lg mb-2">Account Details</div>
-                    {status && <StatusBadge status={status} style="mt-2" />}
                     { profileData() }
                 </div>
 

@@ -11,8 +11,6 @@ import Link from "next/link";
 
 export default function Profile() {
 
-    const router = useRouter();
-
     const getUserData = useAsync(() => callAPI('get-profile').then(r => setUser(r.data)), {});
 
     const [user, setUser] = useState(undefined);
