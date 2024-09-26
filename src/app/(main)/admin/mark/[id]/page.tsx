@@ -27,8 +27,7 @@ export default function Mark({ params }: { params: { id: string } }) {
             return;
         }
 
-        // @ts-ignore
-        const view = questions.score != null
+        const view = questions.score != null;
         
         const temp_marks: any[] = [];
         let temp_total = 0;
@@ -190,7 +189,7 @@ export default function Mark({ params }: { params: { id: string } }) {
                 <div className="flex flex-row items-center justify-center text-3xl border py-3 rounded-xl mt-2">
                     <div className="font-bold">
                         {/* @ts-ignore */}
-                        {viewOnly ? questions.score : marked+score}
+                        {viewOnly ? questions.score : marked + score}
                     </div>
                     <div className="ml-1 text-gray-500">{"/"}</div>
                     <div className="text-gray-500">

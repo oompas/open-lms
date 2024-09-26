@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
     const update = {
         end_time: timestamp,
         ...(autoMark && { pass: totalMarks >= course.min_quiz_score }),
-        score: totalMarks
+        ...(autoMark && { score: totalMarks })
     };
     const { data: data2, error: error2 } = await adminClient.from('quiz_attempt').update(update).eq('id', quizAttemptId);
 
