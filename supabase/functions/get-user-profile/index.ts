@@ -25,12 +25,9 @@ Deno.serve(async (req) => {
 
     const enrolledData = await Promise.all(enrollments.map(async (enrolled) => {
         const courses = await getRows({ table: 'course', conditions: ['eq', 'id', enrolled.course_id] });
-        const completion = completedCourses.find((c) => c.course_id === enrolled.course_id);
-
         return {
             courseId: enrolled.course_id,
-            name: courses[0].name,
-            completionDate: completion?.end_time ?? null
+            name: courses[0].name
         };
     }));
 
