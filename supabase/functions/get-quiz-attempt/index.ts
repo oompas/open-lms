@@ -28,6 +28,35 @@ Deno.serve(async (req) => {
     const questionAttempts = await getRows({ table: 'quiz_question_attempt', conditions: ['eq', 'quiz_attempt_id', quizAttemptId] });
     if (questionAttempts instanceof Response) return questionAttempts;
 
+    const questions = await getRows({ table: 'quiz_question', conditions: ['eq', 'course_id', quizAttempt.course_id] });
+    if (questions instanceof Response) return questions;
+
+    const saQuestions = questionAttempts.filter((q) => q.type === "SA").map((q) => {
+
+
+
+        return {
+            id: q.id,
+            question: 2,
+            marks: 1,
+            questionAttemptId: 1,
+            response: 2,
+            marksAchieved: 3
+        };
+    });
+
+    const otherQuestions = questionAttempts.filter((q) => q.type !== "SA").map((q) => {
+        return {
+            id: q.id,
+            question: 3,
+            type: 5,
+            correctAnswer: 7,
+            marks: 2,
+            response: 6,
+            marksAchieved: 3,
+        };
+    });
+
     const response = {
         courseName: course.name,
         learnerName: user.name,

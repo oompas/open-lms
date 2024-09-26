@@ -8,15 +8,13 @@ export default function QuizAnswer({
     question,
     answer,
     marks,
-    handleMark,
-    id
+    handleMark
 } : {
     index: number,
     question: string,
     answer: string,
     marks: string | number,
-    handleMark: any,
-    id: number
+    handleMark: any
 }) {
 
     const [mark, setMark] = useState("0")

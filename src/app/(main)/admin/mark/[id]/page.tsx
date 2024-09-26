@@ -13,7 +13,7 @@ export default function Mark({ params }: { params: { id: string } }) {
 
     const router = useRouter();
 
-    const quizQuestions = useAsync(() => callAPI('get-quiz-attempt', { quizAttemptId: params.id }, (rsp) => { setQuestions(rsp.data); return rsp; }));
+    const quizQuestions = useAsync(() => callAPI('get-quiz-attempt', { quizAttemptId: params.id }).then((rsp) => { setQuestions(rsp.data); return rsp; }));
 
     const [questions, setQuestions] = useState(null);
     const [marks, setMarks] = useState<any[]>([]);
@@ -146,7 +146,6 @@ export default function Mark({ params }: { params: { id: string } }) {
                             answer={question.response}
                             marks={question.marks}
                             handleMark={handleUpdateMark}
-                            id={question.id}
                         />
                     ))}
                 </div>
