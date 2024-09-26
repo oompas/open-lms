@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
         name: user.user_metadata.name,
         email: user.email,
         role: user.user_metadata.role,
-        disabled: false,
+        disabled: !!user.banned_until,
         signUpDate: user.created_at,
         lastUpdated: user.updated_at ?? -1,
 
