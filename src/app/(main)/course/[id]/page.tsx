@@ -55,6 +55,14 @@ export default function Course({ params }: { params: { id: string } }) {
                 + (courseData.minTime % 60 > 0 ? " and " + courseData.minTime % 60 + " minute" + (courseData.minTime % 60 === 1 ? "" : "s") : "");
         }
 
+        const quizStarted = () => {
+            const attemptId = courseData.attempts?.currentQuizAttemptId;
+            if (attemptId) {
+                return attemptId;
+            }
+            return courseData.status === CourseStatus.IN_PROGRESS && timeDone ? false : null;
+        }
+
         return (
             <>
                 <IDCourse
@@ -93,7 +101,7 @@ export default function Course({ params }: { params: { id: string } }) {
                                 numQuestions={courseData.quiz.numQuestions}
                                 totalMarks={courseData.quiz.totalMarks}
                                 minimumScore={courseData.quiz.minScore}
-                                quizStarted={courseData.attempts?.currentQuizAttemptId ?? (timeDone ? false : null)}
+                                quizStarted={quizStarted()}
                                 courseAttemptId={courseAttemptId}
                                 quizAttemptId={quizAttemptId}
                                 courseStatus={courseData.status}
