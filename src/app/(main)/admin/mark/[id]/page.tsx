@@ -78,7 +78,7 @@ export default function Mark({ params }: { params: { id: string } }) {
 
     const handleSubmit = async () => {
         const responses = [];
-        questions.saQuestions.map((q, key) => responses.push({ questionAttemptId: q.questionAttemptId, marksAchieved: marks[key] }));
+        questions.saQuestions.map((q, key) => responses.push({ questionAttemptId: q.questionAttemptId, marks: marks[key] }));
         callAPI('mark-quiz-attempt', { quizAttemptId: params.id, marks: responses })
             .then(() => router.push("/admin/tools"));
     }
