@@ -40,8 +40,8 @@ Deno.serve(async (req) => {
     const { data, error } = await adminClient.from('quiz_attempt').update(update).eq('id', quizAttemptId);
 
     if (error) {
-        log(`Error updating quiz attempt:`);
-        return errorResponse();
+        log(`Error updating quiz attempt: ${error.message}`);
+        return errorResponse(`Error updating quiz attempt: ${error.message}`);
     }
 
     return successResponse(data);
