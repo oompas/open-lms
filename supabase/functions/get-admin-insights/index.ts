@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
         return {
             id: quizAttempt.id,
             courseName: course.name,
-            timestamp: new Date(quizAttempt.end_time).getTime(),
+            timestamp: new Date(quizAttempt.end_time),
             userName: user.user_metadata.name
         }
     });

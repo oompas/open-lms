@@ -57,7 +57,7 @@ Deno.serve(async (req: Request) => {
         attempts = {
             numAttempts: courseAttempts.length,
             currentAttemptId: currentCourseAttempt?.id,
-            currentStartTime: currentCourseAttempt ? new Date(currentCourseAttempt.start_time).getTime() : null,
+            currentStartTime: currentCourseAttempt ? new Date(currentCourseAttempt.start_time) : null,
             currentQuizAttemptId: quizAttempt?.id ?? null
         }
     }

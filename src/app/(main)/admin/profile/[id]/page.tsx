@@ -34,7 +34,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                     // @ts-ignore
                     signUpDate={unixToString(user.signUpDate)}
                     // @ts-ignore
-                    lastActiveTime={unixToString(user.lastActive)}
+                    lastUpdatedTime={unixToString(user.lastUpdated)}
                     // @ts-ignore
                     email={user.email}
                     uid={params.id}

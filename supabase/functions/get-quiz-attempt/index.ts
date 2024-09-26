@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     const response = {
         courseName: course.name,
         submitterName: user.user_metadata.name,
-        completionTime: new Date(quizAttempt.end_time).getTime(),
+        completionTime: new Date(quizAttempt.end_time),
         saQuestions: saQuestions,
         otherQuestions: otherQuestions,
         score: quizAttempt.score,

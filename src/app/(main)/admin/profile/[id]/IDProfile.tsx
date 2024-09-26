@@ -6,14 +6,14 @@ import { useState } from "react";
 export default function IDProfile({
     name,
     signUpDate,
-    lastActiveTime,
+    lastUpdatedTime,
     email,
     uid,
     disabled
 } : {
     name: string,
     signUpDate: number,
-    lastActiveTime: number,
+    lastUpdatedTime: number,
     email: string,
     uid: string,
     disabled: boolean
@@ -32,7 +32,7 @@ export default function IDProfile({
             <div className="flex flex-col h-full items-end mb-auto">
                 <div className="mr-auto text-lg mb-4">{email}</div>
                 <div className="mr-auto text-lg">Signed up: <i>{signUpDate}</i></div>
-                <div className="mr-auto text-lg mb-4">Last Updated: <i>{lastActiveTime}</i></div>
+                <div className="mr-auto text-lg mb-4">Last Updated: <i>{lastUpdatedTime}</i></div>
             </div>
             <Button
                 text={`${isDisabled ? "Enable" : "Disable"} User Account`}

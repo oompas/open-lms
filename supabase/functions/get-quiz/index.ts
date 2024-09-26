@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
         numAttempts: -1,
         maxAttempts: course.max_quiz_attempts,
         timeLimit: course.quiz_time_limit,
-        startTime: new Date(quizAttempt.start_time).getTime(),
+        startTime: new Date(quizAttempt.start_time),
         questions: questions.map((q) => {
             return {
                 id: q.id,

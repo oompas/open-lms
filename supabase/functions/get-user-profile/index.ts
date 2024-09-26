@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
         role: user.user_metadata.role,
         disabled: false,
         signUpDate: user.created_at,
-        lastActive: user.updated_at ?? -1,
+        lastUpdated: user.updated_at ?? -1,
         enrolledCourses: enrollments,
         completedCourses: completedCourses,
         quizAttempts: quizAttempts,
