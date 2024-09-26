@@ -1,10 +1,10 @@
 export default function IDCompleted({
     title,
-    completionDate,
+    completionTime,
     id
 } : {
     title: string,
-    completionDate: string,
+    completionTime: string,
     id?: number
 }) {
     return (
@@ -12,8 +12,7 @@ export default function IDCompleted({
             <td className="border p-2">
                 {title}
             </td>
-            <td className="border p-2">{completionDate}</td>
+            <td className="border p-2">{completionTime}</td>
         </tr>
-            
-    )
+    );
 }

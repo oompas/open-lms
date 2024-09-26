@@ -31,6 +31,14 @@ Deno.serve(async (req) => {
         };
     }));
 
+    const completedCourseData = await Promise.all(completedCourses.map(async (courseAttempt) => {
+        const courses = await getRows({ table: 'course', conditions: ['eq', 'id', courseAttempt.course_id] });
+        return {
+            name: courses[0].name,
+            completionTime: courseAttempt.end_time
+        };
+    }));
+
     const userData = {
         name: user.user_metadata.name,
         email: user.email,
@@ -40,7 +48,7 @@ Deno.serve(async (req) => {
         lastUpdated: user.updated_at ?? -1,
 
         enrolledCourses: enrolledData,
-        completedCourses: completedCourses,
+        completedCourses: completedCourseData,
         quizAttempts: quizAttempts,
     };
 
