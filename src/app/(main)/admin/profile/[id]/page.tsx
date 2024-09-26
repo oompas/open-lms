@@ -1,7 +1,7 @@
 "use client"
 import IDProfile from "./IDProfile";
-import IDCourse from "./IDCourse";
-import IDEnrolled from "./IDEnrolled"
+import IDEnrolled from "./IDEnrolled.tsx";
+import IDCompleted from "./IDCompleted.tsx"
 import { useState } from "react";
 import Link from "next/link";
 import { LuExternalLink } from "react-icons/lu";
@@ -61,7 +61,7 @@ export default function Profile({ params }: { params: { id: string } }) {
                 temp_courses.push({"name": "_placeholder", "id": 0})
             }
             return temp_courses.map((course, key) => (
-                <IDCourse
+                <IDEnrolled
                     key={key}
                     title={course.name}
                     id={course.id}
@@ -75,7 +75,7 @@ export default function Profile({ params }: { params: { id: string } }) {
         if (user) {
             // @ts-ignore
             return user.completedCourses.map((coursesEnrolled, key) => (
-                <IDEnrolled 
+                <IDCompleted
                     key={key}
                     title={coursesEnrolled.name}
                     completionDate={new Date(coursesEnrolled.completionDate).toLocaleString()}
