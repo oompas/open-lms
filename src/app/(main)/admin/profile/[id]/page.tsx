@@ -181,7 +181,6 @@ export default function Profile({ params }: { params: { id: string } }) {
             </div>
 
             { loadingPopup() }
-
         </main>  
     );
 }

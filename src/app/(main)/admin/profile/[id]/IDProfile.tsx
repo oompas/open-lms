@@ -76,11 +76,12 @@ export default function IDProfile({
                     <div className="mr-auto text-lg">Signed up: <i>{signUpDate}</i></div>
                     <div className="mr-auto text-lg mb-4">Last Updated: <i>{lastUpdatedTime}</i></div>
                 </div>
-                <Button
-                    text={`${isDisabled ? "Enable" : "Disable"} User Account`}
-                    onClick={() => setShowDeactivatePopup(true)}
-                    // onClick={async () => await handleUpdateUserEnabled()}
-                />
+                {role === "Learner" && (
+                    <Button
+                        text={`${isDisabled ? "Enable" : "Disable"} User Account`}
+                        onClick={() => setShowDeactivatePopup(true)}
+                    />
+                )}
             </div>
             { showDeactivatePopup && deactivatePopup }
         </>
