@@ -89,8 +89,10 @@ Deno.serve(async (req) => {
         return errorResponse(`Error updating quiz attempts: ${error2.message}`);
     }
 
-    const markRsp = await handleMarkedQuiz(quizAttemptId);
-    if (markRsp instanceof Response) return markRsp;
+    if (autoMark) {
+        const markRsp = await handleMarkedQuiz(quizAttemptId);
+        if (markRsp instanceof Response) return markRsp;
+    }
 
     return successResponse(data2);
 });
