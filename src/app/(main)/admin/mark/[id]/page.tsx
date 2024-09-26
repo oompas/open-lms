@@ -120,7 +120,7 @@ export default function Mark({ params }: { params: { id: string } }) {
                         {/* @ts-ignore */}
                         <div className="flex flex-col text-lg space-y-8 w-[30rem]">Submitter: {questions && questions.submitterName}</div>
                         {/* @ts-ignore */}
-                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Completion Date: {questions && new Date(questions.completionTime * 1000).toLocaleString()}</div>
+                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Completion Date: {questions && new Date(questions.completionTime).toLocaleString()}</div>
                         {/* @ts-ignore */}
                         { questions && questions.markingInfo && 
                         <div> 
