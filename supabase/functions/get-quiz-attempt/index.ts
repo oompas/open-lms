@@ -47,6 +47,7 @@ Deno.serve(async (req) => {
         return {
             question: question.question,
             type: question.type,
+            answers: question.answers,
             correctAnswer: question.correct_answer,
             marks: question.marks,
             response: q.response,

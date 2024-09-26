@@ -172,7 +172,6 @@ export default function Mark({ params }: { params: { id: string } }) {
                                         </>
                                     :
                                         <div className="text-lg w-full">
-                                            {/* @ts-ignore */}
                                             { question.answers.map((ans, key) => {
                                                 return renderQuestionAnswer(ans, question.response === key, key === question.correctAnswer);
                                             })}
