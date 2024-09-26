@@ -70,7 +70,7 @@ Deno.serve(async (req: Request) => {
         minTime: courseData.min_time,
 
         quizData: quizData,
-        courseAttempts: attempts,
+        courseAttempt: attempts,
         quizAttempts: 1
     };
     return successResponse(rsp);

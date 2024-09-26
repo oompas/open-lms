@@ -23,7 +23,7 @@ export default function Course({ params }: { params: { id: string } }) {
         .then((r) => {
             setCourseData(r.data);
             setStatus(r.data.status);
-            setCourseAttemptId(r.data.courseAttempts.currentAttemptId);
+            setCourseAttemptId(r.data.courseAttempt.currentAttemptId);
         }), []);
 
     const [courseData, setCourseData] = useState<undefined | object>(undefined);
