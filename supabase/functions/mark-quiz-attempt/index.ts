@@ -23,14 +23,14 @@ Deno.serve(async (req) => {
     }));
 
     // Update quiz attempt: get total score and check if it passed
-    const courseQuery = await getRows({ table: 'course', conditions: ['eq', 'id', quizAttempt.course_id] });
-    if (courseQuery instanceof Response) return courseQuery;
-    const course = courseQuery[0];
-
     const quizQuestionAttempts = await getRows({ table: 'quiz_question_attempt', conditions: ['eq', 'quiz_attempt_id', quizAttemptId] });
     if (quizQuestionAttempts instanceof Response) return quizQuestionAttempts;
 
     const totalMarks = quizQuestionAttempts.reduce((sum, attempt) => sum + attempt.marks_achieved, 0);
+
+    const courseQuery = await getRows({ table: 'course', conditions: ['eq', 'id', quizQuestionAttempts[0].course_id] });
+    if (courseQuery instanceof Response) return courseQuery;
+    const course = courseQuery[0];
 
     const update = {
         marker_id: userId,
