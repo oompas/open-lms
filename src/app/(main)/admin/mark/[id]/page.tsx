@@ -79,12 +79,8 @@ export default function Mark({ params }: { params: { id: string } }) {
     }
 
     const handleSubmit = async () => {
-        // @ts-ignore
-        const responses = []
-        // @ts-ignore
-        questions.saQuestions.map((q, key) => (
-            responses.push({questionAttemptId: q.questionAttemptId, marksAchieved: marks[key]})
-        )) // @ts-ignore
+        const responses = [];
+        questions.saQuestions.map((q, key) => responses.push({ questionAttemptId: q.questionAttemptId, marksAchieved: marks[key] }));
         callApi(ApiEndpoints.MarkQuizAttempt, { quizAttemptId: params.id, responses: responses })
             .then(() => router.replace("/admin/tools"));
     }

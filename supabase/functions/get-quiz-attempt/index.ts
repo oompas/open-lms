@@ -32,28 +32,25 @@ Deno.serve(async (req) => {
     if (questions instanceof Response) return questions;
 
     const saQuestions = questionAttempts.filter((q) => q.type === "SA").map((q) => {
-
-
-
+        const question = questions.find((question) => question.id === q.quiz_question_id);
         return {
-            id: q.id,
-            question: 2,
-            marks: 1,
-            questionAttemptId: 1,
-            response: 2,
-            marksAchieved: 3
+            question: question.question,
+            marks: question.marks,
+            questionAttemptId: q.id,
+            response: q.response,
+            marksAchieved: q.marks_achieved
         };
     });
 
     const otherQuestions = questionAttempts.filter((q) => q.type !== "SA").map((q) => {
+        const question = questions.find((question) => question.id === q.quiz_question_id);
         return {
-            id: q.id,
-            question: 3,
-            type: 5,
-            correctAnswer: 7,
-            marks: 2,
-            response: 6,
-            marksAchieved: 3,
+            question: question.question,
+            type: question.type,
+            correctAnswer: question.correct_answer,
+            marks: question.marks,
+            response: q.response,
+            marksAchieved: q.marks_achieved
         };
     });
 
@@ -61,8 +58,8 @@ Deno.serve(async (req) => {
         courseName: course.name,
         learnerName: user.name,
         completionTime: new Date(quizAttempt.end_time).getTime(),
-        saQuestions: questionAttempts.filter((q) => q.type === "SA"),
-        otherQuestions: questionAttempts.filter((q) => q.type !== "SA"),
+        saQuestions: saQuestions,
+        otherQuestions: otherQuestions,
         score: quizAttempt.score,
         markingInfo: quizAttempt.markerInfo
     };
