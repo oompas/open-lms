@@ -35,7 +35,7 @@ const getCourseStatus = async (courseId: number, userId: string): CourseStatus =
     }
 
     // Completed if the course attempt pass is true
-    const latestCourseAttempt = courseAttempts.find(c => c.end_time === null);
+    const latestCourseAttempt = courseAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest)
     if (latestCourseAttempt.pass === true) {
         return CourseStatus.COMPLETED;
     }
