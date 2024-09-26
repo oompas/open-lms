@@ -39,6 +39,18 @@ Deno.serve(async (req) => {
         };
     }));
 
+    const quizAttemptData = await Promise.all(quizAttempts.map(async (quizAttempt) => {
+        const courses = await getRows({ table: 'course', conditions: ['eq', 'id', quizAttempt.course_id] });
+        return {
+            id: quizAttempt.id,
+            endTime: quizAttempt.end_time,
+            courseId: quizAttempt.course_id,
+            courseName: courses[0].name,
+            score: quizAttempt.score,
+            maxScore: courses[0].total_quiz_marks
+        };
+    }));
+
     const userData = {
         name: user.user_metadata.name,
         email: user.email,
@@ -49,7 +61,7 @@ Deno.serve(async (req) => {
 
         enrolledCourses: enrolledData,
         completedCourses: completedCourseData,
-        quizAttempts: quizAttempts,
+        quizAttempts: quizAttemptData,
     };
 
     return successResponse(userData);
