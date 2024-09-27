@@ -5,7 +5,7 @@ import { adminClient } from "../_shared/adminClient.ts";
 Deno.serve(async (req) => {
 
     if (req.method === 'OPTIONS') {
-      return new Response('ok', { headers: corsHeaders })
+        return new Response('ok', { headers: corsHeaders });
     }
 
     const { courseId, active } = await req.json();
