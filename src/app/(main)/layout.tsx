@@ -246,8 +246,8 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                 )}
                                 {(!(loadingNotifications === true) && notifications.length === 0) && (
                                     <div className="flex justify-center">
-                                        <div className="text-lg">
-                                            No notifications!
+                                        <div className="text-lg font-sans mt-4">
+                                            No notifications
                                         </div>
                                     </div>
                                 )}
