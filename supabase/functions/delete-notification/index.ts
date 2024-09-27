@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
     const { notificationIds } = await req.json();
 
     // Can apply this to an array of notifications or just one notification
-    if (Array.isArray(notificationId)) {
+    if (Array.isArray(notificationIds)) {
         await Promise.all(notificationIds.map((id) => adminClient.from('notification').delete().eq('id', id)));
     } else {
         await adminClient.from('notification').delete().eq('id', notificationIds);
