@@ -111,7 +111,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
         const getNotificationRender = (notification, last) => {
             return (
-                <div className="mx-4">
+                <div className="mx-4 mt-3">
                     <div>
                         <div
                             className="text-sm flex hover:opacity-75 duration-75 cursor-pointer"
@@ -130,7 +130,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                         </div>
                     </div>
 
-                    {!last && <div className="border-[1px] rounded-full my-3"/>}
+                    {!last && <div className="border-[1px] rounded-full mt-3"/>}
                 </div>
             );
         }
