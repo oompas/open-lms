@@ -53,7 +53,6 @@ export default function Profile() {
                     <div>Return To Courses</div>
                 </Link>
 
-                <div className="text-lg mb-4">Your Account Details</div>
                 <div className="flex flex-col h-full">
                     {user?.role && <StatusBadge status={user?.role} style="my-1"/>}
                     <div className="text-2xl font-bold mt-2">{user?.name}</div>
