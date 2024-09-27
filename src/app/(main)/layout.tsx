@@ -32,10 +32,17 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const popUpRef = useRef(null);
     const popUpBellRef = useRef(null);
 
+    const refreshNotifications = async () => {
+        setLoadingNotifications(true);
+        setNotificationsOpen(true);
+        await callAPI('get-notifications').then((data) => setNotifications(data.data));
+        setLoadingNotifications(false);
+    }
+
     // Toggle pop-up on icon click
-    const handleIconClick = (event) => {
+    const handleIconClick = async (event) => {
         if (!notificationsOpen) {
-            setNotificationsOpen(true);
+            await refreshNotifications();
         }
     };
 
@@ -78,12 +85,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         setShowSupportForm(true);
     };
 
-    const refreshNotifications = async () => {
-        setLoadingNotifications(true);
-        await callAPI('get-notifications').then((data) => setNotifications(data.data));
-        setLoadingNotifications(false);
-    }
-
     return (
         <html lang="en">
         <body className="h-[100vh] px-20 bg-gray-100 overflow-x-hidden">
@@ -108,19 +109,23 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                 ref={popUpRef}
                                 className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border-gray-300 border-[1px] overflow-y-scroll no-scrollbar h-64"
                             >
-                                <div className="flex justify-center">
-                                    <div className="text-sm">
-                                        No notifications!
+                                {loadingNotifications && (
+                                    <div className="flex justify-center">
+                                        <TbRefresh
+                                            className={`mb-4 mt-2 hover:opacity-75 duration-75 cursor-pointer animate-spin-counter-clockwise`}
+                                            onClick={async () => await refreshNotifications()}
+                                        />
                                     </div>
-                                </div>
-                                <div className="flex justify-center">
-                                    <TbRefresh
-                                        className={`mb-4 mt-2 hover:opacity-75 duration-75 cursor-pointer ${loadingNotifications ? 'animate-spin-counter-clockwise' : ''}`}
-                                        onClick={async () => await refreshNotifications()}
-                                    />
-                                </div>
+                                )}
+                                {(!loadingNotifications && notifications.length === 0) && (
+                                    <div className="flex justify-center">
+                                        <div className="text-lg">
+                                            No notifications!
+                                        </div>
+                                    </div>
+                                )}
 
-                                {notifications.map((notification, index) =>
+                                {!loadingNotifications && notifications.map((notification, index) =>
                                     <>
                                         <div
                                             className="hover:opacity-75 duration-75 cursor-pointer"
