@@ -143,7 +143,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                 </div>
                                 <div className="flex justify-center">
                                     <TbRefresh
-                                        className="mb-4 mt-2 hover:opacity-75 duration-75 cursor-pointer animate-spin"
+                                        className="mb-4 mt-2 hover:opacity-75 duration-75 cursor-pointer animate-spin-counter-clockwise"
                                         onClick={async () => await refreshNotifications()}
                                     />
                                 </div>

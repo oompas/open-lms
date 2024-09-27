@@ -19,13 +19,18 @@ const config: Config = {
                 "custom": '0px 0px 20px 0px rgba(143,143,143,0.1)'
             },
             animation: {
-                spin: 'spin 2s linear infinite',
+                'spin-clockwise': 'spin-clockwise 1.5s linear infinite',
+                'spin-counter-clockwise': 'spin-counter-clockwise 1.5s linear infinite'
             },
             keyframes: {
-                spin: {
+                'spin-clockwise': {
                     from: { transform: 'rotate(0deg)' },
                     to: { transform: 'rotate(360deg)' },
                 },
+                'spin-counter-clockwise': {
+                    from: { transform: 'rotate(360deg)' },
+                    to: { transform: 'rotate(0deg)' },
+                }
             }
         },
     },
