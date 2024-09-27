@@ -54,14 +54,17 @@ export default function Profile() {
                 </Link>
 
                 <div className="flex flex-col h-full">
-                    {user?.role && <StatusBadge status={user?.role} style="my-1"/>}
-                    <div className="text-2xl font-bold mt-2">{user?.name}</div>
-                    <div className="mr-auto text-lg mb-4">{user?.email}</div>
-                    <div className="flex flex-col h-full items-end mb-auto">
-                        <div className="mr-auto text-lg">Joined: <i>{new Date(user?.signUpDate).toLocaleString()}</i></div>
-                    </div>
-
-                    <Button text="Log Out" onClick={async () => await logout()}/>
+                    {user && (
+                        <>
+                            <StatusBadge status={user.role} style="my-1"/>
+                            <div className="text-2xl font-bold mt-2">{user.name}</div>
+                            <div className="mr-auto text-lg mb-4">{user.email}</div>
+                            <div className="flex flex-col h-full items-end mb-auto">
+                                <div className="mr-auto text-lg">Joined: <i>{new Date(user.signUpDate).toLocaleString()}</i></div>
+                            </div>
+                            <Button text="Log Out" onClick={async () => await logout()}/>
+                        </>
+                    )}
                 </div>
             </div>
             <div className="flex flex-col h-[80vh] bg-white w-[38%] ml-[2%] p-12 rounded-2xl shadow-custom">
