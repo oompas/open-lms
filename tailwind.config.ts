@@ -17,12 +17,21 @@ const config: Config = {
             },
             boxShadow: {
                 "custom": '0px 0px 20px 0px rgba(143,143,143,0.1)'
+            },
+            animation: {
+                spin: 'spin 2s linear infinite',
+            },
+            keyframes: {
+                spin: {
+                    from: { transform: 'rotate(0deg)' },
+                    to: { transform: 'rotate(360deg)' },
+                },
             }
         },
     },
     plugins: [
         //@ts-ignore
-        plugin(function({addUtilities}) {
+        plugin(function({ addUtilities }) {
             addUtilities({
                 '.no-scrollbar::-webkit-scrollbar': {
                     'display': 'none'
