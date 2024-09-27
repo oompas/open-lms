@@ -162,7 +162,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                         >
                                             <div className="text-sm flex">
                                                 <FaRegNewspaper className="w-6 h-6 mt-3 mr-3"/>
-                                                {notification.name}
+                                                {notification.title}
                                             </div>
 
                                             <div className="text-xs text-gray-500 flex justify-between my-2">
