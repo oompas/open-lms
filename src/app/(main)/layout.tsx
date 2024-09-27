@@ -109,7 +109,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
             );
         }
 
-        const getNotificationRender = (notification) => {
+        const getNotificationRender = (notification, last) => {
             return (
                 <div className="mx-4">
                     <div>
@@ -130,7 +130,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                         </div>
                     </div>
 
-                    {true && <div className="border-[1px] rounded-full my-3"/>}
+                    {!last && <div className="border-[1px] rounded-full my-3"/>}
                 </div>
             );
         }
@@ -175,7 +175,10 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 </div>
             );
 
-            timedNotifications.forEach((n) => response.push(getNotificationRender(n)));
+            timedNotifications.forEach((n, index) => {
+                const last = index === timedNotifications.length - 1;
+                response.push(getNotificationRender(n, last));
+            });
         }
 
         return response;
