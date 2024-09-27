@@ -144,7 +144,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
             'Older': []
         };
 
-        notifications.forEach(notification => {
+        notifications.filter((n) => n.direct === directNotifications).forEach(notification => {
             const date = parseISO(notification.date);
 
             if (isToday(date)) {
@@ -242,13 +242,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                         <TbRefresh
                                             className={`mb-4 mt-2 hover:opacity-75 duration-75 cursor-pointer animate-spin-counter-clockwise`}
                                         />
-                                    </div>
-                                )}
-                                {(!(loadingNotifications === true) && notifications.length === 0) && (
-                                    <div className="flex justify-center">
-                                        <div className="text-lg font-sans mt-4">
-                                            No notifications
-                                        </div>
                                     </div>
                                 )}
 
