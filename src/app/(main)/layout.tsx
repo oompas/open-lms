@@ -12,6 +12,7 @@ import { IoNotifications } from "react-icons/io5";
 import { CgProfile } from "react-icons/cg";
 import { FiTrash } from "react-icons/fi";
 import { FaRegNewspaper } from "react-icons/fa6";
+import { TbRefresh } from "react-icons/tb";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
@@ -129,6 +130,10 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                 ref={popUpRef}
                                 className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border-gray-300 border-[1px] overflow-y-scroll h-64"
                             >
+                                <div className="flex justify-center">
+                                    <TbRefresh className="mb-4 mt-2"/>
+                                </div>
+
                                 {notifications.map((notification, index) =>
                                     <>
                                         <div
