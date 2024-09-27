@@ -1,32 +1,20 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
-
-// Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+import { corsHeaders, successResponse } from "../_shared/helpers.ts";
+import { getRequestUser } from "../_shared/auth.ts";
+import { getRows } from "../_shared/database.ts";
 
 console.log("Hello from Functions!")
 
 Deno.serve(async (req) => {
-  const { name } = await req.json()
-  const data = {
-    message: `Hello ${name}!`,
-  }
 
-  return new Response(
-    JSON.stringify(data),
-    { headers: { "Content-Type": "application/json" } },
-  )
-})
+    if (req.method === 'OPTIONS') {
+        return new Response('ok', { headers: corsHeaders });
+    }
 
-/* To invoke locally:
+    const user = await getRequestUser(req);
 
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
+    const notifications = await getRows({ table: 'notification', conditions: ['eq', 'user_id', user.id] });
+    if (notifications instanceof Response) return notifications;
 
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/get-notifications' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
-*/
+    return successResponse(notifications);
+});
