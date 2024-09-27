@@ -144,7 +144,18 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
             'Older': []
         };
 
-        notifications.filter((n) => n.direct === directNotifications).forEach(notification => {
+        const desiredNotifications = notifications.filter((n) => n.direct === directNotifications);
+        if (desiredNotifications.length === 0) {
+            return (
+                <div className="flex justify-center">
+                    <div className="text-lg font-sans mt-4">
+                        No notifications
+                    </div>
+                </div>
+            );
+        }
+
+        desiredNotifications.forEach(notification => {
             const date = parseISO(notification.date);
 
             if (isToday(date)) {
