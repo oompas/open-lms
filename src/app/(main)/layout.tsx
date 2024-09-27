@@ -112,7 +112,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
         const getNotificationRender = (notification, last) => {
             return (
-                <div className="mx-4 mt-3">
+                <div className={`mx-4 mt-3 ${notification.read ? '' : 'font-bold'}`}>
                     <div>
                         <div
                             className="text-sm flex hover:opacity-75 duration-75 cursor-pointer"
