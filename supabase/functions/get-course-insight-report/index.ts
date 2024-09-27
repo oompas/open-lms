@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, log, successResponse } from "../_shared/helpers.ts";
 import { verifyAdministrator } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 
@@ -23,6 +23,10 @@ Deno.serve(async (req) => {
     const attempts = await getRows({ table: 'course_attempt', conditions: ['eq', 'course_id', courseId] });
     if (attempts instanceof Response) return attempts;
 
+    const completedAttempts = attempts.filter((attempt) => attempt.pass === true);
+    const averageTime = completedAttempts.reduce((sum, attempt) => {
+        return sum + (new Date(attempt.end_time) - new Date(attempt.start_time));
+    }, 0) / completedAttempts.length / 1000; // Time in seconds
 
     const responseData = {
         courseName: courseData[0].name,
@@ -30,8 +34,8 @@ Deno.serve(async (req) => {
         questions: [],
         numEnrolled: enrollments.length,
         numStarted: attempts.length,
-        numComplete: attempts.filter((attempt) => attempt.pass === true).length,
-        avgTime: 0, // In seconds
+        numComplete: completedAttempts.length,
+        avgTime: averageTime
     };
 
     return successResponse(responseData);
