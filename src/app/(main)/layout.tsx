@@ -137,8 +137,13 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                 className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border-gray-300 border-[1px] overflow-y-scroll h-64"
                             >
                                 <div className="flex justify-center">
+                                    <div className="text-sm">
+                                        No notifications!
+                                    </div>
+                                </div>
+                                <div className="flex justify-center">
                                     <TbRefresh
-                                        className="mb-4 mt-2"
+                                        className="mb-4 mt-2 hover:opacity-75 duration-75 cursor-pointer"
                                         onClick={async () => await refreshNotifications()}
                                     />
                                 </div>
@@ -147,7 +152,10 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                     <>
                                         <div
                                             className="hover:opacity-75 duration-75 cursor-pointer"
-                                            onClick={() => { setNotificationsOpen(false); router.push(notification.link); }}
+                                            onClick={() => {
+                                                setNotificationsOpen(false);
+                                                router.push(notification.link);
+                                            }}
                                         >
                                             <div className="text-sm flex">
                                                 <FaRegNewspaper className="w-6 h-6 mt-3 mr-3"/>
@@ -158,12 +166,14 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                                 {notification.date}
                                                 <FiTrash
                                                     className="w-4 h-4"
-                                                    onClick={() => {}}
+                                                    onClick={() => {
+                                                    }}
                                                 />
                                             </div>
                                         </div>
 
-                                        {index !== notifications.length - 1 && <div className="border-[1px] rounded-full my-3"/>}
+                                        {index !== notifications.length - 1 &&
+                                            <div className="border-[1px] rounded-full my-3"/>}
                                     </>
                                 )}
                             </div>
