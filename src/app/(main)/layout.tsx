@@ -29,6 +29,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
     const [notifications, setNotifications] = useState([]);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
+    const [loadingNotifications, setLoadingNotifications] = useState(false);
     const popUpRef = useRef(null);
     const popUpBellRef = useRef(null);
 
@@ -86,7 +87,9 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     };
 
     const refreshNotifications = async () => {
+        setLoadingNotifications(true);
         await callAPI('get-notifications').then((data) => setNotifications(data.data));
+        setLoadingNotifications(false);
     }
 
     // const notifications = [
@@ -143,7 +146,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                 </div>
                                 <div className="flex justify-center">
                                     <TbRefresh
-                                        className="mb-4 mt-2 hover:opacity-75 duration-75 cursor-pointer animate-spin-counter-clockwise"
+                                        className={`mb-4 mt-2 hover:opacity-75 duration-75 cursor-pointer ${loadingNotifications ? 'animate-spin-counter-clockwise' : ''}`}
                                         onClick={async () => await refreshNotifications()}
                                     />
                                 </div>
