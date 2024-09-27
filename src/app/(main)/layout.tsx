@@ -98,7 +98,8 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 <div
                     onClick={async () => {
                         setLoadingNotifications(id);
-                        await callAPI('delete-notification', { notificationIds: id });
+                        await callAPI('delete-notification', { notificationIds: id })
+                            .then(() => setNotifications((notifs) => notifs.filter((n) => n.id != id)));
                         setLoadingNotifications(false);
                     }}
                 >
