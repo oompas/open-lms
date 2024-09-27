@@ -92,6 +92,16 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
             name: "Your Machine Learning Basics quiz has been marked",
             link: '/quiz/2',
             date: "Sept. 24th, 10:07 PM"
+        },
+        {
+            name: "New course available: Intro to Programming",
+            link: '/course/1',
+            date: "Sept. 22nd, 9:23 AM"
+        },
+        {
+            name: "Your Machine Learning Basics quiz has been marked",
+            link: '/quiz/2',
+            date: "Sept. 24th, 10:07 PM"
         }
     ];
 
@@ -117,7 +127,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                         {notificationsOpen && (
                             <div
                                 ref={popUpRef}
-                                className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border-gray-300 border-[1px]"
+                                className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border-gray-300 border-[1px] overflow-y-scroll h-64"
                             >
                                 {notifications.map((notification, index) =>
                                     <>
