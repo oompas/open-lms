@@ -95,7 +95,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 }}
             >
                 { loadingNotifications === id
-                    ? (<TbRefresh className="mb-4 mt-2 hover:opacity-75 duration-75 cursor-pointer animate-spin-counter-clockwise"/>)
+                    ? (<TbRefresh className="w-4 h-4 animate-spin-counter-clockwise"/>)
                     : (<FiTrash className="w-4 h-4 hover:opacity-75 duration-75 cursor-pointer"/>)
                 }
             </div>
