@@ -3,8 +3,6 @@ import { corsHeaders, successResponse } from "../_shared/helpers.ts";
 import { getRequestUser } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 
-console.log("Hello from Functions!")
-
 Deno.serve(async (req) => {
 
     if (req.method === 'OPTIONS') {

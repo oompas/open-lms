@@ -13,6 +13,7 @@ import { CgProfile } from "react-icons/cg";
 import { FiTrash } from "react-icons/fi";
 import { FaRegNewspaper } from "react-icons/fa6";
 import { TbRefresh } from "react-icons/tb";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
@@ -26,6 +27,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
     const [selectedLink, setSelectedLink] = useState('/admin/tools');
 
+    const [notifications, setNotifications] = useState([]);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const popUpRef = useRef(null);
     const popUpBellRef = useRef(null);
@@ -83,28 +85,32 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         setShowSupportForm(true);
     };
 
-    const notifications = [
-        {
-            name: "New course available: Intro to Programming",
-            link: '/course/1',
-            date: "Sept. 22nd, 9:23 AM"
-        },
-        {
-            name: "Your Machine Learning Basics quiz has been marked",
-            link: '/quiz/2',
-            date: "Sept. 24th, 10:07 PM"
-        },
-        {
-            name: "New course available: Intro to Programming",
-            link: '/course/1',
-            date: "Sept. 22nd, 9:23 AM"
-        },
-        {
-            name: "Your Machine Learning Basics quiz has been marked",
-            link: '/quiz/2',
-            date: "Sept. 24th, 10:07 PM"
-        }
-    ];
+    const refreshNotifications = async () => {
+        await callAPI('get-notifications').then((data) => setNotifications(data.data));
+    }
+
+    // const notifications = [
+    //     {
+    //         name: "New course available: Intro to Programming",
+    //         link: '/course/1',
+    //         date: "Sept. 22nd, 9:23 AM"
+    //     },
+    //     {
+    //         name: "Your Machine Learning Basics quiz has been marked",
+    //         link: '/quiz/2',
+    //         date: "Sept. 24th, 10:07 PM"
+    //     },
+    //     {
+    //         name: "New course available: Intro to Programming",
+    //         link: '/course/1',
+    //         date: "Sept. 22nd, 9:23 AM"
+    //     },
+    //     {
+    //         name: "Your Machine Learning Basics quiz has been marked",
+    //         link: '/quiz/2',
+    //         date: "Sept. 24th, 10:07 PM"
+    //     }
+    // ];
 
     return (
         <html lang="en">
@@ -131,7 +137,10 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                 className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border-gray-300 border-[1px] overflow-y-scroll h-64"
                             >
                                 <div className="flex justify-center">
-                                    <TbRefresh className="mb-4 mt-2"/>
+                                    <TbRefresh
+                                        className="mb-4 mt-2"
+                                        onClick={async () => await refreshNotifications()}
+                                    />
                                 </div>
 
                                 {notifications.map((notification, index) =>
