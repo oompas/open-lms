@@ -20,8 +20,19 @@ Deno.serve(async (req) => {
     const enrollments = await getRows({ table: 'enrolled_course', conditions: ['eq', 'course_id', courseId] });
     if (enrollments instanceof Response) return enrollments;
 
+    const quizQuestions = await getRows({ table: 'quiz_question', conditions: ['eq', 'course_id', courseId] });
+    if (quizQuestions instanceof Response) return quizQuestions;
+
     const attempts = await getRows({ table: 'course_attempt', conditions: ['eq', 'course_id', courseId] });
     if (attempts instanceof Response) return attempts;
+
+    const questionData = quizQuestions.map((question) => {
+        return {
+            question: question.question,
+            marks: question.marks,
+            stats: question.submitted_answers
+        };
+    });
 
     const completedAttempts = attempts.filter((attempt) => attempt.pass === true);
     const averageTime = completedAttempts.reduce((sum, attempt) => {
@@ -31,7 +42,7 @@ Deno.serve(async (req) => {
     const responseData = {
         courseName: courseData[0].name,
         learners: [],
-        questions: [],
+        questions: questionData,
         numEnrolled: enrollments.length,
         numStarted: attempts.length,
         numComplete: completedAttempts.length,
