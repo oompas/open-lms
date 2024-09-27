@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
         name: course.name,
         description: course.description,
         link: course.link,
-        minTime: course.minTime,
+        minTime: course.min_time,
 
         quizData: {
             minScore: course.min_quiz_score,
