@@ -107,11 +107,11 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 setMinCourseTime(data.minTime);
                 setActive(data.active);
 
-                setUseQuiz(data.quiz !== null);
-                if (data.quiz !== null) {
-                    setQuizMinScore(data.quiz.minScore);
-                    setQuizAttempts(data.quiz.maxAttempts);
-                    setQuizMaxTime(data.quiz.timeLimit);
+                setUseQuiz(data.quizData !== null);
+                if (data.quizData !== null) {
+                    setQuizMinScore(data.quizData.minScore);
+                    setQuizAttempts(data.quizData.maxAttempts);
+                    setQuizMaxTime(data.quizData.timeLimit);
 
                     setQuizTotalScore(data.quizQuestions?.reduce((acc: number, q: any) => acc + q.marks, 0));
 
