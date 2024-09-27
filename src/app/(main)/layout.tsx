@@ -127,14 +127,14 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
                                 {!loadingNotifications && notifications.map((notification, index) =>
                                     <>
-                                        <div
-                                            className="hover:opacity-75 duration-75 cursor-pointer"
-                                            onClick={() => {
-                                                setNotificationsOpen(false);
-                                                router.push(notification.link);
-                                            }}
-                                        >
-                                            <div className="text-sm flex">
+                                        <div>
+                                            <div
+                                                className="text-sm flex hover:opacity-75 duration-75 cursor-pointer"
+                                                onClick={() => {
+                                                    setNotificationsOpen(false);
+                                                    router.push(notification.link);
+                                                }}
+                                            >
                                                 <FaRegNewspaper className="w-6 h-6 mt-3 mr-3"/>
                                                 {notification.title}
                                             </div>
@@ -142,8 +142,9 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                             <div className="text-xs text-gray-500 flex justify-between my-2">
                                                 {new Date(notification.date).toLocaleString()}
                                                 <FiTrash
-                                                    className="w-4 h-4"
-                                                    onClick={() => {
+                                                    className="w-4 h-4 hover:opacity-75 duration-75 cursor-pointer"
+                                                    onClick={(event) => {
+                                                        console.log('hello from onclick trash event');
                                                     }}
                                                 />
                                             </div>
