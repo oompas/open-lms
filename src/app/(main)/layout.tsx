@@ -30,6 +30,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const [notifications, setNotifications] = useState([]);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [loadingNotifications, setLoadingNotifications] = useState(false);
+    const [directNotifications, setDirectNotifications] = useState(true);
     const popUpRef = useRef(null);
     const popUpBellRef = useRef(null);
 
@@ -218,18 +219,20 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                     <div className="flex justify-between mt-3">
                                         <div className="flex gap-4">
                                             <button
-                                                className="text-sm font-medium text-blue-600 border-b-2 border-blue-600 py-1"
-                                            >
-                                                All
-                                            </button>
-                                            <button
-                                                className="text-sm font-medium text-gray-700 hover:text-gray-900 py-1"
+                                                className={`text-sm font-medium ${directNotifications ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-700 hover:text-gray-900'} py-1`}
+                                                onClick={() => setDirectNotifications(true)}
                                             >
                                                 Direct
                                             </button>
+                                            <button
+                                                className={`text-sm font-medium ${directNotifications ? 'text-gray-700 hover:text-gray-900' : 'text-blue-600 border-b-2 border-blue-600'} py-1`}
+                                                onClick={() => setDirectNotifications(false)}
+                                            >
+                                                Other
+                                            </button>
                                         </div>
                                         <button className="text-sm text-blue-600 hover:text-blue-800">
-                                            Mark all as read
+                                            Delete all
                                         </button>
                                     </div>
                                 </div>
