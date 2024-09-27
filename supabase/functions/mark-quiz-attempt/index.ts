@@ -48,5 +48,18 @@ Deno.serve(async (req) => {
     const markRsp = await handleMarkedQuiz(quizAttemptId);
     if (markRsp instanceof Response) return markRsp;
 
+    const notification = {
+        user_id: quizQuestionAttempts[0].user_id,
+        title: `Your ${course.name} quiz has been marked`,
+        link: `/course/${course.id}`,
+        read: false
+    };
+    const { data: data2, error: error2 } = await adminClient.from('notification').insert(notification);
+
+    if (error2) {
+        log(`Error adding notification: ${error.message}`);
+        return errorResponse(`Error adding notification: ${error.message}`);
+    }
+
     return successResponse(data);
 });
