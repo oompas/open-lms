@@ -137,7 +137,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                         {notificationsOpen && (
                             <div
                                 ref={popUpRef}
-                                className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border-gray-300 border-[1px] overflow-y-scroll h-64"
+                                className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border-gray-300 border-[1px] overflow-y-scroll no-scrollbar h-64"
                             >
                                 <div className="flex justify-center">
                                     <div className="text-sm">
