@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
 
     const notification = {
         user_id: quizQuestionAttempts[0].user_id,
-        type: "INFO",
+        direct: true,
         title: `Your ${course.name} quiz has been marked`,
         link: `/course/${course.id}`,
         read: false
