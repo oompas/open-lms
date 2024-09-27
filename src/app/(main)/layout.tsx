@@ -36,7 +36,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         setLoadingNotifications(true);
         setNotificationsOpen(true);
         await callAPI('get-notifications').then((data) => setNotifications(data.data));
-        setLoadingNotifications(false);
+        setLoadingNotifications(null);
     }
 
     // Toggle pop-up on icon click
@@ -85,6 +85,23 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         setShowSupportForm(true);
     };
 
+    const notificationTrash = (id) => {
+        return (
+            <div
+                onClick={async () => {
+                    setLoadingNotifications(id);
+                    await callAPI('update-notification', { notificationId: id, toDelete: false });
+                    setLoadingNotifications(false);
+                }}
+            >
+                { loadingNotifications === id
+                    ? (<TbRefresh className="mb-4 mt-2 hover:opacity-75 duration-75 cursor-pointer animate-spin-counter-clockwise"/>)
+                    : (<FiTrash className="w-4 h-4 hover:opacity-75 duration-75 cursor-pointer"/>)
+                }
+            </div>
+        );
+    }
+
     return (
         <html lang="en">
         <body className="h-[100vh] px-20 bg-gray-100 overflow-x-hidden">
@@ -109,7 +126,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                 ref={popUpRef}
                                 className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border-gray-300 border-[1px] overflow-y-scroll no-scrollbar h-64"
                             >
-                                {loadingNotifications && (
+                                {loadingNotifications === true && (
                                     <div className="flex justify-center">
                                         <TbRefresh
                                             className={`mb-4 mt-2 hover:opacity-75 duration-75 cursor-pointer animate-spin-counter-clockwise`}
@@ -117,7 +134,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                         />
                                     </div>
                                 )}
-                                {(!loadingNotifications && notifications.length === 0) && (
+                                {(!(loadingNotifications === true) && notifications.length === 0) && (
                                     <div className="flex justify-center">
                                         <div className="text-lg">
                                             No notifications!
@@ -125,7 +142,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                     </div>
                                 )}
 
-                                {!loadingNotifications && notifications.map((notification, index) =>
+                                {!(loadingNotifications === true) && notifications.map((notification, index) =>
                                     <>
                                         <div>
                                             <div
@@ -136,17 +153,12 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                                 }}
                                             >
                                                 <FaRegNewspaper className="w-6 h-6 mt-3 mr-3"/>
-                                                {notification.title}
+                                                { notification.title }
                                             </div>
 
                                             <div className="text-xs text-gray-500 flex justify-between my-2">
-                                                {new Date(notification.date).toLocaleString()}
-                                                <FiTrash
-                                                    className="w-4 h-4 hover:opacity-75 duration-75 cursor-pointer"
-                                                    onClick={(event) => {
-                                                        console.log('hello from onclick trash event');
-                                                    }}
-                                                />
+                                                { new Date(notification.date).toLocaleString() }
+                                                { notificationTrash(notification.id) }
                                             </div>
                                         </div>
 
