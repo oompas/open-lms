@@ -11,9 +11,10 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { IoNotifications } from "react-icons/io5";
 import { CgProfile } from "react-icons/cg";
 import { FiTrash } from "react-icons/fi";
-import { FaCheck, FaRegNewspaper } from "react-icons/fa6";
+import { FaRegNewspaper } from "react-icons/fa6";
 import { TbRefresh } from "react-icons/tb";
 import { callAPI } from "@/config/supabase.ts";
+import { isToday, isYesterday, isThisWeek, isThisMonth, parseISO } from 'date-fns';
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
@@ -85,21 +86,99 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         setShowSupportForm(true);
     };
 
-    const notificationTrash = (id) => {
-        return (
-            <div
-                onClick={async () => {
-                    setLoadingNotifications(id);
-                    await callAPI('update-notification', { notificationId: id, toDelete: false });
-                    setLoadingNotifications(false);
-                }}
-            >
-                { loadingNotifications === id
-                    ? (<TbRefresh className="w-4 h-4 ml-2 animate-spin-counter-clockwise"/>)
-                    : (<FiTrash className="w-4 h-4 ml-2 hover:opacity-75 duration-75 cursor-pointer"/>)
-                }
-            </div>
-        );
+    const renderNotifications = () => {
+
+        if (loadingNotifications === true) {
+            return;
+        }
+
+        const notificationTrash = (id) => {
+            return (
+                <div
+                    onClick={async () => {
+                        setLoadingNotifications(id);
+                        await callAPI('update-notification', { notificationId: id, toDelete: false });
+                        setLoadingNotifications(false);
+                    }}
+                >
+                    { loadingNotifications === id
+                        ? (<TbRefresh className="w-4 h-4 ml-2 animate-spin-counter-clockwise"/>)
+                        : (<FiTrash className="w-4 h-4 ml-2 hover:opacity-75 duration-75 cursor-pointer"/>)
+                    }
+                </div>
+            );
+        }
+
+        const getNotificationRender = (notification) => {
+            return (
+                <div className="mx-4">
+                    <div>
+                        <div
+                            className="text-sm flex hover:opacity-75 duration-75 cursor-pointer"
+                            onClick={() => {
+                                setNotificationsOpen(false);
+                                router.push(notification.link);
+                            }}
+                        >
+                            <FaRegNewspaper className="w-6 h-6 mt-3 mr-3"/>
+                            {notification.title}
+                        </div>
+
+                        <div className="text-xs text-gray-500 flex justify-between my-2">
+                            {new Date(notification.date).toLocaleString()}
+                            {notificationTrash(notification.id)}
+                        </div>
+                    </div>
+
+                    {true && <div className="border-[1px] rounded-full my-3"/>}
+                </div>
+            );
+        }
+
+        const notificationOrder = {
+            'Today': [],
+            'Yesterday': [],
+            'This Week': [],
+            'This Month': [],
+            'Older': []
+        };
+
+        notifications.forEach(notification => {
+            const date = parseISO(notification.date);
+
+            if (isToday(date)) {
+                notificationOrder['Today'].push(notification);
+            } else if (isYesterday(date)) {
+                notificationOrder['Yesterday'].push(notification);
+            } else if (isThisWeek(date, { weekStartsOn: 1 })) {
+                notificationOrder['This Week'].push(notification);
+            } else if (isThisMonth(date)) {
+                notificationOrder['This Month'].push(notification);
+            } else {
+                notificationOrder['Older'].push(notification);
+            }
+        });
+
+        for (const category in notificationOrder) {
+            notificationOrder[category].sort((a, b) => parseISO(b.date) - parseISO(a.date));
+        }
+
+        const response = [];
+        for (const [timespan, timedNotifications] of Object.entries(notificationOrder)) {
+            if (timedNotifications.length === 0) {
+                continue;
+            }
+
+            response.push(
+                <div className="text-xs font-bold bg-gray-50 w-full px-4 py-2">
+                    {timespan.toUpperCase()}
+                </div>
+            );
+
+            timedNotifications.forEach((n) => response.push(getNotificationRender(n)));
+        }
+
+        return response;
     }
 
     return (
@@ -124,9 +203,9 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                         {notificationsOpen && (
                             <div
                                 ref={popUpRef}
-                                className="absolute right-0 mt-2 w-72 bg-white shadow-lg rounded-lg px-4 border-gray-300 border-[1px] overflow-y-scroll no-scrollbar h-72"
+                                className="absolute right-0 mt-2 w-72 h-72 font-sans bg-white shadow-lg rounded-lg border-gray-300 border-[1px] overflow-y-scroll no-scrollbar"
                             >
-                                <div className="">
+                                <div className="mb-2 mx-4">
                                     <div className="flex justify-between items-center">
                                         <div className="text-lg font-semibold mt-4">
                                             Notifications
@@ -167,30 +246,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                     </div>
                                 )}
 
-                                {!(loadingNotifications === true) && notifications.map((notification, index) =>
-                                    <>
-                                        <div>
-                                            <div
-                                                className="text-sm flex hover:opacity-75 duration-75 cursor-pointer"
-                                                onClick={() => {
-                                                    setNotificationsOpen(false);
-                                                    router.push(notification.link);
-                                                }}
-                                            >
-                                                <FaRegNewspaper className="w-6 h-6 mt-3 mr-3"/>
-                                                {notification.title}
-                                            </div>
-
-                                            <div className="text-xs text-gray-500 flex justify-between my-2">
-                                                {new Date(notification.date).toLocaleString()}
-                                                {notificationTrash(notification.id)}
-                                            </div>
-                                        </div>
-
-                                        {index !== notifications.length - 1 &&
-                                            <div className="border-[1px] rounded-full my-3"/>}
-                                    </>
-                                )}
+                                { renderNotifications() }
                             </div>
                         )}
                     </div>
