@@ -21,7 +21,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
             return rsp;
         }
 
-        setCountDown(Math.floor(rsp.data.startTime + (60 * 1000 * rsp.data.timeLimit) - Date.now()));
+        setCountDown(Math.floor(new Date(rsp.data.startTime).getTime() + (60 * 1000 * rsp.data.timeLimit) - Date.now()));
         if (rsp.data.questions && rsp.data.questions[0].order) {
             rsp.data.questions.sort((a: any, b: any) => a.order - b.order);
         }
@@ -44,7 +44,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
             return;
         }
 
-        const interval = setInterval(() => setCountDown(Math.floor(quizData.startTime + (60 * 1000 * quizData.timeLimit) - Date.now())), 200);
+        const interval = setInterval(() => setCountDown(Math.floor(new Date(quizData.startTime).getTime() + (60 * 1000 * quizData.timeLimit) - Date.now())), 200);
         return () => clearInterval(interval);
     }, [countdown, quizData]);
 
