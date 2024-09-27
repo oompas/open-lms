@@ -58,7 +58,7 @@ export default function Profile() {
                     <div className="text-2xl font-bold mt-2">{user?.name}</div>
                     <div className="mr-auto text-lg mb-4">{user?.email}</div>
                     <div className="flex flex-col h-full items-end mb-auto">
-                        <div className="mr-auto text-lg">Joined: <i>{user?.signUpDate}</i></div>
+                        <div className="mr-auto text-lg">Joined: <i>{new Date(user?.signUpDate).toLocaleString()}</i></div>
                     </div>
 
                     <Button text="Log Out" onClick={async () => await logout()}/>
