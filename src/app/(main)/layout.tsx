@@ -11,7 +11,7 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { IoNotifications } from "react-icons/io5";
 import { CgProfile } from "react-icons/cg";
 import { FiTrash } from "react-icons/fi";
-import { FaRegNewspaper } from "react-icons/fa6";
+import { FaCheck, FaRegNewspaper } from "react-icons/fa6";
 import { TbRefresh } from "react-icons/tb";
 import { callAPI } from "@/config/supabase.ts";
 
@@ -95,8 +95,8 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 }}
             >
                 { loadingNotifications === id
-                    ? (<TbRefresh className="w-4 h-4 animate-spin-counter-clockwise"/>)
-                    : (<FiTrash className="w-4 h-4 hover:opacity-75 duration-75 cursor-pointer"/>)
+                    ? (<TbRefresh className="w-4 h-4 ml-2 animate-spin-counter-clockwise"/>)
+                    : (<FiTrash className="w-4 h-4 ml-2 hover:opacity-75 duration-75 cursor-pointer"/>)
                 }
             </div>
         );
@@ -124,8 +124,34 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                         {notificationsOpen && (
                             <div
                                 ref={popUpRef}
-                                className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border-gray-300 border-[1px] overflow-y-scroll no-scrollbar h-64"
+                                className="absolute right-0 mt-2 w-72 bg-white shadow-lg rounded-lg px-4 border-gray-300 border-[1px] overflow-y-scroll no-scrollbar h-72"
                             >
+                                <div className="">
+                                    <div className="flex justify-between items-center">
+                                        <div className="text-lg font-semibold mt-4">
+                                            Notifications
+                                        </div>
+
+                                    </div>
+                                    <div className="flex justify-between mt-3">
+                                        <div className="flex gap-4">
+                                            <button
+                                                className="text-sm font-medium text-blue-600 border-b-2 border-blue-600 py-1"
+                                            >
+                                                All
+                                            </button>
+                                            <button
+                                                className="text-sm font-medium text-gray-700 hover:text-gray-900 py-1"
+                                            >
+                                                Direct
+                                            </button>
+                                        </div>
+                                        <button className="text-sm text-blue-600 hover:text-blue-800">
+                                            Mark all as read
+                                        </button>
+                                    </div>
+                                </div>
+
                                 {loadingNotifications === true && (
                                     <div className="flex justify-center">
                                         <TbRefresh
@@ -152,12 +178,12 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                                 }}
                                             >
                                                 <FaRegNewspaper className="w-6 h-6 mt-3 mr-3"/>
-                                                { notification.title }
+                                                {notification.title}
                                             </div>
 
                                             <div className="text-xs text-gray-500 flex justify-between my-2">
-                                                { new Date(notification.date).toLocaleString() }
-                                                { notificationTrash(notification.id) }
+                                                {new Date(notification.date).toLocaleString()}
+                                                {notificationTrash(notification.id)}
                                             </div>
                                         </div>
 
