@@ -25,7 +25,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     }
 
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-    const [selectedLink, setSelectedLink] = useState('/admin/tools');
 
     const [notifications, setNotifications] = useState([]);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
