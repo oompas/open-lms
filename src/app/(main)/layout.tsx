@@ -52,13 +52,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         return () => { document.removeEventListener('mousedown', handleClickOutside); };
     }, [popUpRef, popUpBellRef]);
 
-
-
-    const handleLinkClick = (path: string) => {
-        setSelectedLink(path);
-        router.push(path);
-    };
-
     useEffect(() => {
        const role = session?.user?.user_metadata?.role;
         if (role === 'Admin' || role === 'Developer') {
@@ -91,29 +84,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
         await callAPI('get-notifications').then((data) => setNotifications(data.data));
         setLoadingNotifications(false);
     }
-
-    // const notifications = [
-    //     {
-    //         name: "New course available: Intro to Programming",
-    //         link: '/course/1',
-    //         date: "Sept. 22nd, 9:23 AM"
-    //     },
-    //     {
-    //         name: "Your Machine Learning Basics quiz has been marked",
-    //         link: '/quiz/2',
-    //         date: "Sept. 24th, 10:07 PM"
-    //     },
-    //     {
-    //         name: "New course available: Intro to Programming",
-    //         link: '/course/1',
-    //         date: "Sept. 22nd, 9:23 AM"
-    //     },
-    //     {
-    //         name: "Your Machine Learning Basics quiz has been marked",
-    //         link: '/quiz/2',
-    //         date: "Sept. 24th, 10:07 PM"
-    //     }
-    // ];
 
     return (
         <html lang="en">
@@ -186,13 +156,13 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                     {isAdmin &&
                         <MdAdminPanelSettings
                             className="w-8 h-8 ml-6 hover:opacity-75 duration-75 cursor-pointer"
-                            onClick={() => handleLinkClick('/admin/tools')}
+                            onClick={() => router.push('/admin/tools')}
                         />
                     }
 
                     <CgProfile
                         className="w-8 h-8 ml-6 hover:opacity-75 duration-75 cursor-pointer"
-                        onClick={() => handleLinkClick('/profile')}
+                        onClick={() => router.push('/profile')}
                     />
                 </div>
             </div>
