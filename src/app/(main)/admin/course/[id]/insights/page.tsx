@@ -45,8 +45,7 @@ export default function Insights({ params }: { params: { id: string } }) {
                                     </Link>
                                 </td>
                                 <td className="border p-2">
-                                    {/* @ts-ignore */}
-                                    {statusNames[learner.status]}
+                                    {learner.status.charAt(0) + learner.status.slice(1).toLowerCase()}
                                 </td>
                                 <td className="border p-2">
                                     { learner.latestQuizAttemptId &&

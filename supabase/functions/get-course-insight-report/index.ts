@@ -33,17 +33,20 @@ Deno.serve(async (req) => {
     const learnerData = await Promise.all(enrollments.map(async (enrollment) => {
         const user = await getUserById(req, enrollment.user_id);
         const status = await getCourseStatus(courseId, enrollment.user_id);
-        const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: [['eq', 'course_id', courseId], ['notnull', end_time]] });
+        const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: [['eq', 'course_id', courseId], ['notnull', 'end_time']] });
         if (quizAttempts instanceof Response) return quizAttempts;
 
-        const latestQuiz = quizAttempts.reduce((latest, current) => {
-            return new Date(current.start_time) > new Date(latest.start_time) ? current : latest;
-        });
         let latestQuizAttemptId = null;
         let latestQuizAttemptTime = null;
-        if (latestQuiz) {
-            latestQuizAttemptId = latestQuiz.id;
-            latestQuizAttemptTime = new Date(latestQuiz.end_time) - new Date(latestQuiz.start_time);
+        if (quizAttempts.length > 0) {
+            const latestQuiz = quizAttempts.reduce((latest, current) => {
+                return new Date(current.start_time) > new Date(latest.start_time) ? current : latest;
+            });
+
+            if (latestQuiz) {
+                latestQuizAttemptId = latestQuiz.id;
+                latestQuizAttemptTime = new Date(latestQuiz.end_time) - new Date(latestQuiz.start_time);
+            }
         }
 
         return {
