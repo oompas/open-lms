@@ -166,7 +166,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                                             </div>
 
                                             <div className="text-xs text-gray-500 flex justify-between my-2">
-                                                {notification.date}
+                                                {new Date(notification.date).toLocaleString()}
                                                 <FiTrash
                                                     className="w-4 h-4"
                                                     onClick={() => {
