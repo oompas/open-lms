@@ -24,6 +24,11 @@ export default function Course({ params }: { params: { id: string } }) {
             setCourseData(r.data);
             setStatus(r.data.status);
             setCourseAttemptId(r.data.courseAttempt.currentAttemptId);
+
+            if (r.data.courseAttempt.currentStartTime
+                && new Date().getTime() > new Date(r.data.courseAttempt.currentStartTime).getTime() + r.data.minTime * 60 * 1000) {
+                setTimeDone(true);
+            }
         }), []);
 
     const [courseData, setCourseData] = useState<undefined | object>(undefined);

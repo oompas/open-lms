@@ -11,7 +11,7 @@ export default function IDCourse({
     setTimeDone,
     status,
     setStatus,
-    setCourseAttemptId
+    setCourseAttemptId,
 } : {
     course: {
         name: string,
@@ -19,7 +19,6 @@ export default function IDCourse({
         description: string,
         minTime: number,
         link: string,
-        courseId: number,
         courseAttempt: {
             numAttempts: number,
             currentStartTime: string,
@@ -45,8 +44,9 @@ export default function IDCourse({
 
     useEffect(() => {
         if (countdown <= 0) {
-            if (status !== "NOT_ENROLLED" && status !== "ENROLLED" && !timeDone) {
+            if (status === "IN_PROGRESS" && !timeDone) {
                 setTimeDone(true);
+                location.reload();
             }
             return;
         }
