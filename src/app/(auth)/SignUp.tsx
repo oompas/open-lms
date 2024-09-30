@@ -3,9 +3,10 @@ import Button from "@/components/Button.tsx";
 import { callAPI } from "@/config/supabase.ts";
 import React, { useState } from "react";
 
-export default function SignUp({ email, setEmail, setIsLogin }) {
+export default function SignUp({ setIsLogin }) {
 
     const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     const [showVerifyEmailPopup, setShowVerifyEmailPopup] = useState(false);

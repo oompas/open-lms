@@ -7,7 +7,6 @@ import { supabaseClient } from "@/config/supabase.ts";
 export default function AuthPage() {
 
     const [isLogin, setIsLogin] = useState<boolean>(true);
-    const [email, setEmail] = useState("");
 
     useEffect(() => {
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
@@ -23,22 +22,9 @@ export default function AuthPage() {
 
     const renderComponent = () => {
         if (isLogin) {
-            return (
-                <SignIn
-                    email={email}
-                    setEmail={setEmail}
-                    setIsLogin={setIsLogin}
-                />
-            );
-        } else {
-            return (
-                <SignUp
-                    email={email}
-                    setEmail={setEmail}
-                    setIsLogin={setIsLogin}
-                />
-            );
+            return <SignIn setIsLogin={setIsLogin}/>;
         }
+        return <SignUp setIsLogin={setIsLogin}/>;
     }
 
     return (

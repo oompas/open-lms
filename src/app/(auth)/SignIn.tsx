@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import TextField from "@/components/TextField.tsx";
 
-export default function SignIn({ email, setEmail, setIsLogin }) {
+export default function SignIn({ setIsLogin }) {
 
     const router = useRouter();
 
+    const [email, setEmail] = useState("");
     const [password, setPass] = useState("");
     const [error, setError] = useState(null);
     const [forgotPassword, setForgotPassword] = useState(false);
