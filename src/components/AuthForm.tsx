@@ -66,7 +66,7 @@ export default function AuthForm({
                     <p key={index} className="mt-1 text-sm text-red-500">{message}</p>
                 ))}
                 {onForgotPassword && (
-                    <div className="mt-2 text-gray-500 cursor-pointer" onClick={onForgotPassword}>Forgot your password?</div>
+                    <div className="mt-3 mb-2 text-gray-500 cursor-pointer" onClick={onForgotPassword}>Forgot your password?</div>
                 )}
             </div>
         </div>

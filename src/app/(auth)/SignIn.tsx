@@ -70,7 +70,7 @@ export default function SignIn({ setIsSignIn }) {
 
     return (
         <>
-            <div className="relative min-h-[41.2vh]">
+            <div className="">
                 <div className="text-xl font-bold mb-4">Sign In</div>
                 <AuthForm
                     email={email}
@@ -91,7 +91,7 @@ export default function SignIn({ setIsSignIn }) {
                     </p>
                 )}
 
-                <div className="absolute bottom-0 w-full">
+                <div className="">
                     <div className="flex justify-between mt-4">
                         <Button
                             text="Sign Up"
