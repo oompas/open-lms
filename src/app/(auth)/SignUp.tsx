@@ -3,7 +3,7 @@ import Button from "@/components/Button.tsx";
 import { callAPI } from "@/config/supabase.ts";
 import React, { useState } from "react";
 
-export default function SignUp({ setIsLogin }) {
+export default function SignUp({ setIsSignIn }) {
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -26,7 +26,7 @@ export default function SignUp({ setIsLogin }) {
             <div className="fixed flex justify-center items-center w-screen h-screen top-0 left-0 bg-gray-900 bg-opacity-50 z-50">
                 <div className="bg-white p-8 rounded-lg shadow-lg">
                     <h2 className="text-2xl font-bold mb-4">Verify Your Email</h2>
-                    <p className="text-lg mb-4">Thank you for creating an account! Please verify your email address before logging in.</p>
+                    <p className="text-lg mb-4">Thank you for creating an account! Please verify your email address before signing in.</p>
                     <Button text="Close" onClick={() => setShowVerifyEmailPopup(false)} />
                 </div>
             </div>
@@ -65,8 +65,8 @@ export default function SignUp({ setIsLogin }) {
 
             <div className="flex justify-between mt-6">
                 <Button
-                    text="Login"
-                    onClick={() => setIsLogin(true)}
+                    text="Sign In"
+                    onClick={() => setIsSignIn(true)}
                     style="border-[3px] border-red-800"
                     icon="arrow-back"
                     iconBefore

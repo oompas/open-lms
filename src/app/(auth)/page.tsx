@@ -6,7 +6,7 @@ import { supabaseClient } from "@/config/supabase.ts";
 
 export default function AuthPage() {
 
-    const [isLogin, setIsLogin] = useState<boolean>(true);
+    const [isSignIn, setIsSignIn] = useState<boolean>(true);
 
     useEffect(() => {
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
@@ -21,10 +21,10 @@ export default function AuthPage() {
     }, []);
 
     const renderComponent = () => {
-        if (isLogin) {
-            return <SignIn setIsLogin={setIsLogin}/>;
+        if (isSignIn) {
+            return <SignIn setIsSignIn={setIsSignIn}/>;
         }
-        return <SignUp setIsLogin={setIsLogin}/>;
+        return <SignUp setIsSignIn={setIsSignIn}/>;
     }
 
     return (
@@ -39,7 +39,7 @@ export default function AuthPage() {
 
                 <div className="flex-col h-full w-2/5 ml-10 space-y-5">
                     <div className="text-2xl">Welcome to <b>OpenLMS</b></div>
-                    <div>OpenLMS is a generic open-source education platform. Login with your account to get started.</div>
+                    <div>OpenLMS is a generic open-source education platform. Sign in with your account to get started.</div>
                     <div>Created at Queen’s University in Kingston Ontario, Canada.</div>
                     <img
                         src="/openlms.png"

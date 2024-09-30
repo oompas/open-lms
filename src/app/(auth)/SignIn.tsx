@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import TextField from "@/components/TextField.tsx";
 
-export default function SignIn({ setIsLogin }) {
+export default function SignIn({ setIsSignIn }) {
 
     const router = useRouter();
 
@@ -14,7 +14,7 @@ export default function SignIn({ setIsLogin }) {
     const [error, setError] = useState(null);
     const [forgotPassword, setForgotPassword] = useState(false);
 
-    const submitLogin = async () => {
+    const submitSignIn = async () => {
         setError(null);
 
         const { error } = await signIn(email, password);
@@ -71,7 +71,7 @@ export default function SignIn({ setIsLogin }) {
     return (
         <>
             <div className="relative min-h-[41.2vh]">
-                <div className="text-xl font-bold mb-4">Login</div>
+                <div className="text-xl font-bold mb-4">Sign In</div>
                 <AuthForm
                     email={email}
                     setEmail={setEmail}
@@ -95,13 +95,13 @@ export default function SignIn({ setIsLogin }) {
                     <div className="flex justify-between mt-4">
                         <Button
                             text="Sign Up"
-                            onClick={() => setIsLogin(false)}
+                            onClick={() => setIsSignIn(false)}
                             style="border-[3px] border-red-800"
                             filled={false}
                         />
                         <Button
-                            text="Login"
-                            onClick={async () => await submitLogin()}
+                            text="Sign In"
+                            onClick={async () => await submitSignIn()}
                             style="ml-4"
                             icon="arrow"
                             filled
