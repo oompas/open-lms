@@ -1,9 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { corsHeaders, log, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, getCurrentTimestampTz, log, successResponse } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 import Course from "../_shared/DatabaseObjects/Course.ts";
 import { getCourseStatus } from "../_shared/functionality.ts";
+import { adminClient } from "../_shared/adminClient.ts";
 
 Deno.serve(async (req: Request) => {
 
@@ -39,13 +40,18 @@ Deno.serve(async (req: Request) => {
     const courseAttempts = await getRows({ table: 'course_attempt', conditions: [['eq', 'user_id', userId], ['eq', 'course_id', courseId]] });
     if (courseAttempts instanceof Response) return courseAttempts;
 
-    const courseStatus = await getCourseStatus(courseId, userId);
-
     let attempts = null;
     const currentCourseAttempt = courseAttempts.length > 0
         ? courseAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest)
         : null;
     if (courseAttempts.length !== 0) {
+
+        // If the course has no quiz and the time limit is passed, they've completed the course
+        if (courseData.preserve_quiz_question_order === null
+            && currentCourseAttempt.pass === null
+            && new Date().getTime() > new Date(currentCourseAttempt.start_time).getTime() + courseData.min_time * 60 * 1000) {
+            await adminClient.from('course_attempt').update({ pass: true, end_time: getCurrentTimestampTz() }).eq('id', currentCourseAttempt.id);
+        }
 
         let quizAttempt = null;
         if (currentCourseAttempt) {
@@ -78,6 +84,8 @@ Deno.serve(async (req: Request) => {
             currentId: currentQuizAttempt?.id
         };
     }
+
+    const courseStatus = await getCourseStatus(courseId, userId);
 
     const rsp = {
         id: courseData.id,
