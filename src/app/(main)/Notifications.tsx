@@ -105,7 +105,7 @@ const Notifications: React.FC = () => {
     const deleteNotification = async (id: string) => {
         setDeletingNotificationId(id);
         try {
-            await callAPI('delete-notification', { notificationIds: id });
+            await callAPI('delete-notification', { notificationId: id });
             setNotifications((notifs) => notifs.filter((n) => n.id !== id));
         } catch (error) {
             console.error('Error deleting notification:', error);
@@ -117,7 +117,7 @@ const Notifications: React.FC = () => {
     const deleteAllNotifications = async () => {
         setDeletingAll(true);
         try {
-            await callAPI('delete-notification', { deleteAll: true, direct: directNotifications });
+            await callAPI('delete-notification', { deleteAll: true });
             setNotifications((notifs) => notifs.filter((n) => n.direct !== directNotifications));
         } catch (error) {
             console.error('Error deleting all notifications:', error);
