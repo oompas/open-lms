@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
 
     const user = await getRequestUser(req);
 
-    const notifications = await getRows({ table: 'notification', conditions: ['eq', 'user_id', user.id] });
+    const notifications = await getRows({ table: 'notification', conditions: [['eq', 'user_id', user.id], ['eq', 'deleted', false]] });
     if (notifications instanceof Response) return notifications;
 
     // Mark all as read
