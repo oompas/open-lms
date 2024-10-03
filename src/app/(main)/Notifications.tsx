@@ -26,7 +26,7 @@ interface NotificationItemProps {
     isLast: boolean;
 }
 
-const NotificationItem: React.FC<NotificationItemProps> = ({notification, onDelete, isDeleting, onClose, isLast }) => {
+const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onDelete, isDeleting, onClose, isLast }) => {
     const router = useRouter();
     const { id, title, date, link, read } = notification;
 
@@ -68,7 +68,9 @@ const Notifications: React.FC = () => {
     const [deletingNotificationId, setDeletingNotificationId] = useState<string | null>(null);
     const [deletingAll, setDeletingAll] = useState(false);
     const [directNotifications, setDirectNotifications] = useState(true);
+
     const popUpRef = useRef<HTMLDivElement>(null);
+    const bellIconRef = useRef<SVGElement>(null);
 
     const refreshNotifications = useCallback(async () => {
         setNotificationsOpen(true);
@@ -86,14 +88,15 @@ const Notifications: React.FC = () => {
     const handleIconClick = useCallback(async () => {
         if (!notificationsOpen) {
             refreshNotifications();
-        } else {
-            setNotificationsOpen(false);
         }
     }, [notificationsOpen, refreshNotifications]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (popUpRef.current && !popUpRef.current.contains(event.target as Node)) {
+            if (
+                popUpRef.current &&
+                !popUpRef.current.contains(event.target as Node)
+            ) {
                 setNotificationsOpen(false);
             }
         };
@@ -177,7 +180,9 @@ const Notifications: React.FC = () => {
         if (!hasNotifications) {
             return (
                 <div className="flex justify-center">
-                    <div className="text-lg font-sans mt-4">No notifications</div>
+                    <div className="text-lg font-sans mt-4 text-gray-600">
+                        No notifications
+                    </div>
                 </div>
             );
         }
@@ -206,6 +211,7 @@ const Notifications: React.FC = () => {
     return (
         <div className="relative">
             <IoNotifications
+                ref={bellIconRef}
                 className="mt-[6px] hover:opacity-75 duration-75 cursor-pointer"
                 onClick={handleIconClick}
             />
@@ -215,8 +221,8 @@ const Notifications: React.FC = () => {
                     className="absolute right-0 mt-2 w-72 h-72 font-sans bg-white shadow-lg rounded-lg border-gray-300 border-[1px] overflow-y-scroll no-scrollbar"
                 >
                     <div className="mb-2 mx-4">
-                        <div className="flex justify-between items-center">
-                            <div className="text-lg font-semibold mt-4">Notifications</div>
+                        <div className="text-lg font-semibold mt-4 text-gray-600">
+                            Notifications
                         </div>
                         <div className="flex justify-between mt-3">
                             <div className="flex gap-4">
@@ -225,7 +231,7 @@ const Notifications: React.FC = () => {
                                         'text-sm font-medium py-1',
                                         directNotifications
                                             ? 'text-blue-600 border-b-2 border-blue-600'
-                                            : 'text-gray-700 hover:text-gray-900'
+                                            : 'text-gray-600 hover:text-gray-900'
                                     )}
                                     onClick={() => setDirectNotifications(true)}
                                 >
@@ -236,7 +242,7 @@ const Notifications: React.FC = () => {
                                         'text-sm font-medium py-1',
                                         !directNotifications
                                             ? 'text-blue-600 border-b-2 border-blue-600'
-                                            : 'text-gray-700 hover:text-gray-900'
+                                            : 'text-gray-600 hover:text-gray-900'
                                     )}
                                     onClick={() => setDirectNotifications(false)}
                                 >
