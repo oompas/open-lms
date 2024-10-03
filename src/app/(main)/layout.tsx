@@ -51,7 +51,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
     return (
         <html lang="en">
-        <body className="h-[100vh] px-20 bg-gray-100 overflow-x-hidden">
+        <body className="h-[100vh] px-[15vw] bg-gray-100 overflow-x-hidden mx-auto">
             <div className="flex flex-row px-12 h-[13vh] items-center bg-white rounded-b-2xl shadow-custom">
                 <Link href="/home" className="font-bold text-4xl flex items-center">
                     <img
