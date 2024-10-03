@@ -163,7 +163,7 @@ export default function Tools() {
                         <th className="py-1">Email</th>
                         <th className="py-1">Role</th>
                         <th className="py-1">Courses Created</th>
-                        <th className="py-1">Courses Published</th>
+                        <th className="py-1">Courses Active</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -174,7 +174,7 @@ export default function Tools() {
                                 email={admin.email}
                                 role={admin.role}
                                 coursesCreated={admin.coursesCreated}
-                                coursesPublished={admin.coursesPublished}
+                                coursesActive={admin.coursesActive}
                                 id={admin.id}
                             />
                         ))}

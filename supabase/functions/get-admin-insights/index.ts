@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
                 role: user.user_metadata.role,
 
                 coursesCreated: courses.filter(c => c.user_id === user.id).length,
-                coursesPublished: courses.filter(c => c.user_id === user.id && c.active).length
+                coursesActive: courses.filter(c => c.user_id === user.id && c.active).length
             };
         });
 
