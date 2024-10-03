@@ -1,6 +1,6 @@
 import AuthForm from "@/components/AuthForm.tsx";
 import Button from "@/components/Button.tsx";
-import { signUp } from "@/config/supabase.ts";
+import { callAPI, signUp } from "@/config/supabase.ts";
 import React, { useState } from "react";
 
 export default function SignUp({ setIsSignIn }) {
@@ -12,10 +12,12 @@ export default function SignUp({ setIsSignIn }) {
     const [showVerifyEmailPopup, setShowVerifyEmailPopup] = useState(false);
 
     const submitSignUp = async () => {
-        const { error } = await signUp(email, password);
+        const { data, error } = await signUp(email, password);
         if (error) {
             console.error(`Error signing up user: ${error}`);
         } else {
+            console.log(`Data: ${JSON.stringify(data)}`);
+            callAPI('setup-account', { name: name, userId: data.user.id });
             setShowVerifyEmailPopup(true);
         }
     }
