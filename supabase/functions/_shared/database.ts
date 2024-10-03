@@ -1,5 +1,5 @@
 import { adminClient } from "./adminClient.ts";
-import { ErrorResponse, internalError, log } from "./helpers.ts";
+import { ErrorResponse, InternalError, log } from "./helpers.ts";
 
 type TableName = "course" | "quiz_question" | "enrolled_course" | "course_attempt" | "quiz_attempt" | "quiz_question_attempt" | "notification";
 
@@ -27,11 +27,11 @@ const getRows = async ({ table, conditions = [], expectResults, limit = 1000 }: 
     // Supabase has a max of 1000 query results
     if (limit > 1000) {
         log(`Database query limit cannot exceed 1000: '${limit}' is too much`);
-        return internalError();
+        return InternalError();
     }
     if (limit < 1) {
         log(`Database query limit must be at least 1: '${limit}' is too low`);
-        return internalError();
+        return InternalError();
     }
 
     // Wrap single conditions in an array for consistency
@@ -63,7 +63,7 @@ const getRows = async ({ table, conditions = [], expectResults, limit = 1000 }: 
 
         const error = () => {
             log(`[getRows] Expected ${operator} ${value} results, but got ${data.length}`);
-            return internalError();
+            return InternalError();
         }
 
         if (operator === 'eq' && data.length !== value) error();
