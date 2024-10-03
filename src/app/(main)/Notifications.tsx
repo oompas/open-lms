@@ -85,18 +85,17 @@ const Notifications: React.FC = () => {
         }
     }, []);
 
-    const handleIconClick = useCallback(async () => {
-        if (!notificationsOpen) {
+    const handleIconClick = useCallback(() => {
+        if (notificationsOpen) {
+            setNotificationsOpen(false);
+        } else {
             refreshNotifications();
         }
     }, [notificationsOpen, refreshNotifications]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (
-                popUpRef.current &&
-                !popUpRef.current.contains(event.target as Node)
-            ) {
+            if (popUpRef.current?.contains(event.target as Node) === false && bellIconRef.current?.contains(event.target as Node) === false) {
                 setNotificationsOpen(false);
             }
         };
@@ -210,11 +209,12 @@ const Notifications: React.FC = () => {
 
     return (
         <div className="relative">
-            <IoNotifications
-                ref={bellIconRef}
-                className="mt-[6px] hover:opacity-75 duration-75 cursor-pointer"
-                onClick={handleIconClick}
-            />
+            <div ref={bellIconRef}>
+                <IoNotifications
+                    className="mt-[6px] hover:opacity-75 duration-75 cursor-pointer"
+                    onClick={handleIconClick}
+                />
+            </div>
             {notificationsOpen && (
                 <div
                     ref={popUpRef}
