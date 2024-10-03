@@ -1,13 +1,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, SuccessResponse } from "../_shared/helpers.ts";
+import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import { getRows } from "../_shared/database.ts";
-
-console.log("Hello from Functions!")
 
 Deno.serve(async (req) => {
 
     if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders })
+        return OptionsRsp();
     }
 
     const { quizAttemptId } = await req.json();

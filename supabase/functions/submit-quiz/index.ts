@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, ErrorResponse, getCurrentTimestampTz, log, SuccessResponse } from "../_shared/helpers.ts";
+import { ErrorResponse, getCurrentTimestampTz, log, OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import { getRows } from "../_shared/database.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { adminClient } from "../_shared/adminClient.ts";
@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     const timestamp = getCurrentTimestampTz();
 
     if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders })
+        return OptionsRsp();
     }
 
     const { quizAttemptId, responses } = await req.json();

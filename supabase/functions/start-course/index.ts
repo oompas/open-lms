@@ -1,12 +1,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, SuccessResponse, ErrorResponse } from "../_shared/helpers.ts";
+import { SuccessResponse, ErrorResponse, OptionsRsp } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 
 Deno.serve(async (req) => {
 
     if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders })
+        return OptionsRsp();
     }
 
     const userId = await getRequestUserId(req);
