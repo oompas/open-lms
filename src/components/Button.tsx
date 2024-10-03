@@ -2,13 +2,15 @@ import { ReactElement } from "react";
 import { MdAddCircleOutline, MdRemoveCircleOutline, MdArrowForward, MdOpenInNew, MdReport } from "react-icons/md";
 import React, { useState } from 'react';
 import './buffering.css';
+import { IoMdArrowBack } from "react-icons/io";
 
 export default function Button({
     text,
     onClick,   
     style,    
     filled,    
-    icon,        
+    icon,
+    iconBefore,
     disabled
 } : {
     text: string,
@@ -16,6 +18,7 @@ export default function Button({
     style?: string,
     filled?: boolean,
     icon?: string,
+    iconBefore?: boolean,
     disabled?: boolean
 }) {
     const [isLoading, setIsLoading] = useState(false);
@@ -35,15 +38,17 @@ export default function Button({
     const border: any = " text-red-800"
     const iconElem: ReactElement | null = <div>
         { icon === "arrow" ? 
-        <MdArrowForward size={24} />
+        <MdArrowForward size={24}/>
+        : icon === "arrow-back" ?
+        <IoMdArrowBack size={24}/>
         : icon === "link" ? 
-        <MdOpenInNew size={20} />
+        <MdOpenInNew size={20}/>
         : icon === "plus" ?
-        <MdAddCircleOutline size={20} />
+        <MdAddCircleOutline size={20}/>
         : icon === "minus" ?
-        <MdRemoveCircleOutline size={20} />
+        <MdRemoveCircleOutline size={20}/>
         : icon === "report" ?
-        <MdReport size={20} />
+        <MdReport size={20}/>
         : null }
     </div>
 
@@ -51,11 +56,13 @@ export default function Button({
         <>
             <button
                 onClick={handleClick}
-                className={ "flex h-fit items-center px-5 py-2 w-fit rounded-xl text-lg font-bold border-[3px] border-red-800 duration-75 ease-out " + style + (filled ? background : border) + (disabled ? " opacity-40" : " hover:opacity-60 cursor-pointer") }
+                className={ "flex h-fit items-center px-5 py-2 w-fit rounded-xl text-lg font-bold border-[3px]" +
+                    " border-red-800 duration-75 ease-out " + style + (filled ? background : border) + (disabled ? " opacity-40" : " hover:opacity-60 cursor-pointer") }
                 disabled={disabled}
             >
+                { iconBefore && <div className="mr-2">{iconElem}</div> }
                 <div>{text}</div>
-                { icon ? <div className="ml-2">{iconElem}</div> : null }
+                { !iconBefore && icon && <div className="ml-2">{iconElem}</div> }
             </button>
             {isLoading && 
                 <div className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">

@@ -7,7 +7,8 @@ import { MdAdd } from "react-icons/md";
 import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
 import { ApiEndpoints, callApi } from "@/config/firebase";
-import { useRouter } from "next/navigation"; // @ts-ignore
+import { useRouter } from "next/navigation";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function AdminCourse({ params }: { params: { id: string } }) {
 
@@ -95,7 +96,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     useEffect(() => {
         if (!loading || newCourse) return;
 
-        callApi(ApiEndpoints.GetCourseInfo, { courseId: params.id, withQuiz: true })
+        callAPI('get-course-data-admin', { courseId: params.id, withQuiz: true })
             .then((result) => {
                 const data: any = result.data;
 
@@ -106,13 +107,13 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 setMinCourseTime(data.minTime);
                 setActive(data.active);
 
-                setUseQuiz(data.quiz !== null);
-                if (data.quiz !== null) {
-                    setQuizMinScore(data.quiz.minScore);
-                    setQuizAttempts(data.quiz.maxAttempts);
-                    setQuizMaxTime(data.quiz.timeLimit);
+                setUseQuiz(data.quizData !== null);
+                if (data.quizData !== null) {
+                    setQuizMinScore(data.quizData.minScore);
+                    setQuizAttempts(data.quizData.maxAttempts);
+                    setQuizMaxTime(data.quizData.timeLimit);
 
-                    setQuizTotalScore(data.quizQuestions.reduce((acc: number, q: any) => acc + q.marks, 0));
+                    setQuizTotalScore(data.quizQuestions?.reduce((acc: number, q: any) => acc + q.marks, 0));
 
                     if (data.quizQuestions && data.quizQuestions[0].order) {
                         data.quizQuestions.sort((a: any, b: any) => a.order - b.order);
@@ -144,11 +145,11 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 timeLimit: toNumber(quizMaxTime),
                 preserveOrder: preserveOrder,
             },
-            quizQuestions: !quizQuestions.length ? null : quizQuestions.map(({ id, ...rest }) => rest)
+            quizQuestions: !quizQuestions?.length ? null : quizQuestions?.map(({ id, ...rest }) => rest)
         }
 
         try {
-            await callApi(ApiEndpoints.AddCourse, courseData).then((result) => router.push(`/admin/course/${result.data}`));
+            await callAPI('create-course', { course: courseData }).then((result) => router.push(`/admin/course/${result.data}`));
         } catch (error: any) {
             const errorMessage = error.toString().split(':').slice(-1)[0].trim();
             setShowAddCourseErrorPopup(true);
@@ -157,7 +158,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     }
 
     const handlePublish = async () => {
-        await callApi(ApiEndpoints.SetCourseVisibility, { courseId: params.id, active: !active })
+        await callAPI('set-course-visibility', { courseId: params.id, active: !active })
             .then(() => { setActive(!active); setActivatePopup(false); })
             .catch((err) => console.log(`Error unpublishing course: ${err}`));
     }
@@ -476,14 +477,14 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                         <div className="text-lg border-2 p-6 rounded-xl">
                             <div className="flex flex-row items-center space-x-2 mb-4">
                                 <div>Quiz Questions</div>
-                                <div className="text-sm text-gray-500">({quizQuestions.length} questions)</div>
+                                <div className="text-sm text-gray-500">({quizQuestions?.length} questions)</div>
                             </div>
                             <div className="flex flex-col space-y-4">
-                                {quizQuestions.map((question, key) => (
+                                {quizQuestions?.map((question, key) => (
                                     <QuizQuestion
                                         key={key}
                                         first={key === 0}
-                                        last={key === quizQuestions.length - 1}
+                                        last={key === quizQuestions?.length - 1}
                                         num={key + 1}
                                         inData={question}
                                         editData={handleEditQuestion}

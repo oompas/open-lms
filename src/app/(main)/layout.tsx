@@ -1,40 +1,38 @@
 "use client";
 import Link from 'next/link';
 import '../globals.css';
-import { ApiEndpoints, auth, callApi } from '@/config/firebase';
+import { ApiEndpoints, callApi } from '@/config/firebase';
 import { useRouter } from "next/navigation";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from "@/components/Button";
-import { MdChevronLeft } from 'react-icons/md';
+import { MdAdminPanelSettings, MdChevronLeft } from 'react-icons/md';
 import TextField from '@/components/TextField';
+import { useSession } from "@supabase/auth-helpers-react";
+import { CgProfile } from "react-icons/cg";
+import Notifications from "@/app/(main)/Notifications.tsx";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
     const router = useRouter();
+    const session = useSession();
+
+    if (document?.readyState === 'complete' && session === null) {
+        router.push('/');
+    }
+
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-    const [userName, setUserName] = useState<string | null>(null);
-    const [selectedLink, setSelectedLink] = useState('/admin/tools');
-
-    const handleLinkClick = (path: string) => {
-        setSelectedLink(path);
-        router.push(path);
-    };
-
-    // Takes time to detect if the user is logged in; if so, check if they're an admin
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            auth.currentUser?.getIdTokenResult()
-                .then((idTokenResult) => setIsAdmin(!!idTokenResult.claims.admin))
-                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
-
-            setUserName(user.displayName);
-        }
-    });
 
     const [showSupportForm, setShowSupportForm] = useState(false);
     const [feedback, setFeedback] = useState('');
     const [feedbackSent, setFeedbackSent] = useState(false);
     const [showFooter, setShowFooter] = useState(false);
+
+    useEffect(() => {
+       const role = session?.user?.user_metadata?.role;
+        if (role === 'Admin' || role === 'Developer') {
+            setIsAdmin(true);
+        }
+    }, [session]);
 
     const handleSubmitFeedback = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -53,27 +51,43 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
     return (
         <html lang="en">
-        <body className="h-[100vh] px-20 bg-gray-100 overflow-x-hidden">
+        <body className="h-[100vh] px-[15vw] bg-gray-100 overflow-x-hidden mx-auto">
             <div className="flex flex-row px-12 h-[13vh] items-center bg-white rounded-b-2xl shadow-custom">
                 <Link href="/home" className="font-bold text-4xl flex items-center">
-                    <img src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaKJ6WNZbIVmwI2H2DhOpcEjPI20dv54xarsGWLL7Dqpr2YdwjoWz1iJbCXDFjyGA4XsIswyuyiBToe8QTA9Mvddj4Dyw=s2560" alt="Logo" className="h-10 w-auto mr-2" />
+                    <img
+                        src="/openlms.png"
+                        alt="OpenLMS Logo"
+                        className="h-10 w-auto mr-2"
+                    />
                     OpenLMS
                 </Link>
-                <div className="flex ml-auto space-x-10 text-2xl">
-                    {isAdmin && <a onClick={() => handleLinkClick('/admin/tools')} className={`hover:opacity-50 duration-75 cursor-pointer ${selectedLink === '/admin/tools' ? 'underline' : ''}`}>Admin Tools</a>}
-                    <a onClick={() => handleLinkClick('/profile')} className={`hover:opacity-50 duration-75 cursor-pointer ${selectedLink === '/profile' ? 'underline' : ''}`}>View Profile</a>
+                <div className="flex ml-auto text-2xl">
+                    <Notifications />
+
+                    {isAdmin &&
+                        <MdAdminPanelSettings
+                            className="w-8 h-8 ml-6 hover:opacity-75 duration-75 cursor-pointer"
+                            onClick={() => router.push('/admin/tools')}
+                        />
+                    }
+
+                    <CgProfile
+                        className="w-8 h-8 ml-6 hover:opacity-75 duration-75 cursor-pointer"
+                        onClick={() => router.push('/profile')}
+                    />
                 </div>
             </div>
-            
+
             <div className='flex h-[85vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar'>
                 {children}
             </div>
 
-            { showSupportForm && (
-                <div className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
+            {showSupportForm && (
+                <div
+                    className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
                     <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
                         <div className="text-lg mb-2">Request platform support or report technical issues</div>
-                        <TextField text={feedback} onChange={setFeedback} area placeholder="Type your message here..." />
+                        <TextField text={feedback} onChange={setFeedback} area placeholder="Type your message here..."/>
                         <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-left">
                             <div className="flex flex-row ml-auto mt-4">
                                 <Button text="Cancel" onClick={() => {

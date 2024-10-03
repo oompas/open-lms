@@ -5,16 +5,18 @@ import CourseInsight from "@/app/(main)/admin/tools/CourseInsight";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ApiEndpoints, callApi, useAsyncApiCall } from "@/config/firebase";
+import { ApiEndpoints, callApi } from "@/config/firebase";
 import TextField from "@/components/TextField";
 import { downloadZip } from "client-zip";
 import AdminInsight from "@/app/(main)/admin/tools/AdminInsight";
+import { callAPI } from "@/config/supabase.ts";
+import { useAsync } from "react-async-hook";
 
 export default function Tools() {
 
     const router = useRouter();
 
-    const adminInsights = useAsyncApiCall(ApiEndpoints.GetAdminInsights, {});
+    const adminInsights = useAsync(() => callAPI('get-admin-insights'));
 
     enum PopupType {
         InviteLearner,
@@ -54,9 +56,9 @@ export default function Tools() {
                     <QuizToMark
                         key={key}
                         title={quiz.courseName}
-                        date={new Date(quiz.timestamp*1000).toLocaleString()}
+                        date={new Date(quiz.timestamp).toLocaleString()}
                         learner={quiz.userName}
-                        id={quiz.quizAttemptId}
+                        id={quiz.id}
                     />
                 ))}
                 {
@@ -103,8 +105,8 @@ export default function Tools() {
                                 email={learner.email}
                                 coursesEnrolled={learner.coursesEnrolled}
                                 coursesAttempted={learner.coursesAttempted}
-                                coursesCompleted={learner.coursesComplete}
-                                id={learner.uid}
+                                coursesCompleted={learner.coursesCompleted}
+                                id={learner.id}
                             />
                         ))}
                     </tbody>
@@ -161,7 +163,7 @@ export default function Tools() {
                         <th className="py-1">Email</th>
                         <th className="py-1">Role</th>
                         <th className="py-1">Courses Created</th>
-                        <th className="py-1">Courses Published</th>
+                        <th className="py-1">Courses Active</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -172,8 +174,8 @@ export default function Tools() {
                                 email={admin.email}
                                 role={admin.role}
                                 coursesCreated={admin.coursesCreated}
-                                coursesPublished={admin.coursesPublished}
-                                id={admin.uid}
+                                coursesActive={admin.coursesActive}
+                                id={admin.id}
                             />
                         ))}
                     </tbody>
@@ -183,7 +185,7 @@ export default function Tools() {
     }
 
     const downloadCourseReports = async () => {
-        await callApi(ApiEndpoints.DownloadCourseReports, {}) // @ts-ignore
+        await callAPI('get-course-reports') // @ts-ignore
             .then(async (response: { data: { courses: string, quizQuestions: string, courseAttempts: string, quizAttempts: string, quizQuestionAttempts: string } }) => {
 
                 // Since there's multiple files, create a zip file

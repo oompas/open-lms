@@ -6,14 +6,14 @@ export default function AdminInsight({
    email,
    role,
    coursesCreated,
-   coursesPublished,
+   coursesActive,
    id
 } : {
     name: string,
     email: string,
     role: boolean,
     coursesCreated: number,
-    coursesPublished: number,
+    coursesActive: number,
     id: number
 }) {
     return (
@@ -27,7 +27,7 @@ export default function AdminInsight({
             <td className="border p-2">{email}</td>
             <td className="border p-2">{role}</td>
             <td className="border p-2">{coursesCreated}</td>
-            <td className="border p-2">{coursesPublished}</td>
+            <td className="border p-2">{coursesActive}</td>
         </tr>
     );
 }

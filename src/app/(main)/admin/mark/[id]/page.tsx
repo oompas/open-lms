@@ -3,15 +3,16 @@ import {useRouter} from "next/navigation";
 import QuizAnswer from "@/app/(main)/admin/mark/[id]/QuizAnswer";
 import Button from "@/components/Button";
 import React, { useEffect, useState } from "react";
-import { ApiEndpoints, callApi, useAsyncApiCall } from "@/config/firebase";
 import { RiCheckboxBlankCircleLine, RiCheckboxCircleFill } from "react-icons/ri";
 import { FaRegTimesCircle } from "react-icons/fa";
+import { callAPI } from "@/config/supabase.ts";
+import { useAsync } from "react-async-hook";
 
 export default function Mark({ params }: { params: { id: string } }) {
 
     const router = useRouter();
 
-    const quizQuestions = useAsyncApiCall(ApiEndpoints.GetQuizAttempt, { quizAttemptId: params.id }, (rsp) => { setQuestions(rsp.data); return rsp; });
+    const quizQuestions = useAsync(() => callAPI('get-quiz-attempt', { quizAttemptId: params.id }).then((rsp) => { setQuestions(rsp.data); return rsp; }));
 
     const [questions, setQuestions] = useState(null);
     const [marks, setMarks] = useState<any[]>([]);
@@ -25,8 +26,7 @@ export default function Mark({ params }: { params: { id: string } }) {
             return;
         }
 
-        // @ts-ignore
-        const view = questions.score != null
+        const view = questions.score != null;
         
         const temp_marks: any[] = [];
         let temp_total = 0;
@@ -77,14 +77,10 @@ export default function Mark({ params }: { params: { id: string } }) {
     }
 
     const handleSubmit = async () => {
-        // @ts-ignore
-        const responses = []
-        // @ts-ignore
-        questions.saQuestions.map((q, key) => (
-            responses.push({questionAttemptId: q.questionAttemptId, marksAchieved: marks[key]})
-        )) // @ts-ignore
-        callApi(ApiEndpoints.MarkQuizAttempt, { quizAttemptId: params.id, responses: responses })
-            .then(() => router.replace("/admin/tools"));
+        const responses = [];
+        questions.saQuestions.map((q, key) => responses.push({ questionAttemptId: q.questionAttemptId, marks: marks[key] }));
+        callAPI('mark-quiz-attempt', { quizAttemptId: params.id, marks: responses })
+            .then(() => router.push("/admin/tools"));
     }
 
     /**
@@ -112,30 +108,33 @@ export default function Mark({ params }: { params: { id: string } }) {
         );
     }
 
+    const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: true,
+    };
+
     return (
         <main className="flex h-auto w-full mb-4 justify-between">
             <div className="flex flex-col w-[75%] overflow-y-scroll sm:no-scrollbar">
                 <div className="flex">
                     <div className="flex flex-col w-full bg-white p-12 rounded-2xl shadow-custom">
-                        {/* @ts-ignore */}
                         <div className="text-2xl font-bold mb-2">{questions && questions.courseName}</div>
-                        {/* @ts-ignore */}
-                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Learner: {questions && questions.learnerName}</div>
-                        {/* @ts-ignore */}
-                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Completion Date: {questions && new Date(questions.completionTime * 1000).toLocaleString()}</div>
-                        {/* @ts-ignore */}
-                        { questions && questions.markingInfo && 
+                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Submitter: {questions && questions.submitterName}</div>
+                        <div className="flex flex-col text-lg space-y-8 w-[30rem]">Completion Date: {questions && new Date(questions.completionTime).toLocaleString('en-US', options)}</div>
+                        { questions && questions.markingInfo &&
                         <div> 
-                            {/* @ts-ignore */}
                             <div className="flex flex-col text-lg space-y-8 w-[30rem] mt-2">Marked by: {questions && `${questions.markingInfo?.name} (${questions.markingInfo?.email})`}</div>
-                            {/* @ts-ignore */}
                             <div className="flex flex-col text-lg space-y-8 w-[30rem]">Marked on: {questions && new Date(questions.markingInfo?.markTime._seconds * 1000).toLocaleString()}</div>
                         </div> }
                     </div>
                 </div>
 
                 <div className="flex flex-col">
-                    {/* @ts-ignore */}
                     {!viewOnly && questions && questions.saQuestions.map((question, key) => (
                         <QuizAnswer
                             key={key}
@@ -144,29 +143,26 @@ export default function Mark({ params }: { params: { id: string } }) {
                             answer={question.response}
                             marks={question.marks}
                             handleMark={handleUpdateMark}
-                            id={question.id}
                         />
                     ))}
                 </div>
                 {!viewOnly && <div className="text-center mt-4">Automatically Marked Questions</div> }
                 <div className="flex flex-col mt-4 space-y-4">
-                    {/* @ts-ignore */}
                     {viewOnly && questions && questions.saQuestions.map((question, key) => (
                         <div className="flex flex-row bg-white py-4 px-12 rounded-xl">
                             <div className="flex flex-col w-full">
-                                <div className="text-lg w-full mb-2">{question.question}</div>
-                                <div className="text-lg w-full">A) {question.response}</div>
+                                <div className="text-lg w-full mb-2 italic">{question.question}</div>
+                                <div className="text-lg w-full">{question.response}</div>
                             </div>
                             <div className="text-xl w-16">{question.marksAchieved}/{question.marks}</div>
                         </div>
                     ))}
-                    {/* @ts-ignore */}
                     {questions && questions.otherQuestions.map((question, key) => (
                         <div className="flex flex-row items-center bg-white py-4 px-12 rounded-xl">
                             <div className="flex flex-col w-full">
-                                <div className="text-lg w-full mb-2">{question.question}</div>
+                                <div className="text-lg w-full mb-2 italic">{question.question}</div>
                                 <div>
-                                    {question.type === "tf" ?
+                                    {question.type === "TF" ?
                                         <>
                                             <div className="text-lg w-full">
                                                 {renderQuestionAnswer("True", question.response === 0, question.correctAnswer === 0)}
@@ -175,7 +171,6 @@ export default function Mark({ params }: { params: { id: string } }) {
                                         </>
                                     :
                                         <div className="text-lg w-full">
-                                            {/* @ts-ignore */}
                                             { question.answers.map((ans, key) => {
                                                 return renderQuestionAnswer(ans, question.response === key, key === question.correctAnswer);
                                             })}
@@ -193,7 +188,7 @@ export default function Mark({ params }: { params: { id: string } }) {
                 <div className="flex flex-row items-center justify-center text-3xl border py-3 rounded-xl mt-2">
                     <div className="font-bold">
                         {/* @ts-ignore */}
-                        {viewOnly ? questions.score : marked+score}
+                        {viewOnly ? questions.score : marked + score}
                     </div>
                     <div className="ml-1 text-gray-500">{"/"}</div>
                     <div className="text-gray-500">

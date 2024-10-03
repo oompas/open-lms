@@ -1,23 +1,18 @@
 "use client"
 import IDProfile from "./IDProfile";
-import IDCourse from "./IDCourse";
-import IDEnrolled from "./IDEnrolled"
-import { useState } from "react";
-import { ApiEndpoints, useAsyncApiCall } from "@/config/firebase";
+import IDEnrolled from "./IDEnrolled.tsx";
+import IDCompleted from "./IDCompleted.tsx"
 import Link from "next/link";
 import { LuExternalLink } from "react-icons/lu";
-import StatusBadge from "@/components/StatusBadge";
-
+import { useAsync } from "react-async-hook";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function Profile({ params }: { params: { id: string } }) {
 
-    const userData = useAsyncApiCall(ApiEndpoints.GetUserProfile, { targetUid: params.id }, (rsp) => { setUser(rsp.data); return rsp; });
-
-
-    const [user, setUser] = useState()
-    const [status, setStatus] = useState("");
+    const userData = useAsync(() => callAPI('get-user-profile', { userId: params.id }));
 
     const profileData = () => {
+        const user = userData?.result?.data;
         if (user) {
 
             const unixToString = (unix: number) => {
@@ -33,9 +28,11 @@ export default function Profile({ params }: { params: { id: string } }) {
                     // @ts-ignore
                     name={user.name}
                     // @ts-ignore
+                    role={user.role}
+                    // @ts-ignore
                     signUpDate={unixToString(user.signUpDate)}
                     // @ts-ignore
-                    lastLoginDate={unixToString(user.lastSignIn)}
+                    lastUpdatedTime={unixToString(user.lastUpdated)}
                     // @ts-ignore
                     email={user.email}
                     uid={params.id}
@@ -47,6 +44,7 @@ export default function Profile({ params }: { params: { id: string } }) {
     }
 
     const coursesEnrolledData = () => {
+        const user = userData?.result?.data;
         if (user) {
             // @ts-ignore
             const temp_courses = [...user.enrolledCourses]
@@ -61,46 +59,48 @@ export default function Profile({ params }: { params: { id: string } }) {
                 temp_courses.push({"name": "_placeholder", "id": 0})
             }
             return temp_courses.map((course, key) => (
-                <IDCourse
+                <IDEnrolled
                     key={key}
                     title={course.name}
-                    id={course.id}
+                    id={course.courseId}
                 />
             ))
         }
     }
 
     const courseCompletedData = () => {
+        const user = userData?.result?.data;
         if (user) {
             // @ts-ignore
             return user.completedCourses.map((coursesEnrolled, key) => (
-                <IDEnrolled 
+                <IDCompleted
                     key={key}
                     title={coursesEnrolled.name}
-                    completionDate={new Date(coursesEnrolled.date*1000).toLocaleString()}
+                    completionTime={new Date(coursesEnrolled.completionTime).toLocaleString()}
                 />
             ))
         }
     }
 
     const quizAttempts = () => {
+        const user = userData?.result?.data;
         if (user) {
             // @ts-ignore
             return user.quizAttempts.map((quiz, key) => (
                 <tr className="border">
                     <td className="border p-2">
-                        <Link href={"/admin/mark/"+quiz.id} className="flex flex-row items-center hover:opacity-60">
-                            {new Date(quiz.endTime*1000).toLocaleString()}
+                        <Link href={`/admin/mark/${quiz.id}`} className="flex flex-row items-center hover:opacity-60">
+                            {new Date(quiz.endTime).toLocaleString()}
                             <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
                         </Link>
                     </td>
                     <td className="border p-2">
-                        <Link href={"/admin/course/"+quiz.courseId+"/insights"} className="flex flex-row items-center hover:opacity-60">
+                        <Link href={`/admin/course/${quiz.courseId}/insights`} className="flex flex-row items-center hover:opacity-60">
                             {quiz.courseName}
                             <LuExternalLink className="ml-1" color="rgb(153 27 27)"/>
                         </Link>
                     </td>
-                    <td className="border p-2">{quiz.score ? quiz.score : "Unmarked"}</td>
+                    <td className="border p-2">{quiz.score ? (`${quiz.score}/${quiz.maxScore} (${(quiz.score / quiz.maxScore * 100).toFixed(1)}%)`) : "Unmarked"}</td>
                 </tr>
             ))
         }
@@ -127,28 +127,26 @@ export default function Profile({ params }: { params: { id: string } }) {
         <main className="flex flex-col w-full h-full overflow-y-scroll sm:no-scrollbar mb-4">
 
             <div className="flex flex-row w-full mb-4">
-                    {/* Account Details section */}
-                    <div className="flex flex-col bg-white w-[50%] h-[50vh] p-12 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar">
-                        <div className="text-lg mb-2">Account Details</div>
-                        {status && <StatusBadge status={status} style="mt-2" />}
-                        { profileData() }
-                    </div>
+                {/* Account Details section */}
+                <div className="flex flex-col bg-white w-[50%] h-[50vh] p-12 rounded-2xl shadow-custom mr-8 overflow-y-scroll sm:no-scrollbar">
+                    { profileData() }
+                </div>
 
-                    <div className="flex flex-col h-[50vh] bg-white w-[50%] p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar">
-                        {/* Completed Courses section */}
-                        <div className="text-lg mb-4">Completed Courses</div>
-                        <div className="flex flex-col mr-auto text-lg w-[100%]">
-                            <table className="flex-col border-collapse w-full">
-                                <thead>
-                                    <tr className="border-b-2 border-black text-left">
-                                        <th className="p-2">Name</th>
-                                        <th className="p-2">Date of Completion</th>
-                                    </tr>
-                                </thead>
-                                { courseCompletedData() }
-                            </table>
-                        </div>
+                <div className="flex flex-col h-[50vh] bg-white w-[50%] p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar">
+                    {/* Completed Courses section */}
+                    <div className="text-lg mb-4">Completed Courses</div>
+                    <div className="flex flex-col mr-auto text-lg w-[100%]">
+                        <table className="flex-col border-collapse w-full">
+                            <thead>
+                                <tr className="border-b-2 border-black text-left">
+                                    <th className="p-2">Name</th>
+                                    <th className="p-2">Date of Completion</th>
+                                </tr>
+                            </thead>
+                            { courseCompletedData() }
+                        </table>
                     </div>
+                </div>
             </div>
 
             {/* Enrolled Courses Section */}
@@ -183,7 +181,6 @@ export default function Profile({ params }: { params: { id: string } }) {
             </div>
 
             { loadingPopup() }
-
         </main>  
     );
 }

@@ -14,19 +14,12 @@ export default function EnrolledCourse({
     id: number
 }) {
 
-    const statusValues = {
-        2: "To Do",
-        3: "In Progress",
-        4: "Awaiting Marking",
-        5: "Failed",
-        6: "Completed",
-    }
     const statusColors = {
-        2: "#468DF0",
-        3: "#EEBD31",
-        4: "#0fa9bb",
-        5: "#ab0303",
-        6: "#47AD63",
+        ENROLLED: "#468DF0",
+        IN_PROGRESS: "#EEBD31",
+        AWAITING_MARKING: "#0fa9bb",
+        FAILED: "#ab0303",
+        COMPLETED: "#47AD63",
     }
 
     return ( title === "_placeholder" ?
@@ -40,7 +33,12 @@ export default function EnrolledCourse({
             href={"/course/"+id}
         >
             <div className="text-3xl">{title}</div>
-            <div className="text-white w-fit px-3 py-1 rounded-full mt-2" style={{ backgroundColor: statusColors[status] }}>{statusValues[status]}</div>
+            <div
+                className="text-white w-fit px-3 py-1 rounded-full mt-2"
+                style={{ backgroundColor: statusColors[status] }}
+            >
+                {status.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}
+            </div>
             <div className="mt-4 text-xl">{description}</div>
             <div className="mt-4">{time}</div>
         </Link>

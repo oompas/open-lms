@@ -1,46 +1,51 @@
 "use client";
 import EnrolledCourse from "./EnrolledCourse";
-import "../../../config/firebase";
 import Button from "@/components/Button";
-import { useRouter } from "next/navigation";
-import { ApiEndpoints, useAsyncApiCall, auth } from '@/config/firebase';
-import {  } from "@/config/firebase";
 import { useState } from "react";
+import { callAPI } from "@/config/supabase.ts";
+import { useAsync } from "react-async-hook";
+import { MdArrowBack } from "react-icons/md";
+import TextField from "@/components/TextField.tsx";
+import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
+
+enum CourseStatus {
+    NOT_ENROLLED = "NOT_ENROLLED",
+    ENROLLED = "ENROLLED",
+    IN_PROGRESS = "IN_PROGRESS",
+    AWAITING_MARKING = "AWAITING_MARKING",
+    FAILED = "FAILED",
+    COMPLETED = "COMPLETED"
+}
 
 export default function Home() {
 
-    const router = useRouter();
+    const getCourseData = useAsync(() => {
+        return callAPI('get-courses')
+            .then(r => {
+                setCourseData(r.data);
+                if (r.data.filter(c => c.status !== CourseStatus.NOT_ENROLLED).length === 0) {
+                    setSearch("");
+                }
+            });
+    }, []);
 
-    // if user is Admin - go to admin tools
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            auth.currentUser?.getIdTokenResult()
-                .then((idTokenResult) => !!idTokenResult.claims.admin ? router.replace('/admin/tools') : null)
-                .catch((error) => console.log(`Error fetching user ID token: ${error}`));
-        }
-    });
+    const [courseData, setCourseData] = useState<undefined | any[]>(undefined);
 
-    const courses = useAsyncApiCall(ApiEndpoints.GetAvailableCourses, {});
-
-    const TEMP_NOTIFICATION_DATA = [
-        { title: "CISC 423", description: "Jan 1, 2023", urgency: "URGENT", link: "no", id: 1 },
-    ]
-
-    const [filters, setFilters] = useState([0, 1, 2, 3, 4]);
+    const [filters, setFilters] = useState<number[]>(Object.values(CourseStatus).filter(s => s !== "NOT_ENROLLED"));
+    const [search, setSearch] = useState<string | null>(null);
 
     const enrolledCourses = () => {
-        if (courses.loading) {
+        if (getCourseData.loading) {
             return <div>Loading...</div>;
         }
-        if (courses.error) {
+        if (courseData !== undefined && getCourseData.error) {
             return <div>Error loading courses</div>;
         }
-        // @ts-ignore
-        if (courses.result?.data.filter((course: any) => course.status !== 1).length === 0) {
+
+        if (courseData.filter((course: any) => course.status !== CourseStatus.NOT_ENROLLED).length === 0) {
             return <div className="text-gray-600 text-center">Enroll in courses to get started!</div>
         }
-        // @ts-ignore
-        var temp_courses = [...courses.result.data.filter((course: any) => filters.includes(course.status-2))]
+        const temp_courses = [...courseData.filter((course: any) => filters.includes(course.status))]
         if (temp_courses.length % 3 === 2) {
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
@@ -75,7 +80,7 @@ export default function Home() {
                     <EnrolledCourse
                         key={key}
                         title={course.name}
-                        status={course.status }
+                        status={course.status}
                         description={course.description}
                         time={time}
                         id={course.id}
@@ -84,59 +89,114 @@ export default function Home() {
             });
     }
 
-    const statusValues = [
-        "To Do",
-        "In Progress",
-        "Awaiting Marking",
-        "Failed",
-        "Completed",
-    ]
     const statusColors = {
-        0: "#468DF0",
-        1: "#EEBD31",
-        2: "#0fa9bb",
-        3: "#ab0303",
-        4: "#47AD63",
+        ENROLLED: "#468DF0",
+        IN_PROGRESS: "#EEBD31",
+        AWAITING_MARKING: "#0fa9bb",
+        FAILED: "#ab0303",
+        COMPLETED: "#47AD63",
     }
 
-    const handleUpdateFilter = (key: number) => {
-        var temp = [...filters]
-        if (temp.includes(key)) 
-            temp.splice(temp.indexOf(key), 1)
-        else 
-            temp.push(key)
-        setFilters(temp)
+    const handleUpdateFilter = (key: string) => {
+        const temp = [...filters]
+        if (temp.includes(key)) {
+            temp.splice(temp.indexOf(key), 1);
+        } else {
+            temp.push(key);
+        }
+        setFilters(temp);
+    }
+
+    const availableCourses = () => {
+        if (getCourseData.loading) {
+            return <div>Loading...</div>;
+        }
+        if (courseData !== undefined && getCourseData.error) {
+            return <div>Error loading courses</div>;
+        }
+
+        return courseData
+            .filter((course: any) => course.status === CourseStatus.NOT_ENROLLED && (course.name.toLowerCase().includes(search.toLowerCase())
+                || course.description.toLowerCase().includes(search.toLowerCase())))
+            .map((course: any, key: number) => (
+                <AvailableCourse
+                    key={key}
+                    title={course.name}
+                    description={course.description}
+                    id={course.id}
+                />
+            ));
+    }
+
+    const renderPage = () => {
+        // My enrolled courses page
+        if (search === null) {
+            return (
+                <div className="flex flex-col bg-white w-full p-12 rounded-2xl shadow-custom">
+                    <div className="flex flex-row items-center mb-2">
+                        <div className="flex flex-row items-center">
+                            <div className="text-lg mr-4">My Enrolled Courses</div>
+                            <div className="flex flex-row space-x-2">
+                                {Object.values(CourseStatus).filter(s => s !== "NOT_ENROLLED").map((value, key) => (
+                                    <button
+                                        key={key}
+                                        className="border-2 rounded-full px-4 py-1 cursor-pointer"
+                                        style={{
+                                            borderColor: filters.includes(value) ? statusColors[value] : null,
+                                            opacity: filters.includes(value) ? 1 : 0.5,
+                                        }}
+                                        onClick={() => handleUpdateFilter(value)}
+                                    >
+                                        {value.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <Button
+                            text="Browse Available Courses"
+                            onClick={() => setSearch("")}
+                            style="ml-auto"
+                        />
+                    </div>
+                    <div className="flex flex-row flex-wrap justify-between mt-4 overflow-y-scroll sm:no-scrollbar">
+                        {enrolledCourses()}
+                    </div>
+                </div>
+            )
+        }
+
+        // Available courses page
+        return (
+            <div className="flex flex-col w-full h-full bg-white p-12 rounded-2xl shadow-custom">
+                <div className="max-w-xs">
+                    <div
+                        className="flex space-x-2 items-center mb-2 -mt-4 text-lg hover:opacity-60 duration-150"
+                        onClick={() => setSearch(null)}
+                    >
+                        <MdArrowBack size="28" className="text-red-800"/>
+                        <div>Return To My Courses</div>
+                    </div>
+                </div>
+
+                <div className="flex flex-row items-center">
+                    <div className="text-lg mb-4">Available Courses</div>
+                    <TextField
+                        text={search}
+                        onChange={setSearch}
+                        placeholder='Search for a course title...'
+                        style="mb-4 ml-auto w-1/3"
+                    />
+                </div>
+                <div className="flex flex-col gap-4 justify-between overflow-y-scroll sm:no-scrollbar">
+                    {availableCourses()}
+                </div>
+            </div>
+        );
     }
 
     return (
         <main className="flex w-full justify-center mb-4">
-            <div className="flex flex-col bg-white w-full p-12 rounded-2xl shadow-custom">
-                <div className="flex flex-row items-center mb-2">
-                    <div className="flex flex-row items-center">
-                        <div className="text-lg mr-4">My Enrolled Courses</div>
-                        <div className="flex flex-row space-x-2">
-                            {statusValues.map((value, key) => (
-                                <button
-                                    key={key}
-                                    className="border-2 rounded-full px-4 py-1 cursor-pointer"
-                                    style={{
-                                        // @ts-ignore
-                                        borderColor: filters.includes(key) ? statusColors[key] : null,
-                                        opacity: filters.includes(key) ? 1 : 0.5,
-                                    }}
-                                    onClick={() => handleUpdateFilter(key)}
-                                >
-                                    {value}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                    <Button text="Browse Available Courses" onClick={() => router.push("/course_search")} style="ml-auto" />
-                </div>
-                <div className="flex flex-row flex-wrap justify-between mt-4 overflow-y-scroll sm:no-scrollbar">
-                    {enrolledCourses()}
-                </div>
-            </div>
+            {renderPage()}
         </main>
     )
 }

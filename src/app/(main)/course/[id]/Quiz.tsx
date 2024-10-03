@@ -1,7 +1,7 @@
 "use client";
 import Button from "@/components/Button"
 import { useRouter } from 'next/navigation'
-import { ApiEndpoints, callApi } from "@/config/firebase";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function Quiz({
     length,
@@ -35,7 +35,7 @@ export default function Quiz({
         if (quizStarted) {
             router.push(`/quiz/${courseId}-${quizAttemptId}`);
         } else {
-            await callApi(ApiEndpoints.StartQuiz, { courseAttemptId: courseAttemptId })
+            await callAPI('start-quiz', { courseId: courseId, courseAttemptId: courseAttemptId })
                 .then((result) => router.push(`/quiz/${courseId}-${result.data}`))
                 .catch((e) => console.log(`Error starting quiz: ${e}`));
         }
@@ -70,9 +70,9 @@ export default function Quiz({
                         <div className="text-sm">marks</div>
                     </div>
                 </div>
-                {quizStarted !== null && courseStatus !== 5 &&
+                {quizStarted !== null && courseStatus !== "COMPLETED" &&
                     <Button
-                        text={quizStarted ? "Continue quiz" : "Click to start"}
+                        text={quizStarted ? "Continue quiz" : "Start quiz"}
                         onClick={async () => await goToQuiz()}
                         style="mt-6"
                     />

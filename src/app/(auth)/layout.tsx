@@ -1,22 +1,22 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import '../globals.css'
+"use client";
+import '../globals.css';
+import { useSession } from "@supabase/auth-helpers-react";
+import { useRouter } from "next/navigation";
 
-const inter = Inter({subsets: ['latin']})
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 
-export const metadata: Metadata = {
-    title: 'OpenLMS',
-    description: 'Open Education, Unified Learning',
-}
+    const router = useRouter();
+    const session = useSession();
 
-export default function RootLayout({
-                                       children,
-                                   }: {
-    children: React.ReactNode
-}) {
-  return (
-    <html lang="en">
-      <body className="bg-gray-100">{children}</body>
-    </html>
-  )
+    if (session?.user) {
+        router.push('/home');
+    }
+
+    return (
+        <html lang="en">
+            <body className="bg-gray-100">
+                {children}
+            </body>
+        </html>
+    )
 }

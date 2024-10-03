@@ -3,6 +3,7 @@ import Button from "@/components/Button"
 import { useEffect, useState } from "react";
 import { ApiEndpoints, callApi } from "@/config/firebase";
 import TextField from "@/components/TextField";
+import { callAPI } from "@/config/supabase.ts";
 
 export default function IDCourse({
     course,
@@ -10,16 +11,19 @@ export default function IDCourse({
     setTimeDone,
     status,
     setStatus,
-    setCourseAttemptId
+    setCourseAttemptId,
 } : {
     course: {
         name: string,
-        status: 1 | 2 | 3 | 4 | 5,
+        status: string,
         description: string,
-        startTime: number,
         minTime: number,
         link: string,
-        courseId: number
+        courseAttempt: {
+            numAttempts: number,
+            currentStartTime: string,
+            currentQuizAttemptId: number
+        } | null
     },
     timeDone: boolean,
     setTimeDone: any,
@@ -29,51 +33,55 @@ export default function IDCourse({
 }) {
 
     const startingCountdown = () => {
-        const currentSeconds = new Date().getTime() / 1000;
-        const timeSinceStart = Math.floor(currentSeconds - course.startTime);
-        const minimumSeconds = 60 * course.minTime;
+        const currentMillis = new Date().getTime();
+        const timeSinceStart = Math.floor(currentMillis - (course.courseAttempt ? new Date(course.courseAttempt.currentStartTime).getTime() : 0));
+        const minimumMillis = 60 * 1000 * course.minTime;
 
-        return minimumSeconds - timeSinceStart;
+        return minimumMillis - timeSinceStart;
     }
 
     const [countdown, setCountDown] = useState(startingCountdown());
 
     useEffect(() => {
         if (countdown <= 0) {
-            if (status > 2 && !timeDone) {
+            if (status === "IN_PROGRESS" && !timeDone) {
                 setTimeDone(true);
+                location.reload();
             }
             return;
         }
 
         const interval = setInterval(() =>
-            setCountDown(Math.round(course.startTime + (60 * course.minTime) - (new Date().getTime() / 1000))),
-            1000);
+            setCountDown(Math.round((course.courseAttempt ? new Date(course.courseAttempt.currentStartTime).getTime() : 0) + (60 * 1000 * course.minTime) - new Date().getTime())),
+            200);
         return () => clearInterval(interval);
     }, [countdown]);
 
     const enrollment = () => {
-        return callApi(ApiEndpoints.CourseEnrollment, { courseId: course.courseId })
-            .then(() => setStatus(status === 1 ? 2 : 1))
-            .catch((err) => { throw new Error(`Error enrolling in course: ${err}`) });
+        return callAPI('course-enrollment', { id: course.id })
+            .then(() => setStatus(status === "ENROLLED" ? "NOT_ENROLLED" : "ENROLLED"))
+            .catch((err) => { throw new Error(`Error getting course data: ${err}`) });
     };
 
     const start = () => {
-        return callApi(ApiEndpoints.StartCourse, { courseId: course.courseId })
+        return callAPI('start-course', { id: course.id })
             .then((result) => {
                 setCourseAttemptId(result.data);
                 setCountDown(60 * course.minTime);
-                course.startTime = new Date().getTime() / 1000;
-                setStatus(3);
+                if (!course.courseAttempt) {
+                    course.courseAttempt = {};
+                }
+                course.courseAttempt.currentStartTime = new Date().getTime();
+                setStatus("IN_PROGRESS");
             })
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });
     }
 
 
     const renderButton = () => {
-        if (status === 1) {
+        if (status === "NOT_ENROLLED") {
             return <Button text="Enroll" onClick={enrollment} icon="plus" />;
-        } else if (status === 2) {
+        } else if (status === "ENROLLED") {
             return (
                 <>
                     <a href={course.link} target={"_blank"}>
@@ -94,30 +102,27 @@ export default function IDCourse({
         );
     }
 
-    const statusNames = {
-        1: "Not Enrolled",
-        2: "To Do",
-        3: "In Progress",
-        4: "Awaiting Marking",
-        5: "Failed",
-        6: "Completed",
-    }
     const statusColors = {
-        2: "#468DF0",
-        3: "#EEBD31",
-        4: "#0fa9bb",
-        5: "#ab0303",
-        6: "#47AD63",
+        "ENROLLED": "#468DF0",
+        "IN_PROGRESS": "#EEBD31",
+        "AWAITING_MARKING": "#0fa9bb",
+        "FAILED": "#ab0303",
+        "COMPLETED": "#47AD63",
     }
 
     const getTime = () => {
-        const format = (time: number) => (Math.floor(time / 3600) + "").padStart(2, '0') + ":"
-            + (Math.floor(time / 60) % 60 + "").padStart(2, '0') + ":" + (time % 60 + "").padStart(2, '0');
+        const format = (time: number) => {
+            const hours = (Math.floor(time / 3600) + "").padStart(2, '0');
+            const minutes = (Math.floor(time / 60) % 60 + "").padStart(2, '0');
+            const seconds = (Math.floor(time % 60) + "").padStart(2, '0');
 
-        if (status === 1 || status === 2) {
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        if (status === "NOT_ENROLLED" || status === "ENROLLED") {
             return format(60 * course.minTime);
         }
-        return format(countdown);
+        return format(countdown / 1000);
     }
 
     const [showSupportForm, setShowSupportForm] = useState(false);
@@ -151,9 +156,12 @@ export default function IDCourse({
                     </div>
                 </div>
                 { showSupportForm && (
-                    <div className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50">
+                    <div
+                        className="fixed flex justify-center items-center w-full h-full top-0 left-0 z-50 bg-white bg-opacity-50"
+                    >
                         <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                            <div className="text-lg mb-2">Request course support or report issue</div>
+                            <div className="text-lg font-bold mb-2">Request support or report issue for <i>'{course.name}'</i></div>
+                            <div className="mb-2"><i>If you have an issue with the platform, click 'Request Technical Support' on the bottom pop-up</i></div>
                             <TextField text={feedback} onChange={setFeedback} area placeholder="Type your message here..." />
                             <form onSubmit={handleSubmitFeedback} className="flex flex-col justify-left">
                                 <div className="flex flex-row ml-auto mt-4">
@@ -168,16 +176,14 @@ export default function IDCourse({
                         </div>
                     </div>
                 )}
-                {/* @ts-ignore */}
                 <div className="flex flex-col justify-center items-center ml-auto border-4 rounded-xl px-10 py-4 shadow-lg" style={{borderColor: statusColors[status]}}>
                     <div className="text-sm -mb-1">Status:</div>
-                    { /* @ts-ignore */ }
-                    <div className="text-2xl text-center">{statusNames[status]}</div>
+                    <div className="text-2xl text-center">{status.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}</div>
                     {course.minTime && (
                         <>
-                            <div className="text-sm mt-2">{status === 1 ? "Minimum" : "Required"} Time:</div>
+                            <div className="text-sm mt-2">{status === "NOT_ENROLLED" ? "Minimum" : "Required"} Time:</div>
                             <div className="text-3xl">
-                                {countdown > 0 || status < 3 ? getTime() : "Completed"}
+                                {countdown > 0 || status === "NOT_ENROLLED" || status === "ENROLLED" ? getTime() : "Completed"}
                             </div>
                         </>
                     )}
