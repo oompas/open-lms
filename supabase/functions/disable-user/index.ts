@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, errorResponse, log, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, ErrorResponse, log, SuccessResponse } from "../_shared/helpers.ts";
 import { verifyAdministrator } from "../_shared/auth.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 
@@ -19,8 +19,8 @@ Deno.serve(async (req) => {
 
     if (error) {
         log(`Error banning user: ${error.message}`);
-        return errorResponse(`Error banning user: ${error.message}`);
+        return ErrorResponse(`Error banning user: ${error.message}`);
     }
 
-    return successResponse(data);
+    return SuccessResponse(data);
 });

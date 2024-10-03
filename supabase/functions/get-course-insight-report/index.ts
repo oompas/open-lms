@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, log, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, log, SuccessResponse } from "../_shared/helpers.ts";
 import { getUserById, verifyAdministrator } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 import { getCourseStatus } from "../_shared/functionality.ts";
@@ -81,5 +81,5 @@ Deno.serve(async (req) => {
         avgTime: averageTime
     };
 
-    return successResponse(responseData);
+    return SuccessResponse(responseData);
 });

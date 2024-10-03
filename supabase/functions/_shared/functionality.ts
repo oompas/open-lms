@@ -1,6 +1,6 @@
 import { getRows } from "./database.ts";
 import { adminClient } from "./adminClient.ts";
-import { errorResponse, getCurrentTimestampTz, log } from "./helpers.ts";
+import { ErrorResponse, getCurrentTimestampTz, log } from "./helpers.ts";
 
 enum CourseStatus {
     NOT_ENROLLED = "NOT_ENROLLED",
@@ -86,7 +86,7 @@ const handleMarkedQuiz = async (quizAttemptId: number) => {
 
         if (error) {
             log(`Error updating course attempt to pass: ${error.message}`);
-            return errorResponse(`Error updating course attempt to pass: ${error.message}`);
+            return ErrorResponse(`Error updating course attempt to pass: ${error.message}`);
         }
 
         return;
@@ -103,7 +103,7 @@ const handleMarkedQuiz = async (quizAttemptId: number) => {
 
         if (error) {
             log(`Error updating course attempt to failure: ${error.message}`);
-            return errorResponse(`Error updating course attempt to failure: ${error.message}`);
+            return ErrorResponse(`Error updating course attempt to failure: ${error.message}`);
         }
     }
 }

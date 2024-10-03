@@ -1,5 +1,5 @@
 import { adminClient } from "./adminClient.ts";
-import { errorResponse, internalError, log } from "./helpers.ts";
+import { ErrorResponse, internalError, log } from "./helpers.ts";
 
 type TableName = "course" | "quiz_question" | "enrolled_course" | "course_attempt" | "quiz_attempt" | "quiz_question_attempt" | "notification";
 
@@ -55,7 +55,7 @@ const getRows = async ({ table, conditions = [], expectResults, limit = 1000 }: 
     // Handle errors & return data
     if (error) {
         log(`Error querying data (table: ${table} conditions: ${JSON.stringify(conditions)} limit: ${limit}): ${error.message}`);
-        return errorResponse(error.message);
+        return ErrorResponse(error.message);
     }
 
     if (expectResults) {

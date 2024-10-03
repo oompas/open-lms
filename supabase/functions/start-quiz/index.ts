@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, errorResponse, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, ErrorResponse, SuccessResponse } from "../_shared/helpers.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 
@@ -21,8 +21,8 @@ Deno.serve(async (req) => {
     const { data, error } = await adminClient.from('quiz_attempt').insert(quizAttempt).select();
 
     if (error) {
-        return errorResponse(error.message);
+        return ErrorResponse(error.message);
     }
 
-    return successResponse(data[0].id);
+    return SuccessResponse(data[0].id);
 });

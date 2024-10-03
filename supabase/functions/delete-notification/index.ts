@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, SuccessResponse } from "../_shared/helpers.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 
@@ -18,5 +18,5 @@ Deno.serve(async (req) => {
         await adminClient.from('notification').delete().eq('id', notificationId).eq('user_id', userId);
     }
 
-    return successResponse(null);
+    return SuccessResponse(null);
 });

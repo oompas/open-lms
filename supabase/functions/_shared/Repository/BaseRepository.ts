@@ -1,7 +1,7 @@
 import DatabaseTable from "../DatabaseObjects/DatabaseTable.ts";
 import IRepository, { QueryCondition } from "./IRepository.ts";
 import { adminClient } from "../adminClient.ts";
-import { errorResponse, log } from "../helpers.ts";
+import { ErrorResponse, log } from "../helpers.ts";
 
 abstract class BaseRepository<T extends DatabaseTable> implements IRepository<T> {
 
@@ -38,7 +38,7 @@ abstract class BaseRepository<T extends DatabaseTable> implements IRepository<T>
 
         if (error) {
             log(`Error querying data (table: ${table} conditions: ${JSON.stringify(conditions)} limit: ${QUERY_LIMIT}): ${error.message}`);
-            return errorResponse(error.message);
+            return ErrorResponse(error.message);
         }
 
         return data.map((row: any) => new this.entityClass(row));

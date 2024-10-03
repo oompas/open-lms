@@ -1,5 +1,5 @@
 import { adminClient } from "./adminClient.ts";
-import { errorResponse, log } from "./helpers.ts";
+import { ErrorResponse, log } from "./helpers.ts";
 
 type UserData = {
     email: string,
@@ -31,7 +31,7 @@ const getAllUsers = async () => {
     const users = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
 
     if (users.error) {
-        return errorResponse(users.error.message);
+        return ErrorResponse(users.error.message);
     }
 
     return users.data.users;
@@ -71,7 +71,7 @@ const getUserById = async (req: Request, userId: string): Promise<object> => {
     const { data, error } = await adminClient.auth.admin.getUserById(userId);
 
     if (error) {
-        return errorResponse(error.message);
+        return ErrorResponse(error.message);
     }
 
     return data.user;
@@ -86,7 +86,7 @@ const verifyAdministrator = async (req: Request): Promise<string | Response> => 
     const user = await getRequestUser(req);
     log(`User role: ${user?.user_metadata.role} User: ${JSON.stringify(user, null, 4)}`);
     if (user?.user_metadata.role !== "Admin" && user?.user_metadata.role !== "Developer") {
-        return errorResponse("You must be an administrator to perform this action");
+        return ErrorResponse("You must be an administrator to perform this action");
     }
     return user.id;
 }

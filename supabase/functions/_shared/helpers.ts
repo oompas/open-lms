@@ -45,4 +45,4 @@ const getCurrentTimestampTz = () => {
     return isoString.replace('T', ' ').replace('Z', '+00');
 };
 
-export { corsHeaders, OptionsRsp, InternalError, ErrorResponse, SuccessResponse, log, getCurrentTimestampTz };
+export { OptionsRsp, InternalError, ErrorResponse, SuccessResponse, log, getCurrentTimestampTz };

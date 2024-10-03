@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, SuccessResponse } from "../_shared/helpers.ts";
 import { getUserById } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 
@@ -65,5 +65,5 @@ Deno.serve(async (req) => {
         quizAttempts: quizAttemptData
     };
 
-    return successResponse(userData);
+    return SuccessResponse(userData);
 });

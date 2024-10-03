@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, internalError, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, internalError, SuccessResponse } from "../_shared/helpers.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 
 Deno.serve(async (req) => {
@@ -15,5 +15,5 @@ Deno.serve(async (req) => {
         return internalError();
     }
 
-    return successResponse(null);
+    return SuccessResponse(null);
 });

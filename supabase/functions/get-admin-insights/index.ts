@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, SuccessResponse } from "../_shared/helpers.ts";
 import { getAllUsers, getUserById, verifyAdministrator } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 
@@ -83,5 +83,5 @@ Deno.serve(async (req) => {
         learners,
         admins
     };
-    return successResponse(rspData);
+    return SuccessResponse(rspData);
 });

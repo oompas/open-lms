@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, errorResponse, getCurrentTimestampTz, log, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, ErrorResponse, getCurrentTimestampTz, log, SuccessResponse } from "../_shared/helpers.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 import { verifyAdministrator } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
 
     if (error) {
         log(`Error updating quiz attempt: ${error.message}`);
-        return errorResponse(`Error updating quiz attempt: ${error.message}`);
+        return ErrorResponse(`Error updating quiz attempt: ${error.message}`);
     }
 
     const markRsp = await handleMarkedQuiz(quizAttemptId);
@@ -59,8 +59,8 @@ Deno.serve(async (req) => {
 
     if (error2) {
         log(`Error adding notification: ${error.message}`);
-        return errorResponse(`Error adding notification: ${error.message}`);
+        return ErrorResponse(`Error adding notification: ${error.message}`);
     }
 
-    return successResponse(data);
+    return SuccessResponse(data);
 });

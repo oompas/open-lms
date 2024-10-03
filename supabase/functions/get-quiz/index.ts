@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, SuccessResponse } from "../_shared/helpers.ts";
 import { getRows } from "../_shared/database.ts";
 
 console.log("Hello from Functions!")
@@ -41,5 +41,5 @@ Deno.serve(async (req) => {
         })
     }
 
-    return successResponse(data);
+    return SuccessResponse(data);
 });
