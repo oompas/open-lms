@@ -1,6 +1,6 @@
 import AuthForm from "@/components/AuthForm.tsx";
 import Button from "@/components/Button.tsx";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI, signIn, signUp } from "@/config/supabase.ts";
 import React, { useState } from "react";
 
 export default function SignUp({ setIsSignIn }) {
@@ -11,14 +11,22 @@ export default function SignUp({ setIsSignIn }) {
 
     const [showVerifyEmailPopup, setShowVerifyEmailPopup] = useState(false);
 
-    const signUp = () => {
+    const submitSignUp = () => {
         console.log(`Email: ${email}, Password: ${password}, Name: ${name}`);
-        callAPI('create-account', { email, password, name })
-            .then((r) => {
-                if (!r.error) {
-                    setShowVerifyEmailPopup(true);
-                }
-            });
+
+        signUp(email, password).then((rsp) => {
+            const { data, error } = rsp;
+            console.log(`Sign up data: ${JSON.stringify(data, null, 4)}`);
+            console.log(`Sign up error: ${JSON.stringify(error, null, 4)}`);
+        });
+
+
+        // callAPI('create-account', { email, password, name })
+        //     .then((r) => {
+        //         if (!r.error) {
+        //             setShowVerifyEmailPopup(true);
+        //         }
+        //     });
     }
 
     const VerifyEmailPopup = () => {
@@ -74,7 +82,7 @@ export default function SignUp({ setIsSignIn }) {
 
                 <Button
                     text="Sign Up"
-                    onClick={() => signUp()}
+                    onClick={() => submitSignUp()}
                     style=""
                     icon="arrow"
                     filled

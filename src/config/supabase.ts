@@ -6,6 +6,16 @@ const supabaseClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+const signUp = async (email, password) => {
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+    if (error) {
+        console.error(`Error signing up: ${error.message}`);
+    }
+
+    return { data, error };
+}
+
 /**
  * Signs in a user client-side
  */
@@ -69,4 +79,4 @@ const callAPI = async (endpoint: string, body: object = {}): Promise<APIResponse
     }
 }
 
-export { signIn, signOut, callAPI, supabaseClient };
+export { signUp, signIn, signOut, callAPI, supabaseClient };
