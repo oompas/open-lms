@@ -16,7 +16,6 @@ export default function SignUp({ setIsSignIn }) {
         if (error) {
             console.error(`Error signing up user: ${error}`);
         } else {
-            console.log(`Data: ${JSON.stringify(data)}`);
             callAPI('setup-account', { name: name, userId: data.user.id });
             setShowVerifyEmailPopup(true);
         }
