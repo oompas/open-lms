@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { corsHeaders, errorResponse, log, successResponse } from "../_shared/helpers.ts";
+import { corsHeaders, ErrorResponse, log, SuccessResponse } from "../_shared/helpers.ts";
 import { createUser } from "../_shared/auth.ts";
 
 Deno.serve(async (req) => {
@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
     log(`(1/3) Entering createAccount function with email: ${email}`);
 
     if (!email || !password) {
-        return errorResponse("Email and password are required");
+        return ErrorResponse("Email and password are required");
     }
 
     log(`(2/3) Email & password verified`);
@@ -27,9 +27,9 @@ Deno.serve(async (req) => {
 
     if (error) {
         log(`Error creating user: ${error.message}`);
-        return errorResponse(error.message);
+        return ErrorResponse(error.message);
     }
 
     log(`(3/3) User created successfully: ${data.user.email}`);
-    return successResponse(data);
+    return SuccessResponse(data);
 });
