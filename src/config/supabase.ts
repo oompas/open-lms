@@ -6,6 +6,9 @@ const supabaseClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+/**
+ * Signs up a user client-side
+ */
 const signUp = async (email, password) => {
     const { data, error } = await supabaseClient.auth.signUp({ email, password });
 
