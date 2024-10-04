@@ -3,7 +3,7 @@ import { InternalError, log } from "./helpers.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 
-const sendEmail = (email: string, subject: string, body: string) => {
+const sendEmail = async (email: string, subject: string, body: string) => {
     const { error } = await resend.emails.send({
         from: "OpenLMS Team",
         to: email,
