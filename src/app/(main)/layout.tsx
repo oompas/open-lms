@@ -15,9 +15,12 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const router = useRouter();
     const session = useSession();
 
-    if (document?.readyState === 'complete' && session === null) {
-        router.push('/');
-    }
+    // Route to sign in screen if user isn't logged in
+    useEffect(() => {
+        if (typeof window !== 'undefined' && document.readyState === 'complete' && session  === null) {
+            router.push('/');
+        }
+    }, [session, router]);
 
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
