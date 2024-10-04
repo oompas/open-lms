@@ -1,6 +1,5 @@
 "use client"
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import CompletedCourse from "./CompletedCourse";
 import Button from "@/components/Button";
 import StatusBadge from "@/components/StatusBadge";
@@ -14,14 +13,6 @@ export default function Profile() {
     const getUserData = useAsync(() => callAPI('get-profile').then(r => setUser(r.data)), {});
 
     const [user, setUser] = useState(undefined);
-
-    // const unixToString = (unix: number) => {
-    //     if (unix === -1) {
-    //         return "Never";
-    //     }
-    //
-    //     return new Date(unix).toDateString() + ", " + new Date(unix).toLocaleTimeString();
-    // }
 
     const logout = async () => {
         await signOut();
