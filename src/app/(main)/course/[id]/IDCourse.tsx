@@ -1,7 +1,6 @@
 "use client"
 import Button from "@/components/Button"
 import { useEffect, useState } from "react";
-import { ApiEndpoints, callApi } from "@/config/firebase";
 import TextField from "@/components/TextField";
 import { callAPI } from "@/config/supabase.ts";
 
@@ -133,7 +132,7 @@ export default function IDCourse({
         event.preventDefault();
         const courseId = course.courseId;
         try {
-            await callApi(ApiEndpoints.SendCourseFeedback, { courseId, feedback });
+            await callAPI('send-course-feedback', { courseId, feedback });
             setFeedback('');
             setFeedbackSent(true);
         } catch (error) {
