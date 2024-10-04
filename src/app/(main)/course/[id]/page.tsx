@@ -52,6 +52,10 @@ export default function Course({ params }: { params: { id: string } }) {
     }, [status, timeDone]);
 
     const renderCourse = () => {
+        if (!courseData) {
+            return <></>;
+        }
+
         const getCourseTimeString = () => {
             if (courseData.minTime < 60) {
                 return courseData.minTime + " minute" + (courseData.minTime === 1 ? "" : "s");
@@ -123,18 +127,33 @@ export default function Course({ params }: { params: { id: string } }) {
         );
     }
 
+    const loadingPopup = () => {
+        if (courseData) {
+            return <></>;
+        }
+
+        return (
+            <div
+                className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+                <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                    <div className="text-lg">
+                        {getCourseData.loading ? "Loading course data..." : "Error loading user data."}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <main className="flex flex-col h-fit bg-white w-[100%] p-12 rounded-2xl shadow-custom">
-
             <Link href="/home"
                   className="flex flex-row space-x-2 items-center mb-6 -mt-4 text-lg hover:opacity-60 duration-150">
                 <MdArrowBack size="28" className="text-red-800"/>
                 <div>Return To My Courses</div>
             </Link>
 
-            {getCourseData.loading && <div>Loading...</div>}
-            {(getCourseData.error && JSON.stringify(getCourseData.error) !== '{}') && <div>Error loading course</div>}
-            {courseData && renderCourse()}
+            { renderCourse() }
+            { loadingPopup() }
         </main>
     )
 }

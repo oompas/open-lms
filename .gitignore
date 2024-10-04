@@ -37,9 +37,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# firebase logs
-firebase-debug.log
-
 #
 # WebStorm .idea file
 #

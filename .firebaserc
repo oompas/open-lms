@@ -1,7 +1,0 @@
-{
-  "projects": {
-    "prod": "open-lms-prod",
-    "dev": "open-lms-8e02c",
-    "test": "open-lms-test"
-  }
-}

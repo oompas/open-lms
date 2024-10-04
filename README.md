@@ -14,7 +14,7 @@ After creating an instance and configuring minor setup details, the platform is 
 ## Overview
 ![Next JS](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white)
 ![Vercel](https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)
-![Firebase](https://img.shields.io/badge/firebase-a08021?style=for-the-badge&logo=firebase&logoColor=ffcd34)
+![Supabase](https://img.shields.io/badge/supabase-000000?style=for-the-badge&logo=supabase&logoColor=dd)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=Cloudflare&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 
@@ -24,7 +24,7 @@ After creating an instance and configuring minor setup details, the platform is 
 
 - Vercel is a cloud platform that allows developers to easily deploy web applications. It enables a seamless experience by taking care of deployment and scaling so developers can focus on their code.
 
-- Firebase is a collection of Google-powered back-end cloud computing services designed to simplify and enhance API creation, improvement, and growth. It offers key services like authentication, databases, and serverless functions, reducing the complexity and maintenance required for instance management using TypeScript. The OpenLMS core team specifically chose it due to its reliability, simplicity, and ease of scaling and extending platform functionalities, making it ideal for minimizing technical overlead.
+- Supabase is an open-source database infrastructure built on PostgreSQL with options for authentication, building APIs
 
 - Cloudflare is a global network designed to be secure, private, fast, and reliable. OpenLMS uses Cloudflare as a proxy between the Vercel production deployment and the user accessing the instance. This makes it ideal to mitigate against potential DDoS attacks and simplify the instance's DNS services.
 
@@ -33,7 +33,7 @@ After creating an instance and configuring minor setup details, the platform is 
 ### Potential Costs
 
 - For most organizations, the Vercel free `Hobby` tier is recommended, but larger organizations or those with specific deployment needs may use other methods to host the instance, with varying costs associated with this.
-- The Firebase paid `Blaze` tier is required, but the costs are [generally very low](https://firebase.google.com/pricing). Small projects likely have no variable costs (100,000 document reads per day and 2 million API calls per month for free) and only a few dollars for fixed fees.
+- Supabase has a [free tier](https://supabase.com/pricing) with more than enough for a simple app (500k custom API calls/month, 500 MB database space, etc), but for higher-traffic instances the Pro plan ($25/mo) may be required
 - A domain name is optional but desirable for a cohesive platform look in an instance's production deployment. We recommend [Porkbun](https://porkbun.com) or [Cloudflare Register](https://www.cloudflare.com/products/registrar/) for the lowest-priced domains, but almost any domain registrar suffices!
 
 ### Getting Started
@@ -44,9 +44,9 @@ After creating an instance and configuring minor setup details, the platform is 
 ## Team
 
 ### Core Team
-| ![Anthony Galassi](https://drive.google.com/uc?export=download&id=1CKWzh3dyAVugYd8g6BBqkkzvGUCVLpqH) | ![Sara Hall](https://drive.google.com/uc?export=download&id=1THsEJCBtPCJl7L3iLRlJKI_KRad1RkW5) | ![Reid Moffat](https://drive.google.com/uc?export=download&id=1onmw4S-C-H1L18v5cRWrneMN6kzKJBFX) | ![Graham Carkner](https://drive.google.com/uc?export=download&id=1j8CEFAl7r4EMzm1IUTODXt64iOFMRx7b) | ![Louie Chung](https://drive.google.com/uc?export=download&id=1ys_YnMh3-PGRhqT3ItlPQtTySZYzu4C3) |
-|:-----------------------------:|:-----------------------:|:-------------------------:|:----------------------------:|:-------------------------:|
-| [Anthony Galassi](https://www.linkedin.com/in/anthonygalassi/) <br> Project Manager & Back-End Developer | [Sara Hall](https://www.linkedin.com/in/sara-hall-canada/) <br> Front-End Developer | [Reid Moffat](https://www.linkedin.com/in/reid-moffat/) <br> Lead Back-End Developer | [Graham Carkner](https://www.linkedin.com/in/gcarkner/) <br> Lead Front-End Developer | Louie Chung <br> Front-End Developer |
+| ![Reid Moffat](https://drive.google.com/uc?export=download&id=1onmw4S-C-H1L18v5cRWrneMN6kzKJBFX)  | ![Anthony Galassi](https://drive.google.com/uc?export=download&id=1CKWzh3dyAVugYd8g6BBqkkzvGUCVLpqH) | ![Graham Carkner](https://drive.google.com/uc?export=download&id=1j8CEFAl7r4EMzm1IUTODXt64iOFMRx7b) | ![Sara Hall](https://drive.google.com/uc?export=download&id=1THsEJCBtPCJl7L3iLRlJKI_KRad1RkW5) |  ![Louie Chung](https://drive.google.com/uc?export=download&id=1ys_YnMh3-PGRhqT3ItlPQtTySZYzu4C3) |
+|:-------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------:|:----------------------------:|:-------------------------:|
+| [Reid Moffat](https://www.linkedin.com/in/reid-moffat/) <br> Project Manager & Software Architect | [Anthony Galassi](https://www.linkedin.com/in/anthonygalassi/) <br> Project Manager & Back-End Developer | [Graham Carkner](https://www.linkedin.com/in/gcarkner/) <br> Lead Front-End Developer        | [Sara Hall](https://www.linkedin.com/in/sara-hall-canada/) <br> Front-End Developer |  Louie Chung <br> Front-End Developer |
 
 ### Stakeholders
 | <img src="https://drive.google.com/uc?export=download&id=1SWz4yMJFJFJKUtBn_a0_WGdA0e4N_vqw" width="200" alt="Steven Ding"/> | <img src="https://drive.google.com/uc?export=download&id=1YlQIOLovDFcG7FGfI9ppW3jHB4r2ZA_k" width="200" alt="Meghan Norris"/> |

@@ -5,7 +5,6 @@ import CourseInsight from "@/app/(main)/admin/tools/CourseInsight";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ApiEndpoints, callApi } from "@/config/firebase";
 import TextField from "@/components/TextField";
 import { downloadZip } from "client-zip";
 import AdminInsight from "@/app/(main)/admin/tools/AdminInsight";
@@ -185,7 +184,7 @@ export default function Tools() {
     }
 
     const downloadCourseReports = async () => {
-        await callAPI('get-course-reports') // @ts-ignore
+        await callAPI('get-course-reports')
             .then(async (response: { data: { courses: string, quizQuestions: string, courseAttempts: string, quizAttempts: string, quizQuestionAttempts: string } }) => {
 
                 // Since there's multiple files, create a zip file
@@ -213,7 +212,7 @@ export default function Tools() {
     }
 
     const downloadUserReports = async () => {
-        await callApi(ApiEndpoints.DownloadUserReports, {}) // @ts-ignore
+        await callAPI('get-user-reports')
             .then((response: { data: string }) => {
 
                 const currentTime = new Date().toLocaleString().replace(/,/g, '').replace(/ /g, '_');
@@ -246,7 +245,7 @@ export default function Tools() {
             alert("Please enter a valid email address or upload a valid CSV file. CSV should be a single row of consecutive cells populated with valid emails.");
             return;
         }
-        callApi(ApiEndpoints.InviteLearner, { emails: emailsToInvite })
+        callAPI('invite-learner')
             .then(() => {
                 alert("User(s) invited!");
                 setInviteEmail("");
