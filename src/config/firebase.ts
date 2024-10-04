@@ -16,8 +16,6 @@ const firebaseConfig = {
 // Initialize Firebase
 initializeApp(firebaseConfig);
 
-const auth = getAuth();
-
 enum ApiEndpoints {
     // Auth
     CreateAccount = "createAccount",
@@ -59,4 +57,4 @@ enum ApiEndpoints {
 const functions = getFunctions();
 const callApi = (endpoint: ApiEndpoints, payload: object) => httpsCallable(functions, endpoint)(payload);
 
-export { auth, ApiEndpoints, callApi };
+export { ApiEndpoints, callApi };
