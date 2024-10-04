@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { MdAdd } from "react-icons/md";
 import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
-import { ApiEndpoints, callApi } from "@/config/firebase";
 import { useRouter } from "next/navigation";
 import { callAPI } from "@/config/supabase.ts";
 
@@ -164,9 +163,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     }
 
     const handleDelete = async () => {
-        await callApi(ApiEndpoints.DeleteCourse, { courseId: params.id })
-            .then(() => router.push("/admin/tools"))
-            .catch((err) => console.log(`Error deleting course: ${err}`));
+        // TODO
     }
 
     const activationPopup = (
