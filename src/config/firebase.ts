@@ -1,5 +1,4 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "@firebase/auth";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 // Firebase configuration
@@ -17,41 +16,16 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 
 enum ApiEndpoints {
-    // Auth
-    CreateAccount = "createAccount",
-    ResetPassword = "resetPassword",
-    GetUserProfile = "getUserProfile",
-    UpdateUserEnabled = "updateUserEnabled",
-
     // Courses
-    AddCourse = "addCourse",
-    GetAvailableCourses = "getAvailableCourses",
-    GetCourseInfo = "getCourseInfo",
-    SetCourseVisibility = "setCourseVisibility",
-    CourseEnrollment = "courseEnrollment",
-    StartCourse = "startCourse",
     SendCourseFeedback = "sendCourseFeedback",
     DeleteCourse = "deleteCourse",
 
-    // Quizzes
-    GetQuiz = "getQuiz",
-    StartQuiz = "startQuiz",
-    SubmitQuiz = "submitQuiz",
-    GetQuizAttempt = "getQuizAttempt",
-    MarkQuizAttempt = "markQuizAttempt",
-
     // Reports
-    GetAdminInsights = "getAdminInsights",
-    DownloadCourseReports = "downloadCourseReports",
     DownloadUserReports = "downloadUserReports",
-    GetCourseInsightReport = "getCourseInsightReport",
 
     // Misc
     SendPlatformFeedback = "sendPlatformFeedback",
     InviteLearner = "inviteLearner",
-
-    // Helpers
-    CleanDatabase = "cleanDatabase",
 }
 
 const functions = getFunctions();
