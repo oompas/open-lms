@@ -7,8 +7,8 @@
     "build": "next build",
     "dev": "next dev",
     "deployDev": "supabase functions deploy --project-ref mgiuchjdjqnuljfpjemb",
-    "test:sanity": "echo \"Error: no test specified\"",
-    "test:all": "echo \"Error: no test specified\""
+    "test:sanity": "echo \"Error: no tests specified\"",
+    "test:all": "echo \"Error: no tests specified\""
   },
   "dependencies": {
     "@supabase/auth-helpers-react": "^0.5.0",
