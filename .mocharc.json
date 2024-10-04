@@ -1,0 +1,10 @@
+{
+  "require": "ts-node/register",
+  "extension": ["ts"],
+  "spec": "./test/**/*.test{.js,.ts}",
+  "node-option": [
+    "loader=ts-node/esm"
+  ],
+  "recursive": true,
+  "timeout": 5000
+}
