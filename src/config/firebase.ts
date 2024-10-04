@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "@firebase/auth";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { useAsync } from "react-async-hook";
 
 // Firebase configuration
 // To switch between dev & prod, swap your .env.local file
