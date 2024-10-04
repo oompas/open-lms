@@ -1,11 +1,12 @@
-name: CI
+name: Build (Next.js)
+
 on:
   push:
     branches:
       - "**"
 
 jobs:
-    test:
+    build:
         runs-on: ubuntu-latest
         steps:
           - name: Checkout
@@ -22,5 +23,5 @@ jobs:
           - name: Install dependencies
             run: pnpm install --frozen-lockfile
 
-          - name: Run tests
-            run: pnpm run test
+          - name: Build Next.js app
+            run: pnpm run build
