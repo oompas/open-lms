@@ -62,11 +62,6 @@ const getRequestUserId = async (req: Request): Promise<string> => (await getRequ
  * @param userId User ID of the user to get
  */
 const getUserById = async (req: Request, userId: string): Promise<object> => {
-    if (adminCheck instanceof Response) {
-        log(`Non-admin user attempting to get another user by ID`);
-        return adminCheck;
-    }
-
     const { data, error } = await adminClient.auth.admin.getUserById(userId);
 
     if (error) {
