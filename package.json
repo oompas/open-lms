@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "preinstall": "npx only-allow pnpm",
+    "build": "next build",
     "dev": "next dev",
     "deployDev": "supabase functions deploy --project-ref mgiuchjdjqnuljfpjemb",
     "test": "echo \"Error: no test specified\""
