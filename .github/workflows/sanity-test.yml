@@ -22,8 +22,8 @@ jobs:
               cache: 'pnpm'
           - name: Install dependencies
             run: pnpm install --frozen-lockfile
-          - name: Install mocha cli
-            run: pnpm install mocha -g
+          - name: Globally install mocha & ts-node
+            run: pnpm install -g mocha ts-node
 
           - name: Run sanity tests
             env:
