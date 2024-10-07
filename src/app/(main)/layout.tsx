@@ -16,7 +16,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const router = useRouter();
     const session = useSession();
 
-    // Get notifications on load, then refresh every 30 minutes after
+    // Get notifications on load, then refresh every 10 minutes after
     useEffect(() => {
         const getNotifications = () => {
             callAPI('get-notifications')
@@ -28,7 +28,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
         const intervalId = setInterval(() => {
             getNotifications();
-        }, 1000 * 60 * 30);
+        }, 1000 * 60 * 10);
 
         return () => clearInterval(intervalId);
     }, []);

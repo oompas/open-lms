@@ -72,26 +72,9 @@ const Notifications: React.FC = ({ notifications, setNotifications }) => {
     const popUpRef = useRef<HTMLDivElement>(null);
     const bellIconRef = useRef<SVGElement>(null);
 
-    const refreshNotifications = useCallback(async () => {
-        setNotificationsOpen(true);
-        setLoadingNotifications(true);
-        try {
-            const data = await callAPI('get-notifications');
-            setNotifications(data.data);
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-        } finally {
-            setLoadingNotifications(false);
-        }
-    }, []);
-
     const handleIconClick = useCallback(() => {
-        if (notificationsOpen) {
-            setNotificationsOpen(false);
-        } else {
-            refreshNotifications();
-        }
-    }, [notificationsOpen, refreshNotifications]);
+        setNotificationsOpen(!notificationsOpen);
+    }, [notificationsOpen]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
