@@ -134,17 +134,48 @@ export default function Home() {
         const courses = courseData
             .filter((course: any) => course.status === CourseStatus.NOT_ENROLLED && (course.name.toLowerCase().includes(search.toLowerCase())
                 || course.description.toLowerCase().includes(search.toLowerCase())))
-            .map((course: any, key: number) => (
-                <AvailableCourse
-                    key={key}
-                    title={course.name}
-                    description={course.description}
-                    id={course.id}
-                />
-            ));
+            .map((course: any, key: number) => {
+                // Format the learning + quiz time
+                let learningTime = null;
+                if (course.minTime) {
+                    learningTime = (
+                        <div className="flex">
+                            <IoTimeOutline size={18} className="mr-1"/>
+                            {course.minTime >= 60 && `${Math.floor(course.minTime / 60)}hr `}
+                            {course.minTime % 60 !== 0 && `${course.minTime % 60}min`}
+                        </div>
+                    );
+                }
+                let quizTime = null;
+                if (course.maxQuizTime) {
+                    quizTime = (
+                        <div className={`flex ${learningTime && "ml-2"}`}>
+                            <AiOutlineForm size={18} className="mr-1"/>
+                            {course.maxQuizTime >= 60 && `${Math.floor(course.maxQuizTime / 60)}hr `}
+                            {course.maxQuizTime % 60 !== 0 && `${course.maxQuizTime % 60}min`}
+                        </div>
+                    );
+                }
+                const time = (
+                    <div className="flex">
+                        {learningTime}
+                        {quizTime}
+                    </div>
+                );
+
+                return (
+                    <AvailableCourse
+                        key={key}
+                        title={course.name}
+                        description={course.description}
+                        id={course.id}
+                        time={time}
+                    />
+                );
+            });
 
         return (
-            <div className="flex flex-col gap-4 justify-between overflow-y-scroll sm:no-scrollbar">
+            <div className="flex flex-row flex-wrap gap-x-4 mt-4 overflow-y-scroll sm:no-scrollbar">
                 {courses}
             </div>
         );
