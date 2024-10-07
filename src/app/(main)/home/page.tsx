@@ -6,6 +6,7 @@ import { useAsync } from "react-async-hook";
 import { MdArrowBack, MdArrowForward } from "react-icons/md";
 import TextField from "@/components/TextField.tsx";
 import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
+import { IoSchool } from "react-icons/io5";
 
 enum CourseStatus {
     NOT_ENROLLED = "NOT_ENROLLED",
@@ -22,9 +23,6 @@ export default function Home() {
         return callAPI('get-courses')
             .then(r => {
                 setCourseData(r.data);
-                if (r.data.filter(c => c.status !== CourseStatus.NOT_ENROLLED).length === 0) {
-                    setSearch("");
-                }
             });
     }, []);
 
@@ -42,7 +40,16 @@ export default function Home() {
         }
 
         if (courseData.filter((course: any) => course.status !== CourseStatus.NOT_ENROLLED).length === 0) {
-            return <div className="text-gray-600 text-center">Enroll in courses to get started!</div>
+            return (
+                <div className="flex items-center justify-center h-screen">
+                    <div className="text-center cursor-pointer" onClick={() => setSearch("")}>
+                        <IoSchool size={80} className="mx-auto mb-2"/>
+                        <div className="text-gray-600 text-lg font-semibold italic">
+                            Enroll in courses to get started!
+                        </div>
+                    </div>
+                </div>
+            );
         }
         const temp_courses = [...courseData.filter((course: any) => filters.includes(course.status))]
         if (temp_courses.length % 3 === 2) {
@@ -52,7 +59,7 @@ export default function Home() {
             temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
         }
 
-        return temp_courses.map((course: any, key: number) => {
+        const courses = temp_courses.map((course: any, key: number) => {
 
                 let time = "";
                 if (course.minTime) {
@@ -86,6 +93,12 @@ export default function Home() {
                     />
                 );
             });
+
+        return (
+            <div className="flex flex-row flex-wrap justify-between mt-4 overflow-y-scroll sm:no-scrollbar">
+                {courses}
+            </div>
+        );
     }
 
     const statusColors = {
@@ -165,9 +178,7 @@ export default function Home() {
                         </div>
                     </div>
 
-                    <div className="flex flex-row flex-wrap justify-between mt-4 overflow-y-scroll sm:no-scrollbar">
-                        {enrolledCourses()}
-                    </div>
+                    {enrolledCourses()}
                 </div>
             )
         }
@@ -190,7 +201,7 @@ export default function Home() {
                     <TextField
                         text={search}
                         onChange={setSearch}
-                        placeholder='Search for a course title...'
+                        placeholder='Search by name or description...'
                         style="mb-4 ml-auto w-1/3"
                     />
                 </div>
