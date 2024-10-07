@@ -7,6 +7,7 @@ import { callAPI, signOut } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
 import { MdArrowBack } from "react-icons/md";
 import Link from "next/link";
+import { FaRegCheckCircle } from "react-icons/fa";
 
 export default function Profile() {
 
@@ -36,8 +37,8 @@ export default function Profile() {
     }
 
     return (
-        <main className="flex w-full h-full pb-[2vh]">
-            <div className={`flex flex-col h-[80vh] bg-white w-[60%] p-12 rounded-2xl shadow-custom`}>
+        <main className="flex w-full h-full pb-2">
+            <div className={`flex flex-col bg-white w-[60%] p-12 rounded-2xl shadow-custom`}>
                 <Link href="/home"
                       className="flex flex-row space-x-2 items-center mb-6 -mt-4 italic hover:opacity-60 duration-150">
                     <MdArrowBack size="24" className="text-red-800"/>
@@ -58,12 +59,11 @@ export default function Profile() {
                     )}
                 </div>
             </div>
-            <div className="flex flex-col h-[80vh] bg-white w-[38%] ml-[2%] p-12 rounded-2xl shadow-custom">
+            <div className="flex flex-col bg-white w-[38%] ml-[2%] p-12 rounded-2xl shadow-custom">
                 <div className="flex flex-row mb-4">
-                    <div className="text-lg mr-auto">Completed Courses</div>
+                    <div className="text-xl mr-auto font-medium">Completed Courses</div>
                 </div>
                 <div className="flex flex-col justify-between overflow-y-scroll sm:no-scrollbar">
-                    {/* @ts-ignore */}
                     {user && user.completedCourses.map((course, key) => (
                         <CompletedCourse
                             key={key}
