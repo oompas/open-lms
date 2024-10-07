@@ -7,7 +7,7 @@
     "build": "next build",
     "dev": "next dev",
     "deployDev": "supabase functions deploy --project-ref mgiuchjdjqnuljfpjemb",
-    "test:sanity": "dotenv -e .env.local node ./tests/run-tests.js sanity",
+    "test:sanity": "node ./tests/run-tests.js sanity",
     "test:detailed": "dotenv -e .env.local --sh -c 'mocha --ui tdd tests/detailed/**/*.test.ts'",
     "_testhelper": "mocha --ui tdd tests/sanity/**/*.test.ts"
   },

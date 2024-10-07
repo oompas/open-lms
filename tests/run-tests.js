@@ -1,4 +1,7 @@
+import { config } from 'dotenv';
 import { execSync } from 'child_process';
+
+config({ path: '.env.local' });
 
 const folder = process.argv[2];
 if (folder !== 'sanity' && folder !== 'detailed') {
