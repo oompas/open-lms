@@ -197,7 +197,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-row items-center">
-                    <div className="text-lg mb-4">Available Courses</div>
+                    <div className="text-xl font-medium mb-4">Available Courses</div>
                     <TextField
                         text={search}
                         onChange={setSearch}
