@@ -79,7 +79,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 </div>
             </div>
 
-            <div className='flex h-[76vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar'>
+            <div className='flex h-[76vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar font-roboto'>
                 {children}
             </div>
 
