@@ -39,7 +39,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, readN
                         router.push(link);
                     }}
                 >
-                    <FaRegNewspaper className="w-6 h-6 mt-3 mr-3" />
+                    <FaRegNewspaper className="w-7 h-7 mt-2 mr-3" />
                     {title}
                 </div>
 
