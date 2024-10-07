@@ -20,13 +20,11 @@ interface Notification {
 
 interface NotificationItemProps {
     notification: Notification;
-    onDelete: (id: string) => void;
-    isDeleting: boolean;
     onClose: () => void;
     isLast: boolean;
 }
 
-const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onDelete, isDeleting, onClose, isLast }) => {
+const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onClose, isLast }) => {
     const router = useRouter();
     const { id, title, date, link, read } = notification;
 
@@ -46,13 +44,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onDel
 
                 <div className="text-xs text-gray-500 flex justify-between my-2">
                     {new Date(date).toLocaleString()}
-                    <div onClick={() => onDelete(id)}>
-                        {isDeleting ? (
-                            <TbRefresh className="w-4 h-4 ml-2 animate-spin-counter-clockwise" />
-                        ) : (
-                            <FiTrash className="w-4 h-4 ml-2 hover:opacity-75 duration-75 cursor-pointer" />
-                        )}
-                    </div>
+                    <FiTrash className="w-4 h-4 ml-2 hover:opacity-75 duration-75 cursor-pointer" />
                 </div>
             </div>
 
@@ -66,7 +58,6 @@ const Notifications: React.FC = ({ notifications, setNotifications }) => {
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [loadingNotifications, setLoadingNotifications] = useState(false);
     const [deletingNotificationId, setDeletingNotificationId] = useState<string | null>(null);
-    const [deletingAll, setDeletingAll] = useState(false);
     const [directNotifications, setDirectNotifications] = useState(true);
 
     const popUpRef = useRef<HTMLDivElement>(null);
@@ -87,10 +78,10 @@ const Notifications: React.FC = ({ notifications, setNotifications }) => {
         return () => { document.removeEventListener('mousedown', handleClickOutside); };
     }, []);
 
-    const deleteNotification = async (id: string) => {
+    const readNotification = async (id: string) => {
         setDeletingNotificationId(id);
         try {
-            await callAPI('delete-notification', { notificationId: id });
+            await callAPI('read-notification', { notificationId: id });
             setNotifications((notifs) => notifs.filter((n) => n.id !== id));
         } catch (error) {
             console.error('Error deleting notification:', error);
@@ -99,15 +90,12 @@ const Notifications: React.FC = ({ notifications, setNotifications }) => {
         }
     };
 
-    const deleteAllNotifications = async () => {
-        setDeletingAll(true);
+    const readAllNotifications = async () => {
         try {
-            await callAPI('delete-notification', { deleteAll: true });
+            await callAPI('read-notification', { readAll: true });
             setNotifications((notifs) => notifs.filter((n) => n.direct !== directNotifications));
         } catch (error) {
             console.error('Error deleting all notifications:', error);
-        } finally {
-            setDeletingAll(false);
         }
     };
 
@@ -179,8 +167,6 @@ const Notifications: React.FC = ({ notifications, setNotifications }) => {
                         <NotificationItem
                             key={notification.id}
                             notification={notification}
-                            onDelete={deleteNotification}
-                            isDeleting={deletingNotificationId === notification.id}
                             onClose={() => setNotificationsOpen(false)}
                             isLast={index === timedNotifications.length - 1}
                         />
@@ -237,10 +223,9 @@ const Notifications: React.FC = ({ notifications, setNotifications }) => {
                             </div>
                             <button
                                 className="text-sm text-blue-600 hover:text-blue-800"
-                                onClick={deleteAllNotifications}
-                                disabled={deletingAll}
+                                onClick={readAllNotifications}
                             >
-                                {deletingAll ? 'Deleting...' : 'Delete all'}
+                                Mark all as read
                             </button>
                         </div>
                     </div>
