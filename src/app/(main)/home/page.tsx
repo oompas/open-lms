@@ -52,12 +52,6 @@ export default function Home() {
             );
         }
         const temp_courses = [...courseData.filter((course: any) => filters.includes(course.status))]
-        if (temp_courses.length % 3 === 2) {
-            temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
-            temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
-        } else if (temp_courses.length % 3 === 1) {
-            temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
-        }
 
         const courses = temp_courses.map((course: any, key: number) => {
 

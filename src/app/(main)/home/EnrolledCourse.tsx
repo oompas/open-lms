@@ -22,11 +22,7 @@ export default function EnrolledCourse({
         COMPLETED: "#47AD63",
     }
 
-    return ( title === "_placeholder" ?
-        <div 
-            className="border-4 w-[32%] mb-8 p-6 rounded-2xl opacity-0"
-        />
-        :
+    return (
         <Link 
             className="border-4 w-[32%] mb-8 p-6 rounded-2xl cursor-pointer hover:opacity-60 duration-100"
             style={{ borderColor: statusColors[status] }}
