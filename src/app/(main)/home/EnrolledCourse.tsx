@@ -23,8 +23,8 @@ export default function EnrolledCourse({
     }
 
     return (
-        <Link 
-            className="border-4 w-[32%] mb-8 p-6 rounded-2xl cursor-pointer hover:opacity-60 duration-100"
+        <Link
+            className="relative border-4 w-[32%] mb-8 p-6 rounded-2xl cursor-pointer hover:opacity-60 duration-100"
             style={{ borderColor: statusColors[status] }}
             href={"/course/"+id}
         >
@@ -35,8 +35,8 @@ export default function EnrolledCourse({
             >
                 {status.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}
             </div>
-            <div className="mt-4 text-xl">{description}</div>
-            <div className="mt-4">{time}</div>
+            <div className="mt-4 mb-8 text-xl">{description}</div>
+            <div className="absolute bottom-4">{time}</div>
         </Link>
     )
 }
