@@ -27,7 +27,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const [showSupportForm, setShowSupportForm] = useState(false);
     const [feedback, setFeedback] = useState('');
     const [feedbackSent, setFeedbackSent] = useState(false);
-    const [showFooter, setShowFooter] = useState(false);
 
     useEffect(() => {
        const role = session?.user?.user_metadata?.role;
@@ -80,7 +79,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 </div>
             </div>
 
-            <div className='flex h-[85vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar'>
+            <div className='flex h-[76vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar'>
                 {children}
             </div>
 
@@ -104,25 +103,36 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 </div>
             )}
 
-            <button 
-                className={"fixed bg-gray-800 right-[19rem] rounded-t-md duration-100 "+(showFooter ? "bottom-20" : "bottom-0")}
-                onClick={() => setShowFooter(!showFooter)}
+            <footer
+                className="flex flex-row items-center fixed w-auto mx-[10.8vw] px-8 rounded-t-2xl h-20 left-20 right-20 shadow-custom bg-white border-[1px] border-gray bottom-0"
             >
-                <MdChevronLeft color="white" className={showFooter ? "-rotate-90" : "rotate-90"} size={38} />
-            </button>
-            <footer className={"flex flex-row items-center fixed w-auto mx-[10.7vw] px-8 rounded-t-2xl h-20 left-20" +
-                " right-20 shadow-custom bg-gray-800 duration-100 " + (showFooter ? "bottom-0" : "-bottom-20")}>
-                <div className="flex flex-row justify-center">
-                    <Link href="/Learner_Guide.pdf" target="_blank">
-                        <Button
-                            text="Access Platform User Guide"
-                            onClick={() => {}}
-                            style="mr-4 text-sm"
-                            filled
-                        />
-                    </Link>
-                    <Button text="Request Technical Support" onClick={handleSupportRequest} style="text-sm" filled/>
+                <Link href="/home">
+                    <img
+                        src="/openlms.png"
+                        alt="OpenLMS Logo"
+                        className="h-6 w-auto mr-2"
+                    />
+                </Link>
+
+                <Link href="/Learner_Guide.pdf" target="_blank">
+                    <div
+                        className="rounded-xl text-lg cursor-pointer mx-4 italic"
+                    >
+                        Platform User Guide
+                    </div>
+                </Link>
+
+                <div className="text-lg italic">
+                    |
                 </div>
+
+                <div
+                    className="rounded-xl text-lg cursor-pointer mx-4 italic"
+                    onClick={handleSupportRequest}
+                >
+                    Technical Support
+                </div>
+
                 <span
                     className="text-white ml-auto">&copy; {new Date().getFullYear()} OpenLMS. All rights reserved.
                 </span>
