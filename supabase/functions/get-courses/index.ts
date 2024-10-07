@@ -36,7 +36,7 @@ Deno.serve(async (req: Request) => {
                     description: course.description,
                     status: courseStatus,
                     minTime: course.min_time,
-                    maxQuizTime: course.max_quiz_time,
+                    maxQuizTime: course.quiz_time_limit,
                 }
             })
     );
