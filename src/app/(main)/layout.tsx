@@ -115,9 +115,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 </Link>
 
                 <Link href="/Learner_Guide.pdf" target="_blank">
-                    <div
-                        className="rounded-xl text-lg cursor-pointer mx-4 italic"
-                    >
+                    <div className="rounded-xl text-lg cursor-pointer mx-4 italic">
                         Platform User Guide
                     </div>
                 </Link>
