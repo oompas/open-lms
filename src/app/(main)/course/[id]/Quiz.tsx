@@ -1,7 +1,4 @@
 "use client";
-import Button from "@/components/Button"
-import { useRouter } from 'next/navigation'
-import { callAPI } from "@/helpers/supabase.ts";
 
 export default function Quiz({
     length,
@@ -9,12 +6,7 @@ export default function Quiz({
     maxAttempts,
     numQuestions,
     minimumScore,
-    totalMarks,
-    quizStarted,
-    courseAttemptId,
-    quizAttemptId,
-    courseStatus,
-    courseId
+    totalMarks
 } : {
     length: string
     numAttempts: number
@@ -22,11 +14,6 @@ export default function Quiz({
     numQuestions: number
     minimumScore: number
     totalMarks: number
-    quizStarted: boolean | null
-    courseAttemptId: any
-    quizAttemptId: any
-    courseStatus: number
-    courseId: string
 }) {
     return (
         <div className="border-4 p-6 rounded-2xl">
