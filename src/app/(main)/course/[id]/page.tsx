@@ -145,8 +145,8 @@ export default function Course({ params }: { params: { id: string } }) {
     }
 
     return (
-        <div className="w-full h-full">
-            <div className="flex flex-col bg-white p-12 rounded-2xl shadow-custom">
+        <div className="flex w-full h-full pb-2">
+            <div className="w-[100%] bg-white p-14 rounded-2xl shadow-custom">
                 <Link href="/home"
                       className="flex flex-row space-x-2 items-center mb-6 -mt-4 text-lg hover:opacity-60 duration-150">
                     <MdArrowBack size="28" className="text-red-800"/>
