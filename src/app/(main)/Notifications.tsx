@@ -193,6 +193,9 @@ const Notifications: React.FC = ({ notifications, setNotifications }) => {
     return (
         <div className="relative">
             <div ref={bellIconRef}>
+                {(notifications?.length ?? 0) !== 0 &&
+                    <div className={"absolute rounded-full bg-cyan-800 w-2 h-2 right-[1px] top-[1px]"}></div>
+                }
                 <IoNotifications
                     className="mt-[6px] hover:opacity-75 duration-75 cursor-pointer"
                     onClick={handleIconClick}
