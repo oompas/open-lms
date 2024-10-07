@@ -45,7 +45,6 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, readN
 
                 <div className="text-xs text-gray-500 flex justify-between my-2">
                     {new Date(date).toLocaleString()}
-                    <FiTrash className="w-4 h-4 ml-2 hover:opacity-75 duration-75 cursor-pointer" />
                 </div>
             </div>
 
@@ -167,7 +166,7 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
     return (
         <div className="relative">
             <div ref={bellIconRef}>
-                {(notifications?.length ?? 0) !== 0 &&
+                {notifications && notifications.some((n) => !n.read) &&
                     <div className={"absolute rounded-full bg-cyan-800 w-2 h-2 right-[1px] top-[1px]"}></div>
                 }
                 <IoNotifications
