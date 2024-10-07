@@ -34,7 +34,9 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, readN
                 <div
                     className="text-sm flex hover:opacity-75 duration-75 cursor-pointer"
                     onClick={() => {
-                        readNotification(id);
+                        if (!read) {
+                            readNotification(id);
+                        }
                         onClose();
                         router.push(link);
                     }}
