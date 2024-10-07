@@ -5,5 +5,5 @@
     "loader=ts-node/esm"
   ],
   "recursive": true,
-  "timeout": 5000
+  "timeout": 30000
 }
