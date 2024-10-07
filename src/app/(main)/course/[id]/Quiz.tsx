@@ -29,7 +29,7 @@ export default function Quiz({
     courseId: string
 }) {
     return (
-        <div className="border-4 mb-8 p-6 rounded-2xl">
+        <div className="border-4 p-6 rounded-2xl">
             <div className="flex flex-col items-center">
                 <div className="flex flex-row mr-auto text-lg w-full justify-between space-x-4">
                     {length && 
