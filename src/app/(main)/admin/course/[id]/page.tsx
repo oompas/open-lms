@@ -7,7 +7,7 @@ import { MdAdd } from "react-icons/md";
 import QuizQuestion from "./QuizQuestion";
 import CreateQuestion from "./CreateQuestion";
 import { useRouter } from "next/navigation";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 
 export default function AdminCourse({ params }: { params: { id: string } }) {
 

@@ -2,7 +2,7 @@
 import Button from "@/components/Button"
 import { useEffect, useState } from "react";
 import TextField from "@/components/TextField";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 
 export default function IDCourse({
     course,

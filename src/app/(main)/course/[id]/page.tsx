@@ -6,7 +6,7 @@ import { MdArrowBack } from "react-icons/md";
 import { useEffect, useState } from "react";
 import Checkbox from "@/components/Checkbox";
 import { useAsync } from "react-async-hook";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 
 enum CourseStatus {
     NOT_ENROLLED = "NOT_ENROLLED",

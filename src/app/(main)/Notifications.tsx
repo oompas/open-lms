@@ -7,7 +7,7 @@ import { TbRefresh } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import { isToday, isYesterday, isThisWeek, isThisMonth, parseISO } from 'date-fns';
 import classNames from 'classnames';
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 
 interface Notification {
     id: string;

@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { MdCheckCircleOutline } from "react-icons/md";
 import { RiCheckboxCircleFill, RiCheckboxBlankCircleLine } from "react-icons/ri";
 import { useAsync } from "react-async-hook";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 
 export default function Quiz({ params }: { params: { id: string } }) {
 

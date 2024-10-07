@@ -1,7 +1,7 @@
 "use client";
 import Button from "@/components/Button"
 import { useRouter } from 'next/navigation'
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 
 export default function Quiz({
     length,

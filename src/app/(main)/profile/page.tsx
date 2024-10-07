@@ -3,7 +3,7 @@ import { useState } from 'react';
 import CompletedCourse from "./CompletedCourse";
 import Button from "@/components/Button";
 import StatusBadge from "@/components/StatusBadge";
-import { callAPI, signOut } from "@/config/supabase.ts";
+import { callAPI, signOut } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
 import { MdArrowBack } from "react-icons/md";
 import Link from "next/link";

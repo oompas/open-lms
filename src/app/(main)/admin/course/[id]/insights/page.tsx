@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation"
 import { LuExternalLink } from "react-icons/lu";
 import { useAsync } from "react-async-hook";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 
 export default function Insights({ params }: { params: { id: string } }) {
 

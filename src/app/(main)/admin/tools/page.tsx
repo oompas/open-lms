@@ -8,7 +8,7 @@ import { useState } from "react";
 import TextField from "@/components/TextField";
 import { downloadZip } from "client-zip";
 import AdminInsight from "@/app/(main)/admin/tools/AdminInsight";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
 
 export default function Tools() {

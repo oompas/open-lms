@@ -1,6 +1,6 @@
 import AuthForm from "@/components/AuthForm.tsx";
 import Button from "@/components/Button.tsx";
-import { signIn, supabaseClient } from "@/config/supabase.ts";
+import { signIn, supabaseClient } from "@/helpers/supabase.ts";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import TextField from "@/components/TextField.tsx";

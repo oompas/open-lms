@@ -1,7 +1,7 @@
 "use client";
 import EnrolledCourse from "./EnrolledCourse";
 import { useState } from "react";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
 import { MdArrowBack, MdArrowForward } from "react-icons/md";
 import TextField from "@/components/TextField.tsx";

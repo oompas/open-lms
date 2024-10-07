@@ -5,7 +5,7 @@ import IDCompleted from "./IDCompleted.tsx"
 import Link from "next/link";
 import { LuExternalLink } from "react-icons/lu";
 import { useAsync } from "react-async-hook";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 
 export default function Profile({ params }: { params: { id: string } }) {
 

@@ -1,7 +1,7 @@
 "use client";
 import "./globals.css";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import { supabaseClient } from "../config/supabase";
+import { supabaseClient } from "@/helpers/supabase";
 
 export default function RootLayout({ children }: { children: any }) {
     return (

@@ -1,7 +1,7 @@
 "use client";
 import Button from "@/components/Button"
 import { useState } from "react";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 import StatusBadge from "@/components/StatusBadge.tsx";
 
 export default function IDProfile({
