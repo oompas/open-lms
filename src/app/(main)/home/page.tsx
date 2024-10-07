@@ -131,7 +131,7 @@ export default function Home() {
             return <div>Error loading courses</div>;
         }
 
-        return courseData
+        const courses = courseData
             .filter((course: any) => course.status === CourseStatus.NOT_ENROLLED && (course.name.toLowerCase().includes(search.toLowerCase())
                 || course.description.toLowerCase().includes(search.toLowerCase())))
             .map((course: any, key: number) => (
@@ -142,6 +142,12 @@ export default function Home() {
                     id={course.id}
                 />
             ));
+
+        return (
+            <div className="flex flex-col gap-4 justify-between overflow-y-scroll sm:no-scrollbar">
+                {courses}
+            </div>
+        );
     }
 
     const renderPage = () => {
@@ -209,9 +215,8 @@ export default function Home() {
                         style="mb-4 ml-auto w-1/3"
                     />
                 </div>
-                <div className="flex flex-col gap-4 justify-between overflow-y-scroll sm:no-scrollbar">
-                    {availableCourses()}
-                </div>
+
+                {availableCourses()}
             </div>
         );
     }
