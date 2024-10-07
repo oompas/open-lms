@@ -10,7 +10,7 @@ export default function EnrolledCourse({
     title: string,
     status: 2 | 3 | 4 | 5
     description: string,
-    time: string,
+    time: any,
     id: number
 }) {
 

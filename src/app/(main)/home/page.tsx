@@ -6,7 +6,9 @@ import { useAsync } from "react-async-hook";
 import { MdArrowBack, MdArrowForward } from "react-icons/md";
 import TextField from "@/components/TextField.tsx";
 import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
-import { IoSchool } from "react-icons/io5";
+import { IoSchool, IoTimeOutline } from "react-icons/io5";
+import { FaBookOpen } from "react-icons/fa6";
+import { AiOutlineForm } from "react-icons/ai";
 
 enum CourseStatus {
     NOT_ENROLLED = "NOT_ENROLLED",
@@ -55,26 +57,34 @@ export default function Home() {
         const courses = [...courseData.filter((course: any) => filters.includes(course.status))]
             .map((course: any, key: number) => {
 
-                let time = "";
+                // Format the learning + quiz time
+                let learningTime = null;
                 if (course.minTime) {
-                    if (course.minTime >= 60) {
-                        time += `${Math.floor(course.minTime / 60)}hr `;
-                    }
-                    if (course.minTime % 60 !== 0) {
-                        time += `${course.minTime % 60}min`;
-                    }
-                    time += " learning ";
+                    learningTime = (
+                        <div className="flex">
+                            <IoTimeOutline size={20} className="mr-1"/>
+                            {course.minTime >= 60 && `${Math.floor(course.minTime / 60)}hr `}
+                            {course.minTime % 60 !== 0 && `${course.minTime % 60}min`}
+                        </div>
+                    );
                 }
+                let quizTime = null;
                 if (course.maxQuizTime) {
-                    time += time.length > 0 ? " + " : "";
-                    if (course.maxQuizTime >= 60) {
-                        time += `${Math.floor(course.maxQuizTime / 60)}hr `;
-                    }
-                    if (course.maxQuizTime % 60 !== 0) {
-                        time += `${course.maxQuizTime % 60}min`;
-                    }
-                    time += " quiz";
+                    quizTime = (
+                        <div className={`flex ${learningTime && "ml-2"}`}>
+                            <AiOutlineForm size={20} className="mr-1"/>
+                            {course.maxQuizTime >= 60 && `${Math.floor(course.maxQuizTime / 60)}hr `}
+                            {course.maxQuizTime % 60 !== 0 && `${course.maxQuizTime % 60}min`}
+                        </div>
+                    );
                 }
+
+                const time = (
+                    <div className="flex">
+                        {learningTime}
+                        {quizTime}
+                    </div>
+                );
 
                 return (
                     <EnrolledCourse
