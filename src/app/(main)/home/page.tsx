@@ -222,8 +222,10 @@ export default function Home() {
     }
 
     return (
-        <main className="flex w-full justify-center mb-4">
-            {renderPage()}
-        </main>
+        <div className="flex w-full h-full pb-2 bg-gray-100">
+            <div className="flex w-[100%]">
+                {renderPage()}
+            </div>
+        </div>
     )
 }

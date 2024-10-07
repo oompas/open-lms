@@ -53,7 +53,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     return (
         <html lang="en">
         <body className="h-[100vh] px-[15vw] bg-gray-100 overflow-x-hidden mx-auto">
-            <div className="flex flex-row px-12 h-[13vh] items-center bg-white rounded-b-2xl shadow-custom">
+            <div className="flex flex-row px-12 h-[13vh] items-center bg-white rounded-b-2xl shadow-custom border-[1px] border-gray">
                 <Link href="/home" className="font-bold text-4xl flex items-center">
                     <img
                         src="/openlms.png"
