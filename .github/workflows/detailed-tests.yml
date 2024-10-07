@@ -1,8 +1,9 @@
-name: CI
+name: CI - Full test suite
+
 on:
-  push:
+  pull_request:
     branches:
-      - "**"
+      - '**'
 
 jobs:
     test:
@@ -21,6 +22,11 @@ jobs:
               cache: 'pnpm'
           - name: Install dependencies
             run: pnpm install --frozen-lockfile
+          - name: Install global test tools
+            run: pnpm install -g mocha ts-node
 
-          - name: Run tests
-            run: pnpm run test
+          - name: Run detailed tests
+            env:
+              NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+              NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+            run: pnpm run test:detailed
