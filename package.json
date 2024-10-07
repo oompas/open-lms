@@ -6,9 +6,9 @@
     "preinstall": "npx only-allow pnpm",
     "build": "next build",
     "dev": "next dev",
-    "deployDev": "supabase functions deploy --project-ref mgiuchjdjqnuljfpjemb",
-    "test:sanity": "node ./tests/run-tests.js sanity",
-    "test:detailed": "node ./tests/run-tests.js detailed"
+    "deployDev": "node scripts/deploy-dev.js",
+    "test:sanity": "node scripts/run-tests.js sanity",
+    "test:detailed": "node scripts/run-tests.js detailed"
   },
   "dependencies": {
     "@supabase/auth-helpers-react": "^0.5.0",
@@ -34,6 +34,7 @@
     "bias-random": "^1.0.1",
     "chai": "^5.1.1",
     "dotenv": "^16.4.5",
+    "dotenv-cli": "^7.4.2",
     "generate-arrays": "^2.0.0",
     "postcss": "^8.4.35",
     "suite-metrics": "^1.3.1",
