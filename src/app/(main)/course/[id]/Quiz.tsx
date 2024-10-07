@@ -28,19 +28,6 @@ export default function Quiz({
     courseStatus: number
     courseId: string
 }) {
-
-    const router = useRouter();
-
-    const goToQuiz = async () => {
-        if (quizStarted) {
-            router.push(`/quiz/${courseId}-${quizAttemptId}`);
-        } else {
-            await callAPI('start-quiz', { courseId: courseId, courseAttemptId: courseAttemptId })
-                .then((result) => router.push(`/quiz/${courseId}-${result.data}`))
-                .catch((e) => console.log(`Error starting quiz: ${e}`));
-        }
-    }
-
     return (
         <div className="border-4 mb-8 p-6 rounded-2xl">
             <div className="flex flex-col items-center">
@@ -70,13 +57,6 @@ export default function Quiz({
                         <div className="text-sm">marks</div>
                     </div>
                 </div>
-                {quizStarted !== null && courseStatus !== "COMPLETED" &&
-                    <Button
-                        text={quizStarted ? "Continue quiz" : "Start quiz"}
-                        onClick={async () => await goToQuiz()}
-                        style="mt-6"
-                    />
-                }
             </div>
         </div>
     );

@@ -81,6 +81,10 @@ export default function Course({ params }: { params: { id: string } }) {
                     status={status}
                     setStatus={setStatus}
                     setCourseAttemptId={setCourseAttemptId}
+                    quizStarted={quizStarted()}
+                    courseAttemptId={courseAttemptId}
+                    quizAttemptId={quizAttemptId}
+                    courseId={params.id}
                 />
 
                 <div className="mt-8 text-2xl">
@@ -114,11 +118,7 @@ export default function Course({ params }: { params: { id: string } }) {
                                 numQuestions={courseData.quizData.numQuestions}
                                 totalMarks={courseData.quizData.totalMarks}
                                 minimumScore={courseData.quizData.minScore}
-                                quizStarted={quizStarted()}
-                                courseAttemptId={courseAttemptId}
-                                quizAttemptId={quizAttemptId}
                                 courseStatus={courseData.status}
-                                courseId={params.id}
                             />
                         </div>
                     </div>
