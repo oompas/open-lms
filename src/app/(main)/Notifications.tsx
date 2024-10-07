@@ -61,8 +61,8 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onDel
     );
 };
 
-const Notifications: React.FC = () => {
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+const Notifications: React.FC = ({ notifications, setNotifications }) => {
+
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [loadingNotifications, setLoadingNotifications] = useState(false);
     const [deletingNotificationId, setDeletingNotificationId] = useState<string | null>(null);

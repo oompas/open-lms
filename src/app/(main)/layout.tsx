@@ -2,18 +2,36 @@
 import Link from 'next/link';
 import '../globals.css';
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from "@/components/Button";
-import { MdAdminPanelSettings, MdChevronLeft } from 'react-icons/md';
+import { MdAdminPanelSettings } from 'react-icons/md';
 import TextField from '@/components/TextField';
 import { useSession } from "@supabase/auth-helpers-react";
 import { CgProfile } from "react-icons/cg";
 import Notifications from "@/app/(main)/Notifications.tsx";
+import { callAPI } from "@/helpers/supabase.ts";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
     const router = useRouter();
     const session = useSession();
+
+    // Get notifications on load, then refresh every 30 minutes after
+    useEffect(() => {
+        const getNotifications = () => {
+            callAPI('get-notifications')
+                .then(r => {
+                    setNotifications(r.data);
+                });
+        }
+        getNotifications();
+
+        const intervalId = setInterval(() => {
+            getNotifications();
+        }, 1000 * 60 * 30);
+
+        return () => clearInterval(intervalId);
+    }, []);
 
     // Route to sign in screen if user isn't logged in
     useEffect(() => {
@@ -27,6 +45,8 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const [showSupportForm, setShowSupportForm] = useState(false);
     const [feedback, setFeedback] = useState('');
     const [feedbackSent, setFeedbackSent] = useState(false);
+
+    const [notifications, setNotifications] = useState<any[]>([]);
 
     useEffect(() => {
        const role = session?.user?.user_metadata?.role;
@@ -63,7 +83,10 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                     OpenLMS
                 </Link>
                 <div className="flex ml-auto text-2xl">
-                    <Notifications />
+                    <Notifications
+                        notifications={notifications}
+                        setNotifications={setNotifications}
+                    />
 
                     {isAdmin &&
                         <MdAdminPanelSettings
