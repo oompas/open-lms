@@ -51,9 +51,9 @@ export default function Home() {
                 </div>
             );
         }
-        const temp_courses = [...courseData.filter((course: any) => filters.includes(course.status))]
 
-        const courses = temp_courses.map((course: any, key: number) => {
+        const courses = [...courseData.filter((course: any) => filters.includes(course.status))]
+            .map((course: any, key: number) => {
 
                 let time = "";
                 if (course.minTime) {
@@ -89,7 +89,7 @@ export default function Home() {
             });
 
         return (
-            <div className="flex flex-row flex-wrap justify-between mt-4 overflow-y-scroll sm:no-scrollbar">
+            <div className="flex flex-row flex-wrap gap-x-4 mt-4 overflow-y-scroll sm:no-scrollbar">
                 {courses}
             </div>
         );
