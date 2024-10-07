@@ -40,7 +40,7 @@ export default function Course({ params }: { params: { id: string } }) {
     const [quizStarted, setQuizStarted] = useState<null|boolean>(null);
 
     useEffect(() => {
-        if (!getCourseData.result?.data) {
+        if (!getCourseData.result?.data || !courseData.minTime) {
             return;
         }
 
