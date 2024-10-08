@@ -2,18 +2,75 @@
 import Link from 'next/link';
 import '../globals.css';
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from "@/components/Button";
-import { MdAdminPanelSettings, MdChevronLeft } from 'react-icons/md';
+import { MdAdminPanelSettings } from 'react-icons/md';
 import TextField from '@/components/TextField';
 import { useSession } from "@supabase/auth-helpers-react";
 import { CgProfile } from "react-icons/cg";
 import Notifications from "@/app/(main)/Notifications.tsx";
+import { callAPI } from "@/helpers/supabase.ts";
+import {
+    differenceInDays,
+    differenceInHours,
+    differenceInMinutes, differenceInMonths,
+    differenceInSeconds, differenceInWeeks, differenceInYears,
+    isThisMonth, isThisYear,
+    parseISO
+} from "date-fns";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
     const router = useRouter();
     const session = useSession();
+
+    const getNotifications = () => {
+        callAPI('get-notifications')
+            .then((rsp) => {
+                const notifications = rsp.data;
+                const now = new Date();
+
+                notifications.forEach((notification) => {
+                    const date = parseISO(notification.date);
+
+                    if (differenceInSeconds(now, date) < 60) {
+                        const diff = differenceInSeconds(now, date);
+                        notification["date"] = diff + ` second${diff === 1 ? '' : 's'} ago`;
+                    } else if (differenceInMinutes(now, date) < 60) {
+                        const diff = differenceInMinutes(now, date);
+                        notification["date"] = diff + ` minute${diff === 1 ? '' : 's'} ago`;
+                    } else if (differenceInHours(now, date) < 24) {
+                        const diff = differenceInHours(now, date);
+                        notification["date"] = diff + ` hour${diff === 1 ? '' : 's'} ago`;
+                    } else if (differenceInDays(now, date) < 7) {
+                        const diff = differenceInDays(now, date);
+                        notification["date"] = diff + ` day${diff === 1 ? '' : 's'} ago`;
+                    } else if (differenceInWeeks(now, date) < 5) {
+                        const diff = differenceInWeeks(now, date);
+                        notification["date"] = diff + ` week${diff === 1 ? '' : 's'} ago`;
+                    } else if (differenceInMonths(now, date) < 12) {
+                        const diff = differenceInMonths(now, date);
+                        notification["date"] = diff + ` month${diff === 1 ? '' : 's'} ago`;
+                    } else {
+                        const diff = differenceInYears(now, date);
+                        notification["date"] = diff+ ` year${diff === 1 ? '' : 's'} ago`;
+                    }
+                });
+
+                setNotifications(notifications);
+            });
+    }
+
+    // Get notifications on load, then refresh every 10 minutes after
+    useEffect(() => {
+        getNotifications();
+
+        const intervalId = setInterval(() => {
+            getNotifications();
+        }, 1000 * 60 * 10);
+
+        return () => clearInterval(intervalId);
+    }, []);
 
     // Route to sign in screen if user isn't logged in
     useEffect(() => {
@@ -27,7 +84,8 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const [showSupportForm, setShowSupportForm] = useState(false);
     const [feedback, setFeedback] = useState('');
     const [feedbackSent, setFeedbackSent] = useState(false);
-    const [showFooter, setShowFooter] = useState(false);
+
+    const [notifications, setNotifications] = useState<any[]>([]);
 
     useEffect(() => {
        const role = session?.user?.user_metadata?.role;
@@ -54,7 +112,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     return (
         <html lang="en">
         <body className="h-[100vh] px-[15vw] bg-gray-100 overflow-x-hidden mx-auto">
-            <div className="flex flex-row px-12 h-[13vh] items-center bg-white rounded-b-2xl shadow-custom">
+            <div className="flex flex-row px-12 h-[13vh] items-center bg-white rounded-b-2xl shadow-custom border-[1px] border-gray">
                 <Link href="/home" className="font-bold text-4xl flex items-center">
                     <img
                         src="/openlms.png"
@@ -64,7 +122,11 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                     OpenLMS
                 </Link>
                 <div className="flex ml-auto text-2xl">
-                    <Notifications />
+                    <Notifications
+                        notifications={notifications}
+                        setNotifications={setNotifications}
+                        refreshNotifications={getNotifications}
+                    />
 
                     {isAdmin &&
                         <MdAdminPanelSettings
@@ -80,7 +142,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 </div>
             </div>
 
-            <div className='flex h-[85vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar'>
+            <div className='flex h-[76vh] mt-[2vh] overflow-scroll rounded-2xl sm:no-scrollbar font-roboto'>
                 {children}
             </div>
 
@@ -104,29 +166,38 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 </div>
             )}
 
-            <button 
-                className={"fixed bg-gray-800 right-[19rem] rounded-t-md duration-100 "+(showFooter ? "bottom-20" : "bottom-0")}
-                onClick={() => setShowFooter(!showFooter)}
+            <div
+                className="flex items-center px-8 rounded-t-2xl h-20 shadow-custom bg-white border-[1px] border-gray bottom-0"
             >
-                <MdChevronLeft color="white" className={showFooter ? "-rotate-90" : "rotate-90"} size={38} />
-            </button>
-            <footer className={"flex flex-row items-center fixed w-auto mx-[10.7vw] px-8 rounded-t-2xl h-20 left-20" +
-                " right-20 shadow-custom bg-gray-800 duration-100 " + (showFooter ? "bottom-0" : "-bottom-20")}>
-                <div className="flex flex-row justify-center">
-                    <Link href="/Learner_Guide.pdf" target="_blank">
-                        <Button
-                            text="Access Platform User Guide"
-                            onClick={() => {}}
-                            style="mr-4 text-sm"
-                            filled
-                        />
-                    </Link>
-                    <Button text="Request Technical Support" onClick={handleSupportRequest} style="text-sm" filled/>
+                <Link href="/home">
+                    <img
+                        src="/openlms.png"
+                        alt="OpenLMS Logo"
+                        className="h-6 w-auto mr-2"
+                    />
+                </Link>
+
+                <Link href="/Learner_Guide.pdf" target="_blank">
+                    <div className="rounded-xl text-lg cursor-pointer mx-4 italic">
+                        Platform User Guide
+                    </div>
+                </Link>
+
+                <div className="text-lg italic">
+                    |
                 </div>
+
+                <div
+                    className="rounded-xl text-lg cursor-pointer mx-4 italic"
+                    onClick={handleSupportRequest}
+                >
+                    Technical Support
+                </div>
+
                 <span
                     className="text-white ml-auto">&copy; {new Date().getFullYear()} OpenLMS. All rights reserved.
                 </span>
-            </footer>
+            </div>
         </body>
         </html>
     )

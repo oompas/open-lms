@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import SignIn from "@/app/(auth)/SignIn.tsx";
 import SignUp from "@/app/(auth)/SignUp.tsx";
-import { supabaseClient } from "@/config/supabase.ts";
+import { supabaseClient } from "@/helpers/supabase.ts";
 
 export default function AuthPage() {
 

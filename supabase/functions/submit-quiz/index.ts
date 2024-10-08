@@ -39,17 +39,17 @@ Deno.serve(async (req) => {
     log(`Verification passed!`);
 
     // Mark quiz questions
-    let totalMarks = 0;
+    let marksAchieved = 0;
     let autoMark = true;
     const quizQuestionAttempts = quizQuestions.map((q) => {
 
         const response = responses.find((r) => r.questionId === q.id);
-        let marks;
+
+        let marks = null;
         if (q.type === "MC" || q.type === "TF") {
             marks = q.correct_answer === response.answer ? q.marks : 0;
-            totalMarks += marks;
+            marksAchieved += marks;
         } else if (q.type === "SA") {
-            marks = null;
             autoMark = false;
         } else {
             return ErrorResponse(`Unknown question type: ${q.type}`);
@@ -77,11 +77,15 @@ Deno.serve(async (req) => {
         return ErrorResponse(`Error adding quiz questions attempts: ${error.message}`);
     }
 
+    if (marksAchieved >= course.min_quiz_score) {
+        autoMark = true; // If the user gets enough marks to pass without the short answers, pass them
+    }
+
     // Update quiz attempt
     const update = {
         end_time: timestamp,
-        ...(autoMark && { pass: totalMarks >= course.min_quiz_score }),
-        ...(autoMark && { score: totalMarks })
+        ...(autoMark && { pass: marksAchieved >= course.min_quiz_score }),
+        ...(autoMark && { score: marksAchieved })
     };
     const { data: data2, error: error2 } = await adminClient.from('quiz_attempt').update(update).eq('id', quizAttemptId);
 

@@ -1,7 +1,4 @@
 "use client";
-import Button from "@/components/Button"
-import { useRouter } from 'next/navigation'
-import { callAPI } from "@/config/supabase.ts";
 
 export default function Quiz({
     length,
@@ -9,12 +6,7 @@ export default function Quiz({
     maxAttempts,
     numQuestions,
     minimumScore,
-    totalMarks,
-    quizStarted,
-    courseAttemptId,
-    quizAttemptId,
-    courseStatus,
-    courseId
+    totalMarks
 } : {
     length: string
     numAttempts: number
@@ -22,27 +14,9 @@ export default function Quiz({
     numQuestions: number
     minimumScore: number
     totalMarks: number
-    quizStarted: boolean | null
-    courseAttemptId: any
-    quizAttemptId: any
-    courseStatus: number
-    courseId: string
 }) {
-
-    const router = useRouter();
-
-    const goToQuiz = async () => {
-        if (quizStarted) {
-            router.push(`/quiz/${courseId}-${quizAttemptId}`);
-        } else {
-            await callAPI('start-quiz', { courseId: courseId, courseAttemptId: courseAttemptId })
-                .then((result) => router.push(`/quiz/${courseId}-${result.data}`))
-                .catch((e) => console.log(`Error starting quiz: ${e}`));
-        }
-    }
-
     return (
-        <div className="border-4 mb-8 p-6 rounded-2xl">
+        <div className="border-4 p-6 rounded-2xl">
             <div className="flex flex-col items-center">
                 <div className="flex flex-row mr-auto text-lg w-full justify-between space-x-4">
                     {length && 
@@ -70,13 +44,6 @@ export default function Quiz({
                         <div className="text-sm">marks</div>
                     </div>
                 </div>
-                {quizStarted !== null && courseStatus !== "COMPLETED" &&
-                    <Button
-                        text={quizStarted ? "Continue quiz" : "Start quiz"}
-                        onClick={async () => await goToQuiz()}
-                        style="mt-6"
-                    />
-                }
             </div>
         </div>
     );

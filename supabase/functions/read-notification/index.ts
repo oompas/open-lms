@@ -6,17 +6,17 @@ import { getRequestUserId } from "../_shared/auth.ts";
 Deno.serve(async (req) => {
 
     if (req.method === 'OPTIONS') {
-        return OptionsRsp();
+      return OptionsRsp();
     }
 
-    const { notificationId, deleteAll } = await req.json();
+    const { notificationId, readAll } = await req.json();
 
     const userId = await getRequestUserId(req);
-    if (deleteAll) {
-        await adminClient.from('notification').update({ deleted: true }).eq('user_id', userId);
-    } else {
-        await adminClient.from('notification').delete().eq('id', notificationId).eq('user_id', userId);
+    const query = adminClient.from('notification').update({ read: true }).eq('user_id', userId);
+    if (!readAll) {
+        query.eq('id', notificationId);
     }
+    await query;
 
     return SuccessResponse(null);
 });

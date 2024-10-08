@@ -2,7 +2,8 @@
 import Button from "@/components/Button"
 import { useEffect, useState } from "react";
 import TextField from "@/components/TextField";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
+import { useRouter } from "next/navigation";
 
 export default function IDCourse({
     course,
@@ -11,6 +12,10 @@ export default function IDCourse({
     status,
     setStatus,
     setCourseAttemptId,
+    quizStarted,
+    courseAttemptId,
+    quizAttemptId,
+    courseId
 } : {
     course: {
         name: string,
@@ -28,8 +33,14 @@ export default function IDCourse({
     setTimeDone: any,
     status: number,
     setStatus: any,
-    setCourseAttemptId: any
+    setCourseAttemptId: any,
+    quizStarted: any,
+    courseAttemptId: string,
+    quizAttemptId: string,
+    courseId: string
 }) {
+
+    const router = useRouter();
 
     const startingCountdown = () => {
         const currentMillis = new Date().getTime();
@@ -76,6 +87,15 @@ export default function IDCourse({
             .catch((err) => { throw new Error(`Error starting course: ${err}`) });
     }
 
+    const goToQuiz = async () => {
+        if (quizStarted) {
+            router.push(`/quiz/${courseId}-${quizAttemptId}`);
+        } else {
+            await callAPI('start-quiz', { courseId: courseId, courseAttemptId: courseAttemptId })
+                .then((result) => router.push(`/quiz/${courseId}-${result.data}`))
+                .catch((e) => console.log(`Error starting quiz: ${e}`));
+        }
+    }
 
     const renderButton = () => {
         if (status === "NOT_ENROLLED") {
@@ -93,8 +113,17 @@ export default function IDCourse({
         }
         return (
             <>
+                {quizStarted !== null && status !== "COMPLETED" &&
+                    <Button
+                        text={quizStarted ? "Continue quiz" : "Start quiz"}
+                        onClick={async () => await goToQuiz()}
+                        style=""
+                        icon="link"
+                        filled
+                    />
+                }
                 <a href={course.link} target={"_blank"}>
-                    <Button text="Go to Course" onClick={() => {}} filled icon="link"/>
+                    <Button text="Go to Course" filled={quizStarted === null && (status !== "ENROLLED" || status !== "COMPLETED")} icon="link"/>
                 </a>
                 <Button text="Request Help" onClick={handleSupportRequest} icon="report"/>
             </>

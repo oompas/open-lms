@@ -1,12 +1,14 @@
 "use client";
 import EnrolledCourse from "./EnrolledCourse";
-import Button from "@/components/Button";
 import { useState } from "react";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
-import { MdArrowBack } from "react-icons/md";
+import { MdArrowBack, MdArrowForward } from "react-icons/md";
 import TextField from "@/components/TextField.tsx";
 import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
+import { IoSchool, IoTimeOutline } from "react-icons/io5";
+import { FaBookOpen } from "react-icons/fa6";
+import { AiOutlineForm } from "react-icons/ai";
 
 enum CourseStatus {
     NOT_ENROLLED = "NOT_ENROLLED",
@@ -23,9 +25,6 @@ export default function Home() {
         return callAPI('get-courses')
             .then(r => {
                 setCourseData(r.data);
-                if (r.data.filter(c => c.status !== CourseStatus.NOT_ENROLLED).length === 0) {
-                    setSearch("");
-                }
             });
     }, []);
 
@@ -43,38 +42,49 @@ export default function Home() {
         }
 
         if (courseData.filter((course: any) => course.status !== CourseStatus.NOT_ENROLLED).length === 0) {
-            return <div className="text-gray-600 text-center">Enroll in courses to get started!</div>
-        }
-        const temp_courses = [...courseData.filter((course: any) => filters.includes(course.status))]
-        if (temp_courses.length % 3 === 2) {
-            temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
-            temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
-        } else if (temp_courses.length % 3 === 1) {
-            temp_courses.push({name: "_placeholder", status: "", description: "", id: 0})
+            return (
+                <div className="flex items-center justify-center h-screen">
+                    <div className="text-center cursor-pointer" onClick={() => setSearch("")}>
+                        <IoSchool size={80} className="mx-auto mb-2"/>
+                        <div className="text-gray-600 text-lg font-semibold italic">
+                            Enroll in courses to get started!
+                        </div>
+                    </div>
+                </div>
+            );
         }
 
-        return temp_courses.map((course: any, key: number) => {
+        const courses = [...courseData.filter((course: any) => filters.includes(course.status))]
+            .map((course: any, key: number) => {
 
-                let time = "";
+                // Format the learning + quiz time
+                let learningTime = null;
                 if (course.minTime) {
-                    if (course.minTime >= 60) {
-                        time += `${Math.floor(course.minTime / 60)}hr `;
-                    }
-                    if (course.minTime % 60 !== 0) {
-                        time += `${course.minTime % 60}min`;
-                    }
-                    time += " learning ";
+                    learningTime = (
+                        <div className="flex">
+                            <IoTimeOutline size={18} className="mr-1"/>
+                            {course.minTime >= 60 && `${Math.floor(course.minTime / 60)}hr `}
+                            {course.minTime % 60 !== 0 && `${course.minTime % 60}min`}
+                        </div>
+                    );
                 }
+                let quizTime = null;
                 if (course.maxQuizTime) {
-                    time += time.length > 0 ? " + " : "";
-                    if (course.maxQuizTime >= 60) {
-                        time += `${Math.floor(course.maxQuizTime / 60)}hr `;
-                    }
-                    if (course.maxQuizTime % 60 !== 0) {
-                        time += `${course.maxQuizTime % 60}min`;
-                    }
-                    time += " quiz";
+                    quizTime = (
+                        <div className={`flex ${learningTime && "ml-2"}`}>
+                            <AiOutlineForm size={18} className="mr-1"/>
+                            {course.maxQuizTime >= 60 && `${Math.floor(course.maxQuizTime / 60)}hr `}
+                            {course.maxQuizTime % 60 !== 0 && `${course.maxQuizTime % 60}min`}
+                        </div>
+                    );
                 }
+
+                const time = (
+                    <div className="flex">
+                        {learningTime}
+                        {quizTime}
+                    </div>
+                );
 
                 return (
                     <EnrolledCourse
@@ -87,6 +97,12 @@ export default function Home() {
                     />
                 );
             });
+
+        return (
+            <div className="flex flex-row flex-wrap gap-x-4 mt-4 overflow-y-scroll sm:no-scrollbar">
+                {courses}
+            </div>
+        );
     }
 
     const statusColors = {
@@ -115,17 +131,54 @@ export default function Home() {
             return <div>Error loading courses</div>;
         }
 
-        return courseData
+        const courses = courseData
             .filter((course: any) => course.status === CourseStatus.NOT_ENROLLED && (course.name.toLowerCase().includes(search.toLowerCase())
                 || course.description.toLowerCase().includes(search.toLowerCase())))
-            .map((course: any, key: number) => (
-                <AvailableCourse
-                    key={key}
-                    title={course.name}
-                    description={course.description}
-                    id={course.id}
-                />
-            ));
+            .map((course: any, key: number) => {
+                // Format the learning + quiz time
+                let learningTime = null;
+                if (course.minTime) {
+                    learningTime = (
+                        <div className="flex">
+                            <IoTimeOutline size={18} className="mr-1"/>
+                            {course.minTime >= 60 && `${Math.floor(course.minTime / 60)}hr `}
+                            {course.minTime % 60 !== 0 && `${course.minTime % 60}min`}
+                        </div>
+                    );
+                }
+                let quizTime = null;
+                if (course.maxQuizTime) {
+                    quizTime = (
+                        <div className={`flex ${learningTime && "ml-2"}`}>
+                            <AiOutlineForm size={18} className="mr-1"/>
+                            {course.maxQuizTime >= 60 && `${Math.floor(course.maxQuizTime / 60)}hr `}
+                            {course.maxQuizTime % 60 !== 0 && `${course.maxQuizTime % 60}min`}
+                        </div>
+                    );
+                }
+                const time = (
+                    <div className="flex">
+                        {learningTime}
+                        {quizTime}
+                    </div>
+                );
+
+                return (
+                    <AvailableCourse
+                        key={key}
+                        title={course.name}
+                        description={course.description}
+                        id={course.id}
+                        time={time}
+                    />
+                );
+            });
+
+        return (
+            <div className="flex flex-row flex-wrap gap-x-4 mt-4 overflow-y-scroll sm:no-scrollbar">
+                {courses}
+            </div>
+        );
     }
 
     const renderPage = () => {
@@ -133,9 +186,21 @@ export default function Home() {
         if (search === null) {
             return (
                 <div className="flex flex-col bg-white w-full p-12 rounded-2xl shadow-custom">
+                    <div className="flex flex-row items-center mb-6">
+                        <div className="text-xl mr-4 font-medium">My Enrolled Courses</div>
+                        <div
+                            className="flex space-x-2 items-center text-lg hover:opacity-60 duration-150 ml-auto"
+                            onClick={() => setSearch("")}
+                        >
+                            <div>Find Courses</div>
+                            <MdArrowForward size="28" className="text-red-800"/>
+                        </div>
+                    </div>
+
+
                     <div className="flex flex-row items-center mb-2">
                         <div className="flex flex-row items-center">
-                            <div className="text-lg mr-4">My Enrolled Courses</div>
+                            <div className="text-lg mr-4">Filters:</div>
                             <div className="flex flex-row space-x-2">
                                 {Object.values(CourseStatus).filter(s => s !== "NOT_ENROLLED").map((value, key) => (
                                     <button
@@ -152,15 +217,9 @@ export default function Home() {
                                 ))}
                             </div>
                         </div>
-                        <Button
-                            text="Browse Available Courses"
-                            onClick={() => setSearch("")}
-                            style="ml-auto"
-                        />
                     </div>
-                    <div className="flex flex-row flex-wrap justify-between mt-4 overflow-y-scroll sm:no-scrollbar">
-                        {enrolledCourses()}
-                    </div>
+
+                    {enrolledCourses()}
                 </div>
             )
         }
@@ -179,24 +238,25 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-row items-center">
-                    <div className="text-lg mb-4">Available Courses</div>
+                    <div className="text-xl font-medium mb-4">Available Courses</div>
                     <TextField
                         text={search}
                         onChange={setSearch}
-                        placeholder='Search for a course title...'
+                        placeholder='Search by name or description...'
                         style="mb-4 ml-auto w-1/3"
                     />
                 </div>
-                <div className="flex flex-col gap-4 justify-between overflow-y-scroll sm:no-scrollbar">
-                    {availableCourses()}
-                </div>
+
+                {availableCourses()}
             </div>
         );
     }
 
     return (
-        <main className="flex w-full justify-center mb-4">
-            {renderPage()}
-        </main>
+        <div className="flex w-full h-full pb-2 bg-gray-100">
+            <div className="flex w-[100%]">
+                {renderPage()}
+            </div>
+        </div>
     )
 }

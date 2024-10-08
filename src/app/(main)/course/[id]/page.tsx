@@ -6,7 +6,7 @@ import { MdArrowBack } from "react-icons/md";
 import { useEffect, useState } from "react";
 import Checkbox from "@/components/Checkbox";
 import { useAsync } from "react-async-hook";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 
 enum CourseStatus {
     NOT_ENROLLED = "NOT_ENROLLED",
@@ -40,7 +40,7 @@ export default function Course({ params }: { params: { id: string } }) {
     const [quizStarted, setQuizStarted] = useState<null|boolean>(null);
 
     useEffect(() => {
-        if (!getCourseData.result?.data) {
+        if (!getCourseData.result?.data || !courseData.minTime) {
             return;
         }
 
@@ -81,10 +81,14 @@ export default function Course({ params }: { params: { id: string } }) {
                     status={status}
                     setStatus={setStatus}
                     setCourseAttemptId={setCourseAttemptId}
+                    quizStarted={quizStarted()}
+                    courseAttemptId={courseAttemptId}
+                    quizAttemptId={quizAttemptId}
+                    courseId={params.id}
                 />
 
                 <div className="mt-8 text-2xl">
-                    <h1 className="mb-4">To complete the course:</h1>
+                    <h1 className="mb-4">Course requirements:</h1>
                     {courseData.minTime &&
                         <div className="flex flex-row items-center mt-2">
                             <Checkbox checked={timeDone} setChecked={null} style="mr-3"/>
@@ -114,11 +118,7 @@ export default function Course({ params }: { params: { id: string } }) {
                                 numQuestions={courseData.quizData.numQuestions}
                                 totalMarks={courseData.quizData.totalMarks}
                                 minimumScore={courseData.quizData.minScore}
-                                quizStarted={quizStarted()}
-                                courseAttemptId={courseAttemptId}
-                                quizAttemptId={quizAttemptId}
                                 courseStatus={courseData.status}
-                                courseId={params.id}
                             />
                         </div>
                     </div>
@@ -145,15 +145,17 @@ export default function Course({ params }: { params: { id: string } }) {
     }
 
     return (
-        <main className="flex flex-col h-fit bg-white w-[100%] p-12 rounded-2xl shadow-custom">
-            <Link href="/home"
-                  className="flex flex-row space-x-2 items-center mb-6 -mt-4 text-lg hover:opacity-60 duration-150">
-                <MdArrowBack size="28" className="text-red-800"/>
-                <div>Return To My Courses</div>
-            </Link>
+        <div className="flex w-full h-full pb-2">
+            <div className="w-[100%] bg-white p-14 rounded-2xl shadow-custom">
+                <Link href="/home"
+                      className="flex flex-row space-x-2 items-center mb-6 -mt-4 text-lg hover:opacity-60 duration-150">
+                    <MdArrowBack size="28" className="text-red-800"/>
+                    <div>Return To My Courses</div>
+                </Link>
 
-            { renderCourse() }
-            { loadingPopup() }
-        </main>
+                {renderCourse()}
+                {loadingPopup()}
+            </div>
+        </div>
     )
 }

@@ -5,7 +5,7 @@ import Button from "@/components/Button";
 import React, { useEffect, useState } from "react";
 import { RiCheckboxBlankCircleLine, RiCheckboxCircleFill } from "react-icons/ri";
 import { FaRegTimesCircle } from "react-icons/fa";
-import { callAPI } from "@/config/supabase.ts";
+import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
 
 export default function Mark({ params }: { params: { id: string } }) {

@@ -1,6 +1,6 @@
 import AuthForm from "@/components/AuthForm.tsx";
 import Button from "@/components/Button.tsx";
-import { callAPI, signUp } from "@/config/supabase.ts";
+import { callAPI, signUp } from "@/helpers/supabase.ts";
 import React, { useState } from "react";
 
 export default function SignUp({ setIsSignIn }) {
