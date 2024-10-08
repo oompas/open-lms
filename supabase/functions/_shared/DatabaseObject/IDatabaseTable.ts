@@ -17,6 +17,7 @@ abstract class DatabaseTable {
 
     protected constructor() {}
 
+    // Validate input objects fits the given object
     protected validateData(data: object) {
 
         if (!this.expectedTypes || this.expectedTypes.length === 0) {
