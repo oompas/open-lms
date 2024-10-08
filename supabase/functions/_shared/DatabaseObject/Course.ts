@@ -1,6 +1,6 @@
-import DatabaseTable, { ExpectedType } from './DatabaseTable.ts';
+import IDatabaseTable, { ExpectedType } from './IDatabaseTable.ts';
 
-class Course extends DatabaseTable {
+class Course extends IDatabaseTable {
 
     private readonly id: number;
     private readonly created_at: string;

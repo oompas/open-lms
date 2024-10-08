@@ -1,9 +1,9 @@
-import DatabaseTable from "../DatabaseObjects/DatabaseTable.ts";
+import IDatabaseTable from "../DatabaseObject/IDatabaseTable.ts";
 import IRepository, { QueryCondition } from "./IRepository.ts";
 import { adminClient } from "../adminClient.ts";
 import { ErrorResponse, log } from "../helpers.ts";
 
-abstract class BaseRepository<T extends DatabaseTable> implements IRepository<T> {
+abstract class BaseRepository<T extends IDatabaseTable> implements IRepository<T> {
 
     protected abstract readonly tableName: string;
     protected abstract readonly entityClass: new (data: any) => T;

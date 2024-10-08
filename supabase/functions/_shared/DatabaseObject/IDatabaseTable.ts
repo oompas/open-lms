@@ -4,7 +4,7 @@ interface ExpectedType {
     nullable: boolean;
 }
 
-abstract class DatabaseTable {
+abstract class IDatabaseTable {
 
     // Each subclass defines the expected structure
     protected abstract readonly expectedTypes: ExpectedTypes[];
@@ -57,5 +57,5 @@ abstract class DatabaseTable {
     }
 }
 
-export default DatabaseTable;
+export default IDatabaseTable;
 export { ExpectedType };
