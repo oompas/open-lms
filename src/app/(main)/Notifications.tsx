@@ -1,11 +1,21 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { IoNotifications } from "react-icons/io5";
-import { FiTrash } from "react-icons/fi";
 import { FaRegNewspaper } from "react-icons/fa6";
-import { TbRefresh } from "react-icons/tb";
 import { useRouter } from "next/navigation";
-import { isToday, isYesterday, isThisWeek, isThisMonth, parseISO } from 'date-fns';
+import {
+    parseISO,
+    isToday,
+    isThisWeek,
+    isThisMonth,
+    isThisYear,
+    differenceInSeconds,
+    differenceInMinutes,
+    differenceInHours,
+    differenceInDays,
+    differenceInWeeks,
+    differenceInMonths,
+    differenceInYears } from 'date-fns';
 import classNames from 'classnames';
 import { callAPI } from "@/helpers/supabase.ts";
 
@@ -46,7 +56,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, readN
                 </div>
 
                 <div className="text-xs text-gray-500 flex justify-between my-2">
-                    {new Date(date).toLocaleString()}
+                    {date}
                 </div>
             </div>
 
@@ -109,16 +119,28 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
 
         desiredNotifications.forEach(notification => {
             const date = parseISO(notification.date);
+            const now = new Date();
 
-            if (isToday(date)) {
+            if (differenceInSeconds(now, date) < 60) {
+                notification["date"] = differenceInSeconds(now, date) + " seconds ago";
                 notificationOrder['Today'].push(notification);
-            } else if (isYesterday(date)) {
-                notificationOrder['Yesterday'].push(notification);
+            } else if (differenceInMinutes(now, date) < 60) {
+                notification["date"] = differenceInMinutes(now, date) + " minutes ago";
+                notificationOrder['Today'].push(notification);
+            } else if (isToday(date)) {
+                notification["date"] = differenceInHours(now, date) + " hours ago";
+                notificationOrder['Today'].push(notification);
             } else if (isThisWeek(date, { weekStartsOn: 1 })) {
+                notification["date"] = differenceInDays(now, date) + " days ago";
                 notificationOrder['This Week'].push(notification);
             } else if (isThisMonth(date)) {
+                notification["date"] = differenceInWeeks(now, date) + " weeks ago";
                 notificationOrder['This Month'].push(notification);
+            } else if (isThisYear(date)) {
+                notification["date"] = differenceInMonths(now, date) + " months ago";
+                notificationOrder['This Year'].push(notification);
             } else {
+                notification["date"] = differenceInYears(now, date) + " years ago";
                 notificationOrder['Older'].push(notification);
             }
         });
