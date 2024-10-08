@@ -1,4 +1,5 @@
 import { adminClient } from "../adminClient.ts";
+import DatabaseError from "../Error/DatabaseError.ts";
 
 class IService {
 
@@ -6,14 +7,16 @@ class IService {
 
     protected constructor() {}
 
-    protected getAllRows(): Promise<any> {
-        return adminClient.from(this.TABLE_NAME).select()
-            .then((rsp) => {
-                if (rsp.error) {
-                    throw new Error(`Error querying all data in ${TABLE_NAME}: ${rsp.error}`);
-                }
-                return rsp.data;
-            });
+    protected async getAllRows(): Promise<any> {
+        try {
+            const data = await adminClient.from(this.TABLE_NAME).select();
+            if (rsp.error) {
+                throw rsp.error;
+            }
+            return rsp.data;
+        } catch (error) {
+            DatabaseError.create();
+        }
     }
 }
 
