@@ -11,35 +11,44 @@ class IService {
 
     protected constructor() {}
 
+    /**
+     * Gets ALL data in this table
+     */
     public async getAllRows(): Promise<any> {
         try {
-            const data = await adminClient.from(this.TABLE_NAME).select();
-            if (rsp.error) {
-                throw rsp.error;
+            const { data, error } = await adminClient.from(this.TABLE_NAME).select();
+            if (error) {
+                throw error;
             }
-            return rsp.data;
-        } catch (error) {
-            DatabaseError.create();
+            return data;
+        } catch (err) {
+            DatabaseError.create(err);
         }
     }
 
+    /**
+     * Gets the document that matches the given id (note: this uses the id column which must be unique)
+     */
     public async getById(id: number | string) {
         try {
-            const data = await adminClient.from(this.TABLE_NAME).select().eq('id', id);
-            if (rsp.error) {
-                throw rsp.error;
+            const { data, error } = await adminClient.from(this.TABLE_NAME).select().eq('id', id);
+            if (error) {
+                throw error;
             }
 
-            if (rsp.data.length > 0) {
+            if (data.length > 0) {
                 throw `More than 1 document in table ${TABLE_NAME} found with the id ${id}`;
             }
 
-            return rsp.data[0];
-        } catch (error) {
-            DatabaseError.create(error);
+            return data[0];
+        } catch (err) {
+            DatabaseError.create(err);
         }
     }
 
+    /**
+     * Run a query on this table to return desired rows
+     */
     public async query(conditions: QueryConditions) {
         try {
             // Wrap single conditions in an array for consistency
@@ -64,8 +73,8 @@ class IService {
                 throw error;
             }
             return data;
-        } catch (error) {
-            DatabaseError.create();
+        } catch (err) {
+            DatabaseError.create(err);
         }
     }
 }
