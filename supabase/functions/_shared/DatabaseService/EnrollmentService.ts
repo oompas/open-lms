@@ -12,7 +12,11 @@ class _enrollmentService extends IService {
      * Returns true if the given user is enrolled in the given course
      */
     public async isEnrolled(courseId: number, userId: string): Promise<boolean> {
-        return this.query([['eq', 'course_id', courseId], ['eq', 'user_id', userId]]);
+        const enrollment = await this.query([['eq', 'course_id', courseId], ['eq', 'user_id', userId]]);
+        if (enrollment.length > 1) {
+            await DatabaseEror.create();
+        }
+        return enrollment.length === 1;
     }
 }
 
