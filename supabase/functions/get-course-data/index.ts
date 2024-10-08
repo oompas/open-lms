@@ -2,10 +2,10 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCurrentTimestampTz, OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
-import { getCourseStatus } from "../_shared/functionality.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 import CourseService from "../_shared/DatabaseService/CourseService.ts";
 import CourseAttemptService from "../_shared/DatabaseService/CourseAttemptService.ts";
+import QuizAttemptService from "../_shared/DatabaseService/QuizAttemptService.ts";
 
 Deno.serve(async (req: Request) => {
 
@@ -65,8 +65,7 @@ Deno.serve(async (req: Request) => {
         currentId: null
     };
     if (currentCourseAttempt) {
-        const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: ['eq', 'course_attempt_id', currentCourseAttempt.id] });
-        if (quizAttempts instanceof Response) return quizAttempts;
+        const quizAttempts = await QuizAttemptService.query(['eq', 'course_attempt_id', currentCourseAttempt.id]);
 
         const currentQuizAttempt = quizAttempts.length > 0
             ? quizAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest)
