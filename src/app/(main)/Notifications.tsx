@@ -108,17 +108,7 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
 
     const renderNotifications = () => {
 
-        if (notifications.length === 0) {
-            return (
-                <div className="flex justify-center">
-                    <div className="text-lg font-sans mt-4 text-gray-600">
-                        No notifications
-                    </div>
-                </div>
-            );
-        }
-
-        return notifications.map((notification, index) => {
+        const filteredNotifications = notifications.filter((n) => n.direct === directNotifications).map((notification, index) => {
             return (
                 <NotificationItem
                     key={notification.id}
@@ -129,6 +119,18 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
                 />
             );
         });
+
+        if (filteredNotifications.length === 0) {
+            return (
+                <div className="flex justify-center">
+                    <div className="text-lg font-sans mt-4 text-gray-600">
+                        No notifications
+                    </div>
+                </div>
+            );
+        }
+
+        return filteredNotifications;
     };
 
     return (
