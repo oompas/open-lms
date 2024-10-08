@@ -128,8 +128,8 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 </div>
             )}
 
-            <footer
-                className="flex flex-row items-center fixed w-auto mx-[10.8vw] px-8 rounded-t-2xl h-20 left-20 right-20 shadow-custom bg-white border-[1px] border-gray bottom-0"
+            <div
+                className="flex items-center px-8 rounded-t-2xl h-20 shadow-custom bg-white border-[1px] border-gray bottom-0"
             >
                 <Link href="/home">
                     <img
@@ -159,7 +159,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
                 <span
                     className="text-white ml-auto">&copy; {new Date().getFullYear()} OpenLMS. All rights reserved.
                 </span>
-            </footer>
+            </div>
         </body>
         </html>
     )
