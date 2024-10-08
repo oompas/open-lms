@@ -10,6 +10,14 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { CgProfile } from "react-icons/cg";
 import Notifications from "@/app/(main)/Notifications.tsx";
 import { callAPI } from "@/helpers/supabase.ts";
+import {
+    differenceInDays,
+    differenceInHours,
+    differenceInMinutes, differenceInMonths,
+    differenceInSeconds, differenceInWeeks, differenceInYears,
+    isThisMonth, isThisYear,
+    parseISO
+} from "date-fns";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
 
@@ -18,8 +26,38 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
     const getNotifications = () => {
         callAPI('get-notifications')
-            .then(r => {
-                setNotifications(r.data);
+            .then((rsp) => {
+                const notifications = rsp.data;
+                const now = new Date();
+
+                notifications.forEach((notification) => {
+                    const date = parseISO(notification.date);
+
+                    if (differenceInSeconds(now, date) < 60) {
+                        const diff = differenceInSeconds(now, date);
+                        notification["date"] = diff + ` second${diff === 1 ? '' : 's'} ago`;
+                    } else if (differenceInMinutes(now, date) < 60) {
+                        const diff = differenceInMinutes(now, date);
+                        notification["date"] = diff + ` minute${diff === 1 ? '' : 's'} ago`;
+                    } else if (differenceInHours(now, date) < 24) {
+                        const diff = differenceInHours(now, date);
+                        notification["date"] = diff + ` hour${diff === 1 ? '' : 's'} ago`;
+                    } else if (differenceInDays(now, date) < 7) {
+                        const diff = differenceInDays(now, date);
+                        notification["date"] = diff + ` day${diff === 1 ? '' : 's'} ago`;
+                    } else if (differenceInWeeks(now, date) < 5) {
+                        const diff = differenceInWeeks(now, date);
+                        notification["date"] = diff + ` week${diff === 1 ? '' : 's'} ago`;
+                    } else if (differenceInMonths(now, date) < 12) {
+                        const diff = differenceInMonths(now, date);
+                        notification["date"] = diff + ` month${diff === 1 ? '' : 's'} ago`;
+                    } else {
+                        const diff = differenceInYears(now, date);
+                        notification["date"] = diff+ ` year${diff === 1 ? '' : 's'} ago`;
+                    }
+                });
+
+                setNotifications(notifications);
             });
     }
 

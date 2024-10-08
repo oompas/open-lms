@@ -106,58 +106,9 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
         }
     };
 
-    const groupedNotifications = React.useMemo(() => {
-        const notificationOrder: { [key: string]: Notification[] } = {
-            'Today': [],
-            'Yesterday': [],
-            'This Week': [],
-            'This Month': [],
-            'Older': []
-        };
-
-        const desiredNotifications = notifications.filter((n) => n.direct === directNotifications);
-
-        desiredNotifications.forEach(notification => {
-            const date = parseISO(notification.date);
-            const now = new Date();
-
-            if (differenceInSeconds(now, date) < 60) {
-                notification["date"] = differenceInSeconds(now, date) + " seconds ago";
-                notificationOrder['Today'].push(notification);
-            } else if (differenceInMinutes(now, date) < 60) {
-                notification["date"] = differenceInMinutes(now, date) + " minutes ago";
-                notificationOrder['Today'].push(notification);
-            } else if (isToday(date)) {
-                notification["date"] = differenceInHours(now, date) + " hours ago";
-                notificationOrder['Today'].push(notification);
-            } else if (isThisWeek(date, { weekStartsOn: 1 })) {
-                notification["date"] = differenceInDays(now, date) + " days ago";
-                notificationOrder['This Week'].push(notification);
-            } else if (isThisMonth(date)) {
-                notification["date"] = differenceInWeeks(now, date) + " weeks ago";
-                notificationOrder['This Month'].push(notification);
-            } else if (isThisYear(date)) {
-                notification["date"] = differenceInMonths(now, date) + " months ago";
-                notificationOrder['This Year'].push(notification);
-            } else {
-                notification["date"] = differenceInYears(now, date) + " years ago";
-                notificationOrder['Older'].push(notification);
-            }
-        });
-
-        // Sort notifications within each category
-        for (const category in notificationOrder) {
-            notificationOrder[category].sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
-        }
-
-        return notificationOrder;
-    }, [notifications, directNotifications]);
-
     const renderNotifications = () => {
 
-        const hasNotifications = Object.values(groupedNotifications).some(group => group.length > 0);
-
-        if (!hasNotifications) {
+        if (notifications.length === 0) {
             return (
                 <div className="flex justify-center">
                     <div className="text-lg font-sans mt-4 text-gray-600">
@@ -167,24 +118,17 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
             );
         }
 
-        return Object.entries(groupedNotifications).map(([timespan, timedNotifications]) => (
-            timedNotifications.length > 0 && (
-                <React.Fragment key={timespan}>
-                    <div className="text-xs font-bold bg-gray-50 w-full px-4 py-2">
-                        {timespan.toUpperCase()}
-                    </div>
-                    {timedNotifications.map((notification, index) => (
-                        <NotificationItem
-                            key={notification.id}
-                            notification={notification}
-                            readNotification={readNotification}
-                            onClose={() => setNotificationsOpen(false)}
-                            isLast={index === timedNotifications.length - 1}
-                        />
-                    ))}
-                </React.Fragment>
-            )
-        ));
+        return notifications.map((notification, index) => {
+            return (
+                <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    readNotification={readNotification}
+                    onClose={() => setNotificationsOpen(false)}
+                    isLast={index === notifications.length - 1}
+                />
+            );
+        });
     };
 
     return (
