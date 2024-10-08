@@ -1,5 +1,6 @@
 import ApiError from "./ApiError.ts";
 import { adminClient } from "../adminClient.ts";
+import { log } from "../helpers.ts";
 
 class DatabaseError extends ApiError {
 
@@ -7,18 +8,20 @@ class DatabaseError extends ApiError {
         super(message);
     }
 
-    public static create(message: string) {
+    public static async create(message: string) {
         const err = {
-            uuid: crypto.randomUUID(),
-            endpoint: '',
+            endpoint: null,
             type: 'DATABASE',
-            request_uid: '',
-            payload: '',
+            request_uid: null,
+            payload: null,
             message: message,
-            stack_trace: ''
+            stack_trace: null
         };
 
-        adminClient.from('error_log').insert(err);
+        const { data, error } = await adminClient.from('error_log').insert(err);
+        if (error) {
+            log(`Error logging error: ${JSON.stringify(error, null, 4)}`);
+        }
 
         throw new DatabaseError(message);
     }

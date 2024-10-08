@@ -24,7 +24,7 @@ class IService {
             return data;
         } catch (err) {
             log(`Error querying database: ${JSON.stringify(err)}`);
-            DatabaseError.create(err);
+            await DatabaseError.create(err.message);
         }
     }
 
@@ -45,7 +45,7 @@ class IService {
             return data[0];
         } catch (err) {
             log(`Error querying database: ${JSON.stringify(err)}`);
-            DatabaseError.create(err);
+            await DatabaseError.create(err.message);
         }
     }
 
@@ -78,7 +78,7 @@ class IService {
             return data;
         } catch (err) {
             log(`Error querying database: ${JSON.stringify(err)}`);
-            DatabaseError.create(err);
+            await DatabaseError.create(err.message);
         }
     }
 }
