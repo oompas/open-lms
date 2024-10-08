@@ -2,7 +2,6 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { SuccessResponse, log, OptionsRsp, InternalError } from "../_shared/helpers.ts";
 import { getRows } from "../_shared/database.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
-import { getCourseStatus } from "../_shared/functionality.ts";
 import CourseService from "../_shared/DatabaseService/CourseService.ts";
 
 Deno.serve(async (req: Request) => {
@@ -20,9 +19,6 @@ Deno.serve(async (req: Request) => {
 
         log("Called course select...");
 
-        const enrollment = await getRows({ table: 'enrolled_course', conditions: ['eq', 'user_id', userId] });
-        if (enrollment instanceof Response) return enrollment;
-
         const attempts = await getRows({ table: 'course_attempt', conditions: ['eq', 'user_id', userId] });
         if (attempts instanceof Response) return attempts;
 
@@ -30,12 +26,12 @@ Deno.serve(async (req: Request) => {
             courses
                 .filter((course) => course.active === true)
                 .map(async (course: any) => {
-                    const courseStatus = await getCourseStatus(course.id, userId);
+                    const status = await CourseService.getCourseStatus(course.id, userId);
                     return {
                         id: course.id,
                         name: course.name,
                         description: course.description,
-                        status: courseStatus,
+                        status: status,
                         minTime: course.min_time,
                         maxQuizTime: course.quiz_time_limit,
                     }
@@ -45,6 +41,7 @@ Deno.serve(async (req: Request) => {
         log("Returning success...");
         return SuccessResponse(courseData);
     } catch (error) {
+        log(`Error caught: ${error.message}`);
         return InternalError();
     }
 });

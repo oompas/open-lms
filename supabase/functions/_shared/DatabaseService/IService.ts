@@ -1,5 +1,6 @@
 import { adminClient } from "../adminClient.ts";
 import DatabaseError from "../Error/DatabaseError.ts";
+import { log } from "../helpers.ts";
 
 // Filter docs: https://supabase.com/docs/reference/javascript/using-filters
 type Filter = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'is';
@@ -22,6 +23,7 @@ class IService {
             }
             return data;
         } catch (err) {
+            log(`Error querying database: ${JSON.stringify(err)}`);
             DatabaseError.create(err);
         }
     }
@@ -42,6 +44,7 @@ class IService {
 
             return data[0];
         } catch (err) {
+            log(`Error querying database: ${JSON.stringify(err)}`);
             DatabaseError.create(err);
         }
     }
@@ -74,6 +77,7 @@ class IService {
             }
             return data;
         } catch (err) {
+            log(`Error querying database: ${JSON.stringify(err)}`);
             DatabaseError.create(err);
         }
     }
