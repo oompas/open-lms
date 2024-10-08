@@ -11,20 +11,18 @@ Deno.serve(async (req: Request) => {
             return OptionsRsp();
         }
 
-        log("Staring func...");
+        log("Staring function...");
 
         const userId = await getRequestUserId(req);
 
-        const courses = await CourseService.getAllRows();
+        log(`User id: ${userId}`);
 
-        log("Called course select...");
+        const courses = await CourseService.query(['eq', 'active', true]);
 
-        const attempts = await getRows({ table: 'course_attempt', conditions: ['eq', 'user_id', userId] });
-        if (attempts instanceof Response) return attempts;
+        log(`Queried ${courses.length} courses`);
 
         const courseData = await Promise.all(
             courses
-                .filter((course) => course.active === true)
                 .map(async (course: any) => {
                     const status = await CourseService.getCourseStatus(course.id, userId);
                     return {
