@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getCurrentTimestampTz, log, OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
-import Course from "../_shared/DatabaseObjects/Course.ts";
+import Course from "../_shared/DatabaseObject/Course.ts";
 import { getCourseStatus } from "../_shared/functionality.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 

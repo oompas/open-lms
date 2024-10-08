@@ -3,6 +3,7 @@ import { SuccessResponse, log, OptionsRsp } from "../_shared/helpers.ts";
 import { getRows } from "../_shared/database.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { getCourseStatus } from "../_shared/functionality.ts";
+import CourseService from "../_shared/DatabaseService/CourseService.ts";
 
 Deno.serve(async (req: Request) => {
 
@@ -14,8 +15,7 @@ Deno.serve(async (req: Request) => {
 
     const userId = await getRequestUserId(req);
 
-    const courses = await getRows({ table: 'course', conditions: ['eq', 'active', true] });
-    if (courses instanceof Response) return courses;
+    const courses = await CourseService.getAllRows();
 
     log("Called course select...");
 
