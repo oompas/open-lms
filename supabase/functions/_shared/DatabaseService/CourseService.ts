@@ -2,7 +2,7 @@ import IService from "./IService.ts";
 import EnrollmentService from "./EnrollmentService.ts";
 import { getRows } from "../database.ts";
 
-enum CourseStatus {
+export enum CourseStatus {
     NOT_ENROLLED = "NOT_ENROLLED",
     ENROLLED = "ENROLLED",
     IN_PROGRESS = "IN_PROGRESS",
