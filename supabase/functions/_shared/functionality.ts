@@ -1,6 +1,7 @@
 import { getRows } from "./database.ts";
 import { adminClient } from "./adminClient.ts";
 import { ErrorResponse, getCurrentTimestampTz, log } from "./helpers.ts";
+import EnrollmentService from "./DatabaseService/EnrollmentService.ts";
 
 enum CourseStatus {
     NOT_ENROLLED = "NOT_ENROLLED",
@@ -83,6 +84,7 @@ const handleMarkedQuiz = async (quizAttemptId: number) => {
     // If the quiz passes, the course attempt passes
     if (quizAttempt.pass === true) {
         const { data, error } = await adminClient.from('course_attempt').update({ pass: true, end_time: timestamp }).eq('id', courseAttempt.id);
+        await EnrollmentService.updateStatus(courseID, userId, CourseStatus.COMPLETED);
 
         if (error) {
             log(`Error updating course attempt to pass: ${error.message}`);
@@ -100,6 +102,7 @@ const handleMarkedQuiz = async (quizAttemptId: number) => {
     const maxQuizAttempts = course.max_quiz_attempts;
     if (quizAttemptQuery.length >= maxQuizAttempts) {
         const { data, error } = await adminClient.from('course_attempt').update({ pass: false, end_time: timestamp }).eq('id', courseAttempt.id);
+        await EnrollmentService.updateStatus(courseID, userId, CourseStatus.FAILED);
 
         if (error) {
             log(`Error updating course attempt to failure: ${error.message}`);
