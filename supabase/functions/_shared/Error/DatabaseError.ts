@@ -14,7 +14,7 @@ class DatabaseError extends ApiError {
             type: 'DATABASE',
             request_uid: null,
             payload: null,
-            message: message,
+            message: message ?? '',
             stack_trace: null
         };
 

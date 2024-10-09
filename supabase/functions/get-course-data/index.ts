@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
+import { log, OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import CourseService from "../_shared/DatabaseService/CourseService.ts";
 import CourseAttemptService from "../_shared/DatabaseService/CourseAttemptService.ts";
@@ -11,11 +11,15 @@ Deno.serve(async (req: Request) => {
         return OptionsRsp();
     }
 
+    log(`Getting requesting user & course ID...`);
+
     const [_, userId] = await Promise.all([
         req.json(),
         getRequestUserId(req)
     ]);
     const { courseId } = _;
+
+    log(`Getting Course data and course attempts...`);
 
     const [course, courseAttempts] = await Promise.all([
         CourseService.getById(courseId),
@@ -24,6 +28,8 @@ Deno.serve(async (req: Request) => {
             ['eq', 'course_id', courseId]
         ])
     ]);
+
+    log(`Getting course status...`);
 
     let courseStatus = await CourseService.getCourseStatus(courseId, userId);
 

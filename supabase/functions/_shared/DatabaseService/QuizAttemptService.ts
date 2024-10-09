@@ -2,10 +2,10 @@ import IService from "./IService.ts";
 
 class _quizAttemptService extends IService {
 
-    protected readonly TABLE_NAME = "quiz_attempt";
+    // protected static readonly TABLE_NAME = "quiz_attempt";
 
     public constructor() {
-        super();
+        super("quiz_attempt");
     }
 }
 

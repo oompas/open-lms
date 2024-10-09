@@ -5,28 +5,28 @@ import DatabaseError from "../Error/DatabaseError.ts";
 
 class _enrollmentService extends IService {
 
-    protected readonly TABLE_NAME = "enrolled_course";
+    // protected static readonly TABLE_NAME = "enrolled_course";
 
     public constructor() {
-        super();
+        super("enrolled_course");
     }
 
     /**
-     * Returns true if the given user is enrolled in the given course
+     * Returns the enrollment object for a given user and course id, if present
      */
-    public async isEnrolled(courseId: number, userId: string): Promise<boolean> {
+    public async getEnrollment(courseId: number, userId: string): Promise<object> {
         const enrollment = await this.query([['eq', 'course_id', courseId], ['eq', 'user_id', userId]]);
         if (enrollment.length > 1) {
             await DatabaseError.create(`Queried multiple enrollments for course_id ${courseId} and user_id ${userId}`);
         }
-        return enrollment.length === 1;
+        return enrollment.length ? enrollment[0] : null;
     }
 
     /**
      * Updates the status of a course for a user
      */
     public async updateStatus(courseId: number, userId: string, status: CourseStatus) {
-        await adminClient.from(this.TABLE_NAME).update({ status }).eq('course_id', courseId).eq('user_id', userId);
+        await adminClient.from(_enrollmentService.TABLE_NAME).update({ status }).eq('course_id', courseId).eq('user_id', userId);
     }
 }
 

@@ -8,9 +8,13 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
 
 class IService {
 
-    protected abstract readonly TABLE_NAME: string;
+    protected readonly TABLE_NAME: string;
 
-    protected constructor() {}
+    protected constructor(tblName: string) {
+        log(`Super constructor. tblName: ${tblName} this table: ${this.TABLE_NAME}`);
+        this.TABLE_NAME = tblName;
+        log(`Super constructor (after). tblName: ${tblName} this table: ${this.TABLE_NAME}`);
+    }
 
     /**
      * Gets ALL data in this table
@@ -33,13 +37,14 @@ class IService {
      */
     public async getById(id: number | string) {
         try {
+            log(`getById this table: ${this.TABLE_NAME}`);
             const { data, error } = await adminClient.from(this.TABLE_NAME).select().eq('id', id);
             if (error) {
                 throw error;
             }
 
-            if (data.length > 0) {
-                throw `More than 1 document in table ${TABLE_NAME} found with the id ${id}`;
+            if (data.length > 1) {
+                throw `More than 1 document in table ${this.TABLE_NAME} found with the id ${id}`;
             }
 
             return data[0];
@@ -60,6 +65,7 @@ class IService {
             }
 
             // Setup query
+            log(`query this table: ${this.TABLE_NAME}`);
             const query = adminClient.from(this.TABLE_NAME).select();
             conditions.forEach(([filter, key, value]) => {
                 if (filter === 'null') {

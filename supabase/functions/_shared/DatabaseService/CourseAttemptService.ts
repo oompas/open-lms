@@ -4,10 +4,10 @@ import { getCurrentTimestampTz } from "../helpers.ts";
 
 class _courseAttemptService extends IService {
 
-    protected readonly TABLE_NAME = "course_attempt";
+    // protected static readonly TABLE_NAME = "course_attempt";
 
     public constructor() {
-        super();
+        super("course_attempt");
     }
 
     public async completeAttempt(id: number, pass: boolean) {
