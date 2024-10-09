@@ -8,7 +8,7 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
 
 class IService {
 
-    protected readonly TABLE_NAME: string;
+    private readonly TABLE_NAME: string;
 
     protected constructor(tblName: string) {
         log(`Super constructor. tblName: ${tblName} this table: ${this.TABLE_NAME}`);

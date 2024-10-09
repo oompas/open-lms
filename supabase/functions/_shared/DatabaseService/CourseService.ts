@@ -12,10 +12,10 @@ export enum CourseStatus {
 
 class _courseService extends IService {
 
-    // private static readonly TABLE_NAME = "course";
+    private static readonly TABLE_NAME = "course";
 
     public constructor() {
-        super("course");
+        super(_courseService.TABLE_NAME);
     }
 
     /**

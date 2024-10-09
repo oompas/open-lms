@@ -5,10 +5,10 @@ import DatabaseError from "../Error/DatabaseError.ts";
 
 class _enrollmentService extends IService {
 
-    // protected static readonly TABLE_NAME = "enrolled_course";
+    private static readonly TABLE_NAME = "enrolled_course";
 
     public constructor() {
-        super("enrolled_course");
+        super(_enrollmentService.TABLE_NAME);
     }
 
     /**
