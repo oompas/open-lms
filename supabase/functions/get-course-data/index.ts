@@ -19,19 +19,15 @@ Deno.serve(async (req: Request) => {
     ]);
     const { courseId } = _;
 
-    log(`Getting Course data and course attempts...`);
+    log(`Querying course data, attempts and status...`);
 
-    const [course, courseAttempts] = await Promise.all([
+    let [course, courseAttempts, courseStatus] = await Promise.all([
         CourseService.getById(courseId),
-        CourseAttemptService.query([
-            ['eq', 'user_id', userId],
-            ['eq', 'course_id', courseId]
-        ])
+        CourseAttemptService.query([['eq', 'user_id', userId], ['eq', 'course_id', courseId]]),
+        CourseService.getCourseStatus(courseId, userId)
     ]);
 
-    log(`Getting course status...`);
-
-    let courseStatus = await CourseService.getCourseStatus(courseId, userId);
+    log(`Constructing quiz data...`);
 
     let quizData = null;
     if (course.total_quiz_marks !== null) {
@@ -43,6 +39,8 @@ Deno.serve(async (req: Request) => {
             numQuestions: course.num_quiz_questions,
         };
     }
+
+    log(`Constructing course attempt data...`);
 
     let attempts = null;
     const currentCourseAttempt = courseAttempts.length > 0
@@ -61,10 +59,11 @@ Deno.serve(async (req: Request) => {
         attempts = {
             numAttempts: courseAttempts.length,
             currentAttemptId: currentCourseAttempt?.id,
-            currentStartTime: currentCourseAttempt ? new Date(currentCourseAttempt.start_time) : null,
-            currentQuizAttemptId: quizAttempt?.id ?? null
+            currentStartTime: currentCourseAttempt ? new Date(currentCourseAttempt.start_time) : null
         }
     }
+
+    log(`Constructing quiz attempt data...`);
 
     const quizAttemptData = {
         number: 0,
@@ -79,6 +78,8 @@ Deno.serve(async (req: Request) => {
         quizAttemptData.number = quizAttempts.length;
         quizAttemptData.currentId = currentQuizAttempt?.id;
     }
+
+    log(`Returning response...`);
 
     const rsp = {
         id: course.id,

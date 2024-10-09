@@ -47,7 +47,7 @@ export default function Course({ params }: { params: { id: string } }) {
         console.log(`Status: ${status} Time done: ${timeDone}`);
         setQuizStarted(status === CourseStatus.NOT_ENROLLED || status === CourseStatus.ENROLLED || status === CourseStatus.COMPLETED || !timeDone
             ? null // @ts-ignore
-            : getCourseData.result.data.currentQuiz !== null
+            : getCourseData.result.data.quizAttempts.currentId !== null
         );
     }, [status, timeDone]);
 
@@ -65,7 +65,7 @@ export default function Course({ params }: { params: { id: string } }) {
         }
 
         const quizStarted = () => {
-            const attemptId = courseData.attempts?.currentQuizAttemptId;
+            const attemptId = courseData.quizAttempts?.currentId;
             if (attemptId) {
                 return attemptId;
             }
