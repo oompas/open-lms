@@ -26,7 +26,7 @@ class _enrollmentService extends IService {
      * Updates the status of a course for a user
      */
     public async updateStatus(courseId: number, userId: string, status: CourseStatus) {
-        await adminClient.from(this.TABLE_NAME).update({ status });
+        await adminClient.from(this.TABLE_NAME).update({ status }).eq('course_id', courseId).eq('user_id', userId);
     }
 }
 
