@@ -11,13 +11,21 @@ Deno.serve(async (req: Request) => {
         return OptionsRsp();
     }
 
-    const userId = await getRequestUserId(req);
+    const [_, userId] = await Promise.all([
+        req.json(),
+        getRequestUserId(req)
+    ]);
+    const { courseId } = _;
 
-    const { courseId } = await req.json();
-    
-    const course = await CourseService.getById(courseId);
+    const [course, courseAttempts] = await Promise.all([
+        CourseService.getById(courseId),
+        CourseAttemptService.query([
+            ['eq', 'user_id', userId],
+            ['eq', 'course_id', courseId]
+        ])
+    ]);
 
-    const courseAttempts = await CourseAttemptService.query([['eq', 'user_id', userId], ['eq', 'course_id', courseId]]);
+    let courseStatus = await CourseService.getCourseStatus(courseId, userId);
 
     let quizData = null;
     if (course.total_quiz_marks !== null) {
@@ -41,6 +49,7 @@ Deno.serve(async (req: Request) => {
             && currentCourseAttempt.pass === null
             && new Date().getTime() > new Date(currentCourseAttempt.start_time).getTime() + course.min_time * 60 * 1000) {
             await CourseAttemptService.completeAttempt(currentCourseAttempt.id, true);
+            courseStatus = "COMPLETED";
         }
 
         attempts = {
@@ -64,8 +73,6 @@ Deno.serve(async (req: Request) => {
         quizAttemptData.number = quizAttempts.length;
         quizAttemptData.currentId = currentQuizAttempt?.id;
     }
-
-    const courseStatus = await CourseService.getCourseStatus(courseId, userId);
 
     const rsp = {
         id: course.id,
