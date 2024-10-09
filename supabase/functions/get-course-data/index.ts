@@ -1,8 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { getCurrentTimestampTz, OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
+import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
-import { getRows } from "../_shared/database.ts";
-import { adminClient } from "../_shared/adminClient.ts";
 import CourseService from "../_shared/DatabaseService/CourseService.ts";
 import CourseAttemptService from "../_shared/DatabaseService/CourseAttemptService.ts";
 import QuizAttemptService from "../_shared/DatabaseService/QuizAttemptService.ts";
@@ -42,14 +40,7 @@ Deno.serve(async (req: Request) => {
         if (course.preserve_quiz_question_order === null
             && currentCourseAttempt.pass === null
             && new Date().getTime() > new Date(currentCourseAttempt.start_time).getTime() + course.min_time * 60 * 1000) {
-            await adminClient.from('course_attempt').update({ pass: true, end_time: getCurrentTimestampTz() }).eq('id', currentCourseAttempt.id);
-        }
-
-        let quizAttempt = null;
-        if (currentCourseAttempt) {
-            quizAttempt = await getRows({ table: 'quiz_attempt', conditions:
-                    [['eq', 'course_id', courseId], ['eq', 'user_id', userId], ['eq', 'course_attempt_id', currentCourseAttempt.id]] });
-            if (quizAttempt instanceof Response) return quizAttempt;
+            await CourseAttemptService.completeAttempt(currentCourseAttempt.id, true);
         }
 
         attempts = {
@@ -70,7 +61,7 @@ Deno.serve(async (req: Request) => {
         const currentQuizAttempt = quizAttempts.length > 0
             ? quizAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest)
             : null;
-        quizAttemptData.number = quizAttempts.leng;
+        quizAttemptData.number = quizAttempts.length;
         quizAttemptData.currentId = currentQuizAttempt?.id;
     }
 
