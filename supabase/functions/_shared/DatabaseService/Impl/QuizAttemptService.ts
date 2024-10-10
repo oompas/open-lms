@@ -1,4 +1,4 @@
-import IService from "./IService.ts";
+import IService from "../IService.ts";
 
 class _quizAttemptService extends IService {
 
@@ -9,6 +9,4 @@ class _quizAttemptService extends IService {
     }
 }
 
-const QuizAttemptService = new _quizAttemptService();
-
-export default QuizAttemptService;
+export default _quizAttemptService;

@@ -1,7 +1,7 @@
 import { getRows } from "./database.ts";
 import { adminClient } from "./adminClient.ts";
 import { ErrorResponse, getCurrentTimestampTz, log } from "./helpers.ts";
-import EnrollmentService from "./DatabaseService/EnrollmentService.ts";
+import EnrollmentService from "./DatabaseService/Impl/EnrollmentService.ts";
 
 enum CourseStatus {
     NOT_ENROLLED = "NOT_ENROLLED",

@@ -1,7 +1,7 @@
-import IService from "./IService.ts";
+import IService from "../IService.ts";
 import { CourseStatus } from "./CourseService.ts";
-import { adminClient } from "../adminClient.ts";
-import DatabaseError from "../Error/DatabaseError.ts";
+import { adminClient } from "../../adminClient.ts";
+import DatabaseError from "../../Error/DatabaseError.ts";
 
 class _enrollmentService extends IService {
 
@@ -30,6 +30,4 @@ class _enrollmentService extends IService {
     }
 }
 
-const EnrollmentService = new _enrollmentService();
-
-export default EnrollmentService;
+export default _enrollmentService;

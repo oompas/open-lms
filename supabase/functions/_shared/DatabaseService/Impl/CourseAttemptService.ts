@@ -1,6 +1,6 @@
-import IService from "./IService.ts";
-import { adminClient } from "../adminClient.ts";
-import { getCurrentTimestampTz } from "../helpers.ts";
+import IService from "../IService.ts";
+import { adminClient } from "../../adminClient.ts";
+import { getCurrentTimestampTz } from "../../helpers.ts";
 
 class _courseAttemptService extends IService {
 
@@ -15,6 +15,4 @@ class _courseAttemptService extends IService {
     }
 }
 
-const CourseAttemptService = new _courseAttemptService();
-
-export default CourseAttemptService;
+export default _courseAttemptService;

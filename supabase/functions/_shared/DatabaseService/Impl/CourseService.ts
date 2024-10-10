@@ -1,4 +1,4 @@
-import IService from "./IService.ts";
+import IService from "../IService.ts";
 import EnrollmentService from "./EnrollmentService.ts";
 
 export enum CourseStatus {
@@ -31,6 +31,4 @@ class _courseService extends IService {
     }
 }
 
-const CourseService = new _courseService();
-
-export default CourseService;
+export default _courseService;
