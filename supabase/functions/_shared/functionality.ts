@@ -1,7 +1,7 @@
 import { getRows } from "./database.ts";
 import { adminClient } from "./adminClient.ts";
 import { ErrorResponse, getCurrentTimestampTz, log } from "./helpers.ts";
-import { EnrollmentService } from "./DatabaseService/Services.ts";
+import { EnrollmentService } from "./Service/Services.ts";
 import { CourseStatus } from "./Enum/CourseStatus.ts";
 
 /**

@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { SuccessResponse, log, OptionsRsp, InternalError } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
-import { CourseService } from "../_shared/DatabaseService/Services.ts";
+import { CourseService } from "../_shared/Service/Services.ts";
 
 Deno.serve(async (req: Request) => {
 

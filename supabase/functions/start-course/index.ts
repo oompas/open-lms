@@ -3,7 +3,7 @@ import { SuccessResponse, ErrorResponse, OptionsRsp } from "../_shared/helpers.t
 import { getRequestUserId } from "../_shared/auth.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
-import { EnrollmentService } from "../_shared/DatabaseService/Services.ts";
+import { EnrollmentService } from "../_shared/Service/Services.ts";
 
 Deno.serve(async (req) => {
 
