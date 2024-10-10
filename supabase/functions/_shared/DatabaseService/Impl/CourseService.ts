@@ -1,14 +1,6 @@
 import IService from "../IService.ts";
-import EnrollmentService from "./EnrollmentService.ts";
-
-export enum CourseStatus {
-    NOT_ENROLLED = "NOT_ENROLLED",
-    ENROLLED = "ENROLLED",
-    IN_PROGRESS = "IN_PROGRESS",
-    AWAITING_MARKING = "AWAITING_MARKING",
-    FAILED = "FAILED",
-    COMPLETED = "COMPLETED"
-}
+import { CourseStatus } from "../../Enum/CourseStatus.ts";
+import { EnrollmentService } from "../Services.ts";
 
 class _courseService extends IService {
 

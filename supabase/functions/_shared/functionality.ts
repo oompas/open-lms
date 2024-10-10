@@ -1,16 +1,8 @@
 import { getRows } from "./database.ts";
 import { adminClient } from "./adminClient.ts";
 import { ErrorResponse, getCurrentTimestampTz, log } from "./helpers.ts";
-import EnrollmentService from "./DatabaseService/Impl/EnrollmentService.ts";
-
-enum CourseStatus {
-    NOT_ENROLLED = "NOT_ENROLLED",
-    ENROLLED = "ENROLLED",
-    IN_PROGRESS = "IN_PROGRESS",
-    AWAITING_MARKING = "AWAITING_MARKING",
-    FAILED = "FAILED",
-    COMPLETED = "COMPLETED"
-}
+import { EnrollmentService } from "./DatabaseService/Services.ts";
+import { CourseStatus } from "./Enum/CourseStatus.ts";
 
 /**
  * Gets the current status of a course for a given user (NOTE_ENROLLED, ENROLLED, IN_PROGRESS, etc)

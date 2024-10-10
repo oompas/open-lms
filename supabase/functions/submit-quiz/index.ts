@@ -4,8 +4,8 @@ import { getRows } from "../_shared/database.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 import { handleMarkedQuiz } from "../_shared/functionality.ts";
-import EnrollmentService from "../_shared/DatabaseService/Impl/EnrollmentService.ts";
-import { CourseStatus } from "../_shared/DatabaseService/Impl/CourseService.ts";
+import { EnrollmentService } from "../_shared/DatabaseService/Services.ts";
+import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 
 Deno.serve(async (req) => {
 
