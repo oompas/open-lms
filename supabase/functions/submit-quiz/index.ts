@@ -4,7 +4,7 @@ import { getRows } from "../_shared/database.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 import { handleMarkedQuiz } from "../_shared/functionality.ts";
-import { EnrollmentService } from "../_shared/DatabaseService/Services.ts";
+import { CourseService, EnrollmentService } from "../_shared/DatabaseService/Services.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 
 Deno.serve(async (req) => {
@@ -27,9 +27,7 @@ Deno.serve(async (req) => {
     const quizQuestions = await getRows({ table: 'quiz_question', conditions: ['eq', 'course_id', quizAttempt.course_id] });
     if (quizQuestions instanceof Response) return quizQuestions;
 
-    const courseQuery = await getRows({ table: 'course', conditions: ['eq', 'id', quizAttempt.course_id] });
-    if (courseQuery instanceof Response) return courseQuery;
-    const course = courseQuery[0];
+    const course = await CourseService.getById(quizAttempt.course_id);
 
     if (quizQuestions.length !== responses.length) {
         return ErrorResponse(`There are ${quizQuestions.length} quiz questions, but only ${responses.length} responses were provided`);

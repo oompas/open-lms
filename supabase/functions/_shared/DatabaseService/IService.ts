@@ -44,7 +44,7 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
                 throw `More than 1 document in table ${this.TABLE_NAME} found with the id ${id}`;
             }
 
-            return data[0];
+            return data.length === 1 ? data[0] : null;
         } catch (err) {
             log(`Error querying database: ${JSON.stringify(err)}`);
             await DatabaseError.create(err.message);

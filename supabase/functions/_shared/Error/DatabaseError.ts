@@ -18,7 +18,7 @@ class DatabaseError extends ApiError {
             stack_trace: null
         };
 
-        const { data, error } = await adminClient.from('error_log').insert(err);
+        const { error } = await adminClient.from('error_log').insert(err);
         if (error) {
             log(`Error logging error: ${JSON.stringify(error, null, 4)}`);
         }
