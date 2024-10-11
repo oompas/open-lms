@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { log, OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { CourseAttemptService, CourseService, QuizAttemptService } from "../_shared/Service/Services.ts";
+import { adminClient } from "../_shared/adminClient.ts";
 
 Deno.serve(async (req: Request) => {
 
@@ -19,11 +20,21 @@ Deno.serve(async (req: Request) => {
 
     log(`Querying course data, attempts and status...`);
 
-    let [course, courseAttempts, courseStatus] = await Promise.all([
-        CourseService.getById(courseId),
-        CourseAttemptService.query([['eq', 'user_id', userId], ['eq', 'course_id', courseId]]),
-        CourseService.getCourseStatus(courseId, userId)
-    ]);
+    const { data, error } = await adminClient
+        .from('course')
+        .select(`
+            *,
+            course_attempt(*),
+            enrolled_course(*)
+          `)
+        .eq('id', courseId)
+        .eq('course_attempt.user_id', userId)
+        .eq('course_attempt.course_id', courseId)
+        .eq('enrolled_course.course_id', courseId)
+        .eq('enrolled_course.user_id', userId);
+
+    const { course_attempt: courseAttempts, enrolled_course: [enrollment], ...course } = data[0];
+    let courseStatus = enrollment?.status ?? "NOT_ENROLLED";
 
     log(`Constructing quiz data...`);
 
