@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { ErrorResponse, OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
+import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import getCourseData from "./getCourseData.ts";
+import HandleEndpointError from "../_shared/Error/HandleEndpointError.ts";
 
 Deno.serve(async (req: Request) => {
     try {
@@ -11,7 +12,7 @@ Deno.serve(async (req: Request) => {
         const rsp = await getCourseData(req);
 
         return SuccessResponse(rsp);
-    } catch (e) {
-        return ErrorResponse(e);
+    } catch (err) {
+        await HandleEndpointError(rsp, err);
     }
 });

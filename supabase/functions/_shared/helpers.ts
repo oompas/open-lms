@@ -37,6 +37,8 @@ const SuccessResponse = (data: any) => _makeResponse(data, 200);
 
 const log = (message: string) => console.log(message);
 
+const logErr = (message: string) => console.error(message);
+
 const getCurrentTimestampTz = () => {
     const now = new Date();
     const isoString = now.toISOString();  // E.g. '2024-09-25T20:12:40.923Z'
@@ -45,4 +47,4 @@ const getCurrentTimestampTz = () => {
     return isoString.replace('T', ' ').replace('Z', '+00');
 };
 
-export { OptionsRsp, InternalError, ErrorResponse, SuccessResponse, log, getCurrentTimestampTz };
+export { OptionsRsp, InternalError, ErrorResponse, SuccessResponse, log, logErr, getCurrentTimestampTz };
