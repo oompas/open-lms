@@ -54,7 +54,7 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
     /**
      * Run a query on this table to return desired rows
      */
-    public async query(select: string = '*', conditions: QueryConditions = []) {
+    public async query(select: string = '*', conditions: QueryConditions = [], single = false) {
         try {
             // Wrap single conditions in an array for consistency
             if (conditions.length && !Array.isArray(conditions[0])) {
@@ -77,6 +77,13 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
             if (error) {
                 throw error;
             }
+            if (single) {
+                if (data.length > 1) {
+                    throw new Error("Queried more than 1 result");
+                }
+                return data[0];
+            }
+
             return data;
         } catch (err) {
             log(`Error querying database: ${JSON.stringify(err)}`);

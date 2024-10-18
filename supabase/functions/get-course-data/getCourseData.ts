@@ -1,7 +1,6 @@
 import { log } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
-import { adminClient } from "../_shared/adminClient.ts";
-import { CourseAttemptService, QuizAttemptService } from "../_shared/Service/Services.ts";
+import { CourseAttemptService, CourseService, QuizAttemptService } from "../_shared/Service/Services.ts";
 
 const getCourseData = async (req: Request) => {
 
@@ -15,20 +14,21 @@ const getCourseData = async (req: Request) => {
 
     log(`Querying course data, attempts and status...`);
 
-    const { data, error } = await adminClient
-        .from('course')
-        .select(`
+    const { course_attempt: courseAttempts, enrolled_course: [enrollment], ...course } = await CourseService
+        .query(`
             *,
             course_attempt(*),
             enrolled_course(*)
-          `)
-        .eq('id', courseId)
-        .eq('course_attempt.user_id', userId)
-        .eq('course_attempt.course_id', courseId)
-        .eq('enrolled_course.course_id', courseId)
-        .eq('enrolled_course.user_id', userId);
-
-    const { course_attempt: courseAttempts, enrolled_course: [enrollment], ...course } = data[0];
+          `,
+            [
+                ['eq', 'id', courseId],
+                ['eq', 'active', true],
+                ['eq', 'course_attempt.user_id', userId],
+                ['eq', 'course_attempt.course_id', courseId],
+                ['eq', 'enrolled_course.course_id', courseId],
+                ['eq', 'enrolled_course.user_id', userId]
+            ],
+            true);
     let courseStatus = enrollment?.status ?? "NOT_ENROLLED";
 
     log(`Constructing quiz data...`);
