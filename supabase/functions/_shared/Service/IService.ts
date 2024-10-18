@@ -54,7 +54,7 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
     /**
      * Run a query on this table to return desired rows
      */
-    public async query(conditions: QueryConditions) {
+    public async query(select: string = '*', conditions: QueryConditions = []) {
         try {
             // Wrap single conditions in an array for consistency
             if (conditions.length && !Array.isArray(conditions[0])) {
@@ -62,7 +62,7 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
             }
 
             // Setup query
-            const query = adminClient.from(this.TABLE_NAME).select();
+            const query = adminClient.from(this.TABLE_NAME).select(select);
             conditions.forEach(([filter, key, value]) => {
                 if (filter === 'null') {
                     query.is(key, null);
