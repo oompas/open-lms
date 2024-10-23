@@ -1,3 +1,21 @@
+import { z } from "https://deno.land/x/zod@v3.16.1/mod.ts";
+import ValidationError from "./Error/ValidationError.ts";
+
+/**
+ * Validates an API payload for the given schema
+ */
+const validatePayload = async (schema: z.ZodSchema, req: Request) => {
+    try {
+        const payload = await req.json().catch(() => undefined); // Return undefined if empty
+        schema.parse(payload);
+    } catch (error) {
+        if (error instanceof ZodError) {
+            throw new ValidationError("Payload validation failed: " + error.errors.map(err => err.message).join(", "));
+        }
+        throw error;
+    }
+}
+
 /**
  * Helper for response construction
  */
@@ -47,4 +65,4 @@ const getCurrentTimestampTz = () => {
     return isoString.replace('T', ' ').replace('Z', '+00');
 };
 
-export { OptionsRsp, InternalError, ErrorResponse, SuccessResponse, log, logErr, getCurrentTimestampTz };
+export { validatePayload, OptionsRsp, InternalError, ErrorResponse, SuccessResponse, log, logErr, getCurrentTimestampTz };
