@@ -4,7 +4,7 @@ import ValidationError from "./Error/ValidationError.ts";
 /**
  * Validates an API payload for the given schema
  */
-const validatePayload = async (schemaObject: object, req: Request) => {
+const validatePayload = async (schemaObject: Record<string, z.ZodTypeAny>, req: Request) => {
     try {
         const schema: z.ZodSchema = z.object(schemaObject).strict();
         const payload = await req.json();
