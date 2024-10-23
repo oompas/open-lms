@@ -6,11 +6,11 @@ const getCourseData = async (req: Request) => {
 
     log(`Getting requesting user & course ID...`);
 
-    const [_, userId] = await Promise.all([
+    const [reqJson, userId] = await Promise.all([
         req.json(),
         getRequestUserId(req)
     ]);
-    const { courseId } = _;
+    const { courseId } = reqJson;
 
     log(`Querying course data, attempts and status...`);
 

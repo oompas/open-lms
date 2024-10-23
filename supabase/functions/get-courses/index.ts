@@ -4,7 +4,6 @@ import { getRequestUserId } from "../_shared/auth.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 
 Deno.serve(async (req: Request) => {
-
     try {
         if (req.method === 'OPTIONS') {
             return OptionsRsp();
