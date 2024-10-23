@@ -2,13 +2,15 @@ import { z } from "https://deno.land/x/zod@v3.16.1/mod.ts";
 import ValidationError from "./Error/ValidationError.ts";
 
 /**
- * Validates an API payload for the given schema
+ * Validates and returns an API payload for the given schema
  */
 const validatePayload = async (schemaObject: Record<string, z.ZodTypeAny>, req: Request) => {
     try {
         const schema: z.ZodSchema = z.object(schemaObject).strict();
         const payload = await req.json();
         schema.parse(payload);
+
+        return payload;
     } catch (error) {
         if (error instanceof ZodError) {
             throw new ValidationError("Payload validation failed: " + error.errors.map(err => err.message).join(", "));

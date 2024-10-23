@@ -10,10 +10,10 @@ Deno.serve(async (req: Request) => {
             return OptionsRsp();
         }
 
-        const schema = { courseId: z.string() };
-        await validatePayload(schema, req);
+        const schema: Record<string, z.ZodTypeAny> = { courseId: z.string() };
+        const payload = await validatePayload(schema, req);
 
-        const rsp = await getCourseData(req);
+        const rsp = await getCourseData(payload);
 
         return SuccessResponse(rsp);
     } catch (err) {
