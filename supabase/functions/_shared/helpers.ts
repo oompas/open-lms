@@ -2,6 +2,18 @@ import { z } from "https://deno.land/x/zod@v3.16.1/mod.ts";
 import ValidationError from "./Error/ValidationError.ts";
 
 /**
+ * Generates a UUID (v4)
+ */
+function generateUUID(): string {
+    try {
+        return crypto.randomUUID();
+    } catch (error) {
+        console.error(`UUID generation failed: ${error.message}`);
+        throw error;
+    }
+}
+
+/**
  * Validates and returns an API payload for the given schema
  */
 const validatePayload = async (schemaObject: Record<string, z.ZodTypeAny>, req: Request) => {
@@ -68,4 +80,4 @@ const getCurrentTimestampTz = () => {
     return isoString.replace('T', ' ').replace('Z', '+00');
 };
 
-export { validatePayload, OptionsRsp, InternalError, ErrorResponse, SuccessResponse, log, logErr, getCurrentTimestampTz };
+export { generateUUID, validatePayload, OptionsRsp, InternalError, ErrorResponse, SuccessResponse, log, logErr, getCurrentTimestampTz };
