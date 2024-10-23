@@ -2,12 +2,12 @@ import { log } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { CourseAttemptService, CourseService, QuizAttemptService } from "../_shared/Service/Services.ts";
 
-const getCourseData = async (payload: object) => {
+const getCourseData = async (req: Request, payload: object) => {
 
     log(`Getting requesting user & course ID...`);
 
     const { courseId } = payload;
-    const userId = getRequestUserId(req);
+    const userId = await getRequestUserId(req);
 
     log(`Querying course data, attempts and status...`);
 

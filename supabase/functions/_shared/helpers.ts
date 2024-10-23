@@ -24,6 +24,7 @@ const validatePayload = async (schemaObject: Record<string, z.ZodTypeAny>, req: 
 
         return payload;
     } catch (error) {
+        log(`Error validating payload: ${error.messgae}`);
         if (error instanceof ZodError) {
             throw new ValidationError("Payload validation failed: " + error.errors.map(err => err.message).join(", "));
         }
