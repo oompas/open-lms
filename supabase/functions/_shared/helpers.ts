@@ -22,7 +22,7 @@ function generateUUID(): string {
  * @throws ValidationError if payload doesn't match schema
  * @throws InternalError if any other error occurs
  */
-const validatePayload = async (schemaObject: Record<string, z.ZodTypeAny>, req: Request): Promise<object> => {
+const validatePayload = async (schemaObject: Record<string, z.ZodTypeAny>, req: Request): Promise<Record<string, any>> => {
     try {
         const schema: z.ZodSchema = z.object(schemaObject).strict();
         const payload = await req.json();
