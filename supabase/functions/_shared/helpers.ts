@@ -24,10 +24,12 @@ const validatePayload = async (schemaObject: Record<string, z.ZodTypeAny>, req: 
 
         return payload;
     } catch (error) {
-        log(`Error validating payload: ${error.message}`);
         if (error instanceof ZodError) {
+            logErr(`Incoming payload doesn't match schema: ${error.message}`);
             throw new ValidationError("Payload validation failed: " + error.errors.map(err => err.message).join(", "));
         }
+
+        logErr(`Internal error validating payload: ${error.message}`);
         throw error;
     }
 }
