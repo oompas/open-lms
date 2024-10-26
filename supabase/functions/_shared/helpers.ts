@@ -15,6 +15,12 @@ function generateUUID(): string {
 
 /**
  * Validates and returns an API payload for the given schema
+ *
+ * @param schemaObject Record of expected payload arguments
+ * @param req The Supabase edge function request
+ * @returns The parsed payload as an object
+ * @throws ValidationError if payload doesn't match schema
+ * @throws InternalError if any other error occurs
  */
 const validatePayload = async (schemaObject: Record<string, z.ZodTypeAny>, req: Request): Promise<object> => {
     try {
