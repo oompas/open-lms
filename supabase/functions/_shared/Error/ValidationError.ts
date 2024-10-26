@@ -1,8 +1,9 @@
 import ApiError from "./ApiError.ts";
 
 class ValidationError extends ApiError {
-    private constructor(message: string) {
+    public constructor(message: string) {
         super(message);
+        this.name = 'ValidationError';
     }
 }
 
