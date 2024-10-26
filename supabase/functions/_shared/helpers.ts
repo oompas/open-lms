@@ -16,7 +16,7 @@ function generateUUID(): string {
 /**
  * Validates and returns an API payload for the given schema
  */
-const validatePayload = async (schemaObject: Record<string, z.ZodTypeAny>, req: Request) => {
+const validatePayload = async (schemaObject: Record<string, z.ZodTypeAny>, req: Request): Promise<object> => {
     try {
         const schema: z.ZodSchema = z.object(schemaObject).strict();
         const payload = await req.json();
