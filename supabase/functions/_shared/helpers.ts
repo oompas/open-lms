@@ -1,4 +1,4 @@
-import { z } from "https://deno.land/x/zod@v3.16.1/mod.ts";
+import { z, ZodError } from "https://deno.land/x/zod@v3.16.1/mod.ts";
 import ValidationError from "./Error/ValidationError.ts";
 
 /**
