@@ -17,6 +17,6 @@ Deno.serve(async (req: Request) => {
 
         return SuccessResponse(rsp);
     } catch (err) {
-        await HandleEndpointError(req, err);
+        return await HandleEndpointError(req, err);
     }
 });
