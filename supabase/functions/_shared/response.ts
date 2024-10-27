@@ -1,6 +1,7 @@
 import ValidationError from "./Error/ValidationError.ts";
 import DatabaseError from "./Error/DatabaseError.ts";
 import EdgeFunctionRequest from "./EdgeFunctionRequest.ts";
+import { adminClient } from "./adminClient.ts";
 
 // Helper for response construction
 const _makeResponse = (data: any, status?: number) => {
@@ -42,22 +43,18 @@ const HandleEndpointError = (request: EdgeFunctionRequest, err: any): Promise<Re
     if (err instanceof ValidationError) {
         errorType = ERROR_TYPES.VALIDATION;
         statusCode = 400;
-        message = 'Bad Request: Validation Error';
+        message = `Validation Error: ${err.message}`;
     } else if (err instanceof DatabaseError) {
         errorType = ERROR_TYPES.DATABASE;
         statusCode = 500;
-        message = 'Service Unavailable: Database Error';
-    } else if (err instanceof Error) {
-        console.error(err.name, err.message, err.stack);
-        await saveErrorToDatabase(err);
+        message = `Database Error: ${err.message}`;
     } else {
         errorType = ERROR_TYPES.UNCAUGHT;
         statusCode = 500;
-
-        console.error('Unknown error:', err);
-        await saveErrorToDatabase(err);
+        message = `Uncaught internal error: ${err.message}`;
     }
 
+    // Log error to database + server console
     const errObject = {
         endpoint: request.getEndpoint(),
         request_uuid: request.getUUID(),
@@ -67,6 +64,13 @@ const HandleEndpointError = (request: EdgeFunctionRequest, err: any): Promise<Re
         message: message,
         stack_trace: err.stack
     };
+
+    const { error } = await adminClient.from('error_log').insert(errObject);
+    if (error) {
+        request.logErr(`Error logging error: ${JSON.stringify(error)}`, `HandleEndpointError`);
+    }
+
+    request.logErr(`Error caught: ${JSON.stringify(errObject)}`, `HandleEndpointError`);
 
     // Just return the uuid - don't expose internal data
     return _makeResponse(request.getUUID(), statusCode);
