@@ -12,13 +12,11 @@
 //     logErr(`Error caught: ${message}`);
 //     return new InternalError();
 // }
-//
-// // errorHandler.ts
 
 import ValidationError from "./ValidationError.ts";
 import DatabaseError from "./DatabaseError.ts";
 
-export async function HandleEndpointError(req: Request, err: any): Promise<Response> {
+const HandleEndpointError = (req: Request, err: any): Promise<Response> => {
     let statusCode = 500;
     let message = 'Internal Server Error';
 
@@ -39,12 +37,10 @@ export async function HandleEndpointError(req: Request, err: any): Promise<Respo
         await saveErrorToDatabase(err);
     }
 
-    const response = new Response(message, {
+    return new Response(message, {
         status: statusCode,
         headers: { 'Content-Type': 'application/json' }
     });
-
-    return response;
 }
 
 async function saveErrorToDatabase(err: any) {
