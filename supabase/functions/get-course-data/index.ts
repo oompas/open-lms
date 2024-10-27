@@ -3,6 +3,7 @@ import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 import { generateUUID, log, OptionsRsp, SuccessResponse, validatePayload } from "../_shared/helpers.ts";
 import getCourseData from "./getCourseData.ts";
 import HandleEndpointError from "../_shared/Error/HandleEndpointError.ts";
+import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 
 Deno.serve(async (req: Request) => {
     try {
@@ -10,13 +11,9 @@ Deno.serve(async (req: Request) => {
             return OptionsRsp();
         }
 
-        const uuid = generateUUID();
-        log(`uuid: ${uuid}`);
+        const edgeFunctionRequest = await EdgeFunctionRequest.create(req, { courseId: z.string() });
 
-        const schema: Record<string, z.ZodTypeAny> = { courseId: z.string() };
-        const payload = await validatePayload(schema, req);
-
-        const rsp = await getCourseData(req, payload);
+        const rsp = await getCourseData(req, edgeFunctionRequest.getPayload());
 
         return SuccessResponse(rsp);
     } catch (err) {
