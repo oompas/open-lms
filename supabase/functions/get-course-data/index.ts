@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
-import { generateUUID, log, OptionsRsp, SuccessResponse, validatePayload } from "../_shared/helpers.ts";
+import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import getCourseData from "./getCourseData.ts";
 import HandleEndpointError from "../_shared/Error/HandleEndpointError.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
