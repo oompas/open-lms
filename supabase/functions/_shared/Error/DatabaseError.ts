@@ -1,11 +1,10 @@
-import ApiError from "./ApiError.ts";
 import { adminClient } from "../adminClient.ts";
 import { log } from "../helpers.ts";
 
-class DatabaseError extends ApiError {
-
+class DatabaseError extends Error {
     private constructor(message: string) {
         super(message);
+        this.name = "DatabaseError";
     }
 
     public static async create(message: string) {
