@@ -5,20 +5,24 @@ class EdgeFunctionRequest {
 
     private readonly uuid: string;
 
+    private readonly endpoint: string;
     private readonly req: Request;
     private readonly schemaRecord: ZodSchema;
     private payload: Record<string, any> | null = null;
+    private requestUserId: string | null = null;
 
     private response: Response | null = null;
 
     /**
      * Creates a new instance, generating a UUID and storing the request & schema object
      *
+     * @param endpoint Name of hte endpoint being called
      * @param req Request object from Deno
      * @param schemaRecord Record of fields this request should have
      */
-    public constructor(req: Request, schemaRecord: Record<string, z.ZodTypeAny>) {
+    public constructor(endpoint: string, req: Request, schemaRecord: Record<string, z.ZodTypeAny>) {
         this.uuid = crypto.randomUUID();
+        this.endpoint = endpoint;
         this.req = req;
         this.schemaRecord = schemaRecord;
     }
@@ -52,17 +56,14 @@ class EdgeFunctionRequest {
     }
 
     // Getters/setters
-    get getReq(): Request {
-        return this.req;
-    }
+    public getReq = (): Request => this.req;
+    public getPayload = (): Record<string, any> | null => this.payload;
+    public getUUID = (): string => this.uuid;
+    public getEndpoint = (): string => this.endpoint;
+    public getRequestUserId = (): string | null => this.requestUserId;
 
-    public getPayload(): Record<string, any> | null {
-        return this.payload;
-    }
-
-    public setResponse(response: Response): void {
-        this.response = response;
-    }
+    public setRequestUserId = (id: string): void => this.requestUserId = id;
+    public setResponse = (response: Response): void => this.response = response;
 }
 
 export default EdgeFunctionRequest;

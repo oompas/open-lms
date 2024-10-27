@@ -6,19 +6,19 @@ import { OptionsRsp, SuccessResponse, HandleEndpointError } from "../_shared/res
 
 Deno.serve(async (req: Request) => {
 
-    const edgeFunctionRequest = new EdgeFunctionRequest(req, { courseId: z.string() });
+    const request = new EdgeFunctionRequest("get-course-data", req, { courseId: z.string() });
 
     try {
         if (req.method === 'OPTIONS') {
             return OptionsRsp();
         }
 
-        await edgeFunctionRequest.validatePayload();
+        await request.validatePayload();
 
-        const rsp = await getCourseData(edgeFunctionRequest);
+        const rsp = await getCourseData(request);
 
         return SuccessResponse(rsp);
     } catch (err) {
-        return await HandleEndpointError(req, err);
+        return await HandleEndpointError(request, err);
     }
 });

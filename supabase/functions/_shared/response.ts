@@ -1,5 +1,6 @@
 import ValidationError from "./Error/ValidationError.ts";
 import DatabaseError from "./Error/DatabaseError.ts";
+import EdgeFunctionRequest from "./EdgeFunctionRequest.ts";
 
 // Helper for response construction
 const _makeResponse = (data: any, status?: number) => {
@@ -25,27 +26,50 @@ const OptionsRsp = () => _makeResponse('ok');
  */
 const SuccessResponse = (data: any) => _makeResponse(data, 200);
 
+enum ERROR_TYPES {
+    VALIDATION = "VALIDATION",
+    DATABASE = "DATABASE",
+    UNCAUGHT = "UNCAUGHT"
+}
+
 /**
  * Handles errors caught in an endpoint
  */
-const HandleEndpointError = (req: Request, err: any): Promise<Response> => {
-    let statusCode, message;
+const HandleEndpointError = (request: EdgeFunctionRequest, err: any): Promise<Response> => {
+    let errorType, statusCode, message;
 
+    // Handle custom error types, then everything else
     if (err instanceof ValidationError) {
+        errorType = ERROR_TYPES.VALIDATION;
         statusCode = 400;
         message = 'Bad Request: Validation Error';
     } else if (err instanceof DatabaseError) {
-        statusCode = 503;
+        errorType = ERROR_TYPES.DATABASE;
+        statusCode = 500;
         message = 'Service Unavailable: Database Error';
     } else if (err instanceof Error) {
         console.error(err.name, err.message, err.stack);
         await saveErrorToDatabase(err);
     } else {
+        errorType = ERROR_TYPES.UNCAUGHT;
+        statusCode = 500;
+
         console.error('Unknown error:', err);
         await saveErrorToDatabase(err);
     }
 
-    return _makeResponse(message, statusCode);
+    const errObject = {
+        endpoint: request.getEndpoint(),
+        request_uuid: request.getUUID(),
+        type: errorType,
+        request_user_id: request.getRequestUserId(),
+        payload: request.getPayload(),
+        message: message,
+        stack_trace: err.stack
+    };
+
+    // Just return the uuid - don't expose internal data
+    return _makeResponse(request.getUUID(), statusCode);
 }
 
 export { OptionsRsp, SuccessResponse, HandleEndpointError };
