@@ -32,10 +32,17 @@ class EdgeFunctionRequest {
      * Gets, stores and strictly validates the payload against the given schema, as well as getting the requesting user
      */
     public async validateRequest(): Promise<Record<string, any>> {
+
+        const [payload, requestUser] = await Promise.all([
+            this.req.json(),
+            getRequestUser(this.req)
+        ]);
+
+        this.payload = payload;
+        this.requestUser = requestUser;
+
         try {
             const schema: ZodSchema = z.object(this.schemaRecord).strict();
-
-            this.payload = await this.req.json();
             schema.parse(this.payload);
         } catch (error) {
             if (error instanceof ZodError) {
@@ -46,8 +53,6 @@ class EdgeFunctionRequest {
             this.logErr(`Internal error validating payload: ${error.message}`, 'EdgeFunctionRequest.validatePayload');
             throw error;
         }
-
-        this.requestUser = await getRequestUser(this.req);
     }
 
     public log = (message: string) => {
