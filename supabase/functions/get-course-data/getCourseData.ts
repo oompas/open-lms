@@ -1,16 +1,14 @@
-import { log } from "../_shared/helpers.ts";
-import { getRequestUserId } from "../_shared/auth.ts";
 import { CourseAttemptService, CourseService, QuizAttemptService } from "../_shared/Service/Services.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 
 const getCourseData = async (request: EdgeFunctionRequest) => {
 
-    log(`Getting requesting user & course ID...`);
+    request.log(`Getting requesting user & course ID...`);
 
     const { courseId } = request.getPayload();
-    const userId = await getRequestUserId(request.getReq());
+    const userId: string = request.getRequestUser().id;
 
-    log(`Querying course data, attempts and status...`);
+    request.log(`Querying course data, attempts and status...`);
 
     const { course_attempt: courseAttempts, enrolled_course: [enrollment], ...course } = await CourseService
         .query(`
@@ -29,7 +27,7 @@ const getCourseData = async (request: EdgeFunctionRequest) => {
             true);
     let courseStatus = enrollment?.status ?? "NOT_ENROLLED";
 
-    log(`Constructing quiz data...`);
+    request.log(`Constructing quiz data...`);
 
     let quizData = null;
     if (course.total_quiz_marks !== null) {
@@ -42,7 +40,7 @@ const getCourseData = async (request: EdgeFunctionRequest) => {
         };
     }
 
-    log(`Constructing course attempt data...`);
+    request.log(`Constructing course attempt data...`);
 
     let attempts = null;
     const currentCourseAttempt = courseAttempts.length > 0
@@ -65,7 +63,7 @@ const getCourseData = async (request: EdgeFunctionRequest) => {
         }
     }
 
-    log(`Constructing quiz attempt data...`);
+    request.log(`Constructing quiz attempt data...`);
 
     const quizAttemptData = {
         number: 0,
@@ -81,7 +79,7 @@ const getCourseData = async (request: EdgeFunctionRequest) => {
         quizAttemptData.currentId = currentQuizAttempt?.id;
     }
 
-    log(`Returning response...`);
+    request.log(`Returning response...`);
 
     return {
         id: course.id,
