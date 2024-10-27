@@ -10,7 +10,6 @@ class EdgeFunctionRequest {
     private payload: Record<string, any> | null = null;
 
     private response: Response | null = null;
-    private error: Error | null = null;
 
     /**
      * Creates a new instance, generating a UUID and storing the request & schema object
@@ -35,19 +34,25 @@ class EdgeFunctionRequest {
             schema.parse(this.payload);
         } catch (error) {
             if (error instanceof ZodError) {
-                this.logErr(`Incoming payload doesn't match schema: ${error.message}`);
+                this.logErr(`Incoming payload doesn't match schema: ${error.message}`, 'EdgeFunctionRequest.validatePayload');
                 throw new ValidationError("Payload validation failed: " + error.errors.map(err => err.message).join(", "));
             }
 
-            this.logErr(`Internal error validating payload: ${error.message}`);
+            this.logErr(`Internal error validating payload: ${error.message}`, 'EdgeFunctionRequest.validatePayload');
             throw error;
         }
     }
 
-    public logErr = (message: string) => console.error(message);
+    public log = (message: string) => {
+        console.log(`[${this.uuid}] ${message}`);
+    }
 
-    // Getters
-    public getReq(): Request {
+    public logErr = (message: string, functionName: string) => {
+        console.error(`[${this.uuid}] (${functionName}) ${message}`);
+    }
+
+    // Getters/setters
+    get getReq(): Request {
         return this.req;
     }
 
@@ -55,19 +60,6 @@ class EdgeFunctionRequest {
         return this.payload;
     }
 
-    public getUuid(): string | null {
-        return this.uuid;
-    }
-
-    public getResponse(): Response | null {
-        return this.response;
-    }
-
-    public getError(): Error | null {
-        return this.error;
-    }
-
-    // Setters
     public setResponse(response: Response): void {
         this.response = response;
     }
