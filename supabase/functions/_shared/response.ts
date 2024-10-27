@@ -36,7 +36,7 @@ enum ERROR_TYPES {
 /**
  * Handles errors caught in an endpoint
  */
-const HandleEndpointError = (request: EdgeFunctionRequest, err: any): Promise<Response> => {
+const HandleEndpointError = async (request: EdgeFunctionRequest, err: any): Promise<Response> => {
     let errorType, statusCode, message;
 
     // Handle custom error types, then everything else
