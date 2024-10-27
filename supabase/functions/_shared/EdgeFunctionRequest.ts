@@ -1,5 +1,6 @@
 import { z, ZodError, ZodSchema } from "https://deno.land/x/zod@v3.16.1/mod.ts";
 import ValidationError from "./Error/ValidationError.ts";
+import { getRequestUser } from "./auth.ts";
 
 class EdgeFunctionRequest {
 
@@ -9,7 +10,7 @@ class EdgeFunctionRequest {
     private readonly req: Request;
     private readonly schemaRecord: ZodSchema;
     private payload: Record<string, any> | null = null;
-    private requestUserId: string | null = null;
+    private requestUser: object | null = null;
 
     private response: Response | null = null;
 
@@ -28,9 +29,9 @@ class EdgeFunctionRequest {
     }
 
     /**
-     * Gets, stores and strictly validates the payload against the given schema
+     * Gets, stores and strictly validates the payload against the given schema, as well as getting the requesting user
      */
-    public async validatePayload(): Promise<Record<string, any>> {
+    public async validateRequest(): Promise<Record<string, any>> {
         try {
             const schema: ZodSchema = z.object(this.schemaRecord).strict();
 
@@ -45,6 +46,8 @@ class EdgeFunctionRequest {
             this.logErr(`Internal error validating payload: ${error.message}`, 'EdgeFunctionRequest.validatePayload');
             throw error;
         }
+
+        this.requestUser = await getRequestUser(this.req);
     }
 
     public log = (message: string) => {
@@ -60,9 +63,8 @@ class EdgeFunctionRequest {
     public getPayload = (): Record<string, any> | null => this.payload;
     public getUUID = (): string => this.uuid;
     public getEndpoint = (): string => this.endpoint;
-    public getRequestUserId = (): string | null => this.requestUserId;
+    public getRequestUser = (): object | null => this.requestUser;
 
-    public setRequestUserId = (id: string): void => this.requestUserId = id;
     public setResponse = (response: Response): void => this.response = response;
 }
 

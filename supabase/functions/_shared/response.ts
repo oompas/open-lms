@@ -59,7 +59,7 @@ const HandleEndpointError = (request: EdgeFunctionRequest, err: any): Promise<Re
         endpoint: request.getEndpoint(),
         request_uuid: request.getUUID(),
         type: errorType,
-        request_user_id: request.getRequestUserId(),
+        request_user_id: request.getRequestUser()?.id,
         payload: request.getPayload(),
         message: message,
         stack_trace: err.stack

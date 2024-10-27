@@ -13,7 +13,7 @@ Deno.serve(async (req: Request) => {
             return OptionsRsp();
         }
 
-        await request.validatePayload();
+        await request.validateRequest();
 
         const rsp = await getCourseData(request);
 

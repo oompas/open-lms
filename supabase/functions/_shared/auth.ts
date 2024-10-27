@@ -46,7 +46,10 @@ const getRequestUser = async (req: Request): Promise<object> => {
     const token = req.headers.get('Authorization')?.replace('Bearer ', '');
     const user = await adminClient.auth.getUser(token);
 
-    return user ? user.data.user : null;
+    if (user?.data?.user) {
+        return user.data.user
+    }
+    throw new Error(`Requesting user with token ${token} does not exist`);
 }
 
 /**
