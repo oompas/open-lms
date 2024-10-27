@@ -1,13 +1,14 @@
 import { log } from "../_shared/helpers.ts";
 import { getRequestUserId } from "../_shared/auth.ts";
 import { CourseAttemptService, CourseService, QuizAttemptService } from "../_shared/Service/Services.ts";
+import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 
-const getCourseData = async (req: Request, payload: object) => {
+const getCourseData = async (request: EdgeFunctionRequest) => {
 
     log(`Getting requesting user & course ID...`);
 
-    const { courseId } = payload;
-    const userId = await getRequestUserId(req);
+    const { courseId } = request.getPayload();
+    const userId = await getRequestUserId(request.getReq());
 
     log(`Querying course data, attempts and status...`);
 

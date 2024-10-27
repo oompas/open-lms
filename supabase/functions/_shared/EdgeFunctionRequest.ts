@@ -1,4 +1,5 @@
 import { z, ZodError, ZodSchema } from "https://deno.land/x/zod@v3.16.1/mod.ts";
+import ValidationError from "./Error/ValidationError.ts";
 
 class EdgeFunctionRequest {
 
@@ -59,6 +60,10 @@ class EdgeFunctionRequest {
     public logErr = (message: string) => console.error(message);
 
     // Getters
+    public getReq(): Request {
+        return this.req;
+    }
+
     public getPayload(): Record<string, any> | null {
         return this.payload;
     }

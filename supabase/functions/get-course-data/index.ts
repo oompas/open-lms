@@ -13,7 +13,7 @@ Deno.serve(async (req: Request) => {
 
         const edgeFunctionRequest = await EdgeFunctionRequest.create(req, { courseId: z.string() });
 
-        const rsp = await getCourseData(req, edgeFunctionRequest.getPayload());
+        const rsp = await getCourseData(edgeFunctionRequest);
 
         return SuccessResponse(rsp);
     } catch (err) {
