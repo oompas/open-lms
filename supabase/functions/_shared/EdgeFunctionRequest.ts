@@ -6,46 +6,33 @@ class EdgeFunctionRequest {
     private readonly uuid: string;
 
     private readonly req: Request;
-    private readonly schema: ZodSchema;
+    private readonly schemaRecord: ZodSchema;
     private payload: Record<string, any> | null = null;
 
     private response: Response | null = null;
     private error: Error | null = null;
 
     /**
-     * Creates and returns a new instance of an EdgeFunctionRequest
-     * @param req Request object
-     * @param schemaObject Schema to validate the payload with
+     * Creates a new instance, generating a UUID and storing the request & schema object
+     *
+     * @param req Request object from Deno
+     * @param schemaRecord Record of fields this request should have
      */
-    public static async create(req: Request, schemaObject: Record<string, z.ZodTypeAny>) {
-        const schema: ZodSchema = z.object(schemaObject).strict();
-
-        const instance = new EdgeFunctionRequest(req, schema);
-        await instance.validatePayload();
-
-        return instance;
-    }
-
-    private constructor(req: Request, schema: ZodSchema) {
-        try {
-            this.uuid = crypto.randomUUID();
-        } catch (error) {
-            console.error(`UUID generation failed in EdgeFunctionRequest: ${error.message}`);
-            throw error;
-        }
-
+    public constructor(req: Request, schemaRecord: Record<string, z.ZodTypeAny>) {
+        this.uuid = crypto.randomUUID();
         this.req = req;
-        this.schema = schema;
+        this.schemaRecord = schemaRecord;
     }
 
-    // Gets payload and ensures its following the desired schema
-    private async validatePayload(): Promise<Record<string, any>> {
+    /**
+     * Gets, stores and strictly validates the payload against the given schema
+     */
+    public async validatePayload(): Promise<Record<string, any>> {
         try {
-            console.log("before both");
+            const schema: ZodSchema = z.object(this.schemaRecord).strict();
+
             this.payload = await this.req.json();
-            console.log(`middle. schema: ${JSON.stringify(this.schema)} payload: ${JSON.stringify(this.payload)}`);
-            this.schema.parse(this.payload);
-            console.log("after");
+            schema.parse(this.payload);
         } catch (error) {
             if (error instanceof ZodError) {
                 this.logErr(`Incoming payload doesn't match schema: ${error.message}`);

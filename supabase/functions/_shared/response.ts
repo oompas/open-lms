@@ -45,10 +45,7 @@ const HandleEndpointError = (req: Request, err: any): Promise<Response> => {
         await saveErrorToDatabase(err);
     }
 
-    return new Response(message, {
-        status: statusCode,
-        headers: { 'Content-Type': 'application/json' }
-    });
+    return _makeResponse(message, statusCode);
 }
 
 export { OptionsRsp, SuccessResponse, HandleEndpointError };
