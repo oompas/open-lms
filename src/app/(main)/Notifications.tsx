@@ -147,7 +147,7 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
             {notificationsOpen && (
                 <div
                     ref={popUpRef}
-                    className="absolute right-0 mt-2 w-72 h-72 bg-white shadow-lg rounded-lg border-gray-300 border-[1px] overflow-y-scroll no-scrollbar"
+                    className="absolute right-0 mt-2 w-72 h-72 bg-white shadow-lg rounded-lg border-gray-300 border-[1px] overflow-y-scroll no-scrollbar z-50"
                 >
                     <div className="mb-2 mx-4">
                         <div className="text-lg font-semibold mt-4 text-gray-600">
