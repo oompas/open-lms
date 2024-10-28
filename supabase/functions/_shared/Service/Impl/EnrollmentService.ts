@@ -17,7 +17,7 @@ class _enrollmentService extends IService {
     public async getEnrollment(courseId: number, userId: string): Promise<object> {
         const enrollment = await this.query('*', [['eq', 'course_id', courseId], ['eq', 'user_id', userId]]);
         if (enrollment.length > 1) {
-            await DatabaseError.create(`Queried multiple enrollments for course_id ${courseId} and user_id ${userId}`);
+            throw new DatabaseError(`Queried multiple enrollments for course_id ${courseId} and user_id ${userId}`);
         }
         return enrollment.length ? enrollment[0] : null;
     }

@@ -1,28 +1,7 @@
-import { adminClient } from "../adminClient.ts";
-import { log } from "../helpers.ts";
-
 class DatabaseError extends Error {
-    private constructor(message: string) {
+    public constructor(message: string) {
         super(message);
         this.name = "DatabaseError";
-    }
-
-    public static async create(message: string) {
-        const err = {
-            endpoint: null,
-            type: 'DATABASE',
-            request_uid: null,
-            payload: null,
-            message: message ?? '',
-            stack_trace: null
-        };
-
-        const { error } = await adminClient.from('error_log').insert(err);
-        if (error) {
-            log(`Error logging error: ${JSON.stringify(error, null, 4)}`);
-        }
-
-        throw new DatabaseError(message);
     }
 }
 

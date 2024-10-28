@@ -26,7 +26,7 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
                 return data;
             } catch (err) {
                 log(`Error querying database: ${JSON.stringify(err)}`);
-                await DatabaseError.create(err.message);
+                throw new DatabaseError(`Error querying database: ${JSON.stringify(err)}`);
             }
         }
 
@@ -47,7 +47,7 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
             return data.length === 1 ? data[0] : null;
         } catch (err) {
             log(`Error querying database: ${JSON.stringify(err)}`);
-            await DatabaseError.create(err.message);
+            throw new DatabaseError(`Error querying database: ${JSON.stringify(err)}`);
         }
     }
 
@@ -87,7 +87,7 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
             return data;
         } catch (err) {
             log(`Error querying database: ${JSON.stringify(err)}`);
-            await DatabaseError.create(err.message);
+            throw new DatabaseError(`Error querying database: ${JSON.stringify(err)}`);
         }
     }
 }
