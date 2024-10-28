@@ -1,35 +1,23 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
-import { getRequestUser } from "../_shared/auth.ts";
-import { getRows } from "../_shared/database.ts";
+import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
+import { OptionsRsp, SuccessResponse, HandleEndpointError } from "../_shared/response.ts";
+import getProfile from "./getProfile.ts";
 
 Deno.serve(async (req) => {
 
-    if (req.method === 'OPTIONS') {
-        return OptionsRsp();
+    const request = new EdgeFunctionRequest("get-profile", req, {});
+
+    try {
+        if (req.method === 'OPTIONS') {
+            return OptionsRsp();
+        }
+
+        await request.validateRequest();
+
+        const rsp = await getProfile(request);
+
+        return SuccessResponse(rsp);
+    } catch (err) {
+        return await HandleEndpointError(request, err);
     }
-
-    const user = await getRequestUser(req);
-
-    const completedCoursesQuery = await getRows({ table: 'course_attempt', conditions: [['eq', 'user_id', user.id], ['eq', 'pass', true]] });
-    if (completedCoursesQuery instanceof Response) return completedCoursesQuery;
-
-    const completedCourses = await Promise.all(completedCoursesQuery.map(async (courseAttempt) => {
-        const course = await getRows({ table: 'course', conditions: ['eq', 'id', courseAttempt.course_id] });
-        return {
-            courseId: courseAttempt.id,
-            name: course[0].name,
-            date: courseAttempt.end_time
-        };
-    }));
-
-    const userData = {
-        name: user.user_metadata.name,
-        email: user.email,
-        role: user.user_metadata.role,
-        signUpDate: user.created_at,
-        completedCourses: completedCourses
-    }
-
-    return SuccessResponse(userData);
 });
