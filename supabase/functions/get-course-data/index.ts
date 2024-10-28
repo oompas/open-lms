@@ -6,7 +6,7 @@ import { OptionsRsp, SuccessResponse, HandleEndpointError } from "../_shared/res
 
 Deno.serve(async (req: Request) => {
 
-    const request = new EdgeFunctionRequest("get-course-data", req, { courseId: z.string() });
+    const request = new EdgeFunctionRequest(import.meta.url, req, { courseId: z.string() });
 
     try {
         if (req.method === 'OPTIONS') {

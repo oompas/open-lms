@@ -17,13 +17,15 @@ class EdgeFunctionRequest {
     /**
      * Creates a new instance, generating a UUID and storing the request & schema object
      *
-     * @param endpoint Name of hte endpoint being called
      * @param req Request object from Deno
      * @param schemaRecord Record of fields this request should have
+     * @param metaUrl Pass import.meta.url from the index file here - used to get the endpoint name from the path
      */
-    public constructor(endpoint: string, req: Request, schemaRecord: Record<string, z.ZodTypeAny>) {
+    public constructor(req: Request, schemaRecord: Record<string, z.ZodTypeAny>, metaUrl: string) {
         this.uuid = crypto.randomUUID();
-        this.endpoint = endpoint;
+
+        const splitUrl = metaUrl.split("/");
+        this.endpoint = splitUrl[splitUrl.length - 2];
         this.req = req;
         this.schemaRecord = schemaRecord;
     }

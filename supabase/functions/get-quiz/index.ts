@@ -3,11 +3,9 @@ import { HandleEndpointError, OptionsRsp, SuccessResponse } from "../_shared/res
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import getCourseData from "../get-course-data/getCourseData.ts";
 
-const ENDPOINT_NAME = "get-quiz";
-
 Deno.serve(async (req: Request) => {
 
-    const request = new EdgeFunctionRequest(ENDPOINT_NAME, req, { courseId: z.string() });
+    const request = new EdgeFunctionRequest(import.meta.url, req, { courseId: z.string() });
 
     try {
         if (req.method === 'OPTIONS') {

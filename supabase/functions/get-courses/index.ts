@@ -5,7 +5,7 @@ import getCourses from "./getCourses.ts";
 
 Deno.serve(async (req: Request) => {
 
-    const request = new EdgeFunctionRequest("get-courses", req, {});
+    const request = new EdgeFunctionRequest(import.meta.url, req, {});
 
     try {
         if (req.method === 'OPTIONS') {
