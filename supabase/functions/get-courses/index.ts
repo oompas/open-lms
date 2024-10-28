@@ -1,48 +1,23 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { SuccessResponse, log, OptionsRsp, InternalError } from "../_shared/helpers.ts";
-import { getRequestUserId } from "../_shared/auth.ts";
-import { adminClient } from "../_shared/adminClient.ts";
+import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
+import { OptionsRsp, SuccessResponse, HandleEndpointError } from "../_shared/response.ts";
+import getCourses from "./getCourses.ts";
 
 Deno.serve(async (req: Request) => {
+
+    const request = new EdgeFunctionRequest("get-courses", req, {});
+
     try {
         if (req.method === 'OPTIONS') {
             return OptionsRsp();
         }
 
-        log("Getting user ID, all courses, and user's enrollments...");
+        await request.validateRequest();
 
-        const userId = await getRequestUserId(req);
-        const { data, error } = await adminClient
-            .from('course')
-            .select(`
-                id,
-                name,
-                description,
-                min_time,
-                quiz_time_limit,
-                enrolled_course(status)
-              `)
-            .eq('active', true)
-            .eq('enrolled_course.user_id', userId);
+        const rsp = await getCourses(request);
 
-        log(`Request user id: '${userId}'. Queried ${data.length} courses`);
-
-        const courseData = data
-            .map((course: any) => {
-                return {
-                    id: course.id,
-                    name: course.name,
-                    description: course.description,
-                    status: course.enrolled_course[0]?.status ?? "NOT_ENROLLED",
-                    minTime: course.min_time,
-                    maxQuizTime: course.quiz_time_limit,
-                }
-            });
-
-        log("Returning success...");
-        return SuccessResponse(courseData);
-    } catch (error) {
-        log(`Error caught: ${error.message}`);
-        return InternalError();
+        return SuccessResponse(rsp);
+    } catch (err) {
+        return await HandleEndpointError(request, err);
     }
 });
