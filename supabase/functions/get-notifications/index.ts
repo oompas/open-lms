@@ -1,18 +1,23 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
-import { getRequestUser } from "../_shared/auth.ts";
-import { getRows } from "../_shared/database.ts";
+import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
+import { OptionsRsp, SuccessResponse, HandleEndpointError } from "../_shared/response.ts";
+import getNotifications from "./getNotifications.ts";
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
 
-    if (req.method === 'OPTIONS') {
-        return OptionsRsp();
+    const request = new EdgeFunctionRequest(import.meta.url, req, { courseId: z.string() });
+
+    try {
+        if (req.method === 'OPTIONS') {
+            return OptionsRsp();
+        }
+
+        await request.validateRequest();
+
+        const rsp = await getNotifications(request);
+
+        return SuccessResponse(rsp);
+    } catch (err) {
+        return await HandleEndpointError(request, err);
     }
-
-    const user = await getRequestUser(req);
-
-    const notifications = await getRows({ table: 'notification', conditions: ['eq', 'user_id', user.id] });
-    if (notifications instanceof Response) return notifications;
-
-    return SuccessResponse(notifications);
 });
