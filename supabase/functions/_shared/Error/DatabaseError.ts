@@ -1,7 +1,8 @@
-class DatabaseError extends Error {
+import ApiError from "./ApiError.ts";
+
+class DatabaseError extends ApiError {
     public constructor(message: string) {
-        super(message);
-        this.name = "DatabaseError";
+        super(message, "DatabaseError", "DATABASE", 500);
     }
 }
 

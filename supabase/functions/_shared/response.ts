@@ -2,6 +2,7 @@ import ValidationError from "./Error/ValidationError.ts";
 import DatabaseError from "./Error/DatabaseError.ts";
 import EdgeFunctionRequest from "./EdgeFunctionRequest.ts";
 import { adminClient } from "./adminClient.ts";
+import ApiError from "./Error/ApiError.ts";
 
 // Helper for response construction
 const _makeResponse = (data: any, status?: number) => {
@@ -27,12 +28,6 @@ const OptionsRsp = () => _makeResponse('ok');
  */
 const SuccessResponse = (data: any) => _makeResponse(data, 200);
 
-enum ERROR_TYPES {
-    VALIDATION = "VALIDATION",
-    DATABASE = "DATABASE",
-    UNCAUGHT = "UNCAUGHT"
-}
-
 /**
  * Handles errors caught in an endpoint
  */
@@ -40,16 +35,12 @@ const HandleEndpointError = async (request: EdgeFunctionRequest, err: any): Prom
     let errorType, statusCode, message;
 
     // Handle custom error types, then everything else
-    if (err instanceof ValidationError) {
-        errorType = ERROR_TYPES.VALIDATION;
-        statusCode = 400;
-        message = `Validation Error: ${err.message}`;
-    } else if (err instanceof DatabaseError) {
-        errorType = ERROR_TYPES.DATABASE;
-        statusCode = 500;
-        message = `Database Error: ${err.message}`;
+    if (err instanceof ApiError) {
+        errorType = err.type;
+        statusCode = err.statusCode;
+        message = err.message;
     } else {
-        errorType = ERROR_TYPES.UNCAUGHT;
+        errorType = "UNCAUGHT";
         statusCode = 500;
         message = `Uncaught internal error: ${err.message}`;
     }
