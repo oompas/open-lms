@@ -12,8 +12,6 @@ class EdgeFunctionRequest {
     private payload: Record<string, any> | null = null;
     private requestUser: object | null = null;
 
-    private response: Response | null = null;
-
     /**
      * Creates a new instance, generating a UUID and storing the request & schema object
      *
@@ -66,14 +64,11 @@ class EdgeFunctionRequest {
     }
 
     // Getters/setters
-    public getReq = (): Request => this.req;
     public getPayload = (): Record<string, any> | null => this.payload;
     public getUUID = (): string => this.uuid;
     public getEndpoint = (): string => this.endpoint;
     public getRequestUser = (): object | null => this.requestUser;
     public getRequestUserId = (): object | null => this.requestUser?.id ?? null;
-
-    public setResponse = (response: Response): void => this.response = response;
 }
 
 export default EdgeFunctionRequest;
