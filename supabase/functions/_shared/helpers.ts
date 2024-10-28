@@ -1,45 +1,3 @@
-import { z, ZodError } from "https://deno.land/x/zod@v3.16.1/mod.ts";
-import ValidationError from "./Error/ValidationError.ts";
-
-/**
- * Generates a UUID (v4)
- */
-function generateUUID(): string {
-    try {
-        return crypto.randomUUID();
-    } catch (error) {
-        console.error(`UUID generation failed: ${error.message}`);
-        throw error;
-    }
-}
-
-/**
- * Validates and returns an API payload for the given schema
- *
- * @param schemaObject Record of expected payload arguments
- * @param req The Supabase edge function request
- * @returns The parsed payload as an object
- * @throws ValidationError if payload doesn't match schema
- * @throws InternalError if any other error occurs
- */
-const validatePayload = async (schemaObject: Record<string, z.ZodTypeAny>, req: Request): Promise<Record<string, any>> => {
-    try {
-        const schema: z.ZodSchema = z.object(schemaObject).strict();
-        const payload = await req.json();
-        schema.parse(payload);
-
-        return payload;
-    } catch (error) {
-        if (error instanceof ZodError) {
-            logErr(`Incoming payload doesn't match schema: ${error.message}`);
-            throw new ValidationError("Payload validation failed: " + error.errors.map(err => err.message).join(", "));
-        }
-
-        logErr(`Internal error validating payload: ${error.message}`);
-        throw error;
-    }
-}
-
 /**
  * Helper for response construction
  */
@@ -78,8 +36,6 @@ const ErrorResponse = (errorMessage: string) => _makeResponse(errorMessage, 400)
 const SuccessResponse = (data: any) => _makeResponse(data, 200);
 
 const log = (message: string) => console.log(message);
-
-const logErr = (message: string) => console.error(message);
 
 const getCurrentTimestampTz = () => {
     const now = new Date();
