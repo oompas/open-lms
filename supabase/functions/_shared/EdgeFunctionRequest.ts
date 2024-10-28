@@ -55,11 +55,11 @@ class EdgeFunctionRequest {
         }
     }
 
-    public log = (message: string) => {
+    public log = (message: string): void => {
         console.log(`[${this.uuid}] ${message}`);
     }
 
-    public logErr = (message: string, functionName: string) => {
+    public logErr = (message: string, functionName: string): void => {
         console.error(`[${this.uuid}] (${functionName}) ${message}`);
     }
 

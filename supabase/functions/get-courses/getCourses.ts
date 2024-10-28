@@ -1,7 +1,7 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { CourseService } from "../_shared/Service/Services.ts";
 
-const getCourses = async (request: EdgeFunctionRequest) => {
+const getCourses = async (request: EdgeFunctionRequest): Promise<object[]> => {
 
     request.log("Getting user ID, all courses, and user's enrollments...");
 

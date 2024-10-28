@@ -1,7 +1,7 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { getRows } from "../_shared/database.ts";
 
-const getQuiz = async (request: EdgeFunctionRequest) => {
+const getQuiz = async (request: EdgeFunctionRequest): Promise<object> => {
 
     const { quizAttemptId } = request.getPayload();
 

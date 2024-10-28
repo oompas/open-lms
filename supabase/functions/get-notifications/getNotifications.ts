@@ -1,7 +1,7 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { getRows } from "../_shared/database.ts";
 
-const getNotifications = async (request: EdgeFunctionRequest) => {
+const getNotifications = async (request: EdgeFunctionRequest): Promise<object[]> => {
 
     const userId = request.getRequestUserId();
 

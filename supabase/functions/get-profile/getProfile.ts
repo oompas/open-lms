@@ -1,7 +1,7 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { getRows } from "../_shared/database.ts";
 
-const getProfile = async (request: EdgeFunctionRequest) => {
+const getProfile = async (request: EdgeFunctionRequest): Promise<object> => {
 
     const user = request.getRequestUser();
 
