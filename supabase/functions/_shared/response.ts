@@ -1,5 +1,3 @@
-import ValidationError from "./Error/ValidationError.ts";
-import DatabaseError from "./Error/DatabaseError.ts";
 import EdgeFunctionRequest from "./EdgeFunctionRequest.ts";
 import { adminClient } from "./adminClient.ts";
 import ApiError from "./Error/ApiError.ts";
