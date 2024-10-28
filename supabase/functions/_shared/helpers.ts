@@ -45,4 +45,4 @@ const getCurrentTimestampTz = () => {
     return isoString.replace('T', ' ').replace('Z', '+00');
 };
 
-export { generateUUID, validatePayload, OptionsRsp, InternalError, ErrorResponse, SuccessResponse, log, logErr, getCurrentTimestampTz };
+export { OptionsRsp, InternalError, ErrorResponse, SuccessResponse, log, getCurrentTimestampTz };
