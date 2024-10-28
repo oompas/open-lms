@@ -6,7 +6,7 @@ const getCourseData = async (request: EdgeFunctionRequest) => {
     request.log(`Getting requesting user & course ID...`);
 
     const { courseId } = request.getPayload();
-    const userId: string = request.getRequestUser().id;
+    const userId: string = request.getRequestUserId();
 
     request.log(`Querying course data, attempts and status...`);
 

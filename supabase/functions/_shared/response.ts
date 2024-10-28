@@ -48,7 +48,7 @@ const HandleEndpointError = async (request: EdgeFunctionRequest, err: any): Prom
         endpoint: request.getEndpoint(),
         request_uuid: request.getUUID(),
         type: errorType,
-        request_user_id: request.getRequestUser()?.id,
+        request_user_id: request.getRequestUserId(),
         payload: request.getPayload(),
         message: message,
         stack_trace: err.stack

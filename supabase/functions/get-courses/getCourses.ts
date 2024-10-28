@@ -5,7 +5,7 @@ const getCourses = async (request: EdgeFunctionRequest) => {
 
     request.log("Getting user ID, all courses, and user's enrollments...");
 
-    const userId = request.getRequestUser().id;
+    const userId = request.getRequestUserId();
     const data = await CourseService
         .query(`
             id,
