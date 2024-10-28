@@ -1,12 +1,11 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getRequestUserId } from "../_shared/auth.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 
 const getCourses = async (request: EdgeFunctionRequest) => {
 
     request.log("Getting user ID, all courses, and user's enrollments...");
 
-    const userId = await getRequestUserId(req);
+    const userId = request.getRequestUser().id;
     const { data, error } = await adminClient
         .from('course')
         .select(`
