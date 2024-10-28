@@ -25,8 +25,8 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
                 }
                 return data;
             } catch (err) {
-                log(`Error querying database: ${JSON.stringify(err)}`);
-                throw new DatabaseError(`Error querying database: ${JSON.stringify(err)}`);
+                log(`Error querying database: ${err.message}`);
+                throw new DatabaseError(`Error querying database: ${err.message}`);
             }
         }
 
@@ -41,13 +41,13 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
             }
 
             if (data.length > 1) {
-                throw `More than 1 document in table ${this.TABLE_NAME} found with the id ${id}`;
+                throw new Error(`More than 1 document in table ${this.TABLE_NAME} found with the id ${id}`);
             }
 
             return data.length === 1 ? data[0] : null;
         } catch (err) {
-            log(`Error querying database: ${JSON.stringify(err)}`);
-            throw new DatabaseError(`Error querying database: ${JSON.stringify(err)}`);
+            log(`Error querying database: ${err.message}`);
+            throw new DatabaseError(`Error querying database: ${err.message}`);
         }
     }
 
@@ -86,8 +86,8 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
 
             return data;
         } catch (err) {
-            log(`Error querying database: ${JSON.stringify(err)}`);
-            throw new DatabaseError(`Error querying database: ${JSON.stringify(err)}`);
+            log(`Error querying database: ${err.message}`);
+            throw new DatabaseError(`Error querying database: ${err.message}`);
         }
     }
 }
