@@ -3,7 +3,7 @@ import { adminClient } from "../_shared/adminClient.ts";
 import { EnrollmentService } from "../_shared/Service/Services.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 
-const startCourse = async (request: EdgeFunctionRequest) => {
+const startCourse = async (request: EdgeFunctionRequest): Promise<any> => {
 
     const userId = request.getRequestUserId();
     const { courseId } = request.getPayload();
