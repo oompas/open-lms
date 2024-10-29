@@ -36,7 +36,7 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
             maxAttempts: course.max_quiz_attempts,
             minScore: course.min_quiz_score,
             timeLimit: course.quiz_time_limit,
-            numQuestions: course.num_quiz_questions,
+            numQuestions: course.num_quiz_questions
         };
     }
 

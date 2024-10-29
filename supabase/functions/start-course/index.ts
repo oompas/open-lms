@@ -1,31 +1,23 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { SuccessResponse, ErrorResponse, OptionsRsp } from "../_shared/helpers.ts";
-import { getRequestUserId } from "../_shared/auth.ts";
-import { adminClient } from "../_shared/adminClient.ts";
-import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
-import { EnrollmentService } from "../_shared/Service/Services.ts";
+import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
+import { OptionsRsp, SuccessResponse, HandleEndpointError } from "../_shared/response.ts";
+import startCourse from "./startCourse.ts";
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
 
-    if (req.method === 'OPTIONS') {
-        return OptionsRsp();
+    const request = new EdgeFunctionRequest(import.meta.url, req, { courseId: z.string() });
+
+    try {
+        if (req.method === 'OPTIONS') {
+            return OptionsRsp();
+        }
+
+        await request.validateRequest();
+
+        const rsp = await startCourse(request);
+
+        return SuccessResponse(rsp);
+    } catch (err) {
+        return await HandleEndpointError(request, err);
     }
-
-    const userId = await getRequestUserId(req);
-    const { id: courseID } = await req.json();
-
-    const courseAttempt = {
-        course_id: courseID,
-        user_id: userId
-    };
-
-    const { data, error } = await adminClient.from('course_attempt').insert(courseAttempt);
-
-    await EnrollmentService.updateStatus(courseID, userId, CourseStatus.IN_PROGRESS);
-
-    if (error) {
-        return ErrorResponse(error.message);
-    }
-
-    return SuccessResponse(data);
 });
