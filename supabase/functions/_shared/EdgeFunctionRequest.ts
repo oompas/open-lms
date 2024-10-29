@@ -1,6 +1,7 @@
 import { z, ZodError, ZodSchema } from "https://deno.land/x/zod@v3.16.1/mod.ts";
 import ValidationError from "./Error/ValidationError.ts";
 import { getRequestUser } from "./auth.ts";
+import { HandleEndpointError, OptionsRsp, SuccessResponse } from "./response.ts";
 
 class EdgeFunctionRequest {
 
@@ -13,13 +14,40 @@ class EdgeFunctionRequest {
     private requestUser: object | null = null;
 
     /**
+     * Runs an endpoint
+     *
+     * @param metaUrl
+     * @param req
+     * @param schemaRecord
+     * @param endpointFunction
+     */
+    public static async run(metaUrl: string, req: Request, schemaRecord: Record<string, z.ZodTypeAny>, endpointFunction: () => Promise<any>) {
+
+        const request = new EdgeFunctionRequest(metaUrl, req, schemaRecord);
+
+        try {
+            if (req.method === 'OPTIONS') {
+                return OptionsRsp();
+            }
+
+            await request.validateRequest();
+
+            const rsp = await endpointFunction(request);
+
+            return SuccessResponse(rsp);
+        } catch (err) {
+            return await HandleEndpointError(request, err);
+        }
+    }
+
+    /**
      * Creates a new instance, generating a UUID and storing the request & schema object
      *
      * @param req Request object from Deno
      * @param schemaRecord Record of fields this request should have
      * @param metaUrl Pass import.meta.url from the index file here - used to get the endpoint name from the path
      */
-    public constructor(metaUrl: string, req: Request, schemaRecord: Record<string, z.ZodTypeAny>) {
+    private constructor(metaUrl: string, req: Request, schemaRecord: Record<string, z.ZodTypeAny>) {
         this.uuid = crypto.randomUUID();
 
         const splitUrl = metaUrl.split("/");
