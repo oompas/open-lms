@@ -1,32 +1,23 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { ErrorResponse, OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
-import { adminClient } from "../_shared/adminClient.ts";
-import { verifyAdministrator } from "../_shared/auth.ts";
+import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
+import { OptionsRsp, SuccessResponse, HandleEndpointError } from "../_shared/response.ts";
+import createCourse from "./createCourse.ts";
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
 
-    if (req.method === 'OPTIONS') {
-        return OptionsRsp();
+    const request = new EdgeFunctionRequest(import.meta.url, req, { course: z.object() });
+
+    try {
+        if (req.method === 'OPTIONS') {
+            return OptionsRsp();
+        }
+
+        await request.validateRequest();
+
+        const rsp = await createCourse(request);
+
+        return SuccessResponse(rsp);
+    } catch (err) {
+        return await HandleEndpointError(request, err);
     }
-
-    const uid = await verifyAdministrator(req);
-    if (uid instanceof Response) return uid;
-
-    const { course } = await req.json();
-
-    const courseData = {
-        user_id: uid,
-        name: course.name,
-        description: course.description,
-        link: course.link,
-        min_time: course.minTime,
-    };
-
-    const { data, error } = await adminClient.from('course').insert(courseData);
-
-    if (error) {
-        return ErrorResponse(error.message);
-    }
-
-    return SuccessResponse(data);
 });
