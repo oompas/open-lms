@@ -19,7 +19,7 @@ class EdgeFunctionRequest {
      * @param schemaRecord Record of fields this request should have
      * @param metaUrl Pass import.meta.url from the index file here - used to get the endpoint name from the path
      */
-    public constructor(req: Request, schemaRecord: Record<string, z.ZodTypeAny>, metaUrl: string) {
+    public constructor(metaUrl: string, req: Request, schemaRecord: Record<string, z.ZodTypeAny>) {
         this.uuid = crypto.randomUUID();
 
         const splitUrl = metaUrl.split("/");
