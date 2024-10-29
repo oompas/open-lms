@@ -3,6 +3,13 @@ import ValidationError from "./Error/ValidationError.ts";
 import { getRequestUser } from "./auth.ts";
 import { HandleEndpointError, OptionsRsp, SuccessResponse } from "./response.ts";
 
+export interface RunParams {
+    metaUrl: string;
+    req: Request;
+    schemaRecord: Record<string, z.ZodTypeAny>;
+    endpointFunction: (request: EdgeFunctionRequest) => Promise<any>;
+}
+
 class EdgeFunctionRequest {
 
     private readonly uuid: string;
@@ -16,14 +23,14 @@ class EdgeFunctionRequest {
     /**
      * Runs an endpoint
      *
-     * @param metaUrl
-     * @param req
-     * @param schemaRecord
-     * @param endpointFunction
+     * @param metaUrl Pass import.meta.url from the index file here - used to get the endpoint name from the path
+     * @param req Request object from Deno
+     * @param schemaRecord Record of fields this request should have
+     * @param endpointFunction Function to run the business logic for this endpoint
      */
-    public static async run(metaUrl: string, req: Request, schemaRecord: Record<string, z.ZodTypeAny>, endpointFunction: () => Promise<any>) {
+    public static async run({ metaUrl, req, schemaRecord, endpointFunction }: RunParams) {
 
-        const request = new EdgeFunctionRequest(metaUrl, req, schemaRecord);
+        const request: EdgeFunctionRequest = new EdgeFunctionRequest(metaUrl, req, schemaRecord);
 
         try {
             if (req.method === 'OPTIONS') {
