@@ -74,7 +74,7 @@ export default function IDCourse({
     };
 
     const start = () => {
-        return callAPI('start-course', { id: course.id })
+        return callAPI('start-course', { courseId: course.id })
             .then((result) => {
                 setCourseAttemptId(result.data);
                 setCountDown(60 * course.minTime);
