@@ -1,7 +1,8 @@
 import { z, ZodError, ZodSchema } from "https://deno.land/x/zod@v3.16.1/mod.ts";
 import ValidationError from "./Error/ValidationError.ts";
 import { getRequestUser } from "./auth.ts";
-import { HandleEndpointError, OptionsRsp, SuccessResponse } from "./response.ts";
+import ApiError from "./Error/ApiError.ts";
+import { adminClient } from "./adminClient.ts";
 
 export interface RunParams {
     metaUrl: string;
@@ -34,16 +35,16 @@ class EdgeFunctionRequest {
 
         try {
             if (req.method === 'OPTIONS') {
-                return OptionsRsp();
+                return request.OptionsRsp();
             }
 
             await request.validateRequest();
 
             const rsp = await endpointFunction(request);
 
-            return SuccessResponse(rsp);
+            return request.SuccessResponse(rsp);
         } catch (err) {
-            return await HandleEndpointError(request, err);
+            return await request.HandleEndpointError(err);
         }
     }
 
@@ -89,6 +90,69 @@ class EdgeFunctionRequest {
             throw error;
         }
     }
+
+    /**
+     * Handles a caught error, logging it to the server console & database
+     */
+    private async HandleEndpointError(err: any): Promise<Response> {
+        let errorType, statusCode, message;
+
+        // Handle custom error types, then everything else
+        if (err instanceof ApiError) {
+            errorType = err.type;
+            statusCode = err.statusCode;
+            message = err.message;
+        } else {
+            errorType = "UNCAUGHT";
+            statusCode = 500;
+            message = `Uncaught internal error: ${err.message}`;
+        }
+
+        // Log error to database + server console
+        const errObject = {
+            endpoint: this.getEndpoint(),
+            request_uuid: this.getUUID(),
+            type: errorType,
+            request_user_id: this.getRequestUserId(),
+            payload: this.getPayload(),
+            message: message,
+            stack_trace: err.stack
+        };
+
+        const { error } = await adminClient.from('error_log').insert(errObject);
+        if (error) {
+            this.logErr(`Error logging error: ${JSON.stringify(error)}`, `HandleEndpointError`);
+        }
+
+        this.logErr(`Error caught: ${JSON.stringify(errObject)}`, `HandleEndpointError`);
+
+        // Just return the uuid - don't expose internal data
+        return _makeResponse(this.getUUID(), statusCode);
+    }
+
+    // Helper for response construction
+    private _makeResponse = (data: any, status?: number) => {
+        const headers = {
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+                "Content-Type": "application/json",
+            },
+            ...(status !== undefined && { status })
+        };
+
+        return new Response(JSON.stringify(data), headers);
+    }
+
+    /**
+     * All endpoints must check if (req.method === 'OPTIONS') then return this response at the start of their execution
+     */
+    private OptionsRsp = () => this._makeResponse('ok');
+
+    /**
+     * Constructions a response for a successful function invocation
+     */
+    private SuccessResponse = (data: any) => this._makeResponse(data, 200);
 
     public log = (message: string): void => {
         console.log(`[${this.uuid}] ${message}`);
