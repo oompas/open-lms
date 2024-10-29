@@ -1,19 +1,23 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { InternalError, OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
-import { adminClient } from "../_shared/adminClient.ts";
+import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
+import { OptionsRsp, SuccessResponse, HandleEndpointError } from "../_shared/response.ts";
+import setCourseVisibility from "./setCourseVisibility.ts";
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
 
-    if (req.method === 'OPTIONS') {
-        return OptionsRsp();
+    const request = new EdgeFunctionRequest(import.meta.url, req, { courseId: z.string(), active: z.bool() });
+
+    try {
+        if (req.method === 'OPTIONS') {
+            return OptionsRsp();
+        }
+
+        await request.validateRequest();
+
+        const rsp = await setCourseVisibility(request);
+
+        return SuccessResponse(rsp);
+    } catch (err) {
+        return await HandleEndpointError(request, err);
     }
-
-    const { courseId, active } = await req.json();
-
-    const { data, error } = await adminClient.from('course').update({ active: active }).eq('id', courseId);
-    if (error) {
-        return InternalError();
-    }
-
-    return SuccessResponse(null);
 });
