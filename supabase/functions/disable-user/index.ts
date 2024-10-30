@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
     const parameters: RunParams = {
         metaUrl: import.meta.url,
         req: req,
-        schemaRecord: { courseId: z.string(), disable: z.bool() },
+        schemaRecord: { userId: z.string(), disable: z.bool() },
         endpointFunction: disableUser
     };
 
