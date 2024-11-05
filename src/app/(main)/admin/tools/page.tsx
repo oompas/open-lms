@@ -391,9 +391,8 @@ export default function Tools() {
                             onChange={(e) => setCourseSearch(e.target.value)}
                         />
                     </div>
-                    <MdAdd className="ml-4" size={25} onClick={() => router.push('/admin/course/new')} filled/>
-                    <FiDownload className="ml-4" size={25}
-                                onClick={() => setCurrentPopup(PopupType.DowloadCourseReports)}/>
+                    <MdAdd className="ml-5 cursor-pointer" size={25} onClick={() => router.push('/admin/course/new')} filled/>
+                    <FiDownload className="ml-5 cursor-pointer" size={25} onClick={() => setCurrentPopup(PopupType.DowloadCourseReports)}/>
                 </div>
                 {getCourseInsights()}
             </div>
@@ -415,8 +414,8 @@ export default function Tools() {
                             onChange={(e) => setUserSearch(e.target.value)}
                         />
                     </div>
-                    <IoPersonAdd className="ml-4" size={22} onClick={() => setCurrentPopup(PopupType.InviteLearner)}/>
-                    <FiDownload className="ml-4" size={25} onClick={() => setCurrentPopup(PopupType.DownloadUserReports)}/>
+                    <IoPersonAdd className="ml-5 cursor-pointer" size={22} onClick={() => setCurrentPopup(PopupType.InviteLearner)}/>
+                    <FiDownload className="ml-5 cursor-pointer" size={25} onClick={() => setCurrentPopup(PopupType.DownloadUserReports)}/>
                 </div>
                 {getLearnerInsights()}
             </div>
