@@ -10,6 +10,9 @@ import { downloadZip } from "client-zip";
 import AdminInsight from "@/app/(main)/admin/tools/AdminInsight";
 import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
+import { BsDownload } from "react-icons/bs";
+import { FiDownload } from "react-icons/fi";
+import { IoPersonAdd, IoSearch } from "react-icons/io5";
 
 export default function Tools() {
 
@@ -394,13 +397,26 @@ export default function Tools() {
                         <div className="text-lg -mb-1">Learner Insights</div>
                         <p className="mr-2 text-gray-500">Click on a user to view their profile</p>
                     </div>
-                    <TextField 
-                        placeholder="Search for a user..."
-                        text={userSearch}
-                        onChange={setUserSearch}
-                    />
-                    <Button text="Invite Learners" onClick={() => setCurrentPopup(PopupType.InviteLearner)} style="ml-4"/>
-                    <Button text="Download User Reports" onClick={() => setCurrentPopup(PopupType.DownloadUserReports)} style="ml-4"/>
+
+                    <div className="relative flex items-center max-w-md ml-auto">
+                        <IoSearch className="absolute left-3 text-gray-400" size={20}/>
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    {/*<TextField*/}
+                    {/*    placeholder="Search for a user..."*/}
+                    {/*    text={userSearch}*/}
+                    {/*    onChange={setUserSearch}*/}
+                    {/*/>*/}
+                    {/*<Button text="Invite Learners" onClick={() => setCurrentPopup(PopupType.InviteLearner)}*/}
+                    {/*        style="ml-4"/>*/}
+                    <IoPersonAdd className="ml-4" size={22}/>
+
+                    <FiDownload className="ml-4" size={25}/>
+                    {/*<Button text="Download User Reports" onClick={() => setCurrentPopup(PopupType.DownloadUserReports)} style="ml-4"/>*/}
                 </div>
                 {getLearnerInsights()}
             </div>
