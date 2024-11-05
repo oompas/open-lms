@@ -401,22 +401,14 @@ export default function Tools() {
                     <div className="relative flex items-center max-w-md ml-auto">
                         <IoSearch className="absolute left-3 text-gray-400" size={20}/>
                         <input
-                            type="text"
                             placeholder="Search..."
+                            type={userSearch}
                             className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onChange={(e) => setUserSearch(e.target.value)}
                         />
                     </div>
-                    {/*<TextField*/}
-                    {/*    placeholder="Search for a user..."*/}
-                    {/*    text={userSearch}*/}
-                    {/*    onChange={setUserSearch}*/}
-                    {/*/>*/}
-                    {/*<Button text="Invite Learners" onClick={() => setCurrentPopup(PopupType.InviteLearner)}*/}
-                    {/*        style="ml-4"/>*/}
-                    <IoPersonAdd className="ml-4" size={22}/>
-
-                    <FiDownload className="ml-4" size={25}/>
-                    {/*<Button text="Download User Reports" onClick={() => setCurrentPopup(PopupType.DownloadUserReports)} style="ml-4"/>*/}
+                    <IoPersonAdd className="ml-4" size={22} onClick={() => setCurrentPopup(PopupType.InviteLearner)}/>
+                    <FiDownload className="ml-4" size={25} onClick={() => setCurrentPopup(PopupType.DownloadUserReports)}/>
                 </div>
                 {getLearnerInsights()}
             </div>
