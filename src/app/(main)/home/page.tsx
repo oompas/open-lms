@@ -7,7 +7,6 @@ import { MdArrowBack, MdArrowForward } from "react-icons/md";
 import TextField from "@/components/TextField.tsx";
 import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
 import { IoSchool, IoTimeOutline } from "react-icons/io5";
-import { FaBookOpen } from "react-icons/fa6";
 import { AiOutlineForm } from "react-icons/ai";
 
 enum CourseStatus {
