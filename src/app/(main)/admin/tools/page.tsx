@@ -4,7 +4,7 @@ import LearnerInsight from "@/app/(main)/admin/tools/LearnerInsight";
 import CourseInsight from "@/app/(main)/admin/tools/CourseInsight";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import React, { useState } from "react";
 import TextField from "@/components/TextField";
 import { downloadZip } from "client-zip";
 import AdminInsight from "@/app/(main)/admin/tools/AdminInsight";
@@ -12,7 +12,9 @@ import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
 import { BsDownload } from "react-icons/bs";
 import { FiDownload } from "react-icons/fi";
-import { IoPersonAdd, IoSearch } from "react-icons/io5";
+import { IoAdd, IoPersonAdd, IoSearch } from "react-icons/io5";
+import { IoMdAdd } from "react-icons/io";
+import { MdAdd } from "react-icons/md";
 
 export default function Tools() {
 
@@ -384,8 +386,8 @@ export default function Tools() {
                         text={courseSearch}
                         onChange={setCourseSearch}
                     />
-                    <Button text="Create a Course" onClick={() => router.push('/admin/course/new')} filled />
-                    <Button text="Download Course Reports" onClick={() => setCurrentPopup(PopupType.DowloadCourseReports)}/>
+                    <MdAdd className="ml-4" size={25} onClick={() => router.push('/admin/course/new')} filled />
+                    <FiDownload className="ml-4" size={25} onClick={() => setCurrentPopup(PopupType.DowloadCourseReports)}/>
                 </div>
                 {getCourseInsights()}
             </div>
