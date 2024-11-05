@@ -68,12 +68,11 @@ export default function Home() {
                     );
                 }
                 let quizTime = null;
-                if (course.maxQuizTime) {
+                if (course.total_quiz_marks) {
                     quizTime = (
                         <div className={`flex ${learningTime && "ml-2"}`}>
                             <AiOutlineForm size={18} className="mr-[6px] mt-[1px]"/>
-                            {course.maxQuizTime >= 60 && `${Math.floor(course.maxQuizTime / 60)}hr `}
-                            {course.maxQuizTime % 60 !== 0 && `${course.maxQuizTime % 60}min`}
+                            {course.total_quiz_marks + " Marks"}
                         </div>
                     );
                 }
@@ -138,20 +137,19 @@ export default function Home() {
                 let learningTime = null;
                 if (course.minTime) {
                     learningTime = (
-                        <div className="flex">
+                        <div className="flex mr-[1px]">
                             <IoTimeOutline size={18} className="mr-[3px] mt-[2px]"/>
-                            {course.minTime >= 60 && `${Math.floor(course.minTime / 60)}hr `}
-                            {course.minTime % 60 !== 0 && `${course.minTime % 60}min`}
+                            {course.minTime >= 60 && `${Math.floor(course.minTime / 60)} hr `}
+                            {course.minTime % 60 !== 0 && `${course.minTime % 60} min`}
                         </div>
                     );
                 }
                 let quizTime = null;
-                if (course.maxQuizTime) {
+                if (course.total_quiz_marks) {
                     quizTime = (
                         <div className={`flex ${learningTime && "ml-2"}`}>
                             <AiOutlineForm size={18} className="mr-[3px] mt-[2px]"/>
-                            {course.maxQuizTime >= 60 && `${Math.floor(course.maxQuizTime / 60)}hr `}
-                            {course.maxQuizTime % 60 !== 0 && `${course.maxQuizTime % 60}min`}
+                            {course.total_quiz_marks + " Marks"}
                         </div>
                     );
                 }

@@ -12,7 +12,7 @@ const getCourses = async (request: EdgeFunctionRequest): Promise<object[]> => {
             name,
             description,
             min_time,
-            quiz_time_limit,
+            total_quiz_marks,
             enrolled_course(status)
           `,
             [
@@ -31,7 +31,7 @@ const getCourses = async (request: EdgeFunctionRequest): Promise<object[]> => {
                 description: course.description,
                 status: course.enrolled_course[0]?.status ?? "NOT_ENROLLED",
                 minTime: course.min_time,
-                maxQuizTime: course.quiz_time_limit,
+                total_quiz_marks: course.total_quiz_marks,
             }
         });
 
