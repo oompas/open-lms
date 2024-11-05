@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import { getAllUsers, verifyAdministrator } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
+import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 
 Deno.serve(async (req) => {
 
@@ -50,17 +51,19 @@ Deno.serve(async (req) => {
         }
     });
 
-    const learners = users.filter((user) => user.user_metadata.role === "Learner")
-        .map((user: any) => {
+    const learners = users.filter((user) => user.user_metadata.role === "Learner").map((user: any) => {
+
+        const userEnrollments = enrollments.filter(e => e.user_id === user.id);
+
         return {
             id: user.id,
             email: user.email,
             name: user.user_metadata.name,
             role: user.user_metadata.role,
 
-            coursesEnrolled: 0,
-            coursesAttempted: 0,
-            coursesCompleted: 0
+            coursesEnrolled: userEnrollments.length,
+            coursesAttempted: userEnrollments.filter((e) => e.status !== CourseStatus.ENROLLED).length,
+            coursesCompleted: userEnrollments.filter((e) => e.status === CourseStatus.COMPLETED).length
         };
     });
 
