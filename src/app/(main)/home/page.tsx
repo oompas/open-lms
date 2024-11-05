@@ -139,7 +139,7 @@ export default function Home() {
                 if (course.minTime) {
                     learningTime = (
                         <div className="flex">
-                            <IoTimeOutline size={18} className="mr-1"/>
+                            <IoTimeOutline size={18} className="mr-[3px] mt-[2px]"/>
                             {course.minTime >= 60 && `${Math.floor(course.minTime / 60)}hr `}
                             {course.minTime % 60 !== 0 && `${course.minTime % 60}min`}
                         </div>
@@ -149,7 +149,7 @@ export default function Home() {
                 if (course.maxQuizTime) {
                     quizTime = (
                         <div className={`flex ${learningTime && "ml-2"}`}>
-                            <AiOutlineForm size={18} className="mr-1"/>
+                            <AiOutlineForm size={18} className="mr-[3px] mt-[2px]"/>
                             {course.maxQuizTime >= 60 && `${Math.floor(course.maxQuizTime / 60)}hr `}
                             {course.maxQuizTime % 60 !== 0 && `${course.maxQuizTime % 60}min`}
                         </div>
