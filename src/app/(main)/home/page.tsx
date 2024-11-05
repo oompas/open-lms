@@ -33,21 +33,17 @@ export default function Home() {
     const [search, setSearch] = useState<string | null>(null);
 
     const renderCourses = (isEnrolledView) => {
-        if (getCourseData.loading) {
-            return <div>Loading...</div>;
-        }
-        if (courseData !== undefined && getCourseData.error) {
-            return <div>Error loading courses</div>;
-        }
+        if (getCourseData.loading) return <div>Loading...</div>;
+        if (courseData && getCourseData.error) return <div>Error loading courses</div>;
 
-        // Filter courses based on the view type
-        const filteredCourses = isEnrolledView
-            ? courseData.filter((course) => course.status !== CourseStatus.NOT_ENROLLED)
-            : courseData.filter((course) =>
-                course.status === CourseStatus.NOT_ENROLLED &&
-                (course.name.toLowerCase().includes(search.toLowerCase()) ||
-                    course.description.toLowerCase().includes(search.toLowerCase()))
-            );
+        const filteredCourses = courseData.filter((course) =>
+            isEnrolledView
+                ? course.status !== CourseStatus.NOT_ENROLLED
+                : course.status === CourseStatus.NOT_ENROLLED && (
+                course.name.toLowerCase().includes(search.toLowerCase()) ||
+                course.description.toLowerCase().includes(search.toLowerCase())
+            )
+        );
 
         if (isEnrolledView && filteredCourses.length === 0) {
             return (
@@ -62,46 +58,38 @@ export default function Home() {
             );
         }
 
-        const courses = filteredCourses.map((course, key) => {
-            // Format the learning + quiz time
-            const learningTime = course.minTime ? (
-                <div className="flex">
-                    <IoTimeOutline size={18} className="mr-1 mt-[1px]" />
-                    {course.minTime >= 60 && `${Math.floor(course.minTime / 60)} hr `}
-                    {course.minTime % 60 !== 0 && `${course.minTime % 60} min`}
-                </div>
-            ) : null;
+        const formatTime = (minTime, quizMarks) => (
+            <div className="flex">
+                {minTime && (
+                    <div className="flex mr-2">
+                        <IoTimeOutline size={18} className="mr-1 mt-[2px]" />
+                        {minTime >= 60 && `${Math.floor(minTime / 60)} hr `}
+                        {minTime % 60 !== 0 && `${minTime % 60} min`}
+                    </div>
+                )}
+                {quizMarks && (
+                    <div className="flex">
+                        <AiOutlineForm size={18} className="mr-1 mt-[2px]" />
+                        {quizMarks + " Marks"}
+                    </div>
+                )}
+            </div>
+        );
 
-            const quizTime = course.total_quiz_marks ? (
-                <div className={`flex ${learningTime && "ml-2"}`}>
-                    <AiOutlineForm size={18} className="mr-[6px] mt-[1px]" />
-                    {course.total_quiz_marks + " Marks"}
-                </div>
-            ) : null;
-
-            const time = (
-                <div className="flex">
-                    {learningTime}
-                    {quizTime}
-                </div>
-            );
-
-            const CourseComponent = isEnrolledView ? EnrolledCourse : AvailableCourse;
-            return (
-                <CourseComponent
-                    key={key}
-                    title={course.name}
-                    description={course.description}
-                    id={course.id}
-                    status={course.status}
-                    time={time}
-                />
-            );
-        });
+        const CourseComponent = isEnrolledView ? EnrolledCourse : AvailableCourse;
 
         return (
             <div className="flex flex-row flex-wrap gap-x-4 mt-4 overflow-y-scroll sm:no-scrollbar">
-                {courses}
+                {filteredCourses.map((course, key) => (
+                    <CourseComponent
+                        key={key}
+                        title={course.name}
+                        description={course.description}
+                        id={course.id}
+                        status={isEnrolledView ? course.status : undefined}
+                        time={formatTime(course.minTime, course.total_quiz_marks)}
+                    />
+                ))}
             </div>
         );
     };
