@@ -32,7 +32,7 @@ export default function Home() {
     const [filters, setFilters] = useState<number[]>(Object.values(CourseStatus).filter(s => s !== "NOT_ENROLLED"));
     const [search, setSearch] = useState<string | null>(null);
 
-    const enrolledCourses = () => {
+    const renderCourses = (isEnrolledView) => {
         if (getCourseData.loading) {
             return <div>Loading...</div>;
         }
@@ -40,11 +40,20 @@ export default function Home() {
             return <div>Error loading courses</div>;
         }
 
-        if (courseData.filter((course: any) => course.status !== CourseStatus.NOT_ENROLLED).length === 0) {
+        // Filter courses based on the view type
+        const filteredCourses = isEnrolledView
+            ? courseData.filter((course) => course.status !== CourseStatus.NOT_ENROLLED)
+            : courseData.filter((course) =>
+                course.status === CourseStatus.NOT_ENROLLED &&
+                (course.name.toLowerCase().includes(search.toLowerCase()) ||
+                    course.description.toLowerCase().includes(search.toLowerCase()))
+            );
+
+        if (isEnrolledView && filteredCourses.length === 0) {
             return (
                 <div className="flex items-center justify-center h-screen">
                     <div className="text-center cursor-pointer" onClick={() => setSearch("")}>
-                        <IoSchool size={80} className="mx-auto mb-2"/>
+                        <IoSchool size={80} className="mx-auto mb-2" />
                         <div className="text-gray-600 text-lg font-semibold italic">
                             Enroll in courses to get started!
                         </div>
@@ -53,55 +62,49 @@ export default function Home() {
             );
         }
 
-        const courses = [...courseData.filter((course: any) => filters.includes(course.status))]
-            .map((course: any, key: number) => {
+        const courses = filteredCourses.map((course, key) => {
+            // Format the learning + quiz time
+            const learningTime = course.minTime ? (
+                <div className="flex">
+                    <IoTimeOutline size={18} className="mr-1 mt-[1px]" />
+                    {course.minTime >= 60 && `${Math.floor(course.minTime / 60)} hr `}
+                    {course.minTime % 60 !== 0 && `${course.minTime % 60} min`}
+                </div>
+            ) : null;
 
-                // Format the learning + quiz time
-                let learningTime = null;
-                if (course.minTime) {
-                    learningTime = (
-                        <div className="flex">
-                            <IoTimeOutline size={18} className="mr-1 mt-[1px]"/>
-                            {course.minTime >= 60 && `${Math.floor(course.minTime / 60)}hr `}
-                            {course.minTime % 60 !== 0 && `${course.minTime % 60}min`}
-                        </div>
-                    );
-                }
-                let quizTime = null;
-                if (course.total_quiz_marks) {
-                    quizTime = (
-                        <div className={`flex ${learningTime && "ml-2"}`}>
-                            <AiOutlineForm size={18} className="mr-[6px] mt-[1px]"/>
-                            {course.total_quiz_marks + " Marks"}
-                        </div>
-                    );
-                }
+            const quizTime = course.total_quiz_marks ? (
+                <div className={`flex ${learningTime && "ml-2"}`}>
+                    <AiOutlineForm size={18} className="mr-[6px] mt-[1px]" />
+                    {course.total_quiz_marks + " Marks"}
+                </div>
+            ) : null;
 
-                const time = (
-                    <div className="flex">
-                        {learningTime}
-                        {quizTime}
-                    </div>
-                );
+            const time = (
+                <div className="flex">
+                    {learningTime}
+                    {quizTime}
+                </div>
+            );
 
-                return (
-                    <EnrolledCourse
-                        key={key}
-                        title={course.name}
-                        status={course.status}
-                        description={course.description}
-                        time={time}
-                        id={course.id}
-                    />
-                );
-            });
+            const CourseComponent = isEnrolledView ? EnrolledCourse : AvailableCourse;
+            return (
+                <CourseComponent
+                    key={key}
+                    title={course.name}
+                    description={course.description}
+                    id={course.id}
+                    status={course.status}
+                    time={time}
+                />
+            );
+        });
 
         return (
             <div className="flex flex-row flex-wrap gap-x-4 mt-4 overflow-y-scroll sm:no-scrollbar">
                 {courses}
             </div>
         );
-    }
+    };
 
     const statusColors = {
         ENROLLED: "#468DF0",
@@ -119,63 +122,6 @@ export default function Home() {
             temp.push(key);
         }
         setFilters(temp);
-    }
-
-    const availableCourses = () => {
-        if (getCourseData.loading) {
-            return <div>Loading...</div>;
-        }
-        if (courseData !== undefined && getCourseData.error) {
-            return <div>Error loading courses</div>;
-        }
-
-        const courses = courseData
-            .filter((course: any) => course.status === CourseStatus.NOT_ENROLLED && (course.name.toLowerCase().includes(search.toLowerCase())
-                || course.description.toLowerCase().includes(search.toLowerCase())))
-            .map((course: any, key: number) => {
-                // Format the learning + quiz time
-                let learningTime = null;
-                if (course.minTime) {
-                    learningTime = (
-                        <div className="flex mr-[1px]">
-                            <IoTimeOutline size={18} className="mr-[3px] mt-[2px]"/>
-                            {course.minTime >= 60 && `${Math.floor(course.minTime / 60)} hr `}
-                            {course.minTime % 60 !== 0 && `${course.minTime % 60} min`}
-                        </div>
-                    );
-                }
-                let quizTime = null;
-                if (course.total_quiz_marks) {
-                    quizTime = (
-                        <div className={`flex ${learningTime && "ml-2"}`}>
-                            <AiOutlineForm size={18} className="mr-[3px] mt-[2px]"/>
-                            {course.total_quiz_marks + " Marks"}
-                        </div>
-                    );
-                }
-                const time = (
-                    <div className="flex">
-                        {learningTime}
-                        {quizTime}
-                    </div>
-                );
-
-                return (
-                    <AvailableCourse
-                        key={key}
-                        title={course.name}
-                        description={course.description}
-                        id={course.id}
-                        time={time}
-                    />
-                );
-            });
-
-        return (
-            <div className="flex flex-row flex-wrap gap-x-4 mt-4 overflow-y-scroll sm:no-scrollbar">
-                {courses}
-            </div>
-        );
     }
 
     const renderPage = () => {
@@ -216,7 +162,7 @@ export default function Home() {
                         </div>
                     </div>
 
-                    {enrolledCourses()}
+                    {renderCourses(true)}
                 </div>
             )
         }
@@ -244,7 +190,7 @@ export default function Home() {
                     />
                 </div>
 
-                {availableCourses()}
+                {renderCourses(false)}
             </div>
         );
     }
