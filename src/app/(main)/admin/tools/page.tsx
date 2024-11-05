@@ -381,13 +381,19 @@ export default function Tools() {
                         <div className="text-lg -mb-1">Course Insights</div>
                         <p className="mr-2 text-gray-500">Click on a course to manage course contents.</p>
                     </div>
-                    <TextField 
-                        placeholder="Search for a course..."
-                        text={courseSearch}
-                        onChange={setCourseSearch}
-                    />
-                    <MdAdd className="ml-4" size={25} onClick={() => router.push('/admin/course/new')} filled />
-                    <FiDownload className="ml-4" size={25} onClick={() => setCurrentPopup(PopupType.DowloadCourseReports)}/>
+
+                    <div className="relative flex items-center max-w-md ml-auto">
+                        <IoSearch className="absolute left-3 text-gray-400" size={20}/>
+                        <input
+                            placeholder="Search..."
+                            type={courseSearch}
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200"
+                            onChange={(e) => setCourseSearch(e.target.value)}
+                        />
+                    </div>
+                    <MdAdd className="ml-4" size={25} onClick={() => router.push('/admin/course/new')} filled/>
+                    <FiDownload className="ml-4" size={25}
+                                onClick={() => setCurrentPopup(PopupType.DowloadCourseReports)}/>
                 </div>
                 {getCourseInsights()}
             </div>
@@ -405,7 +411,7 @@ export default function Tools() {
                         <input
                             placeholder="Search..."
                             type={userSearch}
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200"
                             onChange={(e) => setUserSearch(e.target.value)}
                         />
                     </div>
