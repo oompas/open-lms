@@ -1,4 +1,4 @@
-import { z, ZodError, ZodSchema } from "https://deno.land/x/zod@v3.16.1/mod.ts";
+import { z, ZodError, ZodSchema } from "npm:zod";
 import ValidationError from "./Error/ValidationError.ts";
 import { getRequestUser } from "./auth.ts";
 import ApiError from "./Error/ApiError.ts";
