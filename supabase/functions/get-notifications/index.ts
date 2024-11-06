@@ -5,7 +5,7 @@ import getNotifications from "./getNotifications.ts";
 
 Deno.serve(async (req: Request) => {
 
-    const request = new EdgeFunctionRequest(import.meta.url, req, { courseId: z.string() });
+    const request = new EdgeFunctionRequest(import.meta.url, req, { });
 
     try {
         if (req.method === 'OPTIONS') {
