@@ -1,5 +1,5 @@
 import { Resend } from "npm:resend";
-import { InternalError, log } from "./helpers.ts";
+import { log } from "./helpers.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 
@@ -13,7 +13,7 @@ const sendEmail = async (email: string, subject: string, body: string) => {
 
     if (error) {
         log(`Error sending email: ${error.message}`);
-        return InternalError();
+        throw new Error(`Error sending email: ${error.message}`);
     }
 }
 
