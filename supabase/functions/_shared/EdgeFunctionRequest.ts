@@ -17,7 +17,7 @@ class EdgeFunctionRequest {
 
     private readonly endpoint: string;
     private readonly req: Request;
-    private readonly schemaRecord: ZodSchema;
+    private readonly schemaRecord: Record<string, z.ZodTypeAny>;
     private payload: Record<string, any> | null = null;
     private requestUser: object | null = null;
 
