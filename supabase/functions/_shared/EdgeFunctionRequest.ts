@@ -82,7 +82,7 @@ class EdgeFunctionRequest {
             schema.parse(this.payload);
         } catch (error) {
             if (error instanceof ZodError) {
-                this.logErr(`Incoming payload doesn't match schema: ${error.message}`, 'EdgeFunctionRequest.validatePayload');
+                this.logErr(`Incoming payload doesn't match schema: ${error.message}`, 'EdgeFunctionRequest.validateRequest');
                 throw new ValidationError("Payload validation failed: " + error.errors.map(err => err.message).join(", "));
             }
 
