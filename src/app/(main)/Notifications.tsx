@@ -99,7 +99,7 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
 
     const readAllNotifications = async () => {
         try {
-            await callAPI('read-notification', { readAll: true });
+            await callAPI('read-notification', { notificationId: null });
             refreshNotifications();
         } catch (error) {
             console.error('Error deleting all notifications:', error);

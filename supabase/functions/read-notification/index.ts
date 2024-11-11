@@ -1,22 +1,15 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
-import { adminClient } from "../_shared/adminClient.ts";
-import { getRequestUserId } from "../_shared/auth.ts";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { z } from "npm:zod";
+import EdgeFunctionRequest, { RunParams } from "../_shared/EdgeFunctionRequest.ts";
+import readNotification from "./readNotification.ts";
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
+    const parameters: RunParams = {
+        metaUrl: import.meta.url,
+        req: req,
+        schemaRecord: { notificationId: z.number().nullable() },
+        endpointFunction: readNotification
+    };
 
-    if (req.method === 'OPTIONS') {
-      return OptionsRsp();
-    }
-
-    const { notificationId, readAll } = await req.json();
-
-    const userId = await getRequestUserId(req);
-    const query = adminClient.from('notification').update({ read: true }).eq('user_id', userId);
-    if (!readAll) {
-        query.eq('id', notificationId);
-    }
-    await query;
-
-    return SuccessResponse(null);
+    return await EdgeFunctionRequest.run(parameters);
 });
