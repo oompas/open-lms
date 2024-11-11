@@ -157,7 +157,7 @@ class EdgeFunctionRequest {
     public getUUID = (): string => this.uuid;
     public getEndpoint = (): string => this.endpoint;
     public getRequestUser = (): object | null => this.requestUser;
-    public getRequestUserId = (): object | null => this.requestUser?.id ?? null;
+    public getRequestUserId = (): string | null => this.requestUser?.id ?? null;
 }
 
 export default EdgeFunctionRequest;
