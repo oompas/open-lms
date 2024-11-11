@@ -144,23 +144,13 @@ class EdgeFunctionRequest {
         return new Response(JSON.stringify(data), headers);
     }
 
-    /**
-     * All endpoints must check if (req.method === 'OPTIONS') then return this response at the start of their execution
-     */
+    // Responses for function invocations
     private OptionsRsp = () => this._makeResponse('ok');
-
-    /**
-     * Constructions a response for a successful function invocation
-     */
     private SuccessResponse = (data: any) => this._makeResponse(data, 200);
 
-    public log = (message: string): void => {
-        console.log(`[${this.uuid}] ${message}`);
-    }
-
-    public logErr = (message: string, functionName: string): void => {
-        console.error(`[${this.uuid}] (${functionName}) ${message}`);
-    }
+    // Logs to Supabase's Edge Function logs
+    public log = (message: string): void => console.log(`[${this.uuid}] ${message}`);
+    public logErr = (message: string, functionName: string): void => console.error(`[${this.uuid}] (${functionName}) ${message}`);
 
     // Getters/setters
     public getPayload = (): Record<string, any> | null => this.payload;
