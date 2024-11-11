@@ -88,21 +88,12 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
         return () => { document.removeEventListener('mousedown', handleClickOutside); };
     }, []);
 
-    const readNotification = async (id: string) => {
+    const readNotifications = async (id: string | null) => {
         try {
             await callAPI('read-notification', { notificationId: id });
             refreshNotifications();
         } catch (error) {
-            console.error('Error deleting notification:', error);
-        }
-    };
-
-    const readAllNotifications = async () => {
-        try {
-            await callAPI('read-notification', { notificationId: null });
-            refreshNotifications();
-        } catch (error) {
-            console.error('Error deleting all notifications:', error);
+            console.error(`Error deleting ${id === null ? "all notifications" : "notification"}:`, error);
         }
     };
 
@@ -113,7 +104,7 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
                 <NotificationItem
                     key={notification.id}
                     notification={notification}
-                    readNotification={readNotification}
+                    readNotification={readNotifications}
                     onClose={() => setNotificationsOpen(false)}
                     isLast={index === notifications.length - 1}
                 />
@@ -180,7 +171,7 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
                             </div>
                             <button
                                 className="text-sm text-blue-600 hover:text-blue-800"
-                                onClick={readAllNotifications}
+                                onClick={() => readNotifications(null)}
                             >
                                 Mark all as read
                             </button>
