@@ -127,11 +127,11 @@ class EdgeFunctionRequest {
         this.logErr(`Error caught: ${JSON.stringify(errObject)}`, `HandleEndpointError`);
 
         // Just return the uuid - don't expose internal data
-        return _makeResponse(this.getUUID(), statusCode);
+        return this._makeResponse(this.getUUID(), statusCode);
     }
 
     // Helper for response construction
-    private _makeResponse = (data: any, status?: number) => {
+    private _makeResponse(data: any, status?: number) {
         const headers = {
             headers: {
                 "Access-Control-Allow-Origin": "*",
