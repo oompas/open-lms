@@ -15,7 +15,6 @@ import {
     differenceInHours,
     differenceInMinutes, differenceInMonths,
     differenceInSeconds, differenceInWeeks, differenceInYears,
-    isThisMonth, isThisYear,
     parseISO
 } from "date-fns";
 
