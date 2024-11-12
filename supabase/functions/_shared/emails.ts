@@ -1,33 +1,41 @@
 import { Resend } from "npm:resend";
-import { log } from "./helpers.ts";
+import EdgeFunctionRequest from "./EdgeFunctionRequest.ts";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
+// Verify resend API key is present & create resend object
+const resendApiKey = Deno.env.get("RESEND_API_KEY");
+if (!resendApiKey) {
+    console.error("RESEND_API_KEY environment variable is missing");
+    throw new Error("RESEND_API_KEY environment variable is missing");
+}
 
-const sendEmail = async (email: string, subject: string, body: string): Promise<void> => {
+const resend = new Resend(resendApiKey as string);
+
+/**
+ * Sends an email to the desired address using Resend
+ *
+ * @param request EdgeFunctionRequest object for this invocation
+ * @param email Email address to send to
+ * @param subject Subject of the email
+ * @param body Body of the email (can include HTML)
+ */
+const sendEmail = async (request: EdgeFunctionRequest, email: string, subject: string, body: string): Promise<void> => {
 
     if (!email || !subject || !body) {
-        log(`sendEmail: Email, subject or body is missing: ${subject}, ${body}`);
-        throw new Error(`sendEmail: Email, subject or body is missing`);
+        throw new Error(`sendEmail: Email, subject or body is missing. Email: ${email}, Subject: ${subject}, Body: ${body}`);
     }
 
-    try {
-        const { error } = await resend.emails.send({
-            from: "OpenLMS <info@open-lms.ca>",
-            to: email,
-            subject: subject,
-            text: body
-        });
+    const response = await resend.emails.send({
+        from: "OpenLMS <info@open-lms.ca>",
+        to: email,
+        subject: subject,
+        text: body
+    });
 
-        if (error) {
-            log(`Error sending email to ${email}: ${error.message}`);
-            throw new Error(`Error sending email: ${error.message}`);
-        }
-
-        log(`Email sent successfully to ${email}`);
-    } catch (err) {
-        log(`Failed to send email due to an unexpected error: ${err.message}`);
-        throw new Error(`Failed to send email: ${err.message}`);
+    if (response.error) {
+        throw new Error(`Error sending email to ${email}: ${response.error.message}`);
     }
+
+    request.log(`Email sent successfully to ${email}`);
 };
 
 export { sendEmail };
