@@ -40,15 +40,15 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
         };
     }
 
-    request.log(`Course quiz data: ${JSON.stringify(courseData)}`);
+    request.log(`Course quiz data: ${JSON.stringify(quizData)}`);
 
     let attempts = null;
-    const latestAttempt = CourseAttemptService.getLatest(courseAttempts);
-    if (latestAttempt !== null) {
+    const latestCourseAttempt = CourseAttemptService.getLatest(courseAttempts);
+    if (latestCourseAttempt !== null) {
         attempts = {
             numAttempts: courseAttempts.length,
-            currentAttemptId: latestAttempt.id,
-            currentStartTime: new Date(latestAttempt.start_time)
+            currentAttemptId: latestCourseAttempt.id,
+            currentStartTime: new Date(latestCourseAttempt.start_time)
         }
     }
 
@@ -58,8 +58,8 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
         number: 0,
         currentId: null
     };
-    if (currentCourseAttempt) {
-        const quizAttempts = await QuizAttemptService.query('id, start_time', ['eq', 'course_attempt_id', currentCourseAttempt.id]);
+    if (latestCourseAttempt) {
+        const quizAttempts = await QuizAttemptService.query('id, start_time', ['eq', 'course_attempt_id', latestCourseAttempt.id]);
 
         const currentQuizAttempt = quizAttempts.length > 0
             ? quizAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest)
@@ -68,7 +68,7 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
         quizAttemptData.currentId = currentQuizAttempt?.id;
     }
 
-    request.log(`Quiz attempt data: ${quizAttemptData}`);
+    request.log(`Quiz attempt data: ${JSON.stringify(quizAttemptData)}`);
 
     return {
         id: course.id,
