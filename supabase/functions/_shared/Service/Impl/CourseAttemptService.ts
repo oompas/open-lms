@@ -7,6 +7,8 @@ class _courseAttemptService extends IService {
     TABLE_NAME = "course_attempt";
 
     public async completeAttempt(id: number, pass: boolean) {
+        // TODO: throw error if there is one here (make a general update/add/etc in parent class that handles
+        //  errors, do this for everything!)
         await adminClient.from(this.TABLE_NAME).update({ pass, end_time: getCurrentTimestampTz() }).eq('id', id);
     }
 
