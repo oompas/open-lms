@@ -1,14 +1,11 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getRows } from "../_shared/database.ts";
+import { NotificationService } from "../_shared/Service/Services.ts";
 
 const getNotifications = async (request: EdgeFunctionRequest): Promise<object[]> => {
 
     const userId = request.getRequestUserId();
 
-    const notifications = await getRows({ table: 'notification', conditions: ['eq', 'user_id', userId] });
-    if (notifications instanceof Response) return notifications;
-
-    return notifications;
+    return await NotificationService.query('*', ['eq', 'user_id', userId]);
 }
 
 export default getNotifications;

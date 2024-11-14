@@ -10,4 +10,4 @@ const CourseAttemptService = new _courseAttemptService();
 const QuizAttemptService = new _quizAttemptService();
 const NotificationService = new _notificationService();
 
-export { CourseService, EnrollmentService, CourseAttemptService, QuizAttemptService };
+export { CourseService, EnrollmentService, CourseAttemptService, QuizAttemptService, NotificationService };
