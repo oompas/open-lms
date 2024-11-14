@@ -30,13 +30,6 @@ const getRequestUser = async (req: Request): Promise<object> => {
 }
 
 /**
- * Get the user ID from the edge function request
- * @param req The incoming request
- * @returns The user ID, or null if no user authorization in the request
- */
-const getRequestUserId = async (req: Request): Promise<string> => (await getRequestUser(req))?.id;
-
-/**
  * Gets a user object that has the specific ID. Note this should only be done by admins
  * @param userId User ID of the user to get
  */
