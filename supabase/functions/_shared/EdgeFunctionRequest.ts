@@ -73,7 +73,7 @@ class EdgeFunctionRequest {
 
         const [payload, requestUser] = await Promise.all([
             this.req.json(),
-            this.getRequestUser()
+            this.getUserFromReq()
         ]);
 
         this.payload = payload;
@@ -142,7 +142,7 @@ class EdgeFunctionRequest {
      * Get the user object from the edge function request
      * @returns The user object, or null if no user authorization in the request
      */
-    private getRequestUser = async (): Promise<object> => {
+    private getUserFromReq = async (): Promise<object> => {
         const token = this.req.headers.get('Authorization')?.replace('Bearer ', '');
         const user = await adminClient.auth.getUser(token);
 
