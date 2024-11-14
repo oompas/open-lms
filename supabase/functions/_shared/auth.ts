@@ -43,4 +43,4 @@ const getUserById = async (userId: string): Promise<object> => {
     return data.user;
 }
 
-export { createUser, getAllUsers, getRequestUser, getRequestUserId, getUserById };
+export { getAllUsers, getRequestUser, getUserById };
