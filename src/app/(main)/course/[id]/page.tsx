@@ -84,7 +84,7 @@ export default function Course({ params }: { params: { id: string } }) {
                     quizStarted={quizStarted()}
                     courseAttemptId={courseAttemptId}
                     quizAttemptId={quizAttemptId}
-                    courseId={params.id}
+                    courseId={parseInt(params.id)}
                 />
 
                 <div className="mt-8 text-2xl">

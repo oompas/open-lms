@@ -35,9 +35,9 @@ export default function IDCourse({
     setStatus: any,
     setCourseAttemptId: any,
     quizStarted: any,
-    courseAttemptId: string,
+    courseAttemptId: number,
     quizAttemptId: string,
-    courseId: string
+    courseId: number
 }) {
 
     const router = useRouter();
