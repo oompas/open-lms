@@ -155,13 +155,7 @@ class EdgeFunctionRequest {
 
     // Responses for function invocations
     private OptionsRsp = () => this._makeResponse('ok');
-    private SuccessResponse = (data: any) => {
-        if (data === undefined) {
-            throw new ApiError("Response must have something (not undefined) - return null for empty response");
-        }
-
-        this._makeResponse(data, 200);
-    }
+    private SuccessResponse = (data: any) => this._makeResponse(data, 200);
 
     // Logs to Supabase's Edge Function logs
     public log = (message: string): void => console.log(`[${this.uuid}] ${message}`);
