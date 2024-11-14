@@ -74,18 +74,4 @@ const getUserById = async (req: Request, userId: string): Promise<object> => {
     return data.user;
 }
 
-/**
- * Check if the user is an administrator (or developer)
- * @param req The incoming request
- * @returns The user ID if the user is an admin/dev, an error response if not
- */
-const verifyAdministrator = async (req: Request): Promise<string | Response> => {
-    const user = await getRequestUser(req);
-    log(`User role: ${user?.user_metadata.role} User: ${JSON.stringify(user, null, 4)}`);
-    if (user?.user_metadata.role !== "Admin" && user?.user_metadata.role !== "Developer") {
-        return ErrorResponse("You must be an administrator to perform this action");
-    }
-    return user.id;
-}
-
 export { createUser, getAllUsers, getRequestUser, getRequestUserId, getUserById, verifyAdministrator };
