@@ -148,7 +148,7 @@ class EdgeFunctionRequest {
         const user = await adminClient.auth.getUser(token);
 
         if (user?.data?.user) {
-            return user.data.user
+            return user.data.user;
         }
         throw new Error(`Requesting user with token ${token} does not exist`);
     }
