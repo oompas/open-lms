@@ -20,6 +20,7 @@ class EdgeFunctionRequest {
     private readonly schemaRecord: Record<string, z.ZodTypeAny>;
     private payload: Record<string, any> | null = null;
     private requestUser: object | null = null;
+    private isAdmin: boolean | null = null;
 
     /**
      * Runs an endpoint
@@ -76,7 +77,9 @@ class EdgeFunctionRequest {
 
         this.payload = payload;
         this.requestUser = requestUser;
+        this.isAdmin = user?.user_metadata.role === "Admin" || user?.user_metadata.role === "Developer";
 
+        // Validate payload
         try {
             const schema: ZodSchema = z.object(this.schemaRecord).strict();
             schema.parse(this.payload);
