@@ -3,7 +3,7 @@ import { getRows } from "../_shared/database.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 
-const getAdminInsights = (request: EdgeFunctionRequest) => {
+const getAdminInsights = async (request: EdgeFunctionRequest) => {
 
     const quizzesToMark = await getRows({ table: 'quiz_attempt', conditions: [['null', 'pass'], ['notnull', 'end_time']] });
     if (quizzesToMark instanceof Response) return quizzesToMark;
