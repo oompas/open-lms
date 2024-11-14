@@ -45,4 +45,17 @@ const getCurrentTimestampTz = () => {
     return isoString.replace('T', ' ').replace('Z', '+00');
 };
 
-export { OptionsRsp, InternalError, ErrorResponse, SuccessResponse, log, getCurrentTimestampTz };
+/**
+ * Converts an array of objects (with the same keys & no embedded objects) into a CSV string
+ */
+const toCSV = (json: { [key: string]: any }[]) => {
+    let csv = "";
+    const keys = (json[0] && Object.keys(json[0])) || [];
+    csv += keys.join(',') + '\n';
+    for (let line of json) {
+        csv += keys.map(key => line[key]).join(',') + '\n';
+    }
+    return csv;
+}
+
+export { OptionsRsp, InternalError, ErrorResponse, SuccessResponse, log, getCurrentTimestampTz, toCSV };
