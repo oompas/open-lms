@@ -7,7 +7,15 @@ Deno.serve(async (req: Request) => {
     const parameters: RunParams = {
         metaUrl: import.meta.url,
         req: req,
-        schemaRecord: { quizAttemptId: primaryKeyInt(), responses: array(object({ questionId: primaryKeyInt(), answer: naturalNumber() })) },
+        schemaRecord: {
+            quizAttemptId: primaryKeyInt(),
+            responses: array(
+                object({
+                    questionId: primaryKeyInt(),
+                    answer: naturalNumber()
+                })
+            )
+        },
         endpointFunction: submitQuiz
     };
 

@@ -19,7 +19,7 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
     request.log(`user id: ${userId}`);
 
     const { quizAttemptId, responses } = request.getPayload();
-    request.log(`quiz att id: ${quizAttemptId} response: ${response}`);
+    request.log(`quiz att id: ${quizAttemptId} response: ${responses}`);
 
 
 
