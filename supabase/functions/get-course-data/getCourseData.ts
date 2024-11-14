@@ -8,7 +8,7 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
     const userId: string = request.getRequestUserId();
     const { courseId } = request.getPayload();
 
-    request.log(`Querying course data, attempts and status...`);
+    request.log(`User id: ${userId}. Course id: ${courseId}`);
 
     const { course_attempt: courseAttempts, enrolled_course: [enrollment], ...course } = await CourseService
         .query(`
@@ -27,7 +27,7 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
             true);
     let courseStatus = enrollment?.status ?? "NOT_ENROLLED";
 
-    request.log(`Constructing quiz data...`);
+    request.log(`Course status: ${courseStatus}. Course attempts: ${courseAttempts?.length ?? 0}. Course: ${JSON.stringify(course)}`);
 
     let quizData = null;
     if (course.total_quiz_marks !== null) {
@@ -40,30 +40,19 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
         };
     }
 
-    request.log(`Constructing course attempt data...`);
+    request.log(`Course quiz data: ${JSON.stringify(courseData)}`);
 
     let attempts = null;
-    const currentCourseAttempt = courseAttempts.length > 0
-        ? courseAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest)
-        : null;
-    if (courseAttempts.length !== 0) {
-
-        // If the course has no quiz and the time limit is passed, they've completed the course
-        if (course.preserve_quiz_question_order === null
-            && currentCourseAttempt.pass === null
-            && new Date().getTime() > new Date(currentCourseAttempt.start_time).getTime() + course.min_time * 60 * 1000) {
-            await CourseAttemptService.completeAttempt(currentCourseAttempt.id, true);
-            courseStatus = "COMPLETED";
-        }
-
+    const latestAttempt = CourseAttemptService.getLatest(courseAttempts);
+    if (latestAttempt !== null) {
         attempts = {
             numAttempts: courseAttempts.length,
-            currentAttemptId: currentCourseAttempt?.id,
-            currentStartTime: currentCourseAttempt ? new Date(currentCourseAttempt.start_time) : null
+            currentAttemptId: latestAttempt.id,
+            currentStartTime: new Date(latestAttempt.start_time)
         }
     }
 
-    request.log(`Constructing quiz attempt data...`);
+    request.log(`Course attempt data: ${JSON.stringify(attempts)}`);
 
     const quizAttemptData = {
         number: 0,
@@ -79,7 +68,7 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
         quizAttemptData.currentId = currentQuizAttempt?.id;
     }
 
-    request.log(`Returning response...`);
+    request.log(`Quiz attempt data: ${quizAttemptData}`);
 
     return {
         id: course.id,

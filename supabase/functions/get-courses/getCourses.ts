@@ -3,9 +3,10 @@ import { CourseService } from "../_shared/Service/Services.ts";
 
 const getCourses = async (request: EdgeFunctionRequest): Promise<object[]> => {
 
-    request.log("Getting user ID, all courses, and user's enrollments...");
+    request.log("Getting user ID, all active courses, and the user's enrollments...");
 
     const userId = request.getRequestUserId();
+
     const data = await CourseService
         .query(`
             id,
@@ -35,7 +36,7 @@ const getCourses = async (request: EdgeFunctionRequest): Promise<object[]> => {
             }
         });
 
-    request.log("Returning success...");
+    request.log("Returning data successfully...");
 
     return courseData;
 }
