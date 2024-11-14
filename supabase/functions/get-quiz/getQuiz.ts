@@ -9,6 +9,9 @@ const getQuiz = async (request: EdgeFunctionRequest): Promise<object> => {
     if (quizAttemptQuery instanceof Response) return quizAttemptQuery;
     const quizAttempt = quizAttemptQuery[0];
 
+    const allAttempts = await getRows({ table: 'quiz_attempt', conditions: ['eq', 'course_attempt_id', quizAttempt.course_attempt_id] });
+    if (allAttempts instanceof Response) return allAttempts;
+
     const courseQuery = await getRows({ table: 'course', conditions: ['eq', 'id', quizAttempt.course_id] });
     if (courseQuery instanceof Response) return courseQuery;
     const course = courseQuery[0];
@@ -18,7 +21,7 @@ const getQuiz = async (request: EdgeFunctionRequest): Promise<object> => {
 
     return {
         courseName: course.name,
-        numAttempts: -1,
+        numAttempts: allAttempts.length,
         maxAttempts: course.max_quiz_attempts,
         timeLimit: course.quiz_time_limit,
         startTime: new Date(quizAttempt.start_time),
