@@ -15,21 +15,6 @@ const getAllUsers = async () => {
 }
 
 /**
- * Get the user object from the edge function request
- * @param req The incoming request
- * @returns The user object, or null if no user authorization in the request
- */
-const getRequestUser = async (req: Request): Promise<object> => {
-    const token = req.headers.get('Authorization')?.replace('Bearer ', '');
-    const user = await adminClient.auth.getUser(token);
-
-    if (user?.data?.user) {
-        return user.data.user
-    }
-    throw new Error(`Requesting user with token ${token} does not exist`);
-}
-
-/**
  * Gets a user object that has the specific ID. Note this should only be done by admins
  * @param userId User ID of the user to get
  */
@@ -43,4 +28,4 @@ const getUserById = async (userId: string): Promise<object> => {
     return data.user;
 }
 
-export { getAllUsers, getRequestUser, getUserById };
+export { getAllUsers, getUserById };
