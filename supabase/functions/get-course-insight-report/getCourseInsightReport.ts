@@ -1,5 +1,4 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getUserById } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 import { getCourseStatus } from "../_shared/functionality.ts";
 
@@ -23,7 +22,7 @@ const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
     if (quizAttempts instanceof Response) return quizAttempts;
 
     const learnerData = await Promise.all(enrollments.map(async (enrollment) => {
-        const user = await getUserById(req, enrollment.user_id);
+        const user = await request.getUserById(enrollment.user_id);
         const status = await getCourseStatus(courseId, enrollment.user_id);
         const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: [['eq', 'course_id', courseId], ['notnull', 'end_time']] });
         if (quizAttempts instanceof Response) return quizAttempts;

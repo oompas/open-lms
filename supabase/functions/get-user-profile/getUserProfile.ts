@@ -1,12 +1,11 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getUserById } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 
 const getUserProfile = async (request: EdgeFunctionRequest) => {
 
     const { userId } = request.getPayload();
 
-    const user = await getUserById(req, userId);
+    const user = await request.getUserById(userId);
     if (user instanceof Response) return user;
 
     const enrollments = await getRows({ table: 'enrolled_course', conditions: ['eq', 'user_id', user.id] });

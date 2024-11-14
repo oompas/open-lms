@@ -1,5 +1,4 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getUserById } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 import { sendEmail } from "../_shared/emails.ts";
 
@@ -12,7 +11,7 @@ const sendCourseHelp = async (request: EdgeFunctionRequest) => {
     const course = await getRows({ table: 'course', conditions: ['eq', 'id', courseId] });
     if (course instanceof Response) return course;
 
-    const courseCreator = await getUserById(req, course.user_id);
+    const courseCreator = await request.getUserById(course.user_id);
     if (courseCreator instanceof Response) return courseCreator;
 
     const subject = `Open LMS User Request For Course ${course.name}`;

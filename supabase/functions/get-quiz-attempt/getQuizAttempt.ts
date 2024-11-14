@@ -1,5 +1,4 @@
 import { getRows } from "../_shared/database.ts";
-import { getUserById } from "../_shared/auth.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 
 const getQuizAttempt = async (request: EdgeFunctionRequest) => {
@@ -14,7 +13,7 @@ const getQuizAttempt = async (request: EdgeFunctionRequest) => {
     if (courseQuery instanceof Response) return courseQuery;
     const course = courseQuery[0];
 
-    const user = await getUserById(req, quizAttempt.user_id);
+    const user = await request.getUserById(quizAttempt.user_id);
     if (user instanceof Response) return user;
 
     const questionAttempts = await getRows({ table: 'quiz_question_attempt', conditions: ['eq', 'quiz_attempt_id', quizAttemptId] });
