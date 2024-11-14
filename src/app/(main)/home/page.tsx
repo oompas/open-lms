@@ -1,12 +1,11 @@
 "use client";
 import EnrolledCourse from "./EnrolledCourse";
-import { useState } from "react";
+import React, { useState } from "react";
 import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
 import { MdArrowBack, MdArrowForward, MdInbox } from "react-icons/md";
-import TextField from "@/components/TextField.tsx";
 import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
-import { IoSchool, IoTimeOutline } from "react-icons/io5";
+import { IoSchool, IoSearch, IoTimeOutline } from "react-icons/io5";
 import { AiOutlineForm } from "react-icons/ai";
 
 enum CourseStatus {
@@ -183,12 +182,15 @@ export default function Home() {
 
                 <div className="flex flex-row items-center mb-3">
                     <div className="text-xl font-medium">Available Courses</div>
-                    <TextField
-                        text={search}
-                        onChange={setSearch}
-                        placeholder='Search by name or description...'
-                        style="ml-auto w-1/3"
-                    />
+
+                    <div className="relative flex items-center max-w-md ml-auto">
+                        <IoSearch className="absolute left-3 text-gray-400" size={20}/>
+                        <input
+                            placeholder="Search..."
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200"
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
                 </div>
 
                 {renderCourses(false)}
