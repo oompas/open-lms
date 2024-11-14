@@ -1,4 +1,3 @@
-import { getAllUsers } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
@@ -11,7 +10,7 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
     const courses = await getRows({ table: 'course' });
     if (courses instanceof Response) return courses;
 
-    const users = await getAllUsers();
+    const users = await request.getAllUsers();
     if (users instanceof Response) return users;
 
     const quizAttemptsToMark = quizzesToMark.map((quizAttempt: any) => {
