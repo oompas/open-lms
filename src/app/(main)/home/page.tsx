@@ -3,7 +3,7 @@ import EnrolledCourse from "./EnrolledCourse";
 import { useState } from "react";
 import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
-import { MdArrowBack, MdArrowForward } from "react-icons/md";
+import { MdArrowBack, MdArrowForward, MdInbox } from "react-icons/md";
 import TextField from "@/components/TextField.tsx";
 import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
 import { IoSchool, IoTimeOutline } from "react-icons/io5";
@@ -58,11 +58,24 @@ export default function Home() {
             );
         }
 
+        if (!isEnrolledView && filteredCourses.length === 0) {
+            return (
+                <div className="flex items-center justify-center h-screen">
+                    <div className="text-center cursor-pointer" onClick={() => setSearch("")}>
+                        <MdInbox size={80} className="mx-auto mb-2"/>
+                        <div className="text-gray-600 text-lg font-semibold italic">
+                            No courses available - check again later!
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         const formatTime = (minTime, quizMarks) => (
             <div className="flex">
                 {minTime && (
                     <div className="flex mr-2">
-                        <IoTimeOutline size={18} className="mr-1 mt-[2px]" />
+                        <IoTimeOutline size={18} className="mr-1 mt-[2px]"/>
                         {minTime >= 60 && `${Math.floor(minTime / 60)} hr `}
                         {minTime % 60 !== 0 && `${minTime % 60} min`}
                     </div>
