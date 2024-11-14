@@ -1,4 +1,4 @@
-import { Resend } from "npm:resend";
+import { Resend } from "npm:resend@4.0.0";
 import EdgeFunctionRequest from "./EdgeFunctionRequest.ts";
 
 // Verify resend API key is present & create resend object
