@@ -1,6 +1,5 @@
 import { z, ZodError, ZodSchema } from "npm:zod@3.23.8";
 import ValidationError from "./Error/ValidationError.ts";
-import { getRequestUser } from "./auth.ts";
 import ApiError from "./Error/ApiError.ts";
 import { adminClient } from "./adminClient.ts";
 
@@ -74,7 +73,7 @@ class EdgeFunctionRequest {
 
         const [payload, requestUser] = await Promise.all([
             this.req.json(),
-            getRequestUser(this.req)
+            this.getRequestUser()
         ]);
 
         this.payload = payload;
@@ -137,6 +136,20 @@ class EdgeFunctionRequest {
 
         // Just return the uuid - don't expose internal data
         return this._makeResponse(this.getUUID(), statusCode);
+    }
+
+    /**
+     * Get the user object from the edge function request
+     * @returns The user object, or null if no user authorization in the request
+     */
+    private getRequestUser = async (): Promise<object> => {
+        const token = this.req.headers.get('Authorization')?.replace('Bearer ', '');
+        const user = await adminClient.auth.getUser(token);
+
+        if (user?.data?.user) {
+            return user.data.user
+        }
+        throw new Error(`Requesting user with token ${token} does not exist`);
     }
 
     // Helper for response construction
