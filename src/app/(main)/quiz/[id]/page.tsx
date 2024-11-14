@@ -15,7 +15,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const [showConfim, setShowConfirm] = useState(false);
     const [emptySubmit, setEmptySubmit] = useState(false);
 
-    const getQuizData = useAsync(() => callAPI('get-quiz', { quizAttemptId: params.id.split('-')[1] }).then((rsp) => {
+    const getQuizData = useAsync(() => callAPI('get-quiz', { quizAttemptId: parseInt(params.id.split('-')[1]) }).then((rsp) => {
         if (rsp.data === "Invalid") {
             return rsp;
         }
