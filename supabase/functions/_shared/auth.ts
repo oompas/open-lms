@@ -1,28 +1,5 @@
 import { adminClient } from "./adminClient.ts";
-import { ErrorResponse, log } from "./helpers.ts";
-
-type UserData = {
-    email: string,
-    password: string,
-    name: string,
-};
-
-/**
- * Create a new user in Supabase Auth
- * @param userData The new user's email, password and name
- */
-const createUser = async (userData: UserData) => {
-    const formattedUserData = {
-        email: userData.email,
-        password: userData.password,
-        user_metadata: {
-            name: userData.name,
-            role: "Learner"
-        }
-    };
-
-    return await adminClient.auth.admin.createUser(formattedUserData);
-}
+import { ErrorResponse } from "./helpers.ts";
 
 /**
  * Gets all users on the app
