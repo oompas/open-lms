@@ -74,4 +74,4 @@ const getUserById = async (req: Request, userId: string): Promise<object> => {
     return data.user;
 }
 
-export { createUser, getAllUsers, getRequestUser, getRequestUserId, getUserById, verifyAdministrator };
+export { createUser, getAllUsers, getRequestUser, getRequestUserId, getUserById };
