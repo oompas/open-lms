@@ -3,7 +3,7 @@ import { getUserById } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 import { getCourseStatus } from "../_shared/functionality.ts";
 
-const getCourseInsightReport = (request: EdgeFunctionRequest) => {
+const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
 
     const { courseId } = request.getPayload();
 

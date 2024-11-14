@@ -1,7 +1,7 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { getRows } from "../_shared/database.ts";
 
-const getCourseDataAdmin = (request: EdgeFunctionRequest) => {
+const getCourseDataAdmin = async (request: EdgeFunctionRequest) => {
 
     const { courseId } = request.getPayload();
 

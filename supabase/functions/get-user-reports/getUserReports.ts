@@ -3,7 +3,7 @@ import { getRows } from "../_shared/database.ts";
 import { getAllUsers } from "../_shared/auth.ts";
 import { toCSV } from "../_shared/helpers.ts";
 
-const getUserReports = (request: EdgeFunctionRequest) => {
+const getUserReports = async (request: EdgeFunctionRequest) => {
 
     // Get all records at once, then filter through them for each user to reduce queries
     const { userRecords, enrollments, courseAttempts } = await Promise.all([

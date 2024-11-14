@@ -4,7 +4,7 @@ import { adminClient } from "../_shared/adminClient.ts";
 import { getRows } from "../_shared/database.ts";
 import { handleMarkedQuiz } from "../_shared/functionality.ts";
 
-const markQuizAttempt = (request: EdgeFunctionRequest) => {
+const markQuizAttempt = async (request: EdgeFunctionRequest) => {
 
     const timestamp = getCurrentTimestampTz();
 

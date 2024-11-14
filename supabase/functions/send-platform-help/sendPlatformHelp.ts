@@ -1,7 +1,7 @@
 import { sendEmail } from "../_shared/emails.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 
-const sendPlatformHelp = (request: EdgeFunctionRequest) => {
+const sendPlatformHelp = async (request: EdgeFunctionRequest) => {
 
     const { feedback } = request.getPayload();
 

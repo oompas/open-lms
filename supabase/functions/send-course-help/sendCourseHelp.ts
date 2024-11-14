@@ -3,7 +3,7 @@ import { getUserById } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 import { sendEmail } from "../_shared/emails.ts";
 
-const sendCourseHelp = (request: EdgeFunctionRequest) => {
+const sendCourseHelp = async (request: EdgeFunctionRequest) => {
 
     const { courseId, feedback } = request.getPayload();
 

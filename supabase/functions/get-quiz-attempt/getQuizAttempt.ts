@@ -2,7 +2,7 @@ import { getRows } from "../_shared/database.ts";
 import { getUserById } from "../_shared/auth.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 
-const getQuizAttempt = (request: EdgeFunctionRequest) => {
+const getQuizAttempt = async (request: EdgeFunctionRequest) => {
 
     const { quizAttemptId } = request.getPayload();
 

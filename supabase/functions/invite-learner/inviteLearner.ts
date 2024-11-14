@@ -1,8 +1,7 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { sendEmail } from "../_shared/emails.ts";
-import { SuccessResponse } from "../_shared/helpers.ts";
 
-const inviteLearner = (request: EdgeFunctionRequest) => {
+const inviteLearner = async (request: EdgeFunctionRequest) => {
 
     const { email } = request.getPayload();
 

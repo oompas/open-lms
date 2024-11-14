@@ -2,7 +2,7 @@ import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { getUserById } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 
-const getUserProfile = (request: EdgeFunctionRequest) => {
+const getUserProfile = async (request: EdgeFunctionRequest) => {
 
     const { userId } = request.getPayload();
 

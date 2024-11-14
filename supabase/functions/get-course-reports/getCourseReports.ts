@@ -2,7 +2,7 @@ import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { getRows } from "../_shared/database.ts";
 import { toCSV } from "../_shared/helpers.ts";
 
-const getCourseReports = (request: EdgeFunctionRequest) => {
+const getCourseReports = async (request: EdgeFunctionRequest) => {
 
     const data = {
         courses: '',
