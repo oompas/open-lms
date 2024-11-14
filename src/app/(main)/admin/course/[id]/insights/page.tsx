@@ -18,7 +18,7 @@ export default function Insights({ params }: { params: { id: string } }) {
 
     const router = useRouter();
 
-    const courseData = useAsync(() => callAPI('get-course-insight-report', { courseId: params.id }));
+    const courseData = useAsync(() => callAPI('get-course-insight-report', { courseId: parseInt(params.id) }));
 
     const getEnrolledLearners = () => {
         const data = courseData?.result?.data;
