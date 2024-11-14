@@ -2,6 +2,7 @@ import { z, ZodError, ZodSchema } from "npm:zod@3.23.8";
 import ValidationError from "./Error/ValidationError.ts";
 import ApiError from "./Error/ApiError.ts";
 import { adminClient } from "./adminClient.ts";
+import { ErrorResponse } from "./helpers.ts";
 
 export interface RunParams {
     metaUrl: string;
@@ -159,7 +160,7 @@ class EdgeFunctionRequest {
     public getUserById = async (userId: string): Promise<object> => {
 
         if (!this.isAdmin) {
-            throw new ApiError("Only admins can get specific users by id");
+            throw new ApiError("Only admins can get specific users by id - this call shouldn't happen");
         }
 
         const { data, error } = await adminClient.auth.admin.getUserById(userId);
@@ -169,6 +170,24 @@ class EdgeFunctionRequest {
         }
 
         return data.user;
+    }
+
+    /**
+     * Gets all users on the app
+     */
+    public getAllUsers = async () => {
+
+        if (!this.isAdmin) {
+            throw new ApiError("Only admins can get all users - this call shouldn't happen");
+        }
+
+        const { data, error } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
+
+        if (error) {
+            return ApiError(error.message);
+        }
+
+        return data.users;
     }
 
     // Helper for response construction
