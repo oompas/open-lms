@@ -7,7 +7,7 @@ class _courseAttemptService extends IService {
     TABLE_NAME = "course_attempt";
 
     public async completeAttempt(id: number, pass: boolean) {
-        await adminClient.from('course_attempt').update({ pass, end_time: getCurrentTimestampTz() }).eq('id', id);
+        await adminClient.from(this.TABLE_NAME).update({ pass, end_time: getCurrentTimestampTz() }).eq('id', id);
     }
 
     /**
