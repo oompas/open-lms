@@ -15,11 +15,11 @@ const startCourse = async (request: EdgeFunctionRequest): Promise<any> => {
 
     const { data, error } = await adminClient.from('course_attempt').insert(courseAttempt);
 
-    await EnrollmentService.updateStatus(courseId, userId, CourseStatus.IN_PROGRESS);
-
     if (error) {
         throw error;
     }
+
+    await EnrollmentService.updateStatus(courseId, userId, CourseStatus.IN_PROGRESS);
 
     return data;
 }
