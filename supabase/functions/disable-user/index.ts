@@ -1,5 +1,5 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { z } from "npm:zod";
 import EdgeFunctionRequest, { RunParams } from "../_shared/EdgeFunctionRequest.ts";
 import disableUser from "./disableUser.ts";
 

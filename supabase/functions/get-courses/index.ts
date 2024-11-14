@@ -1,4 +1,4 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import EdgeFunctionRequest, { RunParams } from "../_shared/EdgeFunctionRequest.ts";
 import getCourses from "./getCourses.ts";
 
