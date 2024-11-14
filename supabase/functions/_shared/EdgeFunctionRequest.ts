@@ -9,6 +9,7 @@ export interface RunParams {
     req: Request;
     schemaRecord: Record<string, z.ZodTypeAny>;
     endpointFunction: (request: EdgeFunctionRequest) => Promise<any>;
+    adminOnly?: boolean;
 }
 
 class EdgeFunctionRequest {
@@ -29,8 +30,9 @@ class EdgeFunctionRequest {
      * @param req Request object from Deno
      * @param schemaRecord Record of fields this request should have
      * @param endpointFunction Function to run the business logic for this endpoint
+     * @param adminOnly Throws an error if this endpoint can only be called by admins/developers
      */
-    public static async run({ metaUrl, req, schemaRecord, endpointFunction }: RunParams) {
+    public static async run({ metaUrl, req, schemaRecord, endpointFunction, adminOnly }: RunParams) {
 
         const request: EdgeFunctionRequest = new EdgeFunctionRequest(metaUrl, req, schemaRecord);
 
@@ -39,7 +41,7 @@ class EdgeFunctionRequest {
                 return request.OptionsRsp();
             }
 
-            await request.validateRequest();
+            await request.validateRequest(adminOnly ?? false);
 
             const rsp = await endpointFunction(request);
 
@@ -68,7 +70,7 @@ class EdgeFunctionRequest {
     /**
      * Gets, stores and strictly validates the payload against the given schema, as well as getting the requesting user
      */
-    public async validateRequest(): Promise<Record<string, any>> {
+    public async validateRequest(adminOnly: boolean): Promise<Record<string, any>> {
 
         const [payload, requestUser] = await Promise.all([
             this.req.json(),
@@ -78,6 +80,10 @@ class EdgeFunctionRequest {
         this.payload = payload;
         this.requestUser = requestUser;
         this.isAdmin = user?.user_metadata.role === "Admin" || user?.user_metadata.role === "Developer";
+
+        if (adminOnly && !this.isAdmin) {
+            throw new ValidationError("Only administrators can call this endpoint");
+        }
 
         // Validate payload
         try {
