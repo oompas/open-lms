@@ -24,6 +24,7 @@ export default function Course({ params }: { params: { id: string } }) {
             setCourseData(r.data);
             setStatus(r.data.status);
             setCourseAttemptId(r.data.courseAttempt.currentAttemptId);
+            setQuizAttemptId(r.data.quizAttempts.currentId);
 
             if (r.data.courseAttempt.currentStartTime
                 && new Date().getTime() > new Date(r.data.courseAttempt.currentStartTime).getTime() + r.data.minTime * 60 * 1000) {
