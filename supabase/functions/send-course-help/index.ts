@@ -1,13 +1,15 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
-import { sendEmail } from "../_shared/emails.ts";
-import { getRequestUser, getUserById } from "../_shared/auth.ts";
-import { getRows } from "../_shared/database.ts";
+import { z } from "npm:zod";
+import EdgeFunctionRequest, { RunParams } from "../_shared/EdgeFunctionRequest.ts";
+import sendCourseHelp from "./sendCourseHelp.ts";
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
+    const parameters: RunParams = {
+        metaUrl: import.meta.url,
+        req: req,
+        schemaRecord: { courseId: z.string(), feedback: z.string() },
+        endpointFunction: sendCourseHelp
+    };
 
-
-
-
-    return SuccessResponse("Success!!");
+    return await EdgeFunctionRequest.run(parameters);
 });
