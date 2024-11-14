@@ -8,10 +8,19 @@ import { handleMarkedQuiz } from "../_shared/functionality.ts";
 
 const submitQuiz = async (request: EdgeFunctionRequest) => {
 
+    request.log(`starting func`);
+
     const timestamp = getCurrentTimestampTz();
 
+    request.log(`timestamp: ${timestamp}`);
+
+
     const userId = request.getRequestUserId();
+    request.log(`user id: ${userId}`);
+
     const { quizAttemptId, responses } = request.getPayload();
+    request.log(`quiz att id: ${quizAttemptId} response: ${response}`);
+
 
 
     const data23 = await QuizAttemptService.query('*, quiz_question(*)', ['eq', 'id', quizAttemptId]);
