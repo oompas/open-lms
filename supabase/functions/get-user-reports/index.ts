@@ -2,8 +2,20 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import { getAllUsers, verifyAdministrator } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
+import EdgeFunctionRequest, { RunParams } from "../_shared/EdgeFunctionRequest.ts";
+import getCourseInsightReport from "../get-course-insight-report/getCourseInsightReport.ts";
 
-admin only!!!
+Deno.serve(async (req: Request) => {
+    const parameters: RunParams = {
+        metaUrl: import.meta.url,
+        req: req,
+        schemaRecord: { courseId: z.string() },
+        endpointFunction: getCourseInsightReport,
+        adminOnly: true
+    };
+
+    return await EdgeFunctionRequest.run(parameters);
+});
 
 Deno.serve(async (req) => {
 
