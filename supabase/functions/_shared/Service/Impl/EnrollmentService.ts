@@ -5,11 +5,7 @@ import DatabaseError from "../../Error/DatabaseError.ts";
 
 class _enrollmentService extends IService {
 
-    private static readonly TABLE_NAME = "enrolled_course";
-
-    public constructor() {
-        super(_enrollmentService.TABLE_NAME);
-    }
+    TABLE_NAME = "enrolled_course";
 
     /**
      * Returns the enrollment object for a given user and course id, if present

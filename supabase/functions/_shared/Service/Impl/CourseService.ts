@@ -4,11 +4,7 @@ import { EnrollmentService } from "../Services.ts";
 
 class _courseService extends IService {
 
-    private static readonly TABLE_NAME = "course";
-
-    public constructor() {
-        super(_courseService.TABLE_NAME);
-    }
+    TABLE_NAME = "course";
 
     /**
      * Gets the current status of a course for a given user (NOTE_ENROLLED, ENROLLED, IN_PROGRESS, etc)
