@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { z } from "npm:zod";
+import { z } from "npm:zod@3.23.8";
 import EdgeFunctionRequest, { RunParams } from "../_shared/EdgeFunctionRequest.ts";
 import getUserProfile from "./getUserProfile.ts";
 

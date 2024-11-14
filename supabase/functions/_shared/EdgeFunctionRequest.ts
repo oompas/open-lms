@@ -1,4 +1,4 @@
-import { z, ZodError, ZodSchema } from "npm:zod";
+import { z, ZodError, ZodSchema } from "npm:zod@3.23.8";
 import ValidationError from "./Error/ValidationError.ts";
 import { getRequestUser } from "./auth.ts";
 import ApiError from "./Error/ApiError.ts";
