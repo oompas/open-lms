@@ -68,7 +68,7 @@ export default function IDCourse({
     }, [countdown]);
 
     const enrollment = () => {
-        return callAPI('course-enrollment', { id: course.id })
+        return callAPI('course-enrollment', { courseId: course.id })
             .then(() => setStatus(status === "ENROLLED" ? "NOT_ENROLLED" : "ENROLLED"))
             .catch((err) => { throw new Error(`Error getting course data: ${err}`) });
     };

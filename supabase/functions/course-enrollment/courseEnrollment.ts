@@ -11,13 +11,13 @@ const courseEnrollment = async (request: EdgeFunctionRequest) => {
     if (course instanceof Response) return course;
 
     if (course.length === 0) {
-        const { error: error2 } = await adminClient.from('enrolled_course').insert({ user_id: userId, course_id: id });
+        const { error: error2 } = await adminClient.from('enrolled_course').insert({ user_id: userId, course_id: courseId });
 
         if (error2) {
             throw error2;
         }
     } else {
-        const { error: error3 } = await adminClient.from('enrolled_course').delete().eq('user_id', userId).eq('course_id', id);
+        const { error: error3 } = await adminClient.from('enrolled_course').delete().eq('user_id', userId).eq('course_id', courseId);
 
         if (error3) {
             throw error3;
