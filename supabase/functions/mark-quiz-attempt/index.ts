@@ -5,6 +5,9 @@ import { verifyAdministrator } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 import { handleMarkedQuiz } from "../_shared/functionality.ts";
 
+Admin only!!!!
+
+
 Deno.serve(async (req) => {
 
     const timestamp = getCurrentTimestampTz();

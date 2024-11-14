@@ -3,6 +3,8 @@ import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import { verifyAdministrator } from "../_shared/auth.ts";
 import { sendEmail } from "../_shared/emails.ts";
 
+Admin only!!!
+
 console.log("Hello from Functions!")
 
 Deno.serve(async (req) => {

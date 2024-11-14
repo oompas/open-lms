@@ -1,5 +1,5 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { verifyAdministrator } from "../_shared/auth.ts";
+import { getRows } from "../_shared/database.ts";
 
 /**
  * Converts an array of objects (with the same keys & no embedded objects) into a CSV string
@@ -15,9 +15,6 @@ const toCSV = (json: { [key: string]: any }[]) => {
 }
 
 const getCourseReports = (request: EdgeFunctionRequest) => {
-
-    const userId = await verifyAdministrator(request);
-    if (userId instanceof Response) return userId;
 
     const data = {
         courses: '',

@@ -7,7 +7,8 @@ Deno.serve(async (req: Request) => {
         metaUrl: import.meta.url,
         req: req,
         schemaRecord: { courseId: z.string(), active: z.bool() },
-        endpointFunction: setCourseVisibility
+        endpointFunction: setCourseVisibility,
+        adminOnly: true
     };
 
     return await EdgeFunctionRequest.run(parameters);

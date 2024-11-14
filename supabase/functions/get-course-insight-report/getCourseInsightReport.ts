@@ -1,12 +1,9 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getUserById, verifyAdministrator } from "../_shared/auth.ts";
+import { getUserById } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 import { getCourseStatus } from "../_shared/functionality.ts";
 
 const getCourseInsightReport = (request: EdgeFunctionRequest) => {
-
-    const adminStatus = await verifyAdministrator(req);
-    if (adminStatus instanceof Response) return adminStatus;
 
     const { courseId } = request.getPayload();
 

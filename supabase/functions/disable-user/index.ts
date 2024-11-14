@@ -8,7 +8,8 @@ Deno.serve(async (req) => {
         metaUrl: import.meta.url,
         req: req,
         schemaRecord: { userId: z.string(), disable: z.bool() },
-        endpointFunction: disableUser
+        endpointFunction: disableUser,
+        adminOnly: true
     };
 
     return await EdgeFunctionRequest.run(parameters);

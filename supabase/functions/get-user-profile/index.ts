@@ -3,6 +3,8 @@ import { OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
 import { getUserById } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 
+admin only!!!
+
 Deno.serve(async (req) => {
 
     if (req.method === 'OPTIONS') {

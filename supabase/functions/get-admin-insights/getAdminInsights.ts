@@ -1,12 +1,9 @@
-import { getAllUsers, verifyAdministrator } from "../_shared/auth.ts";
+import { getAllUsers } from "../_shared/auth.ts";
 import { getRows } from "../_shared/database.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 
 const getAdminInsights = (request: EdgeFunctionRequest) => {
-
-    const adminVerify = verifyAdministrator(req);
-    if (adminVerify instanceof Response) return adminVerify;
 
     const quizzesToMark = await getRows({ table: 'quiz_attempt', conditions: [['null', 'pass'], ['notnull', 'end_time']] });
     if (quizzesToMark instanceof Response) return quizzesToMark;

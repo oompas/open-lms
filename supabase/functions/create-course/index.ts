@@ -7,7 +7,8 @@ Deno.serve(async (req: Request) => {
         metaUrl: import.meta.url,
         req: req,
         schemaRecord: { course: z.object() },
-        endpointFunction: createCourse
+        endpointFunction: createCourse,
+        adminOnly: true
     };
 
     return await EdgeFunctionRequest.run(parameters);
