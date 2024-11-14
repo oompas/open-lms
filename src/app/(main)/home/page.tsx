@@ -181,13 +181,13 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="flex flex-row items-center">
-                    <div className="text-xl font-medium mb-4">Available Courses</div>
+                <div className="flex flex-row items-center mb-3">
+                    <div className="text-xl font-medium">Available Courses</div>
                     <TextField
                         text={search}
                         onChange={setSearch}
                         placeholder='Search by name or description...'
-                        style="mb-4 ml-auto w-1/3"
+                        style="ml-auto w-1/3"
                     />
                 </div>
 
