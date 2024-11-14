@@ -8,11 +8,7 @@ type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([
 
 abstract class IService {
 
-    private readonly TABLE_NAME: string;
-
-    protected constructor(tblName: string) {
-        this.TABLE_NAME = tblName;
-    }
+    protected abstract readonly TABLE_NAME: string;
 
     /**
      * Gets ALL data in this table
