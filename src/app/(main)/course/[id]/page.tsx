@@ -19,7 +19,7 @@ enum CourseStatus {
 
 export default function Course({ params }: { params: { id: string } }) {
 
-    const getCourseData = useAsync(() => callAPI('get-course-data', { courseId: params.id })
+    const getCourseData = useAsync(() => callAPI('get-course-data', { courseId: parseInt(params.id) })
         .then((r) => {
             setCourseData(r.data);
             setStatus(r.data.status);
