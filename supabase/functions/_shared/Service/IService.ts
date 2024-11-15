@@ -101,11 +101,11 @@ abstract class IService {
     }
 
     /**
-     * Adds a new row to this table
+     * Adds a new row (or multiple rows) to this table
      */
-    public async addRow(row: object){
+    public async insert(rows: object){
         try {
-            const { data, error } = await adminClient.from(this.TABLE_NAME).insert(row);
+            const { data, error } = await adminClient.from(this.TABLE_NAME).insert(rows);
             if (error) {
                 throw error;
             }
@@ -113,6 +113,22 @@ abstract class IService {
             return data;
         } catch (err) {
             throw new DatabaseError(`Error adding row to ${this.TABLE_NAME}: ${err.message}`);
+        }
+    }
+
+    /**
+     * Updates the row with the given id with the given update
+     */
+    public async updateById(id: number | string, update: object) {
+        try {
+            const { data, error } = await adminClient.from(this.TABLE_NAME).update(update).eq('id', id);
+            if (error) {
+                throw error;
+            }
+
+            return data;
+        } catch (err) {
+            throw new DatabaseError(`Error updating row in ${this.TABLE_NAME}: ${err.message}`);
         }
     }
 }

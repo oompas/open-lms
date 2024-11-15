@@ -3,7 +3,7 @@ import { ErrorResponse, getCurrentTimestampTz } from "../_shared/helpers.ts";
 import {
     CourseService,
     EnrollmentService,
-    QuizAttemptService,
+    QuizAttemptService, QuizQuestionAttemptService,
     QuizQuestionService
 } from "../_shared/Service/Services.ts";
 import { adminClient } from "../_shared/adminClient.ts";
@@ -81,11 +81,7 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
     });
     if (quizQuestionAttempts instanceof Response) return quizQuestionAttempts;
 
-    const { data, error } = await adminClient.from('quiz_question_attempt').insert(quizQuestionAttempts);
-
-    if (error) {
-        return ErrorResponse(`Error adding quiz questions attempts: ${error.message}`);
-    }
+    await QuizQuestionAttemptService.insert(quizQuestionAttempts);
 
     if (marksAchieved >= course.min_quiz_score) {
         autoMark = true; // If the user gets enough marks to pass without the short answers, pass them
