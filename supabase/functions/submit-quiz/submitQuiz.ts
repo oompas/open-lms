@@ -99,7 +99,7 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
         const markRsp = await handleMarkedQuiz(quizAttemptId);
         if (markRsp instanceof Response) return markRsp;
     } else {
-        await EnrollmentService.updateStatus(courseID, userId, CourseStatus.AWAITING_MARKING);
+        await EnrollmentService.updateStatus(course.id, userId, CourseStatus.AWAITING_MARKING);
     }
 
     return null;
