@@ -18,9 +18,10 @@ abstract class IService {
             if (error) {
                 throw error;
             }
+
             return data;
         } catch (err) {
-            throw new DatabaseError(`Error querying database: ${err.message}`);
+            throw new DatabaseError(`Error getting all rows from ${this.TABLE_NAME}: ${err.message}`);
         }
     }
 
@@ -40,7 +41,7 @@ abstract class IService {
 
             return data.length === 1 ? data[0] : null;
         } catch (err) {
-            throw new DatabaseError(`Error querying database by ID: ${err.message}`);
+            throw new DatabaseError(`Error querying ${this.TABLE_NAME} by ID: ${err.message}`);
         }
     }
 
@@ -56,7 +57,7 @@ abstract class IService {
 
             return data;
         } catch (err) {
-            throw new DatabaseError(`Error querying database by column: ${err.message}`);
+            throw new DatabaseError(`Error querying ${this.TABLE_NAME} by column: ${err.message}`);
         }
     }
 
@@ -95,7 +96,7 @@ abstract class IService {
 
             return data;
         } catch (err) {
-            throw new DatabaseError(`Error querying database: ${err.message}`);
+            throw new DatabaseError(`Error custom querying ${this.TABLE_NAME}: ${err.message}`);
         }
     }
 
@@ -111,7 +112,7 @@ abstract class IService {
 
             return data;
         } catch (err) {
-            throw new DatabaseError(`Error adding row to database: ${err.message}`);
+            throw new DatabaseError(`Error adding row to ${this.TABLE_NAME}: ${err.message}`);
         }
     }
 }
