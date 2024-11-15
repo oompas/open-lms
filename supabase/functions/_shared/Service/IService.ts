@@ -1,6 +1,5 @@
 import { adminClient } from "../adminClient.ts";
 import DatabaseError from "../Error/DatabaseError.ts";
-import { log } from "../helpers.ts";
 
 // Filter docs: https://supabase.com/docs/reference/javascript/using-filters
 type Filter = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'is';
@@ -21,7 +20,6 @@ abstract class IService {
             }
             return data;
         } catch (err) {
-            log(`Error querying database: ${err.message}`);
             throw new DatabaseError(`Error querying database: ${err.message}`);
         }
     }
@@ -42,7 +40,6 @@ abstract class IService {
 
             return data.length === 1 ? data[0] : null;
         } catch (err) {
-            log(`Error querying database by ID: ${err.message}`);
             throw new DatabaseError(`Error querying database by ID: ${err.message}`);
         }
     }
@@ -59,7 +56,6 @@ abstract class IService {
 
             return data;
         } catch (err) {
-            log(`Error querying database by column: ${err.message}`);
             throw new DatabaseError(`Error querying database by column: ${err.message}`);
         }
     }
@@ -99,7 +95,6 @@ abstract class IService {
 
             return data;
         } catch (err) {
-            log(`Error querying database: ${err.message}`);
             throw new DatabaseError(`Error querying database: ${err.message}`);
         }
     }
