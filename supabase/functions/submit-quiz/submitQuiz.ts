@@ -102,7 +102,7 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
         await EnrollmentService.updateStatus(courseID, userId, CourseStatus.AWAITING_MARKING);
     }
 
-    return data2;
+    return null;
 }
 
 export default submitQuiz;
