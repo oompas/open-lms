@@ -1,6 +1,5 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { ErrorResponse, getCurrentTimestampTz } from "../_shared/helpers.ts";
-import { getRows } from "../_shared/database.ts";
 import {
     CourseService,
     EnrollmentService,
@@ -11,6 +10,8 @@ import { adminClient } from "../_shared/adminClient.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 import { handleMarkedQuiz } from "../_shared/functionality.ts";
 import PermissionError from "../_shared/Error/PermissionError.ts";
+import ValidationError from "../_shared/Error/ValidationError.ts";
+import LogicError from "../_shared/Error/LogicError.ts";
 
 const submitQuiz = async (request: EdgeFunctionRequest) => {
 
@@ -39,10 +40,10 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
     request.log(`Course: ${JSON.stringify(course)} Quiz questions: ${JSON.stringify(quizQuestions)}`);
 
     if (quizQuestions.length !== responses.length) {
-        return ErrorResponse(`There are ${quizQuestions.length} quiz questions, but only ${responses.length} responses were provided`);
+        throw new ValidationError(`There are ${quizQuestions.length} quiz questions, but only ${responses.length} responses were provided`);
     }
     if (!responses.every((r) => quizQuestions.some((q) => q.id === r.questionId))) {
-        return ErrorResponse(`Quiz question IDs and response IDs don't fully match`);
+        throw new ValidationError(`Quiz question IDs and response IDs don't fully match`);
     }
 
     request.log(`Responses verification passed!`);
@@ -61,7 +62,7 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
         } else if (q.type === "SA") {
             autoMark = false;
         } else {
-            return ErrorResponse(`Unknown question type: ${q.type}`);
+            throw new LogicError(`Unknown question type: ${q.type}`);
         }
 
         return {
