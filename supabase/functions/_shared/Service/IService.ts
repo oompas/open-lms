@@ -42,8 +42,25 @@ abstract class IService {
 
             return data.length === 1 ? data[0] : null;
         } catch (err) {
-            log(`Error querying database: ${err.message}`);
-            throw new DatabaseError(`Error querying database: ${err.message}`);
+            log(`Error querying database by ID: ${err.message}`);
+            throw new DatabaseError(`Error querying database by ID: ${err.message}`);
+        }
+    }
+
+    /**
+     * Gets all rows that have hte given column value
+     */
+    public async getByColumn(column: string, value: any) {
+        try {
+            const { data, error } = await adminClient.from(this.TABLE_NAME).select().eq(column, value);
+            if (error) {
+                throw error;
+            }
+
+            return data;
+        } catch (err) {
+            log(`Error querying database by column: ${err.message}`);
+            throw new DatabaseError(`Error querying database by column: ${err.message}`);
         }
     }
 

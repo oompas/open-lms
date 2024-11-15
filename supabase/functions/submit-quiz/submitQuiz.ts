@@ -1,7 +1,12 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { ErrorResponse, getCurrentTimestampTz } from "../_shared/helpers.ts";
 import { getRows } from "../_shared/database.ts";
-import { CourseService, EnrollmentService, QuizAttemptService } from "../_shared/Service/Services.ts";
+import {
+    CourseService,
+    EnrollmentService,
+    QuizAttemptService,
+    QuizQuestionService
+} from "../_shared/Service/Services.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 import { handleMarkedQuiz } from "../_shared/functionality.ts";
@@ -25,6 +30,7 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
 
     const quizAttempt = await QuizAttemptService.getById('*', quizAttemptId);
     const course = await CourseService.getById(quizAttempt.course_id);
+    //const quizQs = await QuizQuestionService.query();
 
     if (quizQuestions.length !== responses.length) {
         return ErrorResponse(`There are ${quizQuestions.length} quiz questions, but only ${responses.length} responses were provided`);
