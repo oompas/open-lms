@@ -8,32 +8,22 @@ import { handleMarkedQuiz } from "../_shared/functionality.ts";
 
 const submitQuiz = async (request: EdgeFunctionRequest) => {
 
-    request.log(`starting func`);
-
     const timestamp = getCurrentTimestampTz();
 
-    request.log(`timestamp: ${timestamp}`);
-
-
     const userId = request.getRequestUserId();
-    request.log(`user id: ${userId}`);
-
     const { quizAttemptId, responses } = request.getPayload();
-    request.log(`quiz att id: ${quizAttemptId} response: ${responses}`);
 
+    //const data23 = await QuizAttemptService.query('*, quiz_questions:quiz_question(*)', [['eq', 'id',
+    // quizAttemptId], ['eq', 'quiz_questions.course_id', 'quiz_attempt.course_id']]);
+    //request.log(`data: ${JSON.stringify(data23)}`);
 
-
-    const data23 = await QuizAttemptService.query('*, quiz_question(*)', ['eq', 'id', quizAttemptId]);
-
-    request.log(`data: ${JSON.stringify(data23)}`);
-
-    const quizAttemptQuery = await getRows({ table: 'quiz_attempt', conditions: ['eq', 'id', quizAttemptId] });
-    if (quizAttemptQuery instanceof Response) return quizAttemptQuery;
-    const quizAttempt = quizAttemptQuery[0];
+    //const { quiz_question: quizQuestions2, ...course2 } = await CourseService.query('*, quiz_question(*)', [['eq',
+    // 'course_id', quizAttempt.course_id], ['eq', 'quiz_questions.course_id', quizAttempt.course_id]]);
 
     const quizQuestions = await getRows({ table: 'quiz_question', conditions: ['eq', 'course_id', quizAttempt.course_id] });
     if (quizQuestions instanceof Response) return quizQuestions;
 
+    const quizAttempt = await QuizAttemptService.getById('*', quizAttemptId);
     const course = await CourseService.getById(quizAttempt.course_id);
 
     if (quizQuestions.length !== responses.length) {
