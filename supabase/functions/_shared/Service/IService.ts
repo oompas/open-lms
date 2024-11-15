@@ -103,6 +103,22 @@ abstract class IService {
             throw new DatabaseError(`Error querying database: ${err.message}`);
         }
     }
+
+    /**
+     * Adds a new row to this table
+     */
+    public async addRow(row: object){
+        try {
+            const { data, error } = await adminClient.from(this.TABLE_NAME).insert(row);
+            if (error) {
+                throw error;
+            }
+
+            return data;
+        } catch (err) {
+            throw new DatabaseError(`Error adding row to database: ${err.message}`);
+        }
+    }
 }
 
 export default IService;
