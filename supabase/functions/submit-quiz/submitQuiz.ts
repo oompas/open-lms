@@ -10,27 +10,33 @@ import {
 import { adminClient } from "../_shared/adminClient.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 import { handleMarkedQuiz } from "../_shared/functionality.ts";
+import PermissionError from "../_shared/Error/PermissionError.ts";
 
 const submitQuiz = async (request: EdgeFunctionRequest) => {
 
     const timestamp = getCurrentTimestampTz();
 
+    request.log(`Starting submitQuiz with timestamp ${timestamp}`);
+
     const userId = request.getRequestUserId();
     const { quizAttemptId, responses } = request.getPayload();
 
-    //const data23 = await QuizAttemptService.query('*, quiz_questions:quiz_question(*)', [['eq', 'id',
-    // quizAttemptId], ['eq', 'quiz_questions.course_id', 'quiz_attempt.course_id']]);
-    //request.log(`data: ${JSON.stringify(data23)}`);
+    request.log(`Request user id: ${userId} Quiz attempt id: ${quizAttemptId} Responses: ${JSON.stringify(responses)}`);
 
-    //const { quiz_question: quizQuestions2, ...course2 } = await CourseService.query('*, quiz_question(*)', [['eq',
-    // 'course_id', quizAttempt.course_id], ['eq', 'quiz_questions.course_id', quizAttempt.course_id]]);
+    const quizAttempt = await QuizAttemptService.getById(quizAttemptId);
 
-    const quizQuestions = await getRows({ table: 'quiz_question', conditions: ['eq', 'course_id', quizAttempt.course_id] });
-    if (quizQuestions instanceof Response) return quizQuestions;
+    request.log(`Quiz attempt: ${JSON.stringify(quizAttempt)}`);
 
-    const quizAttempt = await QuizAttemptService.getById('*', quizAttemptId);
-    const course = await CourseService.getById(quizAttempt.course_id);
-    //const quizQs = await QuizQuestionService.query();
+    if (quizAttempt.user_id !== userId) {
+        throw new PermissionError(`User ${userId} does not have access to quiz attempt ${quizAttemptId} (owning user: ${quizAttempt.userId})`);
+    }
+
+    const [course, quizQuestions] = await Promise.all([
+        CourseService.getById(quizAttempt.course_id),
+        QuizQuestionService.getByColumn('course_id', quizAttempt.course_id)
+    ]);
+
+    request.log(`Course: ${JSON.stringify(course)} Quiz questions: ${JSON.stringify(quizQuestions)}`);
 
     if (quizQuestions.length !== responses.length) {
         return ErrorResponse(`There are ${quizQuestions.length} quiz questions, but only ${responses.length} responses were provided`);
@@ -39,7 +45,7 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
         return ErrorResponse(`Quiz question IDs and response IDs don't fully match`);
     }
 
-    request.log(`Verification passed!`);
+    request.log(`Responses verification passed!`);
 
     // Mark quiz questions
     let marksAchieved = 0;
