@@ -1,12 +1,11 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { ErrorResponse, getCurrentTimestampTz } from "../_shared/helpers.ts";
+import { getCurrentTimestampTz } from "../_shared/helpers.ts";
 import {
     CourseService,
     EnrollmentService,
     QuizAttemptService, QuizQuestionAttemptService,
     QuizQuestionService
 } from "../_shared/Service/Services.ts";
-import { adminClient } from "../_shared/adminClient.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 import { handleMarkedQuiz } from "../_shared/functionality.ts";
 import PermissionError from "../_shared/Error/PermissionError.ts";
@@ -93,19 +92,14 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
         ...(autoMark && { pass: marksAchieved >= course.min_quiz_score }),
         ...(autoMark && { score: marksAchieved })
     };
-    const { data: data2, error: error2 } = await adminClient.from('quiz_attempt').update(update).eq('id', quizAttemptId);
+    await QuizAttemptService.updateById(quizAttemptId, update);
 
-    if (!autoMark) {
-        await EnrollmentService.updateStatus(courseID, userId, CourseStatus.AWAITING_MARKING);
-    }
-
-    if (error2) {
-        return ErrorResponse(`Error updating quiz attempts: ${error2.message}`);
-    }
-
+    // Handle quiz marked or awaiting marking
     if (autoMark) {
         const markRsp = await handleMarkedQuiz(quizAttemptId);
         if (markRsp instanceof Response) return markRsp;
+    } else {
+        await EnrollmentService.updateStatus(courseID, userId, CourseStatus.AWAITING_MARKING);
     }
 
     return data2;
