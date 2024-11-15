@@ -10,8 +10,12 @@ const bool = () => z.bool();
 
 const number = () => z.number();
 
+const string = () => z.string();
+
 const array = (data: any) => z.array(data);
 
 const object = (data: object) => z.object(data);
 
-export { primaryKeyInt, naturalNumber, uuid, bool, number, array, object };
+const union = (data: any[]) => z.union(data);
+
+export { primaryKeyInt, naturalNumber, uuid, bool, number, string, array, object, union };
