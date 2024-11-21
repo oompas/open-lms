@@ -23,7 +23,7 @@ class EdgeFunctionRequest {
     private requestUser: object | null = null;
     private isAdmin: boolean | null = null;
 
-    private static readonly endpointRegex: RegExp = /^[a-z]+-[a-z]+$/;
+    private static readonly endpointRegex: RegExp = /^[a-z]+(-[a-z]+)+$/;
 
     /**
      * Runs an endpoint
