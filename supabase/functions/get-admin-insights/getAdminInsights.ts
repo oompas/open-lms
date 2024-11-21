@@ -4,15 +4,15 @@ import { CourseService, EnrollmentService, QuizAttemptService } from "../_shared
 
 const getAdminInsights = async (request: EdgeFunctionRequest) => {
 
-    const users = await request.getAllUsers();
-    const quizzesToMark = await QuizAttemptService.query('*', [['null', 'pass'], ['notnull', 'end_time']]);
-    const courses = await CourseService.getAllRows();
-    const enrollments = await EnrollmentService.getAllRows();
+    const [users, quizzesToMark, courses, enrollments] = await Promise.all([
+        request.getAllUsers(),
+        QuizAttemptService.query('*', [['null', 'pass'], ['notnull', 'end_time']]),
+        CourseService.getAllRows(),
+        EnrollmentService.getAllRows()
+    ]);
 
     const quizAttemptsToMark = quizzesToMark.map((quizAttempt: any) => {
-
         const course = courses.find((c) => c.id === quizAttempt.course_id);
-
         const user = users.find((u) => u.id === quizAttempt.user_id);
 
         return {
