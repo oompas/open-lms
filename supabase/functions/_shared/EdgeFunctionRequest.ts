@@ -64,7 +64,7 @@ class EdgeFunctionRequest {
         this.uuid = crypto.randomUUID();
 
         const splitUrl: string[] = metaUrl.split("/");
-        if (splitUrl.length < 3 || !EdgeFunctionRequest.endpointRegex.test(splitUrl[splitUrl.length - 2])) {
+        if (splitUrl.length < 2 || !EdgeFunctionRequest.endpointRegex.test(splitUrl[splitUrl.length - 2])) {
             throw new ApiError(`Invalid edge function url: ${JSON.stringify(splitUrl)}`);
         }
 
