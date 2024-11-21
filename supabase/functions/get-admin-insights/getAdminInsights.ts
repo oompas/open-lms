@@ -4,14 +4,13 @@ import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 
 const getAdminInsights = async (request: EdgeFunctionRequest) => {
 
+    const users = await request.getAllUsers();
+
     const quizzesToMark = await getRows({ table: 'quiz_attempt', conditions: [['null', 'pass'], ['notnull', 'end_time']] });
     if (quizzesToMark instanceof Response) return quizzesToMark;
 
     const courses = await getRows({ table: 'course' });
     if (courses instanceof Response) return courses;
-
-    const users = await request.getAllUsers();
-    if (users instanceof Response) return users;
 
     const quizAttemptsToMark = quizzesToMark.map((quizAttempt: any) => {
 
