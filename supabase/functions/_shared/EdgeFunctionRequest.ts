@@ -23,6 +23,8 @@ class EdgeFunctionRequest {
     private requestUser: object | null = null;
     private isAdmin: boolean | null = null;
 
+    private static readonly endpointRegex: RegExp = /^[a-z]+-[a-z]+$/;
+
     /**
      * Runs an endpoint
      *
@@ -61,7 +63,11 @@ class EdgeFunctionRequest {
     private constructor(metaUrl: string, req: Request, schemaRecord: Record<string, z.ZodTypeAny>) {
         this.uuid = crypto.randomUUID();
 
-        const splitUrl = metaUrl.split("/");
+        const splitUrl: string[] = metaUrl.split("/");
+        if (splitUrl.length < 3 || !EdgeFunctionRequest.endpointRegex.test(splitUrl[splitUrl.length - 2])) {
+            throw new ApiError(`Invalid edge function url: ${JSON.stringify(splitUrl)}`);
+        }
+
         this.endpoint = splitUrl[splitUrl.length - 2];
         this.req = req;
         this.schemaRecord = schemaRecord;
