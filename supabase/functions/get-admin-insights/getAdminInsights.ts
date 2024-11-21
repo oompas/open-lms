@@ -1,16 +1,13 @@
-import { getRows } from "../_shared/database.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
+import { CourseService, EnrollmentService, QuizAttemptService } from "../_shared/Service/Services.ts";
 
 const getAdminInsights = async (request: EdgeFunctionRequest) => {
 
     const users = await request.getAllUsers();
-
-    const quizzesToMark = await getRows({ table: 'quiz_attempt', conditions: [['null', 'pass'], ['notnull', 'end_time']] });
-    if (quizzesToMark instanceof Response) return quizzesToMark;
-
-    const courses = await getRows({ table: 'course' });
-    if (courses instanceof Response) return courses;
+    const quizzesToMark = await QuizAttemptService.query('*', [['null', 'pass'], ['notnull', 'end_time']]);
+    const courses = await CourseService.getAllRows();
+    const enrollments = await EnrollmentService.getAllRows();
 
     const quizAttemptsToMark = quizzesToMark.map((quizAttempt: any) => {
 
@@ -25,9 +22,6 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
             userName: user.user_metadata.name
         }
     });
-
-    const enrollments = await getRows({ table: 'enrolled_course' });
-    if (enrollments instanceof Response) return enrollments;
 
     const courseInsights = courses.map((course: any) => {
         return {
