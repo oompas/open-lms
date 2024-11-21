@@ -13,8 +13,8 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
     const { course_attempt: courseAttempts, enrolled_course: [enrollment], ...course } = await CourseService
         .query(`
             *,
-            course_attempt(*),
-            enrolled_course(*)
+            course_attempt(id, start_time),
+            enrolled_course(status)
           `,
             [
                 ['eq', 'id', courseId],
