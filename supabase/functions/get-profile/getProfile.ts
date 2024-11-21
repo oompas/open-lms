@@ -7,7 +7,18 @@ const getProfile = async (request: EdgeFunctionRequest): Promise<object> => {
 
     request.log(`Entering getProfile for user ${user}`);
 
-    const completedCourseQuery = await CourseAttemptService.query('id, course_id, end_time, course(name)', [['eq', 'user_id', user.id], ['eq', 'pass', true]]);
+    const completedCourseQuery = await CourseAttemptService
+        .query(`
+            id,
+            course_id,
+            end_time,
+            course(name)
+            `,
+            [
+                ['eq', 'user_id', user.id],
+                ['eq', 'pass', true]
+            ]
+        );
 
     request.log(`Successfully queried completed courses: ${JSON.stringify(completedCourseQuery)}`);
 
