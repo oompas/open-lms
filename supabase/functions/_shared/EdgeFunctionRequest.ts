@@ -190,7 +190,7 @@ class EdgeFunctionRequest {
         const { data, error } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
 
         if (error) {
-            return ApiError(error.message);
+            throw ApiError(error.message);
         }
 
         return data.users;
