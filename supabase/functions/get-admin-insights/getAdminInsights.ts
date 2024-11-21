@@ -36,7 +36,6 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
     });
 
     const learners = users.filter((user) => user.user_metadata.role === "Learner").map((user: any) => {
-
         const userEnrollments = enrollments.filter(e => e.user_id === user.id);
 
         return {
