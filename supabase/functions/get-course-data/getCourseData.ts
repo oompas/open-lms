@@ -60,10 +60,8 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
     };
     if (latestCourseAttempt) {
         const quizAttempts = await QuizAttemptService.query('id, start_time', ['eq', 'course_attempt_id', latestCourseAttempt.id]);
+        const currentQuizAttempt = QuizAttemptService.getLatest(quizAttempts);
 
-        const currentQuizAttempt = quizAttempts.length > 0
-            ? quizAttempts.reduce((latest, current) => new Date(current.start_time) > new Date(latest.start_time) ? current : latest)
-            : null;
         quizAttemptData.number = quizAttempts.length;
         quizAttemptData.currentId = currentQuizAttempt?.id;
     }
