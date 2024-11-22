@@ -4,6 +4,7 @@ import DatabaseError from "../Error/DatabaseError.ts";
 // Filter docs: https://supabase.com/docs/reference/javascript/using-filters
 type Filter = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'is';
 type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([Filter, string, any] | ['null' | 'notnull', string])[];
+type QueryOptions = { order?: string, ascendOrder?: boolean, limit?: number };
 
 abstract class IService {
 
@@ -64,7 +65,7 @@ abstract class IService {
     /**
      * Run a query on this table to return desired rows
      */
-    public async query(select: string = '*', conditions: QueryConditions = [], single = false) {
+    public async query(select: string = '*', conditions: QueryConditions = [], options: QueryOptions = {}) {
         try {
             // Wrap single conditions in an array for consistency
             if (conditions.length && !Array.isArray(conditions[0])) {
@@ -82,6 +83,21 @@ abstract class IService {
                     query[filter](key, value);
                 }
             });
+
+            // Apply options (if present)
+            if (options.order) {
+                if (typeof options.ascendOrder === 'boolean') {
+                    query.order(options.order, { ascending: options.ascendOrder });
+                } else {
+                    query.order(options.order);
+                }
+            }
+            if (typeof options.limit === 'number') {
+                if (!Number.isInteger(options.limit) || options.limit < 1) {
+                    throw new Error(`options.limit must be undefined or a positive integer, ${options.limit} is invalid`);
+                }
+                query.limit(options.limit);
+            }
 
             const { data, error } = await query;
             if (error) {

@@ -23,8 +23,7 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
                 ['eq', 'course_attempt.course_id', courseId],
                 ['eq', 'enrolled_course.course_id', courseId],
                 ['eq', 'enrolled_course.user_id', userId]
-            ],
-            true);
+            ]);
     let courseStatus = enrollment?.status ?? "NOT_ENROLLED";
 
     request.log(`Course status: ${courseStatus}. Course attempts: ${courseAttempts?.length ?? 0}. Course: ${JSON.stringify(course)}`);
