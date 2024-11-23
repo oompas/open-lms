@@ -103,14 +103,11 @@ abstract class IService {
             if (error) {
                 throw error;
             }
-            if (single) {
-                if (data.length > 1) {
-                    throw new Error("Queried more than 1 result");
-                }
-                return data[0];
+            if (!data || data.length === 0) {
+                return options.limit === 1 ? null : [];
             }
 
-            return data;
+            return options.limit === 1 ? data[0] : data;
         } catch (err) {
             throw new DatabaseError(`Error custom querying ${this.TABLE_NAME}: ${err.message}`);
         }
