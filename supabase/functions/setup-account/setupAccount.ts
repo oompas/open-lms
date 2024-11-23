@@ -28,7 +28,7 @@ const setupAccount = async (request: EdgeFunctionRequest) => {
 
     request.log(`User setup successfully: ${data.user.email}`);
 
-    return data;
+    return null;
 }
 
 export default setupAccount;
