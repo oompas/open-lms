@@ -150,6 +150,11 @@ class EdgeFunctionRequest {
      * @returns The user object, or null if no user authorization in the request
      */
     private getUserFromReq = async (): Promise<object> => {
+        // Special case: setup-account is the only endpoint that doesn't require user to be logged in
+        if (this.endpoint === "setup-account") {
+            return null;
+        }
+
         const token = this.req.headers.get('Authorization')?.replace('Bearer ', '');
         const user = await adminClient.auth.getUser(token);
 
