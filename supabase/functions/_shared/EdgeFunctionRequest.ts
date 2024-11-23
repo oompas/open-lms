@@ -10,6 +10,7 @@ export interface RunParams {
     schemaRecord: Record<string, z.ZodTypeAny>;
     endpointFunction: (request: EdgeFunctionRequest) => Promise<any>;
     adminOnly?: boolean;
+    disableAuthCheck?: boolean;
 }
 
 class EdgeFunctionRequest {
@@ -33,8 +34,9 @@ class EdgeFunctionRequest {
      * @param schemaRecord Record of fields this request should have
      * @param endpointFunction Function to run the business logic for this endpoint
      * @param adminOnly Throws an error if this endpoint can only be called by admins/developers
+     * @param disableAuthCheck Doesn't verify requesting user if true (sets requestUser to null)
      */
-    public static async run({ metaUrl, req, schemaRecord, endpointFunction, adminOnly }: RunParams) {
+    public static async run({ metaUrl, req, schemaRecord, endpointFunction, adminOnly, disableAuthCheck }: RunParams) {
 
         const request: EdgeFunctionRequest = new EdgeFunctionRequest(metaUrl, req, schemaRecord);
 
@@ -43,7 +45,7 @@ class EdgeFunctionRequest {
                 return request.OptionsRsp();
             }
 
-            await request.validateRequest(adminOnly ?? false);
+            await request.validateRequest(adminOnly ?? false, disableAuthCheck ?? false);
 
             const rsp = await endpointFunction(request);
 
@@ -76,11 +78,11 @@ class EdgeFunctionRequest {
     /**
      * Gets, stores and strictly validates the payload against the given schema, as well as getting the requesting user
      */
-    public async validateRequest(adminOnly: boolean): Promise<Record<string, any>> {
+    public async validateRequest(adminOnly: boolean, disableAuthCheck: boolean): Promise<Record<string, any>> {
 
         const [payload, requestUser] = await Promise.all([
             this.req.json(),
-            this.getUserFromReq()
+            disableAuthCheck ? null : this.getUserFromReq()
         ]);
 
         this.payload = payload;
@@ -150,11 +152,6 @@ class EdgeFunctionRequest {
      * @returns The user object, or null if no user authorization in the request
      */
     private getUserFromReq = async (): Promise<object> => {
-        // Special case: setup-account is the only endpoint that doesn't require user to be logged in
-        if (this.endpoint === "setup-account") {
-            return null;
-        }
-
         const token = this.req.headers.get('Authorization')?.replace('Bearer ', '');
         const user = await adminClient.auth.getUser(token);
 

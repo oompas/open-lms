@@ -9,7 +9,8 @@ Deno.serve(async (req: Request) => {
         metaUrl: import.meta.url,
         req: req,
         schemaRecord: { userId: uuid(), name: z.string() },
-        endpointFunction: setupAccount
+        endpointFunction: setupAccount,
+        disableAuthCheck: true
     };
 
     return await EdgeFunctionRequest.run(parameters);
