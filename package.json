@@ -6,7 +6,8 @@
     "preinstall": "npx only-allow pnpm",
     "build": "next build",
     "dev": "next dev",
-    "deployDev": "node scripts/deploy-dev.js",
+    "deployDev": "node scripts/deploy-api.js DEV",
+    "deployTest": "node scripts/deploy-api.js TEST",
     "test:sanity": "node scripts/run-tests.js sanity",
     "test:detailed": "node scripts/run-tests.js detailed"
   },
