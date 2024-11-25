@@ -1,9 +1,9 @@
 import { supabaseClient } from "./config.ts";
 
-const TEST_LEARNER_EMAIL = process.env.TEST_LEARNER_EMAIL;
-const TEST_LEARNER_PASSWORD = process.env.TEST_LEARNER_PASSWORD;
-const TEST_ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL;
-const TEST_ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD;
+const TEST_LEARNER_EMAIL = process.env.TEST_LEARNER_EMAIL!;
+const TEST_LEARNER_PASSWORD = process.env.TEST_LEARNER_PASSWORD!;
+const TEST_ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL!;
+const TEST_ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD!;
 
 const signIn = async (admin: boolean) => {
     const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -22,4 +22,4 @@ const signOut = async () => {
     const { error } = await supabaseClient.auth.signOut();
 }
 
-export { signIn };
+export { signIn, signOut };
