@@ -6,7 +6,6 @@ const getUserProfile = async (request: EdgeFunctionRequest) => {
     const { userId } = request.getPayload();
 
     const user = await request.getUserById(userId);
-    if (user instanceof Response) return user;
 
     const enrollments = await getRows({ table: 'enrolled_course', conditions: ['eq', 'user_id', user.id] });
     if (enrollments instanceof Response) return enrollments;
