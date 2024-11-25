@@ -6,10 +6,14 @@ const sendCourseHelp = async (request: EdgeFunctionRequest) => {
 
     const { courseId, feedback } = request.getPayload();
 
+    request.log(`Entering sendCourseHelp with course id ${courseId} and feedback '${feedback}'`);
+
     const user = request.getRequestUser();
 
     const course = await CourseService.getById(courseId);
     const courseCreator = await request.getUserById(course.user_id, false);
+
+    request.log(`Queried course (${JSON.stringify(course)}) and course creator ${courseCreator.email}`);
 
     const subject = `Open LMS User Request For Course ${course.name}`;
     const body = `
@@ -37,7 +41,11 @@ const sendCourseHelp = async (request: EdgeFunctionRequest) => {
               </footer>
           </div>`;
 
+    request.log(`Sending email...`);
+
     await sendEmail(courseCreator.email, subject, body);
+
+    request.log(`Email sent!`);
 
     return null;
 }
