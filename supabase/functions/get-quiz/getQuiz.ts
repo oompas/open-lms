@@ -6,9 +6,12 @@ const getQuiz = async (request: EdgeFunctionRequest): Promise<object> => {
     const { quizAttemptId } = request.getPayload();
 
     const quizAttempt = await QuizAttemptService.getById(quizAttemptId);
-    const allQuizAttempts = await QuizAttemptService.query('*', ['eq', 'course_attempt_id', quizAttempt.course_attempt_id]);
-    const course = await CourseService.getById(quizAttempt.course_id);
-    const quizQuestions = await QuizQuestionService.query('*', ['eq', 'course_id', course.id]);
+
+    const [allQuizAttempts, course, quizQuestions] = await Promise.all([
+        QuizAttemptService.query('*', ['eq', 'course_attempt_id', quizAttempt.course_attempt_id]),
+        CourseService.getById(quizAttempt.course_id),
+        QuizQuestionService.query('*', ['eq', 'course_id', quizAttempt.course_id])
+    ]);
 
     return {
         courseName: course.name,
