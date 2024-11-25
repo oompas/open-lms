@@ -10,10 +10,12 @@ const getUserProfile = async (request: EdgeFunctionRequest) => {
 
     const { userId } = request.getPayload();
 
-    const user = await request.getUserById(userId);
-    const enrollments = await EnrollmentService.query('*', ['eq', 'user_id', user.id]);
-    const completedCourses = await CourseAttemptService.query('*', [['eq', 'user_id', user.id], ['eq', 'pass', true]]);
-    const quizAttempts = await QuizAttemptService.query('*', [['eq', 'user_id', user.id], ['notnull', 'end_time']]);
+    const [user, enrollments, completedCourses, quizAttempts] = await Promise.all([
+        request.getUserById(userId),
+        EnrollmentService.query('*', ['eq', 'user_id', userId]),
+        CourseAttemptService.query('*', [['eq', 'user_id', userId], ['eq', 'pass', true]]),
+        QuizAttemptService.query('*', [['eq', 'user_id', userId], ['notnull', 'end_time']])
+    ]);
 
     const enrolledData = await Promise.all(enrollments.map(async (enrolled) => {
         const courses = await CourseService.query('*', ['eq', 'id', enrolled.course_id]);
