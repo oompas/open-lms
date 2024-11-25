@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
-import { signIn, signOut } from "../helpers/auth.ts";
 
 suite("Basic endpoints", function() {
 
