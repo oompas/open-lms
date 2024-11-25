@@ -22,4 +22,4 @@ const signOut = async () => {
     const { error } = await supabaseClient.auth.signOut();
 }
 
-export { createAccount, signIn };
+export { signIn };
