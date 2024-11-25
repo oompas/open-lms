@@ -159,9 +159,8 @@ export default function IDCourse({
 
     const handleSubmitFeedback = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const courseId = course.courseId;
         try {
-            await callAPI('send-course-feedback', { courseId, feedback });
+            await callAPI('send-course-help', { courseId, feedback });
             setFeedback('');
             setFeedbackSent(true);
         } catch (error) {
