@@ -1,23 +1,22 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getRows } from "../_shared/database.ts";
+import {
+    CourseAttemptService,
+    CourseService,
+    EnrollmentService,
+    QuizAttemptService
+} from "../_shared/Service/Services.ts";
 
 const getUserProfile = async (request: EdgeFunctionRequest) => {
 
     const { userId } = request.getPayload();
 
     const user = await request.getUserById(userId);
-
-    const enrollments = await getRows({ table: 'enrolled_course', conditions: ['eq', 'user_id', user.id] });
-    if (enrollments instanceof Response) return enrollments;
-
-    const completedCourses = await getRows({ table: 'course_attempt', conditions: [['eq', 'user_id', user.id], ['eq', 'pass', true]] });
-    if (completedCourses instanceof Response) return completedCourses;
-
-    const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: [['eq', 'user_id', user.id], ['notnull', 'end_time']] });
-    if (quizAttempts instanceof Response) return quizAttempts;
+    const enrollments = await EnrollmentService.query('*', ['eq', 'user_id', user.id]);
+    const completedCourses = await CourseAttemptService.query('*', [['eq', 'user_id', user.id], ['eq', 'pass', true]]);
+    const quizAttempts = await QuizAttemptService.query('*', [['eq', 'user_id', user.id], ['notnull', 'end_time']]);
 
     const enrolledData = await Promise.all(enrollments.map(async (enrolled) => {
-        const courses = await getRows({ table: 'course', conditions: ['eq', 'id', enrolled.course_id] });
+        const courses = await CourseService.query('*', ['eq', 'id', enrolled.course_id]);
         return {
             courseId: enrolled.course_id,
             name: courses[0].name
@@ -25,7 +24,7 @@ const getUserProfile = async (request: EdgeFunctionRequest) => {
     }));
 
     const completedCourseData = await Promise.all(completedCourses.map(async (courseAttempt) => {
-        const courses = await getRows({ table: 'course', conditions: ['eq', 'id', courseAttempt.course_id] });
+        const courses = await CourseService.query('*', ['eq', 'id', courseAttempt.course_id]);
         return {
             name: courses[0].name,
             completionTime: courseAttempt.end_time
@@ -33,7 +32,7 @@ const getUserProfile = async (request: EdgeFunctionRequest) => {
     }));
 
     const quizAttemptData = (await Promise.all(quizAttempts.map(async (quizAttempt) => {
-        const courses = await getRows({ table: 'course', conditions: ['eq', 'id', quizAttempt.course_id] });
+        const courses = await CourseService.query('*', ['eq', 'id', quizAttempt.course_id]);
         return {
             id: quizAttempt.id,
             endTime: quizAttempt.end_time,
