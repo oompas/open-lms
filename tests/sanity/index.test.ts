@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/config.ts";
-import { createAccount } from "../helpers/auth.ts";
+import { signIn } from "../helpers/auth.ts";
 
 suite("Basic test suite - sanity", function() {
 
     suiteSetup("", async function() {
-        const user = await createAccount();
+        await signIn(true);
     });
 
     suite("Sub-suite", () => {
