@@ -45,7 +45,7 @@ export default function Insights({ params }: { params: { id: string } }) {
                                     </Link>
                                 </td>
                                 <td className="border p-2">
-                                    {learner.status.charAt(0) + learner.status.slice(1).toLowerCase()}
+                                    {(learner.status.charAt(0) + learner.status.slice(1).toLowerCase()).replace('_', ' ')}
                                 </td>
                                 <td className="border p-2">
                                     { learner.latestQuizAttemptId &&
