@@ -35,7 +35,7 @@ const callAPI = async (endpoint: string, body: object = {}) => {
             return { error: errorResponse };
         }
 
-        return { data: data };
+        return data;
     } catch (error: any) {
         console.error(`Error invoking Supabase Edge Function '${endpoint}': ${JSON.stringify(error)} '${error.message}'`);
         return { error: error.message };
