@@ -41,9 +41,9 @@ const sendCourseHelp = async (request: EdgeFunctionRequest) => {
               </footer>
           </div>`;
 
-    request.log(`Sending email...`);
+    request.log(`Sending email to...`);
 
-    await sendEmail(courseCreator.email, subject, body);
+    await sendEmail(request, courseCreator.email, subject, body);
 
     request.log(`Email sent!`);
 
