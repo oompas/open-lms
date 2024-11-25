@@ -4,12 +4,16 @@ import { CourseService, EnrollmentService, QuizAttemptService } from "../_shared
 
 const getAdminInsights = async (request: EdgeFunctionRequest) => {
 
+    request.log(`Entering getAdminInsights...`);
+
     const [users, quizzesToMark, courses, enrollments] = await Promise.all([
         request.getAllUsers(),
         QuizAttemptService.query('*', [['null', 'pass'], ['notnull', 'end_time']]),
         CourseService.getAllRows(),
         EnrollmentService.getAllRows()
     ]);
+
+    request.log(`Queried ${users.length} users, ${quizzesToMark.length} quizzes to mark, ${courses.length} courses, and ${enrollments.length} course enrollments`);
 
     const quizAttemptsToMark = quizzesToMark.map((quizAttempt: any) => {
         const course = courses.find((c) => c.id === quizAttempt.course_id);
@@ -23,6 +27,8 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
         }
     });
 
+    request.log(`Constructed data for ${quizAttemptsToMark.length} quiz attempts to mark`);
+
     const courseInsights = courses.map((course: any) => {
         return {
             id: course.id,
@@ -34,6 +40,8 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
             avgQuizScore: 0
         }
     });
+
+    request.log(`Constructed insights for ${courseInsights.length} courses`);
 
     const learners = users.filter((user) => user.user_metadata.role === "Learner").map((user: any) => {
         const userEnrollments = enrollments.filter(e => e.user_id === user.id);
@@ -50,6 +58,8 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
         };
     });
 
+    request.log(`Constructed data for ${learners.length} learners`);
+
     const admins = users.filter((user) => user.user_metadata.role === "Admin" || user.user_metadata.role === "Developer")
         .map((user: any) => {
             return {
@@ -62,6 +72,8 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
                 coursesActive: courses.filter(c => c.user_id === user.id && c.active).length
             };
         });
+
+    request.log(`Constructed data for ${admins.length} admins/developers`);
 
     return {
         quizAttemptsToMark,
