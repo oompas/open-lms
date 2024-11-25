@@ -17,7 +17,7 @@ const getUserProfile = async (request: EdgeFunctionRequest) => {
         QuizAttemptService.query('*', [['eq', 'user_id', userId], ['notnull', 'end_time']])
     ]);
 
-    const enrolledCourses = await CourseService.query('*', ['in', 'id', enrollments.map((e) => e.id)]);
+    const enrolledCourses = await CourseService.query('*', ['in', 'id', enrollments.map((e) => e.course_id)]);
     const enrolledCourseData = enrolledCourses.map((course) => {
         return {
             courseId: course.id,
