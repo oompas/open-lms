@@ -1,31 +1,23 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getRows } from "../_shared/database.ts";
+import { CourseService, QuizAttemptService, QuizQuestionService } from "../_shared/Service/Services.ts";
 
 const getQuiz = async (request: EdgeFunctionRequest): Promise<object> => {
 
     const { quizAttemptId } = request.getPayload();
 
-    const quizAttemptQuery = await getRows({ table: 'quiz_attempt', conditions: ['eq', 'id', quizAttemptId] });
-    if (quizAttemptQuery instanceof Response) return quizAttemptQuery;
-    const quizAttempt = quizAttemptQuery[0];
-
-    const allAttempts = await getRows({ table: 'quiz_attempt', conditions: ['eq', 'course_attempt_id', quizAttempt.course_attempt_id] });
-    if (allAttempts instanceof Response) return allAttempts;
-
-    const courseQuery = await getRows({ table: 'course', conditions: ['eq', 'id', quizAttempt.course_id] });
-    if (courseQuery instanceof Response) return courseQuery;
-    const course = courseQuery[0];
-
-    const questions = await getRows({ table: 'quiz_question', conditions: ['eq', 'course_id', course.id] });
-    if (questions instanceof Response) return questions;
+    const quizAttempt = await QuizAttemptService.getById(quizAttemptId);
+    const allQuizAttempts = await QuizAttemptService.query('*', ['eq', 'course_attempt_id', quizAttempt.course_attempt_id]);
+    const course = await CourseService.getById(quizAttempt.course_id);
+    const quizQuestions = await QuizQuestionService.query('*', ['eq', 'course_id', course.id]);
 
     return {
         courseName: course.name,
-        numAttempts: allAttempts.length,
+        numAttempts: allQuizAttempts.length,
         maxAttempts: course.max_quiz_attempts,
         timeLimit: course.quiz_time_limit,
         startTime: new Date(quizAttempt.start_time),
-        questions: questions.map((q) => {
+
+        questions: quizQuestions.map((q) => {
             return {
                 id: q.id,
                 order: q.question_order,
