@@ -46,8 +46,8 @@ const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
             name: user.user_metadata.name,
             userId: user.id,
             status: enrollment.status,
-            latestQuizAttemptId: latestQuizAttempt.id,
-            latestQuizAttemptTime: new Date(latestQuizAttempt.end_time) - new Date(latestQuizAttempt.start_time)
+            latestQuizAttemptId: latestQuizAttempt ? latestQuizAttempt.id : null,
+            latestQuizAttemptTime: latestQuizAttempt ? new Date(latestQuizAttempt.end_time) - new Date(latestQuizAttempt.start_time) : null
         };
     }));
 
