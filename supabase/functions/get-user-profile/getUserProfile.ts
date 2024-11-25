@@ -10,6 +10,8 @@ const getUserProfile = async (request: EdgeFunctionRequest) => {
 
     const { userId } = request.getPayload();
 
+    request.log(`Entering getUserProfile with userId ${userId}`);
+
     const [user, enrollments, completedCourses, quizAttempts] = await Promise.all([
         request.getUserById(userId),
         EnrollmentService.query('*', ['eq', 'user_id', userId]),
@@ -17,7 +19,12 @@ const getUserProfile = async (request: EdgeFunctionRequest) => {
         QuizAttemptService.query('*', [['eq', 'user_id', userId], ['notnull', 'end_time']])
     ]);
 
+    request.log(`Queried user data, ${enrollments.length} enrollments, ${completedCourses.length} completed course attempts, and ${quizAttempts.length} completed quiz attempts`);
+
     const enrolledCourses = await CourseService.query('*', ['in', 'id', enrollments.map((e) => e.course_id)]);
+
+    request.log(`Queried the ${enrolledCourses.length} corresponding courses for user enrollments`);
+
     const enrolledCourseData = enrolledCourses.map((course) => {
         return {
             courseId: course.id,
@@ -44,6 +51,8 @@ const getUserProfile = async (request: EdgeFunctionRequest) => {
             maxScore: course.total_quiz_marks
         };
     })).sort((a, b) =>  new Date(b.end_time) - new Date(a.end_time));
+
+    request.log(`Built data for course enrollments, completed courses and quiz attempts`);
 
     return {
         userId: user.id,
