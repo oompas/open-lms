@@ -15,11 +15,13 @@ const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
 
     request.log(`Entering getCourseInsightReport with course id ${courseId}`);
 
-    const courseData = await CourseService.getById(courseId);
-    const enrollments = await EnrollmentService.query('*', ['eq', 'course_id', courseId]);
-    const quizQuestions = await QuizQuestionService.query('*', ['eq', 'course_id', courseId]);
-    const courseAttempts = await CourseAttemptService.query('*', ['eq', 'course_id', courseId]);
-    const quizAttempts = await QuizAttemptService.query('*', ['eq', 'course_id', courseId]);
+    const [courseData, enrollments, quizQuestions, courseAttempts, quizAttempts] = await Promise.all([
+        CourseService.getById(courseId),
+        EnrollmentService.query('*', ['eq', 'course_id', courseId]),
+        QuizQuestionService.query('*', ['eq', 'course_id', courseId]),
+        CourseAttemptService.query('*', ['eq', 'course_id', courseId]),
+        QuizAttemptService.query('*', ['eq', 'course_id', courseId])
+    ]);
 
     request.log(`Queried course, enrollment, and quiz data`);
 
