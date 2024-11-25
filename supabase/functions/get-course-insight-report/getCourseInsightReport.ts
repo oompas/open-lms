@@ -36,7 +36,6 @@ const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
 
     const learnerData = await Promise.all(enrollments.map(async (enrollment) => {
         const user = await request.getUserById(enrollment.user_id);
-        const status = await getCourseStatus(courseId, enrollment.user_id);
         const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: [['eq', 'course_id', courseId], ['notnull', 'end_time']] });
         if (quizAttempts instanceof Response) return quizAttempts;
 
@@ -56,7 +55,7 @@ const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
         return {
             name: user.user_metadata.name,
             userId: user.id,
-            status: status,
+            status: enrollment.status,
             latestQuizAttemptId: latestQuizAttemptId,
             latestQuizAttemptTime: latestQuizAttemptTime
         };
