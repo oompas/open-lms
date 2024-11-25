@@ -1,25 +1,22 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { getRows } from "../_shared/database.ts";
 import { getCourseStatus } from "../_shared/functionality.ts";
+import {
+    CourseAttemptService,
+    CourseService,
+    EnrollmentService, QuizAttemptService,
+    QuizQuestionService
+} from "../_shared/Service/Services.ts";
 
 const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
 
     const { courseId } = request.getPayload();
 
-    const courseData = await getRows({ table: 'course', conditions: ['eq', 'id', courseId] });
-    if (courseData instanceof Response) return courseData;
-
-    const enrollments = await getRows({ table: 'enrolled_course', conditions: ['eq', 'course_id', courseId] });
-    if (enrollments instanceof Response) return enrollments;
-
-    const quizQuestions = await getRows({ table: 'quiz_question', conditions: ['eq', 'course_id', courseId] });
-    if (quizQuestions instanceof Response) return quizQuestions;
-
-    const courseAttempts = await getRows({ table: 'course_attempt', conditions: ['eq', 'course_id', courseId] });
-    if (courseAttempts instanceof Response) return courseAttempts;
-
-    const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: ['eq', 'course_id', courseId] });
-    if (quizAttempts instanceof Response) return quizAttempts;
+    const courseData = await CourseService.getById(courseId);
+    const enrollments = await EnrollmentService.query('*', ['eq', 'course_id', courseId]);
+    const quizQuestions = await QuizQuestionService.query('*', ['eq', 'course_id', courseId]);
+    const courseAttempts = await CourseAttemptService.query('*', ['eq', 'course_id', courseId]);
+    const quizAttempts = await QuizAttemptService.query('*', ['eq', 'course_id', courseId]);
 
     const learnerData = await Promise.all(enrollments.map(async (enrollment) => {
         const user = await request.getUserById(enrollment.user_id);
@@ -63,7 +60,7 @@ const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
     }, 0) / completedAttempts.length / 1000; // Time in seconds
 
     return {
-        courseName: courseData[0].name,
+        courseName: courseData.name,
         learners: learnerData,
         questions: questionData,
         numEnrolled: enrollments.length,
