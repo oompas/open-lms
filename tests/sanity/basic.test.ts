@@ -18,7 +18,7 @@ suite("Basic endpoints", function() {
             console.log(`Notifications result: ${JSON.stringify(result)}`);
 
             expect(result).to.be.an('array');
-            expect(result).to.deep.equal(expected);
+            expect(result).to.deep.equal([]);
         });
 
         test("No notifications (admin)", async function() {
@@ -26,7 +26,7 @@ suite("Basic endpoints", function() {
             console.log(`Notifications result: ${JSON.stringify(result)}`);
 
             expect(result).to.be.an('array');
-            expect(result).to.deep.equal(expected);
+            expect(result).to.deep.equal([]);
         });
     });
 
