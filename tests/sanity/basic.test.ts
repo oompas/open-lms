@@ -13,21 +13,20 @@ suite("Basic endpoints", function() {
 
     suite("get-notifications", function() {
 
-        const _test = (name: string, expected: []) =>
-            test(name, async function() {
-                const result = await callAPI('get-notifications', {}, false);
-                console.log(`[${name}] Notifications result: ${JSON.stringify(result)}`);
+        test("No notifications (learner)", async function() {
+            const result = await callAPI('get-notifications', {}, false);
+            console.log(`Notifications result: ${JSON.stringify(result)}`);
 
-                expect(result).to.be.an('array');
-                expect(result).to.deep.equal(expected);
-            });
-
-        suite("Learner", async function() {
-            _test("No notifications", []);
+            expect(result).to.be.an('array');
+            expect(result).to.deep.equal(expected);
         });
 
-        suite("Admin", async function() {
-            _test("No notifications", []);
+        test("No notifications (admin)", async function() {
+            const result = await callAPI('get-notifications', {}, true);
+            console.log(`Notifications result: ${JSON.stringify(result)}`);
+
+            expect(result).to.be.an('array');
+            expect(result).to.deep.equal(expected);
         });
     });
 
