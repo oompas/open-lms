@@ -22,4 +22,20 @@ const signOut = async () => {
     const { error } = await supabaseClient.auth.signOut();
 }
 
-export { signIn, signOut };
+const pollAccessToken = async (admin: boolean) => {
+    const endTime = Date.now() + 2000; // 2s timeout
+
+    while (Date.now() < endTime) {
+        const session = await supabaseClient.auth.getSession();
+        if (session?.data?.session?.access_token) {
+            return session.data.session.access_token;
+        }
+
+        await signIn(admin);
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    throw new Error("Exceeded the 2 second timeout for polling for user access token");
+}
+
+export { signIn, signOut, pollAccessToken };
