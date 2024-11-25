@@ -17,33 +17,33 @@ const getUserProfile = async (request: EdgeFunctionRequest) => {
         QuizAttemptService.query('*', [['eq', 'user_id', userId], ['notnull', 'end_time']])
     ]);
 
-    const enrolledData = await Promise.all(enrollments.map(async (enrolled) => {
-        const courses = await CourseService.query('*', ['eq', 'id', enrolled.course_id]);
+    const enrolledCourses = await CourseService.query('*', ['in', 'id', enrollments.map((e) => e.id)]);
+    const enrolledCourseData = enrolledCourses.map((course) => {
         return {
-            courseId: enrolled.course_id,
-            name: courses[0].name
+            courseId: course.id,
+            name: course.name
         };
-    }));
+    });
 
-    const completedCourseData = await Promise.all(completedCourses.map(async (courseAttempt) => {
-        const courses = await CourseService.query('*', ['eq', 'id', courseAttempt.course_id]);
+    const completedCourseData = completedCourses.map((courseAttempt) => {
+        const course = enrolledCourses.find((course) => course.id === courseAttempt.course_id);
         return {
-            name: courses[0].name,
+            name: course.name,
             completionTime: courseAttempt.end_time
         };
-    }));
+    });
 
-    const quizAttemptData = (await Promise.all(quizAttempts.map(async (quizAttempt) => {
-        const courses = await CourseService.query('*', ['eq', 'id', quizAttempt.course_id]);
+    const quizAttemptData = (quizAttempts.map(async (quizAttempt) => {
+        const course = enrolledCourses.find((course) => course.id === quizAttempt.course_id);
         return {
             id: quizAttempt.id,
             endTime: quizAttempt.end_time,
             courseId: quizAttempt.course_id,
-            courseName: courses[0].name,
+            courseName: course.name,
             score: quizAttempt.score,
-            maxScore: courses[0].total_quiz_marks
+            maxScore: course.total_quiz_marks
         };
-    }))).sort((a, b) =>  new Date(b.end_time) - new Date(a.end_time));
+    })).sort((a, b) =>  new Date(b.end_time) - new Date(a.end_time));
 
     return {
         userId: user.id,
@@ -54,7 +54,7 @@ const getUserProfile = async (request: EdgeFunctionRequest) => {
         signUpDate: user.created_at,
         lastUpdated: user.updated_at ?? -1,
 
-        enrolledCourses: enrolledData,
+        enrolledCourses: enrolledCourseData,
         completedCourses: completedCourseData,
         quizAttempts: quizAttemptData
     };

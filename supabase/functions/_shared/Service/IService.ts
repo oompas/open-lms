@@ -2,7 +2,7 @@ import { adminClient } from "../adminClient.ts";
 import DatabaseError from "../Error/DatabaseError.ts";
 
 // Filter docs: https://supabase.com/docs/reference/javascript/using-filters
-type Filter = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'is';
+type Filter = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'is' | 'in';
 type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([Filter, string, any] | ['null' | 'notnull', string])[];
 type QueryOptions = { order?: string, ascendOrder?: boolean, limit?: number };
 
