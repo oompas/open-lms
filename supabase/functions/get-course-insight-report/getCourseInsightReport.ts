@@ -1,6 +1,4 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getRows } from "../_shared/database.ts";
-import { getCourseStatus } from "../_shared/functionality.ts";
 import {
     CourseAttemptService,
     CourseService,
