@@ -19,6 +19,7 @@ class EdgeFunctionRequest {
 
     private readonly endpoint: string;
     private readonly req: Request;
+    private readonly token: string;
     private readonly schemaRecord: Record<string, z.ZodTypeAny>;
     private payload: Record<string, any> | null = null;
     private requestUser: object | null = null;
@@ -38,7 +39,8 @@ class EdgeFunctionRequest {
      */
     public static async run({ metaUrl, req, schemaRecord, endpointFunction, adminOnly, disableAuthCheck }: RunParams) {
 
-        const request: EdgeFunctionRequest = new EdgeFunctionRequest(metaUrl, req, schemaRecord);
+        const token = req.headers.get('Authorization')?.replace('Bearer ', '');
+        const request: EdgeFunctionRequest = new EdgeFunctionRequest(metaUrl, req, schemaRecord, token);
 
         try {
             if (req.method === 'OPTIONS') {
@@ -62,7 +64,7 @@ class EdgeFunctionRequest {
      * @param schemaRecord Record of fields this request should have
      * @param metaUrl Pass import.meta.url from the index file here - used to get the endpoint name from the path
      */
-    private constructor(metaUrl: string, req: Request, schemaRecord: Record<string, z.ZodTypeAny>) {
+    private constructor(metaUrl: string, req: Request, schemaRecord: Record<string, z.ZodTypeAny>, token: string | undefined) {
         this.uuid = crypto.randomUUID();
 
         const splitUrl: string[] = metaUrl.split("/");
@@ -72,6 +74,7 @@ class EdgeFunctionRequest {
 
         this.endpoint = splitUrl[splitUrl.length - 2];
         this.req = req;
+        this.token = token;
         this.schemaRecord = schemaRecord;
     }
 
@@ -152,8 +155,7 @@ class EdgeFunctionRequest {
      * @returns The user object, or null if no user authorization in the request
      */
     private getUserFromReq = async (): Promise<object> => {
-        const token = this.req.headers.get('Authorization')?.replace('Bearer ', '');
-        const user = await adminClient.auth.getUser(token);
+        const user = await adminClient.auth.getUser(this.token);
 
         if (user?.data?.user) {
             return user.data.user;
