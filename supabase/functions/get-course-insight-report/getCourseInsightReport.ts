@@ -36,28 +36,16 @@ const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
 
     const learnerData = await Promise.all(enrollments.map(async (enrollment) => {
         const user = await request.getUserById(enrollment.user_id);
-        const quizAttempts = await getRows({ table: 'quiz_attempt', conditions: [['eq', 'course_id', courseId], ['notnull', 'end_time']] });
-        if (quizAttempts instanceof Response) return quizAttempts;
 
-        let latestQuizAttemptId = null;
-        let latestQuizAttemptTime = null;
-        if (quizAttempts.length > 0) {
-            const latestQuiz = quizAttempts.reduce((latest, current) => {
-                return new Date(current.start_time) > new Date(latest.start_time) ? current : latest;
-            });
-
-            if (latestQuiz) {
-                latestQuizAttemptId = latestQuiz.id;
-                latestQuizAttemptTime = new Date(latestQuiz.end_time) - new Date(latestQuiz.start_time);
-            }
-        }
+        const userQuizAttempts = quizAttempts.filter((attempt) => attempt.user_id === user.id);
+        const latestQuizAttempt = QuizAttemptService.getLatest(userQuizAttempts);
 
         return {
             name: user.user_metadata.name,
             userId: user.id,
             status: enrollment.status,
-            latestQuizAttemptId: latestQuizAttemptId,
-            latestQuizAttemptTime: latestQuizAttemptTime
+            latestQuizAttemptId: latestQuizAttempt.id,
+            latestQuizAttemptTime: new Date(latestQuizAttempt.end_time) - new Date(latestQuizAttempt.start_time)
         };
     }));
 
