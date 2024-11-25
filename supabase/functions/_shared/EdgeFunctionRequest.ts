@@ -166,10 +166,11 @@ class EdgeFunctionRequest {
     /**
      * Gets a user object that has the specific ID. Note this should only be done by admins
      * @param userId User ID of the user to get
+     * @param adminCheck true to verify the requesting user is an admin before getting user
      */
-    public getUserById = async (userId: string): Promise<object> => {
+    public getUserById = async (userId: string, adminCheck: boolean = true): Promise<object> => {
 
-        if (!this.isAdmin) {
+        if (adminCheck && !this.isAdmin) {
             throw new ApiError("Only admins can get specific users by id - this call shouldn't happen");
         }
 
