@@ -1,4 +1,4 @@
-import { createClient, FunctionsHttpError } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 
 const testUrl = process.env.TEST_SUPABASE_URL;
 const testAnonKey = process.env.TEST_SUPABASE_ANON_KEY;
@@ -18,28 +18,4 @@ if (!/[a-zA-Z0-9.-]+/.test(testAnonKey)) {
 
 const supabaseClient = createClient(testUrl, testAnonKey);
 
-const callAPI = async (endpoint: string, body: object = {}) => {
-    try {
-        // Get the user's session token
-        const session = await supabaseClient.auth.getSession();
-        const accessToken = session?.data?.session?.access_token;
-
-        const options = {
-            body: body,
-            ...(accessToken && { headers: { 'Authorization': `Bearer ${accessToken}` } })
-        }
-        const { data, error } = await supabaseClient.functions.invoke(endpoint, options);
-
-        if (error && error instanceof FunctionsHttpError) { // @ts-ignore
-            const errorResponse = await error.response.json();
-            return { error: errorResponse };
-        }
-
-        return data;
-    } catch (error: any) {
-        console.error(`Error invoking Supabase Edge Function '${endpoint}': ${JSON.stringify(error)} '${error.message}'`);
-        return { error: error.message };
-    }
-}
-
-export { supabaseClient, callAPI };
+export { supabaseClient };

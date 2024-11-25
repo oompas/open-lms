@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { callAPI } from "../helpers/config.ts";
+import { callAPI } from "../helpers/api.ts.ts";
 import { signIn } from "../helpers/auth.ts";
 
 suite("Basic test suite - sanity", function() {
