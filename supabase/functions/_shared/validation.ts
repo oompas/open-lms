@@ -6,11 +6,27 @@ const naturalNumber = () => z.number().int().min(0);
 
 const uuid = () => z.string().uuid();
 
-const bool = () => z.bool();
+const bool = () => z.boolean();
 
-const number = (nullable: boolean = false) => z.number().nullable(nullable);
+const number = ({ nullable, min, max }: { nullable?: boolean; min?: number; max?: number } = {}) => {
+    let schema = z.number();
 
-const string = ({ nullable = false, min, max }: { nullable?: boolean; min?: number; max?: number }) => {
+    if (min !== undefined) {
+        schema = schema.min(min, {
+            message: `number must be at least ${min}`,
+        });
+    }
+
+    if (max !== undefined) {
+        schema = schema.max(max, {
+            message: `number must be at most ${max}`,
+        });
+    }
+
+    return nullable ? schema.nullable() : schema;
+};
+
+const string = ({ nullable, min, max }: { nullable?: boolean; min?: number; max?: number }) => {
     let schema = z.string();
 
     if (min !== undefined) {

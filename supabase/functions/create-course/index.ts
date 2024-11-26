@@ -12,11 +12,11 @@ Deno.serve(async (req: Request) => {
                 name: string({ min: 5, max: 200 }),
                 description: string({ min: 5, max: 200 }),
                 link: string({ min: 1, max: 1000 }),
-                minTime: number(true),
+                minTime: number({ nullable: true }),
 
-                maxQuizAttempts: number(true),
+                maxQuizAttempts: number({ nullable: true }),
                 minQuizScore: number().min(1),
-                quizTimeLimit: number(true),
+                quizTimeLimit: number({ nullable: true }),
                 preserveQuizQuestionOrder: bool()
             }),
             quizQuestions: array(union([
