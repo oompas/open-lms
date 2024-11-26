@@ -10,7 +10,23 @@ const bool = () => z.bool();
 
 const number = (nullable: boolean = false) => z.number().nullable(nullable);
 
-const string = (nullable: boolean = false) => z.string().nullable(nullable);
+const string = ({ nullable = false, min, max }: { nullable?: boolean; min?: number; max?: number }) => {
+    let schema = z.string();
+
+    if (min !== undefined) {
+        schema = schema.min(options.min, {
+            message: `String must be at least ${options.min} characters long`,
+        });
+    }
+
+    if (max !== undefined) {
+        schema = schema.max(options.max, {
+            message: `String must be at most ${options.max} characters long`,
+        });
+    }
+
+    return nullable ? schema.nullable() : schema;
+};
 
 const array = (data: any) => z.array(data);
 
