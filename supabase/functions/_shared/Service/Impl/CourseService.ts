@@ -1,21 +1,24 @@
 import IService from "../IService.ts";
-import { CourseStatus } from "../../Enum/CourseStatus.ts";
-import { EnrollmentService } from "../Services.ts";
+import { adminClient } from "../../adminClient.ts";
 
 class _courseService extends IService {
 
     TABLE_NAME = "course";
 
     /**
-     * Gets the current status of a course for a given user (NOTE_ENROLLED, ENROLLED, IN_PROGRESS, etc)
+     * Adds a new course to the database (not including quiz questions)
      */
-    public async getCourseStatus(courseId: number, userId: string) {
-        const enrollment = await EnrollmentService.getEnrollment(courseId, userId);
-        if (enrollment === null) {
-            return CourseStatus.NOT_ENROLLED;
-        }
+    public async addCourse(course: object, userId: string) {
 
-        return enrollment.status;
+        const courseData = {
+            user_id: userId,
+            name: course.name,
+            description: course.description,
+            link: course.link,
+            min_time: course.minTime,
+        };
+
+        const { data, error } = await adminClient.from('course').insert(courseData);
     }
 }
 

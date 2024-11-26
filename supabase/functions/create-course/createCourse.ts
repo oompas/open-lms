@@ -1,5 +1,5 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { adminClient } from "../_shared/adminClient.ts";
+import { CourseService } from "../_shared/Service/Services.ts";
 
 const createCourse = async (request: EdgeFunctionRequest) => {
 
@@ -7,27 +7,15 @@ const createCourse = async (request: EdgeFunctionRequest) => {
 
     request.log(`Entering createCourse for user ${userId}`);
 
-    const { course } = request.getPayload();
+    const { course, quizQuestions } = request.getPayload();
 
-    request.log(`Incoming course data: ${JSON.stringify(course)}`);
+    request.log(`Incoming course data: ${JSON.stringify(course)} and quiz questions: ${JSON.stringify(quizQuestions)}`);
 
-    const courseData = {
-        user_id: userId,
-        name: course.name,
-        description: course.description,
-        link: course.link,
-        min_time: course.minTime,
-    };
-
-    const { data, error } = await adminClient.from('course').insert(courseData);
-
-    if (error) {
-        throw error;
-    }
+    await CourseService.addCourse(course, userId);
 
     request.log(`Course added to database!`);
 
-    return data;
+    return null;
 }
 
 export default createCourse;
