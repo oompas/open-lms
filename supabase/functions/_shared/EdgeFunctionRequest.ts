@@ -186,7 +186,7 @@ class EdgeFunctionRequest {
     /**
      * Gets all users on the app
      */
-    public getAllUsers = async () => {
+    public getAllUsers = async (): Promise<any[]> => {
 
         if (!this.isAdmin) {
             throw new ApiError("Only admins can get all users - this call shouldn't happen");

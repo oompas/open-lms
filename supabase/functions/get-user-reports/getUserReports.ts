@@ -4,14 +4,17 @@ import { CourseAttemptService, EnrollmentService } from "../_shared/Service/Serv
 
 const getUserReports = async (request: EdgeFunctionRequest) => {
 
-    // Get all records at once, then filter through them for each user to reduce queries
+    request.log(`Entering getUserReports...`);
+
     const [userRecords, enrollments, courseAttempts] = await Promise.all([
         request.getAllUsers(),
-        EnrollmentService.getAllRows().then((result) => result.map(doc => ({ userId: doc.user_id }))),
-        CourseAttemptService.getAllRows().then((result) => result.map(doc => ({ userId: doc.user_id, pass: doc.pass }))),
-    ]).then(([userRecords, enrollments, courseAttempts]) => ({ userRecords, enrollments, courseAttempts }));
+        EnrollmentService.getAllRows(),
+        CourseAttemptService.getAllRows()
+    ]);
 
-    const userData = await Promise.all(userRecords.map((user) => {
+    request.log(`Queried ${userRecords.length} users, ${enrollments.length} enrollments, and ${courseAttempts.length} courses`);
+
+    const userData = userRecords.map((user) => {
 
         const numEnrollments = enrollments.reduce((count, curr) => curr.user_id === user.id ? ++count : count, 0);
         const numAttempts = courseAttempts.reduce((count, curr) => curr.user_id === user.id ? ++count : count, 0);
@@ -25,15 +28,15 @@ const getUserReports = async (request: EdgeFunctionRequest) => {
             'Account Disabled?': user.disabled ? "Yes" : "No",
 
             'Email Verified?': user.emailVerified ? "Yes" : "No",
-            'Account creation time': user.metadata.creationTime?.replace(/,/g, ''),
-            'Last login time': user.metadata.lastSignInTime?.replace(/,/g, ''),
-            'Last refresh time': user.metadata.lastRefreshTime?.replace(/,/g, ''),
+            'Account creation time': user.created_at.replace(/,/g, ''),
 
             'Number of courses enrolled': numEnrollments,
             'Number of courses started': numAttempts,
             'Number of courses completed': numComplete,
         }
-    }));
+    });
+
+    request.log(`Constructed user data for ${userData.length} users`);
 
     return toCSV(userData.sort((a, b) => b['Number of courses enrolled'] - a['Number of courses enrolled']));
 }
