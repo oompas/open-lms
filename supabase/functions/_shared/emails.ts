@@ -27,8 +27,9 @@ const sendEmail = async (request: EdgeFunctionRequest, email: string, subject: s
     const response = await resend.emails.send({
         from: "OpenLMS <info@open-lms.ca>",
         to: email,
+        replyTo: "queens.openlms@gmail.com",
         subject: subject,
-        text: body
+        html: body
     });
 
     if (response.error) {
