@@ -8,9 +8,9 @@ const uuid = () => z.string().uuid();
 
 const bool = () => z.bool();
 
-const number = () => z.number();
+const number = (nullable: boolean = false) => z.number().nullable(nullable);
 
-const string = () => z.string();
+const string = (nullable: boolean = false) => z.string().nullable(nullable);
 
 const array = (data: any) => z.array(data);
 
