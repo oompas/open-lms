@@ -1,4 +1,9 @@
 import IService from "../IService.ts";
+import EdgeFunctionRequest from "../../EdgeFunctionRequest.ts";
+import { CourseAttemptService, EnrollmentService, QuizAttemptService } from "../Services.ts";
+import { getCurrentTimestampTz } from "../../helpers.ts";
+import { adminClient } from "../../adminClient.ts";
+import { CourseStatus } from "../../Enum/CourseStatus.ts";
 
 class _quizAttemptService extends IService {
 
@@ -22,9 +27,10 @@ class _quizAttemptService extends IService {
      * Note the quiz attempt must have all questions marked (can't have unmarked short answers), and the 'score' and
      * 'pass' fields are defined too. This doesn't update the quiz attempt, it (possibly) updates the course attempt
      *
+     * @param request Edge function request (for logging)
      * @param quizAttemptId ID of the marked quiz attempt to handle
      */
-    public async handleMarkedQuiz(quizAttemptId: number) {
+    public async handleMarkedQuiz(request: EdgeFunctionRequest, quizAttemptId: number) {
         const timestamp = getCurrentTimestampTz();
 
         const quizAttempt = await QuizAttemptService.getById(quizAttemptId);
@@ -36,8 +42,8 @@ class _quizAttemptService extends IService {
             await EnrollmentService.updateStatus(courseAttempt.course_id, courseAttempt.user_id, CourseStatus.COMPLETED);
 
             if (error) {
-                log(`Error updating course attempt to pass: ${error.message}`);
-                return ErrorResponse(`Error updating course attempt to pass: ${error.message}`);
+                request.log(`Error updating course attempt to pass: ${error.message}`);
+                throw new Error(`Error updating course attempt to pass: ${error.message}`);
             }
 
             return;
@@ -52,8 +58,8 @@ class _quizAttemptService extends IService {
             await EnrollmentService.updateStatus(courseAttempt.course_id, courseAttempt.user_id, CourseStatus.FAILED);
 
             if (error) {
-                log(`Error updating course attempt to failure: ${error.message}`);
-                return ErrorResponse(`Error updating course attempt to failure: ${error.message}`);
+                request.log(`Error updating course attempt to failure: ${error.message}`);
+                throw new Error(`Error updating course attempt to failure: ${error.message}`);
             }
         }
     }
