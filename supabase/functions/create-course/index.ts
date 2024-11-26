@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import EdgeFunctionRequest, { RunParams } from "../_shared/EdgeFunctionRequest.ts";
 import createCourse from "./createCourse.ts";
-import { bool, enumValues, number, object, string, union } from "../_shared/validation.ts";
+import { array, bool, enumValues, literal, number, object, string, union } from "../_shared/validation.ts";
 
 Deno.serve(async (req: Request) => {
     const parameters: RunParams = {
@@ -20,10 +20,26 @@ Deno.serve(async (req: Request) => {
                 preserveQuizQuestionOrder: bool(),
                 quizTimeLimit: number(true)
             }),
-            quizQuestions: object({
-                type: enumValues(['mc', 'tf', 'sa']),
-                question: string()
-            })
+            quizQuestions: array(union([
+                object({
+                    type: literal('mc'),
+                    question: string().min(1),
+                    marks: number().min(1).max(20),
+                    correctAnswer: number().min(0).max(4),
+                    answers: array(string().min(1))
+                }),
+                object({
+                    type: literal('tf'),
+                    question: string().min(1),
+                    marks: number().min(1).max(20),
+                    correctAnswer: enumValues([0, 1])
+                }),
+                object({
+                    type: literal('sa'),
+                    question: string().min(1),
+                    marks: number().min(1).max(20)
+                }),
+            ]))
         },
         endpointFunction: createCourse,
         adminOnly: true
