@@ -4,7 +4,12 @@ import { adminClient } from "../_shared/adminClient.ts";
 const createCourse = async (request: EdgeFunctionRequest) => {
 
     const userId: string = request.getRequestUserId();
+
+    request.log(`Entering createCourse for user ${userId}`);
+
     const { course } = request.getPayload();
+
+    request.log(`Incoming course data: ${JSON.stringify(course)}`);
 
     const courseData = {
         user_id: userId,
@@ -19,6 +24,8 @@ const createCourse = async (request: EdgeFunctionRequest) => {
     if (error) {
         throw error;
     }
+
+    request.log(`Course added to database!`);
 
     return data;
 }
