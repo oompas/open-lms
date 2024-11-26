@@ -138,17 +138,17 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
             description: desc,
             link: link,
             minTime: toNumber(minCourseTime),
-            quiz: !useQuiz ? null : {
-                minScore: toNumber(quizMinScore),
-                maxAttempts: toNumber(quizAttempts),
-                timeLimit: toNumber(quizMaxTime),
-                preserveOrder: preserveOrder,
-            },
-            quizQuestions: !quizQuestions?.length ? null : quizQuestions?.map(({ id, ...rest }) => rest)
+
+            maxQuizAttempts: toNumber(quizAttempts),
+            minQuizScore: toNumber(quizMinScore),
+            quizTimeLimit: toNumber(quizMaxTime),
+            preserveQuizQuestionOrder: preserveOrder,
         }
+        const quizQuestionData = quizQuestions.map(({ id, ...rest }) => rest);
 
         try {
-            await callAPI('create-course', { course: courseData }).then((result) => router.push(`/admin/course/${result.data}`));
+            await callAPI('create-course', { course: courseData, quizQuestions: quizQuestionData })
+                .then((result) => router.push(`/admin/course/${result.data}`));
         } catch (error: any) {
             const errorMessage = error.toString().split(':').slice(-1)[0].trim();
             setShowAddCourseErrorPopup(true);
