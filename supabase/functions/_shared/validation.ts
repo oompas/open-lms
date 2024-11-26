@@ -18,4 +18,6 @@ const object = (data: object) => z.object(data);
 
 const union = (data: any[]) => z.union(data);
 
-export { primaryKeyInt, naturalNumber, uuid, bool, number, string, array, object, union };
+const enumValues = (data: any[]) => z.enum(data);
+
+export { primaryKeyInt, naturalNumber, uuid, bool, number, string, array, object, union, enumValues };

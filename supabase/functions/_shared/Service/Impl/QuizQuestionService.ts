@@ -1,4 +1,5 @@
 import IService from "../IService.ts";
+import { adminClient } from "../../adminClient.ts";
 
 class _quizQuestionService extends IService {
 
@@ -8,7 +9,11 @@ class _quizQuestionService extends IService {
      * Adds quiz questions for a new course
      */
     public async setupCourseQuiz(questions: object[], courseId: string) {
-        ;
+        const { error } = await adminClient.from(this.TABLE_NAME).insert(questions);
+
+        if (error) {
+            throw new Error(`Error adding quiz questions for new course: ${error.message}`);
+        }
     }
 }
 

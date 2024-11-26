@@ -21,15 +21,15 @@ class _courseService extends IService {
             version: 1,
             min_time: course.minTime,
 
-            max_quiz_attempts: 1,
-            min_quiz_score: 1,
-            preserve_quiz_question_order: false,
-            quiz_time_limit: 1,
-            total_quiz_marks: 1,
-            num_quiz_questions: 1,
+            max_quiz_attempts: course.maxQuizAttempts,
+            min_quiz_score: course.minQuizScore,
+            preserve_quiz_question_order: course.preserveQuizQuestionOrder,
+            quiz_time_limit: course.quizTimeLimit,
+            total_quiz_marks: course.totalQuizMarks,
+            num_quiz_questions: course.numQuizQuestions,
         };
 
-        const { data, error } = await adminClient.from('course').insert(courseData).select();
+        const { data, error } = await adminClient.from(this.TABLE_NAME).insert(courseData).select();
 
         if (error) {
             throw new Error(`Error adding course to database`);
