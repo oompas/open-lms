@@ -1,8 +1,8 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { ErrorResponse, getCurrentTimestampTz, log, SuccessResponse } from "../_shared/helpers.ts";
 import { adminClient } from "../_shared/adminClient.ts";
-import { getRows } from "../_shared/database.ts";
 import { handleMarkedQuiz } from "../_shared/functionality.ts";
+import { CourseService, QuizQuestionAttemptService } from "../_shared/Service/Services.ts";
 
 const markQuizAttempt = async (request: EdgeFunctionRequest) => {
 
@@ -18,14 +18,10 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
     }));
 
     // Update quiz attempt: get total score and check if it passed
-    const quizQuestionAttempts = await getRows({ table: 'quiz_question_attempt', conditions: ['eq', 'quiz_attempt_id', quizAttemptId] });
-    if (quizQuestionAttempts instanceof Response) return quizQuestionAttempts;
-
+    const quizQuestionAttempts = await QuizQuestionAttemptService.query('*', ['eq', 'quiz_attempt_id', quizAttemptId]);
     const totalMarks = quizQuestionAttempts.reduce((sum, attempt) => sum + attempt.marks_achieved, 0);
 
-    const courseQuery = await getRows({ table: 'course', conditions: ['eq', 'id', quizQuestionAttempts[0].course_id] });
-    if (courseQuery instanceof Response) return courseQuery;
-    const course = courseQuery[0];
+    const course = await CourseService.getById(quizQuestionAttempts[0].course_id);
 
     const update = {
         marker_id: userId,
