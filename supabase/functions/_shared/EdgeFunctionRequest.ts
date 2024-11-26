@@ -63,6 +63,7 @@ class EdgeFunctionRequest {
      * @param req Request object from Deno
      * @param schemaRecord Record of fields this request should have
      * @param metaUrl Pass import.meta.url from the index file here - used to get the endpoint name from the path
+     * @param token Requesting user's token (remove the "Bearer: " from it)
      */
     private constructor(metaUrl: string, req: Request, schemaRecord: Record<string, z.ZodTypeAny>, token: string | undefined) {
         this.uuid = crypto.randomUUID();
@@ -155,12 +156,13 @@ class EdgeFunctionRequest {
      * @returns The user object, or null if no user authorization in the request
      */
     private getUserFromReq = async (): Promise<object> => {
-        const user = await adminClient.auth.getUser(this.token);
+        const { data: { user }, error } = await adminClient.auth.getUser(this.token);
 
-        if (user?.data?.user) {
-            return user.data.user;
+        if (error) {
+            throw new Error(`Error getting user in getUserFromReq: ${error.message}`);
         }
-        throw new Error(`Requesting user with token ${token} does not exist`);
+
+        return user;
     }
 
     /**
