@@ -35,8 +35,7 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
         return ErrorResponse(`Error updating quiz attempt: ${error.message}`);
     }
 
-    const markRsp = await QuizAttemptService.handleMarkedQuiz(quizAttemptId);
-    if (markRsp instanceof Response) return markRsp;
+    await QuizAttemptService.handleMarkedQuiz(quizAttemptId);
 
     const notification = {
         user_id: quizQuestionAttempts[0].user_id,
