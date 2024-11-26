@@ -5,7 +5,13 @@ const getNotifications = async (request: EdgeFunctionRequest): Promise<object[]>
 
     const userId = request.getRequestUserId();
 
-    return await NotificationService.query('*', ['eq', 'user_id', userId]);
+    request.log(`Entering getNotifications with user ID ${userId}`);
+
+    const notifications = await NotificationService.query('*', ['eq', 'user_id', userId]);
+
+    request.log(`Queried ${notifications.length} notifications`);
+
+    return notifications;
 }
 
 export default getNotifications;
