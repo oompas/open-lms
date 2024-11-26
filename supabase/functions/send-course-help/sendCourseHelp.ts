@@ -25,13 +25,13 @@ const sendCourseHelp = async (request: EdgeFunctionRequest) => {
                 background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 20px;"
           >
               <header style="text-align: center; margin-bottom: 20px;">
-                  <img src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaKJ6WNZbIVmwI2H2DhOpcEjPI20dv54xarsGWLL7Dqpr2YdwjoWz1iJbCXDFjyGA4XsIswyuyiBToe8QTA9Mvddj4Dyw=s2560" 
-                  alt="OpenLMS Logo" style="max-width: 200px;">
+                  <img src="https://raw.githubusercontent.com/oompas/open-lms/main/public/openlms.png" 
+                  alt="OpenLMS Logo" style="max-width: 100px;">
               </header>
               <section style="margin-bottom: 20px;">
-                  <h2 style="font-size: 24px; color: #333333; text-align: center">Request from User "${user.user_metadata.name}" on Course "${course.name}"</h2>
-                  <p style="font-size: 16px; color: #555;">User information: <br> Email: ${user.email} <br> Uid: ${user.id} <br> </p>
-                  <p style="font-size: 16px; color: #555;">Request information: <br> Course: ${course.name} <br> User Response: ${feedback}</p>
+                  <h2 style="font-size: 24px; color: #333333; text-align: center">User request for Course "${course.name}"</h2>
+                  <p style="font-size: 16px; color: #555;">Request info: <br> Name: ${user.user_metadata.name} <br> Email: ${user.email} <br> ID: ${user.id} <br> </p>
+                  <p style="font-size: 16px; color: #555;">User request: ${feedback}</p>
               </section>
               <footer style="font-size: 12px; color: #666666; text-align: center;">
                   <p>Best Regards,</p>
