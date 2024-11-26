@@ -1,14 +1,14 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getRows } from "../_shared/database.ts";
 import { toCSV } from "../_shared/helpers.ts";
+import { CourseAttemptService, EnrollmentService } from "../_shared/Service/Services.ts";
 
 const getUserReports = async (request: EdgeFunctionRequest) => {
 
     // Get all records at once, then filter through them for each user to reduce queries
-    const { userRecords, enrollments, courseAttempts } = await Promise.all([
+    const [userRecords, enrollments, courseAttempts] = await Promise.all([
         request.getAllUsers(),
-        getRows('course_enrollment').then((result) => result.map(doc => ({ userId: doc.user_id }))),
-        getRows('course_attempt').then((result) => result.map(doc => ({ userId: doc.user_id, pass: doc.pass }))),
+        EnrollmentService.getAllRows().then((result) => result.map(doc => ({ userId: doc.user_id }))),
+        CourseAttemptService.getAllRows().then((result) => result.map(doc => ({ userId: doc.user_id, pass: doc.pass }))),
     ]).then(([userRecords, enrollments, courseAttempts]) => ({ userRecords, enrollments, courseAttempts }));
 
     const userData = await Promise.all(userRecords.map((user) => {
