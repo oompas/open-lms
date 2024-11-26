@@ -28,7 +28,7 @@ abstract class IService {
 
     /**
      * Gets the document that matches the given id (note: this uses the id column which must be unique),
-     * throwing an error
+     * throwing an error if no document is found
      */
     public async getById(id: number | string) {
         try {

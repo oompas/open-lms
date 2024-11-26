@@ -1,6 +1,12 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getRows } from "../_shared/database.ts";
 import { toCSV } from "../_shared/helpers.ts";
+import {
+    CourseAttemptService,
+    CourseService,
+    QuizAttemptService,
+    QuizQuestionAttemptService,
+    QuizQuestionService
+} from "../_shared/Service/Services.ts";
 
 const getCourseReports = async (request: EdgeFunctionRequest) => {
 
@@ -12,8 +18,10 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
         quizQuestionAttempts: ''
     };
 
+    request.log(`Entering getCourseReports...`);
+
     await Promise.all([
-        getRows({ table: 'course' }).then((courses) => {
+        CourseService.getAllRows().then((courses) => {
             data.courses = toCSV(courses.map((course) => {
                 return {
                     'Course ID': course.id,
@@ -36,7 +44,7 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
                 };
             }));
         }),
-        getRows({ table: 'quiz_question' }).then((result) => {
+        QuizQuestionService.getAllRows().then((result) => {
             tables.quizQuestions = toCSV(result.map((question) => {
                 if (question.type === "TF") question.answers = ["True", "False"];
                 return {
@@ -51,7 +59,7 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
                 };
             }));
         }),
-        getRows({ table: 'course_attempt' }).then((result) => {
+        CourseAttemptService.getAllRows().then((result) => {
             tables.courseAttempts = toCSV(result.map((attempt) => {
                 return {
                     'Attempt ID': attempt.id,
@@ -64,7 +72,7 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
                 };
             }));
         }),
-        getRows({ table: 'quiz_attempt' }).then((result) => {
+        QuizAttemptService.getAllRows().then((result) => {
             tables.quizAttempts = toCSV(result.map((attempt) => {
                 return {
                     'Quiz attempt ID': attempt.id,
@@ -79,7 +87,7 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
                 };
             }));
         }),
-        getRows({ table: 'quiz_question_attempt' }).then((result) => {
+        QuizQuestionAttemptService.getAllRows().then((result) => {
             tables.quizQuestionAttempts = toCSV(result.map((attempt) => {
                 return {
                     'Quiz question attempt ID': attempt.id,
@@ -96,6 +104,8 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
             }));
         })
     ]);
+
+    request.log(`Date constructed - returning success...`);
 
     return data;
 }
