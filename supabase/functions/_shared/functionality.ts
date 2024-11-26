@@ -1,7 +1,6 @@
-import { getRows } from "./database.ts";
 import { adminClient } from "./adminClient.ts";
 import { ErrorResponse, getCurrentTimestampTz, log } from "./helpers.ts";
-import { EnrollmentService } from "./Service/Services.ts";
+import { CourseAttemptService, CourseService, EnrollmentService, QuizAttemptService } from "./Service/Services.ts";
 import { CourseStatus } from "./Enum/CourseStatus.ts";
 
 /**
@@ -16,13 +15,8 @@ import { CourseStatus } from "./Enum/CourseStatus.ts";
 const handleMarkedQuiz = async (quizAttemptId: number) => {
     const timestamp = getCurrentTimestampTz();
 
-    const quizAttemptQuery = await getRows({ table: 'quiz_attempt', conditions: ['eq', 'id', quizAttemptId] });
-    if (quizAttemptQuery instanceof Response) return quizAttemptQuery;
-    const quizAttempt = quizAttemptQuery[0];
-
-    const courseAttemptQuery = await getRows({ table: 'course_attempt', conditions: ['eq', 'id', quizAttempt.course_attempt_id] });
-    if (courseAttemptQuery instanceof Response) return courseAttemptQuery;
-    const courseAttempt = courseAttemptQuery[0];
+    const quizAttempt = await QuizAttemptService.getById(quizAttemptId);
+    const courseAttempt = await CourseAttemptService.getById(quizAttempt.course_attempt_id);
 
     // If the quiz passes, the course attempt passes
     if (quizAttempt.pass === true) {
@@ -38,9 +32,7 @@ const handleMarkedQuiz = async (quizAttemptId: number) => {
     }
 
     // If the quiz attempt fails, check if they're out of attempts (fail the course), otherwise they can try again
-    const courseQuery = await getRows({ table: 'course', conditions: ['eq', 'id', quizAttempt.course_id] });
-    if (courseQuery instanceof Response) return courseQuery;
-    const course = courseQuery[0];
+    const course = await CourseService.getById(quizAttempt.course_id);
 
     const maxQuizAttempts = course.max_quiz_attempts;
     if (quizAttemptQuery.length >= maxQuizAttempts) {
