@@ -32,7 +32,7 @@ class _courseService extends IService {
         const { data, error } = await adminClient.from(this.TABLE_NAME).insert(courseData).select();
 
         if (error) {
-            throw new Error(`Error adding course to database`);
+            throw new Error(`Error adding course to database: ${error.message}`);
         }
 
         return data[0];
