@@ -10,7 +10,7 @@ import {
 
 const getCourseReports = async (request: EdgeFunctionRequest) => {
 
-    const data = {
+    const tables = {
         courses: '',
         quizQuestions: '',
         courseAttempts: '',
@@ -22,7 +22,7 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
 
     await Promise.all([
         CourseService.getAllRows().then((courses) => {
-            data.courses = toCSV(courses.map((course) => {
+            tables.courses = toCSV(courses.map((course) => {
                 return {
                     'Course ID': course.id,
                     'Name': course.name,
@@ -31,8 +31,7 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
                     'Minimum course time (minutes)': course.minTime ?? "None",
 
                     'Active?': course.active ? "Yes" : "No",
-                    'Creation time': course.creationTime?.toDate().toUTCString().replace(/,/g, ''),
-                    'Retired?': course.retired?.toDate().toUTCString().replace(/,/g, '') ?? "No",
+                    'Creation time': new Date(course.created_at).toLocaleString(),
                     'Version': course.version,
                     'Creator user ID': course.userId,
 
@@ -49,13 +48,13 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
                 if (question.type === "TF") question.answers = ["True", "False"];
                 return {
                     'Question ID': question.id,
-                    'Course ID': question.courseId,
+                    'Course ID': question.course_id,
 
                     'Question (commas removed)': question.question.replace(/,/g, ''),
                     'Type': question.type === "MC" ? "Multiple Choice" : question.type === "TF" ? "True/False" : "Short Answer",
                     'Answer options (mc/tf only)': question.answers ? JSON.stringify(question.answers).replace(/,/g, ' ') : null,
                     'Correct answer (mc/tf only)': (question.answers && question.correctAnswer) ? question.answers[question.correctAnswer] : null,
-                    'Question stats': JSON.stringify(question.stats).replace(/,/g, ' '),
+                    'Question stats': JSON.stringify(question.submitted_answers).replace(/,/g, ' '),
                 };
             }));
         }),
@@ -63,11 +62,11 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
             tables.courseAttempts = toCSV(result.map((attempt) => {
                 return {
                     'Attempt ID': attempt.id,
-                    'Course ID': attempt.courseId,
-                    'User ID': attempt.userId,
+                    'Course ID': attempt.course_id,
+                    'User ID': attempt.user_id,
 
-                    'Start time': attempt.startTime?.toDate().toUTCString().replace(/,/g, ''),
-                    'End time': attempt.endTime?.toDate().toUTCString().replace(/,/g, ''),
+                    'Start time': new Date(attempt.start_time).toLocaleString(),
+                    'End time': new Date(attempt.end_time).toLocaleString(),
                     'Pass?': attempt.pass === true ? "Passed" : attempt.pass === false ? "Failed" : "Not completed",
                 };
             }));
@@ -76,12 +75,12 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
             tables.quizAttempts = toCSV(result.map((attempt) => {
                 return {
                     'Quiz attempt ID': attempt.id,
-                    'Course ID': attempt.courseId,
-                    'Course attempt ID': attempt.courseAttemptId,
-                    'User ID': attempt.userId,
+                    'Course ID': attempt.course_id,
+                    'Course attempt ID': attempt.course_attempt_id,
+                    'User ID': attempt.user_id,
 
-                    'Start time': attempt.startTime?.toDate().toUTCString().replace(/,/g, ''),
-                    'End time': attempt.endTime?.toDate().toUTCString().replace(/,/g, ''),
+                    'Start time': new Date(attempt.start_time).toLocaleString(),
+                    'End time': new Date(attempt.end_time).toLocaleString(),
                     'Pass?': attempt.pass === true ? "Passed" : attempt.pass === false ? "Failed" : "Not completed",
                     'Score': attempt.score ? attempt.score : "Not marked",
                 };
@@ -91,11 +90,11 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
             tables.quizQuestionAttempts = toCSV(result.map((attempt) => {
                 return {
                     'Quiz question attempt ID': attempt.id,
-                    'Course ID': attempt.courseId,
-                    'Question ID': attempt.questionId,
-                    'User ID': attempt.userId,
-                    'Course attempt ID': attempt.courseAttemptId,
-                    'Quiz question ID': attempt.questionId,
+                    'Course ID': attempt.course_id,
+                    'Question ID': attempt.question_id,
+                    'User ID': attempt.user_id,
+                    'Course attempt ID': attempt.course_attempt_id,
+                    'Quiz question ID': attempt.question_id,
 
                     'Response (commas removed, number for mc/tf)': typeof attempt.response === 'string' ? attempt.response.replace(/,/g, '') : attempt.response,
                     'Max marks': attempt.maxMarks,
@@ -107,7 +106,7 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
 
     request.log(`Date constructed - returning success...`);
 
-    return data;
+    return tables;
 }
 
 export default getCourseReports;
