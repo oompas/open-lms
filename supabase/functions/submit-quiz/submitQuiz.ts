@@ -7,7 +7,6 @@ import {
     QuizQuestionService
 } from "../_shared/Service/Services.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
-import { handleMarkedQuiz } from "../_shared/functionality.ts";
 import PermissionError from "../_shared/Error/PermissionError.ts";
 import ValidationError from "../_shared/Error/ValidationError.ts";
 import LogicError from "../_shared/Error/LogicError.ts";
@@ -96,7 +95,7 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
 
     // Handle quiz marked or awaiting marking
     if (autoMark) {
-        const markRsp = await handleMarkedQuiz(quizAttemptId);
+        const markRsp = await QuizAttemptService.handleMarkedQuiz(quizAttemptId);
         if (markRsp instanceof Response) return markRsp;
     } else {
         await EnrollmentService.updateStatus(course.id, userId, CourseStatus.AWAITING_MARKING);
