@@ -1,5 +1,5 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { CourseService } from "../_shared/Service/Services.ts";
+import { CourseService, QuizQuestionService } from "../_shared/Service/Services.ts";
 
 const createCourse = async (request: EdgeFunctionRequest) => {
 
@@ -11,11 +11,15 @@ const createCourse = async (request: EdgeFunctionRequest) => {
 
     request.log(`Incoming course data: ${JSON.stringify(course)} and quiz questions: ${JSON.stringify(quizQuestions)}`);
 
-    await CourseService.addCourse(course, userId);
+    const courseData = await CourseService.addCourse(course, userId);
 
-    request.log(`Course added to database!`);
+    request.log(`Course added to database with id ${courseData.id}`);
 
-    return null;
+    await QuizQuestionService.setupCourseQuiz(quizQuestions, courseData.id);
+
+    request.log(`Setup quiz questions`);
+
+    return courseId;
 }
 
 export default createCourse;
