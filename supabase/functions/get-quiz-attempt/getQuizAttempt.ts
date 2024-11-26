@@ -11,10 +11,13 @@ const getQuizAttempt = async (request: EdgeFunctionRequest) => {
     const { quizAttemptId } = request.getPayload();
 
     const quizAttempt = await QuizAttemptService.getById(quizAttemptId);
-    const courseQuery = await CourseAttemptService.getById(quizAttempt.course_id);
-    const user = await request.getUserById(quizAttempt.user_id);
-    const questionAttempts = await QuizQuestionAttemptService.query('*', ['eq', 'quiz_attempt_id', quizAttemptId]);
-    const questions = await QuizQuestionService.query('*', ['eq', 'course_id', quizAttempt.course_id]);
+
+    const [course, user, questionAttempts, questions] = await Promise.all([
+        CourseAttemptService.getById(quizAttempt.course_id),
+        request.getUserById(quizAttempt.user_id),
+        QuizQuestionAttemptService.query('*', ['eq', 'quiz_attempt_id', quizAttemptId]),
+        QuizQuestionService.query('*', ['eq', 'course_id', quizAttempt.course_id])
+    ]);
 
     const saQuestions = questionAttempts.filter((q) => q.type === "SA").map((q) => {
         const question = questions.find((question) => question.id === q.quiz_question_id);
