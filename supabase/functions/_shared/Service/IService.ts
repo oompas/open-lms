@@ -27,7 +27,8 @@ abstract class IService {
     }
 
     /**
-     * Gets the document that matches the given id (note: this uses the id column which must be unique)
+     * Gets the document that matches the given id (note: this uses the id column which must be unique),
+     * throwing an error
      */
     public async getById(id: number | string) {
         try {
@@ -39,8 +40,11 @@ abstract class IService {
             if (data.length > 1) {
                 throw new Error(`More than 1 document in table ${this.TABLE_NAME} found with the id ${id}`);
             }
+            if (data.length === 0) {
+                throw new Error(`No documents queried in table ${this.TABLE_NAME} with id ${id}`);
+            }
 
-            return data.length === 1 ? data[0] : null;
+            return data[0];
         } catch (err) {
             throw new DatabaseError(`Error querying ${this.TABLE_NAME} by ID: ${err.message}`);
         }
