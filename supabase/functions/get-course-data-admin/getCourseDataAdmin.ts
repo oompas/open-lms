@@ -1,18 +1,17 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getRows } from "../_shared/database.ts";
+import { CourseService, QuizQuestionService } from "../_shared/Service/Services.ts";
 
 const getCourseDataAdmin = async (request: EdgeFunctionRequest) => {
 
     const { courseId } = request.getPayload();
 
-    const courseQuery = await getRows({ table: 'course', conditions: ['eq', 'id', courseId] });
-    if (courseQuery instanceof Response) return courseQuery;
-    const course = courseQuery[0];
+    const [course, quizQuestions] = await Promise.all([
+        CourseService.getById(courseId),
+        QuizQuestionService.query('*', ['eq', 'course_id', courseId])
+    ]);
 
-    const quizQuestionsQuery = await getRows({ table: 'quiz_question', conditions: ['eq', 'course_id', courseId] });
-    if (quizQuestionsQuery instanceof Response) return quizQuestionsQuery;
 
-    const quizQuestions = quizQuestionsQuery.map((question) => {
+    const quizQuestionData = quizQuestions.map((question) => {
         return {
             id: question.id,
             type: question.type,
@@ -38,7 +37,7 @@ const getCourseDataAdmin = async (request: EdgeFunctionRequest) => {
             timeLimit: course.quiz_time_limit,
             preserveOrder: course.preserve_quiz_question_order
         },
-        quizQuestions: quizQuestions
+        quizQuestions: quizQuestionData
     };
 }
 
