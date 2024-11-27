@@ -95,7 +95,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     useEffect(() => {
         if (!loading || newCourse) return;
 
-        callAPI('get-course-data-admin', { courseId: params.id, withQuiz: true })
+        callAPI('get-course-data-admin', { courseId: params.id })
             .then((result) => {
                 const data: any = result.data;
 
