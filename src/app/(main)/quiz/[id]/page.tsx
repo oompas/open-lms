@@ -6,6 +6,7 @@ import { MdCheckCircleOutline } from "react-icons/md";
 import { RiCheckboxCircleFill, RiCheckboxBlankCircleLine } from "react-icons/ri";
 import { useAsync } from "react-async-hook";
 import { callAPI } from "@/helpers/supabase.ts";
+import { QuestionType } from "@/helpers/Enums.ts";
 
 export default function Quiz({ params }: { params: { id: string } }) {
 
@@ -51,7 +52,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
         return (
             <div>
                 {quizData && quizData !== "Invalid" && quizData.questions.map((question, key) => {
-                    const answers = question.type === "MC"
+                    const answers = question.type === QuestionType.MULTIPLE_CHOICE
                         ? question.answers
                         : question.type === "TF"
                             ? ["True", "False"]

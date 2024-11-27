@@ -1,5 +1,6 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { CourseService, QuizQuestionService } from "../_shared/Service/Services.ts";
+import { QuestionType } from "../_shared/Enum/QuestionType.ts";
 
 const getCourseDataAdmin = async (request: EdgeFunctionRequest) => {
 
@@ -19,8 +20,8 @@ const getCourseDataAdmin = async (request: EdgeFunctionRequest) => {
             marks: question.marks,
 
             order: question.question_order,
-            ...(question.type === 'mc' && { answers: question.answers }),
-            ...(question.type !== 'sa' && { correctAnswer: question.correct_answer })
+            ...(question.type === QuestionType.MULTIPLE_CHOICE && { answers: question.answers }),
+            ...(question.type !== QuestionType.SHORT_ANSWER && { correctAnswer: question.correct_answer })
         };
     });
 

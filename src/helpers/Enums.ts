@@ -8,7 +8,7 @@ export enum CourseStatus {
 }
 
 export enum QuestionType {
-    MC = "MC",
-    TF = "TF",
-    SA = "SA"
+    MULTIPLE_CHOICE = "MC",
+    TRUE_FALSE = "TF",
+    SHORT_ANSWER = "SA"
 }
