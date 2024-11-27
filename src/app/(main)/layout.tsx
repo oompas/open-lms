@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import '../globals.css';
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Button from "@/components/Button";
 import { MdAdminPanelSettings } from 'react-icons/md';
 import TextField from '@/components/TextField';
@@ -58,6 +58,22 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
             });
     }
 
+    const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+    const startTime = useRef(new Date().getTime());
+
+    const [showSupportForm, setShowSupportForm] = useState(false);
+    const [feedback, setFeedback] = useState('');
+    const [feedbackSent, setFeedbackSent] = useState(false);
+
+    const [notifications, setNotifications] = useState<any[]>([]);
+
+    // Route to sign in screen if user isn't logged in
+    useEffect(() => {
+        if (session === null && new Date().getTime() > startTime + 1_000) {
+            router.push('/');
+        }
+    }, [session, isAdmin, router]);
+
     // Get notifications on load, then refresh every 10 minutes after
     useEffect(() => {
         getNotifications();
@@ -68,21 +84,6 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
         return () => clearInterval(intervalId);
     }, []);
-
-    // Route to sign in screen if user isn't logged in
-    useEffect(() => {
-        if (typeof window !== 'undefined' && document.readyState === 'complete' && session  === null) {
-            router.push('/');
-        }
-    }, [session, router]);
-
-    const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-
-    const [showSupportForm, setShowSupportForm] = useState(false);
-    const [feedback, setFeedback] = useState('');
-    const [feedbackSent, setFeedbackSent] = useState(false);
-
-    const [notifications, setNotifications] = useState<any[]>([]);
 
     useEffect(() => {
        const role = session?.user?.user_metadata?.role;
