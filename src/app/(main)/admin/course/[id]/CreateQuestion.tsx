@@ -1,9 +1,9 @@
 "use client"
-
 import Button from "@/components/Button";
 import Checkbox from "@/components/Checkbox";
 import TextField from "@/components/TextField";
 import { useState } from "react";
+import { QuestionType } from "@/helpers/Enums.ts";
 
 export default function CreateQuestion({
     num,
@@ -20,12 +20,12 @@ export default function CreateQuestion({
     const [type, setType] = useState(data ? data.type : "");
 
     const [question, setQuestion] = useState(data ? data.question : "");
-    const [correctAnswer, setCorrectAnswer] = useState(data ? data.type === "mc" ? data.answers[Number(data.correctAnswer)] : data.answer : -1);
-    const [qA, setQA] = useState(data ? data.type === "mc" ? data.answers[0] : data.type === "tf" ? "True" : "" : "");
-    const [qB, setQB] = useState(data ? data.type === "mc" ? data.answers[1] : data.type === "tf" ? "False" : "" : "");
-    const [qC, setQC] = useState(data ? data.type === "mc" ? data.answers[2] : "" : "");
-    const [qD, setQD] = useState(data ? data.type === "mc" ? data.answers[3] : "" : "");
-    const [qE, setQE] = useState(data ? data.type === "mc" ? data.answers[4] : "" : "");
+    const [correctAnswer, setCorrectAnswer] = useState(data ? data.type === QuestionType.MULTIPLE_CHOICE ? data.answers[Number(data.correctAnswer)] : data.answer : -1);
+    const [qA, setQA] = useState(data ? data.type === QuestionType.MULTIPLE_CHOICE ? data.answers[0] : data.type === QuestionType.TRUE_FALSE ? "True" : "" : "");
+    const [qB, setQB] = useState(data ? data.type === QuestionType.MULTIPLE_CHOICE ? data.answers[1] : data.type === QuestionType.TRUE_FALSE ? "False" : "" : "");
+    const [qC, setQC] = useState(data ? data.type === QuestionType.MULTIPLE_CHOICE ? data.answers[2] : "" : "");
+    const [qD, setQD] = useState(data ? data.type === QuestionType.MULTIPLE_CHOICE ? data.answers[3] : "" : "");
+    const [qE, setQE] = useState(data ? data.type === QuestionType.MULTIPLE_CHOICE ? data.answers[4] : "" : "");
     const [value, setValue] = useState(data ? String(data.marks) : "1");
 
     const isInt = (str: string) => {
@@ -41,14 +41,14 @@ export default function CreateQuestion({
         if (question === "") {
             alert("Make sure to write a question.")
             return;
-        } else if (type === "mc" && opts.length < 2) {
+        } else if (type === QuestionType.MULTIPLE_CHOICE && opts.length < 2) {
             alert("Provide at least two possible answers.")
             return;
-        } else if (type != "sa" && correctAnswer === -1) {
+        } else if (type != QuestionType.SHORT_ANSWER && correctAnswer === -1) {
             alert("Select a correct answer.")
             return;
         }
-        if (type === "mc") {
+        if (type === QuestionType.MULTIPLE_CHOICE) {
             ans = opts.indexOf(correctAnswer);
             if (ans === -1) {
                 alert("Please select a correct answer.");
@@ -56,11 +56,11 @@ export default function CreateQuestion({
             }
         }
 
-        if (type === "mc") {
+        if (type === QuestionType.MULTIPLE_CHOICE) {
             setData(num, { type: type, question: question, answers: opts, correctAnswer: ans, marks: Number(value) });
-        } else if (type === "tf") {
+        } else if (type === QuestionType.TRUE_FALSE) {
             setData(num, { type: type, question: question, correctAnswer: ans, marks: Number(value) });
-        } else if (type === "sa") {
+        } else if (type === QuestionType.SHORT_ANSWER) {
             setData(num, { type: type, question: question, marks: Number(value) });
         } else {
             throw new Error(`Invalid question type: ${type}`);
@@ -77,19 +77,19 @@ export default function CreateQuestion({
             <div className="flex flex-row justify-between space-x-6">
                 <button 
                     className="flex flex-col w-full justify-center items-center border-[3px] border-red-800 p-4 rounded-xl text-red-800 font-bold hover:opacity-60 duration-75"
-                    onClick={() => setType("mc")}
+                    onClick={() => setType(QuestionType.MULTIPLE_CHOICE)}
                 >
                     Multiple Choice
                 </button>
                 <button 
                     className="flex flex-col w-full justify-center items-center border-[3px] border-red-800 p-4 rounded-xl text-red-800 font-bold hover:opacity-60 duration-75"
-                    onClick={() => {setQA("True"); setQB("False"); setType("tf")}}
+                    onClick={() => {setQA("True"); setQB("False"); setType(QuestionType.TRUE_FALSE)}}
                 >
                     True or False
                 </button>
                 <button 
                     className="flex flex-col w-full justify-center items-center border-[3px] border-red-800 p-4 rounded-xl text-red-800 font-bold hover:opacity-60 duration-75"
-                    onClick={() => setType("sa")}
+                    onClick={() => setType(QuestionType.SHORT_ANSWER)}
                 >
                     Short Answer
                 </button>
@@ -222,12 +222,9 @@ export default function CreateQuestion({
             <div className="flex flex-col w-1/2 max-h-[90vh] overflow-y-scroll bg-white p-12 rounded-xl text-lg shadow-xl sm:no-scrollbar">
                 { !type ? 
                     questionType
-                : type === "mc" ?
-                    multipleChoice
-                : type === "tf" ?
-                    trueFalse
-                : type === "sa" ?
-                    shortAnswer
+                : type === QuestionType.MULTIPLE_CHOICE ? multipleChoice
+                : type === QuestionType.TRUE_FALSE ? trueFalse
+                : type === QuestionType.SHORT_ANSWER ? shortAnswer
                 : null }
             </div>
         </div>

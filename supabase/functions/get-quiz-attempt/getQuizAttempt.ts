@@ -5,6 +5,7 @@ import {
     QuizQuestionAttemptService,
     QuizQuestionService
 } from "../_shared/Service/Services.ts";
+import { QuestionType } from "../_shared/Enum/QuestionType.ts";
 
 const getQuizAttempt = async (request: EdgeFunctionRequest) => {
 
@@ -25,7 +26,7 @@ const getQuizAttempt = async (request: EdgeFunctionRequest) => {
 
     request.log(`Queried course attempt, user, ${questionAttempts.length} quiz question attempts, and ${questions.length} quiz questions`);
 
-    const saQuestions = questionAttempts.filter((q) => q.type === "SA").map((q) => {
+    const saQuestions = questionAttempts.filter((q) => q.type === QuestionType.SHORT_ANSWER).map((q) => {
         const question = questions.find((question) => question.id === q.quiz_question_id);
         return {
             question: question.question,
@@ -38,7 +39,7 @@ const getQuizAttempt = async (request: EdgeFunctionRequest) => {
 
     request.log(`Constructed objects for ${saQuestions.length} short answer questions`);
 
-    const otherQuestions = questionAttempts.filter((q) => q.type !== "SA").map((q) => {
+    const otherQuestions = questionAttempts.filter((q) => q.type !== QuestionType.SHORT_ANSWER).map((q) => {
         const question = questions.find((question) => question.id === q.quiz_question_id);
         return {
             question: question.question,

@@ -7,6 +7,7 @@ import { RiCheckboxBlankCircleLine, RiCheckboxCircleFill } from "react-icons/ri"
 import { FaRegTimesCircle } from "react-icons/fa";
 import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
+import { QuestionType } from "@/helpers/Enums.ts";
 
 export default function Mark({ params }: { params: { id: string } }) {
 
@@ -162,7 +163,7 @@ export default function Mark({ params }: { params: { id: string } }) {
                             <div className="flex flex-col w-full">
                                 <div className="text-lg w-full mb-2 italic">{question.question}</div>
                                 <div>
-                                    {question.type === "TF" ?
+                                    {question.type === QuestionType.TRUE_FALSE ?
                                         <>
                                             <div className="text-lg w-full">
                                                 {renderQuestionAnswer("True", question.response === 0, question.correctAnswer === 0)}

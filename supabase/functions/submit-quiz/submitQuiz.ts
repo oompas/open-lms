@@ -10,6 +10,7 @@ import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 import PermissionError from "../_shared/Error/PermissionError.ts";
 import ValidationError from "../_shared/Error/ValidationError.ts";
 import LogicError from "../_shared/Error/LogicError.ts";
+import { QuestionType } from "../_shared/Enum/QuestionType.ts";
 
 const submitQuiz = async (request: EdgeFunctionRequest) => {
 
@@ -54,10 +55,10 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
         const response = responses.find((r) => r.questionId === q.id);
 
         let marks = null;
-        if (q.type === "MC" || q.type === "TF") {
+        if (q.type === QuestionType.MULTIPLE_CHOICE || q.type === QuestionType.TRUE_FALSE) {
             marks = q.correct_answer === response.answer ? q.marks : 0;
             marksAchieved += marks;
-        } else if (q.type === "SA") {
+        } else if (q.type === QuestionType.SHORT_ANSWER) {
             autoMark = false;
         } else {
             throw new LogicError(`Unknown question type: ${q.type}`);

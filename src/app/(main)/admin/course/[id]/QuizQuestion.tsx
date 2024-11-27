@@ -1,4 +1,5 @@
 import { MdCheck, MdChevronLeft, MdChevronRight, MdDelete, MdEdit } from "react-icons/md"
+import { QuestionType } from "@/helpers/Enums.ts";
 
 export default function QuizQuestion({
     first,
@@ -25,7 +26,9 @@ export default function QuizQuestion({
     const letters = ["a)", "b)", "c)", "d)", "e)"];
 
     const data = { ...inData };
-    if (inData.type === "TF") data["answers"] = ["True", "False"];
+    if (inData.type === QuestionType.TRUE_FALSE) {
+        data["answers"] = ["True", "False"];
+    }
 
     return (
         <div className="flex flex-row p-6 border-2 rounded-xl text-lg">
@@ -42,7 +45,7 @@ export default function QuizQuestion({
                     <button className="ml-auto text-red-800 hover:opacity-50" onClick={() => editData(num)}><MdEdit size={28}/></button>
                     <button className="ml-4 text-red-800 hover:opacity-50" onClick={() => deleteData(num)}><MdDelete size={28}/></button>
                 </div>
-                { data.type !== "SA" &&
+                { data.type !== QuestionType.SHORT_ANSWER &&
                     <div className="flex flex-col mt-2 space-y-1">
                         { data.answers.map((answer: string, key: number) => (
                             <div className="flex flex-row items-center">

@@ -7,6 +7,7 @@ import {
     QuizQuestionAttemptService,
     QuizQuestionService
 } from "../_shared/Service/Services.ts";
+import { QuestionType } from "../_shared/Enum/QuestionType.ts";
 
 const getCourseReports = async (request: EdgeFunctionRequest) => {
 
@@ -45,13 +46,13 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
         }),
         QuizQuestionService.getAllRows().then((result) => {
             tables.quizQuestions = toCSV(result.map((question) => {
-                if (question.type === "TF") question.answers = ["True", "False"];
+                if (question.type === QuestionType.TRUE_FALSE) question.answers = ["True", "False"];
                 return {
                     'Question ID': question.id,
                     'Course ID': question.course_id,
 
                     'Question (commas removed)': question.question.replace(/,/g, ''),
-                    'Type': question.type === "MC" ? "Multiple Choice" : question.type === "TF" ? "True/False" : "Short Answer",
+                    'Type': question.type === QuestionType.MULTIPLE_CHOICE ? "Multiple Choice" : question.type === QuestionType.TRUE_FALSE ? "True/False" : "Short Answer",
                     'Answer options (mc/tf only)': question.answers ? JSON.stringify(question.answers).replace(/,/g, ' ') : null,
                     'Correct answer (mc/tf only)': (question.answers && question.correctAnswer) ? question.answers[question.correctAnswer] : null,
                     'Question stats': JSON.stringify(question.submitted_answers).replace(/,/g, ' '),
