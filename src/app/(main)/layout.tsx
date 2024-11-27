@@ -11,11 +11,9 @@ import { CgProfile } from "react-icons/cg";
 import Notifications from "@/app/(main)/Notifications.tsx";
 import { callAPI } from "@/helpers/supabase.ts";
 import {
-    differenceInDays,
-    differenceInHours,
-    differenceInMinutes, differenceInMonths,
-    differenceInSeconds, differenceInWeeks, differenceInYears,
-    parseISO
+    differenceInDays, differenceInHours, differenceInMinutes,
+    differenceInMonths, differenceInSeconds, differenceInWeeks,
+    differenceInYears, parseISO
 } from "date-fns";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
