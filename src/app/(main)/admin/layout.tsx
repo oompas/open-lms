@@ -13,7 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         if (typeof window !== 'undefined' && document.readyState === 'complete') {
             const role = session?.user?.user_metadata?.role;
             if (role !== 'Admin' && role !== 'Developer') {
-                router.push('/');
+                router.push('/home');
             }
         }
     }, [session, router]);
