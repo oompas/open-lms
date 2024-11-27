@@ -26,7 +26,7 @@ const number = ({ nullable, min, max }: { nullable?: boolean; min?: number; max?
     return nullable ? schema.nullable() : schema;
 };
 
-const string = ({ nullable, min, max }: { nullable?: boolean; min?: number; max?: number }) => {
+const string = ({ nullable, min, max }: { nullable?: boolean; min?: number; max?: number } = {}) => {
     let schema = z.string();
 
     if (min !== undefined) {
