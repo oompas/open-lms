@@ -22,7 +22,7 @@ const createCourse = async (request: EdgeFunctionRequest) => {
 
     request.log(`Setup quiz questions`);
 
-    return courseId;
+    return courseData.id;
 }
 
 export default createCourse;
