@@ -1,6 +1,5 @@
 import { sendEmail } from "../_shared/emails.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { email } from "generate-arrays";
 
 const sendPlatformHelp = async (request: EdgeFunctionRequest) => {
 
@@ -35,7 +34,7 @@ const sendPlatformHelp = async (request: EdgeFunctionRequest) => {
             </footer>
         </div>`;
 
-    request.log(`Sending email with subject ${subject} to ${email}...`);
+    request.log(`Sending email with subject ${subject} to ${devEmail}...`);
 
     await sendEmail(request, devEmail, subject, body);
 
