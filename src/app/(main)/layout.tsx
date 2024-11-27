@@ -95,7 +95,8 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const handleSubmitFeedback = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         try {
-            // TODO: Send feedback to API
+            await callAPI('send-platform-help', { feedback: feedback });
+
             setFeedback('');
             setFeedbackSent(true);
         } catch (error) {
