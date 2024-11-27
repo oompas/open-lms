@@ -164,7 +164,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     }
 
     const handlePublish = async () => {
-        await callAPI('set-course-visibility', { courseId: params.id, active: !active })
+        await callAPI('set-course-visibility', { courseId: parseInt(params.id), active: !active })
             .then(() => { setActive(!active); setActivatePopup(false); })
             .catch((err) => console.log(`Error unpublishing course: ${err}`));
     }
