@@ -17,9 +17,10 @@ const getCourseDataAdmin = async (request: EdgeFunctionRequest) => {
             type: question.type,
             question: question.question,
             marks: question.marks,
-            ...(question.type === 'MC' && { answers: question.answers }),
-            ...(question.type !== 'SA' && { correctAnswer: question.correct_answer }),
-            ...(question.question_order && { order: question.question_order })
+
+            order: question.question_order,
+            ...(question.type === 'mc' && { answers: question.answers }),
+            ...(question.type !== 'sa' && { correctAnswer: question.correct_answer })
         };
     });
 
