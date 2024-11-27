@@ -7,7 +7,7 @@ const sendPlatformHelp = async (request: EdgeFunctionRequest) => {
 
     const user = request.getRequestUser();
 
-    const devEmail = "support@open-lms.ca";
+    const devEmail = "18rem8@queensu.ca";
 
     const subject = "OpenLMS Platform Request";
     const body = `
@@ -17,7 +17,7 @@ const sendPlatformHelp = async (request: EdgeFunctionRequest) => {
         <div style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; max-width: 600px; margin: auto; 
         background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 20px;">
             <header style="text-align: center; margin-bottom: 20px;">
-                <img src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaKJ6WNZbIVmwI2H2DhOpcEjPI20dv54xarsGWLL7Dqpr2YdwjoWz1iJbCXDFjyGA4XsIswyuyiBToe8QTA9Mvddj4Dyw=s2560" 
+                <img src="https://raw.githubusercontent.com/oompas/open-lms/main/public/openlms.png" 
                 alt="OpenLMS Logo" style="max-width: 200px;">
             </header>
             <section style="margin-bottom: 20px;">
@@ -33,7 +33,7 @@ const sendPlatformHelp = async (request: EdgeFunctionRequest) => {
             </footer>
         </div>`;
 
-    await sendEmail(devEmail, subject, body);
+    await sendEmail(request, devEmail, subject, body);
 
     return null;
 }

@@ -19,7 +19,7 @@ const inviteLearner = async (request: EdgeFunctionRequest) => {
                   background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 20px;"
           >
               <header style="text-align: center; margin-bottom: 20px;">
-                  <img src="https://lh3.googleusercontent.com/drive-viewer/AKGpihaKJ6WNZbIVmwI2H2DhOpcEjPI20dv54xarsGWLL7Dqpr2YdwjoWz1iJbCXDFjyGA4XsIswyuyiBToe8QTA9Mvddj4Dyw=s2560" 
+                  <img src="https://raw.githubusercontent.com/oompas/open-lms/main/public/openlms.png" 
                   alt="" style="max-width: 200px;">
               </header>
               <section style="margin-bottom: 20px;">
@@ -40,7 +40,7 @@ const inviteLearner = async (request: EdgeFunctionRequest) => {
               </footer>
           </div>`;
 
-    await sendEmail(email, subject, body);
+    await sendEmail(request, email, subject, body);
 
     return null;
 }
