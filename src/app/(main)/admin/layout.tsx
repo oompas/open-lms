@@ -12,7 +12,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     useEffect(() => {
         if (typeof window !== 'undefined' && document.readyState === 'complete') {
             const role = session?.user?.user_metadata?.role;
-            if (role !== 'Admin' && role !== 'Developer') {
+            if (role === 'Learner') {
                 router.push('/home');
             }
         }
