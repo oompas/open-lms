@@ -1,11 +1,13 @@
 import { sendEmail } from "../_shared/emails.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
+import { email } from "generate-arrays";
 
 const sendPlatformHelp = async (request: EdgeFunctionRequest) => {
 
     const { feedback } = request.getPayload();
-
     const user = request.getRequestUser();
+
+    request.log(`Entering sendPlatformHelp for user ${user.id} (name: ${user.user_metadata.name}) and feedback ${feedback}`);
 
     const devEmail = "18rem8@queensu.ca";
 
@@ -18,10 +20,10 @@ const sendPlatformHelp = async (request: EdgeFunctionRequest) => {
         background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 20px;">
             <header style="text-align: center; margin-bottom: 20px;">
                 <img src="https://raw.githubusercontent.com/oompas/open-lms/main/public/openlms.png" 
-                alt="OpenLMS Logo" style="max-width: 200px;">
+                alt="OpenLMS Logo" style="max-width: 100px;">
             </header>
             <section style="margin-bottom: 20px;">
-                <h2 style="font-size: 24px; color: #333333;">Request from User "${user.user_metadata.name}"</h2>
+                <h2 style="font-size: 24px; color: #333333;">Support request from User "${user.user_metadata.name}"</h2>
                 <p style="font-size: 16px; color: #555;">User information: <br> Name: ${user.user_metadata.name} <br> Email: ${user.email} <br> Uid: ${user.id}</p>
                 <p style="font-size: 16px; color: #555;">User Response: ${feedback}</p>
             </section>
@@ -33,7 +35,11 @@ const sendPlatformHelp = async (request: EdgeFunctionRequest) => {
             </footer>
         </div>`;
 
+    request.log(`Sending email with subject ${subject} to ${email}...`);
+
     await sendEmail(request, devEmail, subject, body);
+
+    request.log(`Email sent!`);
 
     return null;
 }

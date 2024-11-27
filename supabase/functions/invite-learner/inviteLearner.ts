@@ -4,6 +4,9 @@ import { sendEmail } from "../_shared/emails.ts";
 const inviteLearner = async (request: EdgeFunctionRequest) => {
 
     const { email } = request.getPayload();
+    const adminId = request.getRequestUserId();
+
+    request.log(`Entering inviteLearner for admin ${adminId} send  invite to ${email}`);
 
     const subject = "Welcome to OpenLMS";
     const body = `
@@ -20,7 +23,7 @@ const inviteLearner = async (request: EdgeFunctionRequest) => {
           >
               <header style="text-align: center; margin-bottom: 20px;">
                   <img src="https://raw.githubusercontent.com/oompas/open-lms/main/public/openlms.png" 
-                  alt="" style="max-width: 200px;">
+                  alt="" style="max-width: 100px;">
               </header>
               <section style="margin-bottom: 20px;">
                   <h2 style="font-size: 24px; color: #333333; text-align: center">Welcome to OpenLMS!</h2>
@@ -40,7 +43,11 @@ const inviteLearner = async (request: EdgeFunctionRequest) => {
               </footer>
           </div>`;
 
+    request.log(`Sending email with subject ${subject} to ${email}...`);
+
     await sendEmail(request, email, subject, body);
+
+    request.log(`Email sent!`);
 
     return null;
 }
