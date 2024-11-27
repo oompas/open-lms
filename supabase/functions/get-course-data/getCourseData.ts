@@ -1,5 +1,6 @@
 import { CourseAttemptService, CourseService, QuizAttemptService } from "../_shared/Service/Services.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
+import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 
 const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
 
@@ -27,7 +28,7 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
             {
                 limit: 1
             });
-    let courseStatus = enrollment?.status ?? "NOT_ENROLLED";
+    let courseStatus = enrollment?.status ?? CourseStatus.NOT_ENROLLED;
 
     request.log(`Course status: ${courseStatus}. Course attempts: ${courseAttempts?.length ?? 0}. Course: ${JSON.stringify(course)}`);
 

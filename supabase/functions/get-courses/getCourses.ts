@@ -1,5 +1,6 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { CourseService } from "../_shared/Service/Services.ts";
+import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 
 const getCourses = async (request: EdgeFunctionRequest): Promise<object[]> => {
 
@@ -30,7 +31,7 @@ const getCourses = async (request: EdgeFunctionRequest): Promise<object[]> => {
                 id: course.id,
                 name: course.name,
                 description: course.description,
-                status: course.enrolled_course[0]?.status ?? "NOT_ENROLLED",
+                status: course.enrolled_course[0]?.status ?? CourseStatus.NOT_ENROLLED,
                 minTime: course.min_time,
                 total_quiz_marks: course.total_quiz_marks,
             }

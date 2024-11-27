@@ -7,15 +7,7 @@ import { MdArrowBack, MdArrowForward, MdInbox } from "react-icons/md";
 import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
 import { IoSchool, IoSearch, IoTimeOutline } from "react-icons/io5";
 import { AiOutlineForm } from "react-icons/ai";
-
-enum CourseStatus {
-    NOT_ENROLLED = "NOT_ENROLLED",
-    ENROLLED = "ENROLLED",
-    IN_PROGRESS = "IN_PROGRESS",
-    AWAITING_MARKING = "AWAITING_MARKING",
-    FAILED = "FAILED",
-    COMPLETED = "COMPLETED"
-}
+import { CourseStatus } from "@/helpers/Enums.ts";
 
 export default function Home() {
 
@@ -28,7 +20,7 @@ export default function Home() {
 
     const [courseData, setCourseData] = useState<undefined | any[]>(undefined);
 
-    const [filters, setFilters] = useState<number[]>(Object.values(CourseStatus).filter(s => s !== "NOT_ENROLLED"));
+    const [filters, setFilters] = useState<number[]>(Object.values(CourseStatus).filter(s => s !== CourseStatus.NOT_ENROLLED));
     const [search, setSearch] = useState<string | null>(null);
 
     const renderCourses = (isEnrolledView) => {
@@ -145,7 +137,7 @@ export default function Home() {
                         <div className="flex flex-row items-center">
                             <div className="text-lg mr-4">Filters:</div>
                             <div className="flex flex-row space-x-2">
-                                {Object.values(CourseStatus).filter(s => s !== "NOT_ENROLLED").map((value, key) => (
+                                {Object.values(CourseStatus).filter(s => s !== CourseStatus.NOT_ENROLLED).map((value, key) => (
                                     <button
                                         key={key}
                                         className="border-2 rounded-full px-4 py-1 cursor-pointer"
