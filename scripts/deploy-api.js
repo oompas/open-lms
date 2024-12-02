@@ -12,7 +12,7 @@ if (args.length !== 1) {
 }
 
 const env = args[0].toLowerCase();
-const validEnvironments = ['dev', 'test', 'prod'];
+const validEnvironments = ['DEV', 'TEST', 'PROD'];
 
 if (!validEnvironments.includes(env)) {
     console.error(`Error: Invalid environment "${env}". Must be one of: ${validEnvironments.join(', ')}`);
