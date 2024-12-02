@@ -11,7 +11,7 @@ if (args.length !== 1) {
     process.exit(1);
 }
 
-const env = args[0].toLowerCase();
+const env = args[0].toUpperCase();
 const validEnvironments = ['DEV', 'TEST', 'PROD'];
 
 if (!validEnvironments.includes(env)) {
