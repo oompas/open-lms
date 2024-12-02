@@ -8,14 +8,10 @@ const signIn = async (admin: boolean) => {
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
     if (error) {
-        throw error;
+        throw new Error(`Error signing in ${admin ? "admin" : "learner"} test user (/helpers/auth/signIn): ${error.message}`);
     }
 
     return data;
-}
-
-const signOut = async () => {
-    const { error } = await supabaseClient.auth.signOut();
 }
 
 const pollAccessToken = async (admin: boolean) => {
