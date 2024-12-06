@@ -1,6 +1,6 @@
 import { getEnvVariable, supabaseClient } from "./config.ts";
 
-const signIn = async (admin: boolean) => {
+const signIn = async (admin: boolean): Promise<object> => {
 
     const email = getEnvVariable(admin ? 'TEST_ADMIN_EMAIL' : 'TEST_LEARNER_EMAIL');
     const password = getEnvVariable(admin ? 'TEST_ADMIN_PASSWORD' : 'TEST_LEARNER_PASSWORD');
@@ -14,7 +14,7 @@ const signIn = async (admin: boolean) => {
     return data;
 }
 
-const pollAccessToken = async (admin: boolean) => {
+const pollAccessToken = async (admin: boolean): Promise<string> => {
     const endTime = Date.now() + 2000; // 2s timeout
 
     while (Date.now() < endTime) {

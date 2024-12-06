@@ -32,7 +32,7 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
 
     if (error) {
         log(`Error updating quiz attempt: ${error.message}`);
-        return ErrorResponse(`Error updating quiz attempt: ${error.message}`);
+        throw new Error(`Error updating quiz attempt: ${error.message}`);
     }
 
     await QuizAttemptService.handleMarkedQuiz(quizAttemptId);
@@ -48,7 +48,7 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
 
     if (error2) {
         log(`Error adding notification: ${error.message}`);
-        return ErrorResponse(`Error adding notification: ${error.message}`);
+        throw new Error(`Error adding notification: ${error.message}`);
     }
 
     return SuccessResponse(data);
