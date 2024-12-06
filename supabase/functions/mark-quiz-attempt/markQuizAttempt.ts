@@ -1,5 +1,5 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { ErrorResponse, getCurrentTimestampTz, log, SuccessResponse } from "../_shared/helpers.ts";
+import { getCurrentTimestampTz, log } from "../_shared/helpers.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 import { CourseService, QuizAttemptService, QuizQuestionAttemptService } from "../_shared/Service/Services.ts";
 
@@ -51,7 +51,7 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
         throw new Error(`Error adding notification: ${error.message}`);
     }
 
-    return SuccessResponse(data);
+    return data;
 }
 
 export default markQuizAttempt;
