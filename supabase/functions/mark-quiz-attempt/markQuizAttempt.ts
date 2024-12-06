@@ -1,5 +1,5 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { getCurrentTimestampTz, log } from "../_shared/helpers.ts";
+import { getCurrentTimestampTz } from "../_shared/helpers.ts";
 import { adminClient } from "../_shared/adminClient.ts";
 import { CourseService, QuizAttemptService, QuizQuestionAttemptService } from "../_shared/Service/Services.ts";
 
@@ -31,7 +31,7 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
     const { data, error } = await adminClient.from('quiz_attempt').update(update).eq('id', quizAttemptId);
 
     if (error) {
-        log(`Error updating quiz attempt: ${error.message}`);
+        request.log(`Error updating quiz attempt: ${error.message}`);
         throw new Error(`Error updating quiz attempt: ${error.message}`);
     }
 
@@ -47,7 +47,7 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
     const { data: data2, error: error2 } = await adminClient.from('notification').insert(notification);
 
     if (error2) {
-        log(`Error adding notification: ${error.message}`);
+        request.log(`Error adding notification: ${error.message}`);
         throw new Error(`Error adding notification: ${error.message}`);
     }
 
