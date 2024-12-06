@@ -1,6 +1,7 @@
 import IService from "../IService.ts";
 import { adminClient } from "../../adminClient.ts";
 import DatabaseError from "../../Error/DatabaseError.ts";
+import InputError from "../../Error/InputError.ts";
 
 class _courseService extends IService {
 
@@ -46,7 +47,7 @@ class _courseService extends IService {
         const courseData = await this.getById(courseId);
 
         if (courseData.active === active) {
-            throw new Error(`The course with ID ${courseId} is already ${active ? "active" : "inactive"}`);
+            throw new InputError(`The course with ID ${courseId} is already ${active ? "active" : "inactive"}`);
         }
 
         const { error } = await adminClient.from(this.TABLE_NAME).update({ active: active }).eq('id', courseId);
