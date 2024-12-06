@@ -1,14 +1,11 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { adminClient } from "../_shared/adminClient.ts";
+import { CourseService } from "../_shared/Service/Services.ts";
 
 const setCourseVisibility = async (request: EdgeFunctionRequest) => {
 
     const { courseId, active } = request.getPayload();
 
-    const { data, error } = await adminClient.from('course').update({ active: active }).eq('id', courseId);
-    if (error) {
-        throw error;
-    }
+    await CourseService.setActiveStatus(courseId, active);
 
     return null;
 }

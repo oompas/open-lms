@@ -1,5 +1,6 @@
 import IService from "../IService.ts";
 import { adminClient } from "../../adminClient.ts";
+import DatabaseError from "../../Error/DatabaseError.ts";
 
 class _courseService extends IService {
 
@@ -36,6 +37,22 @@ class _courseService extends IService {
         }
 
         return data[0];
+    }
+
+    /**
+     * Updates a given course to the desired active status
+     */
+    public async setActiveStatus(courseId: number, active: boolean) {
+        const courseData = await this.getById(courseId);
+
+        if (courseData.active === active) {
+            throw new Error(`The course with ID ${courseId} is already ${active ? "active" : "inactive"}`);
+        }
+
+        const { error } = await adminClient.from(this.TABLE_NAME).update({ active: active }).eq('id', courseId);
+        if (error) {
+            throw new DatabaseError(`Error updating course with ID ${courseId} to ${active ? "active" : "inactive"}: ${error.message}`);
+        }
     }
 }
 
