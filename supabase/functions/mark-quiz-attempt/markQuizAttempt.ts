@@ -1,7 +1,12 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { getCurrentTimestampTz } from "../_shared/helpers.ts";
 import { adminClient } from "../_shared/adminClient.ts";
-import { CourseService, QuizAttemptService, QuizQuestionAttemptService } from "../_shared/Service/Services.ts";
+import {
+    CourseService,
+    NotificationService,
+    QuizAttemptService,
+    QuizQuestionAttemptService
+} from "../_shared/Service/Services.ts";
 
 const markQuizAttempt = async (request: EdgeFunctionRequest) => {
 
@@ -44,12 +49,7 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
         link: `/course/${course.id}`,
         read: false
     };
-    const { error: error2 } = await adminClient.from('notification').insert(notification);
-
-    if (error2) {
-        request.log(`Error adding notification: ${error.message}`);
-        throw new Error(`Error adding notification: ${error.message}`);
-    }
+    await NotificationService.addNotification(notification);
 
     return null;
 }
