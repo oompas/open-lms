@@ -1,6 +1,5 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { adminClient } from "../_shared/adminClient.ts";
-import { EnrollmentService } from "../_shared/Service/Services.ts";
+import { CourseAttemptService, EnrollmentService } from "../_shared/Service/Services.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 
 const startCourse = async (request: EdgeFunctionRequest): Promise<any> => {
@@ -8,20 +7,17 @@ const startCourse = async (request: EdgeFunctionRequest): Promise<any> => {
     const userId = request.getRequestUserId();
     const { courseId } = request.getPayload();
 
-    const courseAttempt = {
-        course_id: courseId,
-        user_id: userId
-    };
+    request.log(`Entered startCourse with userId ${userId} and courseId ${courseId}`);
 
-    const { data, error } = await adminClient.from('course_attempt').insert(courseAttempt);
+    await CourseAttemptService.startAttempt(courseId, userId);
 
-    if (error) {
-        throw error;
-    }
+    request.log(`Successfully started course attempt`);
 
     await EnrollmentService.updateStatus(courseId, userId, CourseStatus.IN_PROGRESS);
 
-    return data;
+    request.log(`Successfully updated course status to IN_PROGRESS`);
+
+    return null;
 }
 
 export default startCourse;
