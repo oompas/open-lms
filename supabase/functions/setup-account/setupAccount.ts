@@ -1,5 +1,6 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { adminClient } from "../_shared/adminClient.ts";
+import DatabaseError from "../_shared/Error/DatabaseError.ts";
 
 const setupAccount = async (request: EdgeFunctionRequest) => {
 
@@ -14,16 +15,16 @@ const setupAccount = async (request: EdgeFunctionRequest) => {
     const userMetadata = data?.user?.user_metadata;
     request.log(`User metadata: ${JSON.stringify(userMetadata)}`);
     if (userMetadata.name || userMetadata.role) {
-        throw new Error(`User with id ${userId} has already been setup`);
+        throw new DatabaseError(`User with id ${userId} has already been setup`);
     }
 
-    const { data: data2, error: error2 } = await adminClient.auth.admin.updateUserById(userId, {
+    const { error: error2 } = await adminClient.auth.admin.updateUserById(userId, {
         user_metadata: { ...userMetadata, role: "Learner", name: name }
     });
 
     if (error2) {
         request.log(`Error setting up user: ${error2.message}`);
-        throw error2;
+        throw new DatabaseError(`Error updating user metadata: ${error2.message}`);
     }
 
     request.log(`User setup successfully: ${data.user.email}`);
