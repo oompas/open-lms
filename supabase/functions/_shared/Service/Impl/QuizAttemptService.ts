@@ -21,6 +21,25 @@ class _quizAttemptService extends IService {
     }
 
     /**
+     * Starts a new quiz attempt
+     */
+    public async startQuiz(userId: string, courseId: number, courseAttemptId: number) {
+        const quizAttempt = {
+            course_id: courseId,
+            user_id: userId,
+            course_attempt_id: courseAttemptId
+        };
+
+        const { data, error } = await adminClient.from(this.TABLE_NAME).insert(quizAttempt).select();
+
+        if (error) {
+            throw error;
+        }
+
+        return data[0].id;
+    }
+
+    /**
      * Given a quiz that's marked handle the status of it in relation to the course attempt (it may cause the attempt to
      * pass or fail)
      *

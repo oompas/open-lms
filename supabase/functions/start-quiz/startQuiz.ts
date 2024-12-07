@@ -1,24 +1,18 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { adminClient } from "../_shared/adminClient.ts";
+import { QuizAttemptService } from "../_shared/Service/Services.ts";
 
 const startQuiz = async (request: EdgeFunctionRequest) => {
 
     const userId: string = request.getRequestUserId();
     const { courseId, courseAttemptId } = request.getPayload();
 
-    const quizAttempt = {
-        course_id: courseId,
-        user_id: userId,
-        course_attempt_id: courseAttemptId
-    };
+    request.log(`Entering startQuiz with userId ${userId}, courseId ${courseId} and courseAttemptId ${courseAttemptId}`);
 
-    const { data, error } = await adminClient.from('quiz_attempt').insert(quizAttempt).select();
+    const quizAttemptId = await QuizAttemptService.startQuiz(userId, courseId, courseAttemptId);
 
-    if (error) {
-        throw error;
-    }
+    request.log(`Quiz successfully started. Quiz attempt id: ${quizAttemptId}`);
 
-    return data[0].id;
+    return quizAttemptId;
 }
 
 export default startQuiz;
