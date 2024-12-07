@@ -13,7 +13,7 @@ const startCourse = async (request: EdgeFunctionRequest): Promise<any> => {
 
     request.log(`Successfully started course attempt`);
 
-    await EnrollmentService.updateStatus(courseId, userId, CourseStatus.IN_PROGRESS);
+    await EnrollmentService.updateStatus(userId, courseId, CourseStatus.IN_PROGRESS);
 
     request.log(`Successfully updated course status to IN_PROGRESS`);
 
