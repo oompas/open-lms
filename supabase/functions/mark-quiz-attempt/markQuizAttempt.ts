@@ -28,7 +28,7 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
         pass: totalMarks >= course.min_quiz_score,
         score: totalMarks
     };
-    const { data, error } = await adminClient.from('quiz_attempt').update(update).eq('id', quizAttemptId);
+    const { error } = await adminClient.from('quiz_attempt').update(update).eq('id', quizAttemptId);
 
     if (error) {
         request.log(`Error updating quiz attempt: ${error.message}`);
@@ -44,14 +44,14 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
         link: `/course/${course.id}`,
         read: false
     };
-    const { data: data2, error: error2 } = await adminClient.from('notification').insert(notification);
+    const { error: error2 } = await adminClient.from('notification').insert(notification);
 
     if (error2) {
         request.log(`Error adding notification: ${error.message}`);
         throw new Error(`Error adding notification: ${error.message}`);
     }
 
-    return data;
+    return null;
 }
 
 export default markQuizAttempt;
