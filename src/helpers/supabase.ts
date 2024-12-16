@@ -46,8 +46,6 @@ const signOut = async () => {
 }
 
 type APIResponse = {
-    success: boolean,
-    serverError?: boolean,
     data?: any,
     error?: any,
 }

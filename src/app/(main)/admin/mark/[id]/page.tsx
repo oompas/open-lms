@@ -7,12 +7,13 @@ import { RiCheckboxBlankCircleLine, RiCheckboxCircleFill } from "react-icons/ri"
 import { FaRegTimesCircle } from "react-icons/fa";
 import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
+import { QuestionType } from "@/helpers/Enums.ts";
 
 export default function Mark({ params }: { params: { id: string } }) {
 
     const router = useRouter();
 
-    const quizQuestions = useAsync(() => callAPI('get-quiz-attempt', { quizAttemptId: params.id }).then((rsp) => { setQuestions(rsp.data); return rsp; }));
+    const quizQuestions = useAsync(() => callAPI('get-quiz-attempt', { quizAttemptId: parseInt(params.id) }).then((rsp) => { setQuestions(rsp.data); return rsp; }));
 
     const [questions, setQuestions] = useState(null);
     const [marks, setMarks] = useState<any[]>([]);
@@ -78,8 +79,8 @@ export default function Mark({ params }: { params: { id: string } }) {
 
     const handleSubmit = async () => {
         const responses = [];
-        questions.saQuestions.map((q, key) => responses.push({ questionAttemptId: q.questionAttemptId, marks: marks[key] }));
-        callAPI('mark-quiz-attempt', { quizAttemptId: params.id, marks: responses })
+        questions.saQuestions.map((q, key) => responses.push({ questionAttemptId: q.questionAttemptId, marksAchieved: marks[key] }));
+        callAPI('mark-quiz-attempt', { quizAttemptId: parseInt(params.id), marks: responses })
             .then(() => router.push("/admin/tools"));
     }
 
@@ -162,7 +163,7 @@ export default function Mark({ params }: { params: { id: string } }) {
                             <div className="flex flex-col w-full">
                                 <div className="text-lg w-full mb-2 italic">{question.question}</div>
                                 <div>
-                                    {question.type === "TF" ?
+                                    {question.type === QuestionType.TRUE_FALSE ?
                                         <>
                                             <div className="text-lg w-full">
                                                 {renderQuestionAnswer("True", question.response === 0, question.correctAnswer === 0)}

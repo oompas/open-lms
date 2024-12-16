@@ -8,17 +8,9 @@ import { callAPI } from "@/helpers/supabase.ts";
 
 export default function Insights({ params }: { params: { id: string } }) {
 
-    const statusNames = {
-        2: "To do",
-        3: "In progress",
-        4: "Awaiting Marking",
-        5: "Failed",
-        6: "Completed",
-    }
-
     const router = useRouter();
 
-    const courseData = useAsync(() => callAPI('get-course-insight-report', { courseId: params.id }));
+    const courseData = useAsync(() => callAPI('get-course-insight-report', { courseId: parseInt(params.id) }));
 
     const getEnrolledLearners = () => {
         const data = courseData?.result?.data;
@@ -45,7 +37,7 @@ export default function Insights({ params }: { params: { id: string } }) {
                                     </Link>
                                 </td>
                                 <td className="border p-2">
-                                    {learner.status.charAt(0) + learner.status.slice(1).toLowerCase()}
+                                    {(learner.status.charAt(0) + learner.status.slice(1).toLowerCase()).replace('_', ' ')}
                                 </td>
                                 <td className="border p-2">
                                     { learner.latestQuizAttemptId &&

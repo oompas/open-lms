@@ -1,28 +1,15 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { ErrorResponse, OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
-import { adminClient } from "../_shared/adminClient.ts";
-import { getRequestUserId } from "../_shared/auth.ts";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import EdgeFunctionRequest, { RunParams } from "../_shared/EdgeFunctionRequest.ts";
+import startQuiz from "./startQuiz.ts";
+import { primaryKeyInt } from "../_shared/validation.ts";
 
-Deno.serve(async (req) => {
-
-    if (req.method === 'OPTIONS') {
-        return OptionsRsp();
-    }
-
-    const userId = await getRequestUserId(req);
-    const { courseId, courseAttemptId } = await req.json();
-
-    const quizAttempt = {
-        course_id: courseId,
-        user_id: userId,
-        course_attempt_id: courseAttemptId
+Deno.serve(async (req: Request) => {
+    const parameters: RunParams = {
+        metaUrl: import.meta.url,
+        req: req,
+        schemaRecord: { courseId: primaryKeyInt(), courseAttemptId: primaryKeyInt() },
+        endpointFunction: startQuiz
     };
 
-    const { data, error } = await adminClient.from('quiz_attempt').insert(quizAttempt).select();
-
-    if (error) {
-        return ErrorResponse(error.message);
-    }
-
-    return SuccessResponse(data[0].id);
+    return await EdgeFunctionRequest.run(parameters);
 });

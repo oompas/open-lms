@@ -3,19 +3,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { IoNotifications } from "react-icons/io5";
 import { FaRegNewspaper } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
-import {
-    parseISO,
-    isToday,
-    isThisWeek,
-    isThisMonth,
-    isThisYear,
-    differenceInSeconds,
-    differenceInMinutes,
-    differenceInHours,
-    differenceInDays,
-    differenceInWeeks,
-    differenceInMonths,
-    differenceInYears } from 'date-fns';
 import classNames from 'classnames';
 import { callAPI } from "@/helpers/supabase.ts";
 
@@ -88,21 +75,12 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
         return () => { document.removeEventListener('mousedown', handleClickOutside); };
     }, []);
 
-    const readNotification = async (id: string) => {
+    const readNotifications = async (id: string | null) => {
         try {
             await callAPI('read-notification', { notificationId: id });
             refreshNotifications();
         } catch (error) {
-            console.error('Error deleting notification:', error);
-        }
-    };
-
-    const readAllNotifications = async () => {
-        try {
-            await callAPI('read-notification', { readAll: true });
-            refreshNotifications();
-        } catch (error) {
-            console.error('Error deleting all notifications:', error);
+            console.error(`Error deleting ${id === null ? "all notifications" : "notification"}:`, error);
         }
     };
 
@@ -113,7 +91,7 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
                 <NotificationItem
                     key={notification.id}
                     notification={notification}
-                    readNotification={readNotification}
+                    readNotification={readNotifications}
                     onClose={() => setNotificationsOpen(false)}
                     isLast={index === notifications.length - 1}
                 />
@@ -147,7 +125,7 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
             {notificationsOpen && (
                 <div
                     ref={popUpRef}
-                    className="absolute right-0 mt-2 w-72 h-72 bg-white shadow-lg rounded-lg border-gray-300 border-[1px] overflow-y-scroll no-scrollbar"
+                    className="absolute right-0 mt-2 w-72 h-72 bg-white shadow-lg rounded-lg border-gray-300 border-[1px] overflow-y-scroll no-scrollbar z-50"
                 >
                     <div className="mb-2 mx-4">
                         <div className="text-lg font-semibold mt-4 text-gray-600">
@@ -180,7 +158,7 @@ const Notifications: React.FC = ({ notifications, setNotifications, refreshNotif
                             </div>
                             <button
                                 className="text-sm text-blue-600 hover:text-blue-800"
-                                onClick={readAllNotifications}
+                                onClick={() => readNotifications(null)}
                             >
                                 Mark all as read
                             </button>

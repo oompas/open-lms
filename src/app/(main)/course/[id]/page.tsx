@@ -7,23 +7,16 @@ import { useEffect, useState } from "react";
 import Checkbox from "@/components/Checkbox";
 import { useAsync } from "react-async-hook";
 import { callAPI } from "@/helpers/supabase.ts";
-
-enum CourseStatus {
-    NOT_ENROLLED = "NOT_ENROLLED",
-    ENROLLED = "ENROLLED",
-    IN_PROGRESS = "IN_PROGRESS",
-    AWAITING_MARKING = "AWAITING_MARKING",
-    FAILED = "FAILED",
-    COMPLETED = "COMPLETED"
-}
+import { CourseStatus } from "@/helpers/Enums.ts";
 
 export default function Course({ params }: { params: { id: string } }) {
 
-    const getCourseData = useAsync(() => callAPI('get-course-data', { courseId: params.id })
+    const getCourseData = useAsync(() => callAPI('get-course-data', { courseId: parseInt(params.id) })
         .then((r) => {
             setCourseData(r.data);
             setStatus(r.data.status);
             setCourseAttemptId(r.data.courseAttempt.currentAttemptId);
+            setQuizAttemptId(r.data.quizAttempts.currentId);
 
             if (r.data.courseAttempt.currentStartTime
                 && new Date().getTime() > new Date(r.data.courseAttempt.currentStartTime).getTime() + r.data.minTime * 60 * 1000) {
@@ -47,7 +40,7 @@ export default function Course({ params }: { params: { id: string } }) {
         console.log(`Status: ${status} Time done: ${timeDone}`);
         setQuizStarted(status === CourseStatus.NOT_ENROLLED || status === CourseStatus.ENROLLED || status === CourseStatus.COMPLETED || !timeDone
             ? null // @ts-ignore
-            : getCourseData.result.data.currentQuiz !== null
+            : getCourseData.result.data.quizAttempts.currentId !== null
         );
     }, [status, timeDone]);
 
@@ -65,7 +58,7 @@ export default function Course({ params }: { params: { id: string } }) {
         }
 
         const quizStarted = () => {
-            const attemptId = courseData.attempts?.currentQuizAttemptId;
+            const attemptId = courseData.quizAttempts?.currentId;
             if (attemptId) {
                 return attemptId;
             }
@@ -84,7 +77,7 @@ export default function Course({ params }: { params: { id: string } }) {
                     quizStarted={quizStarted()}
                     courseAttemptId={courseAttemptId}
                     quizAttemptId={quizAttemptId}
-                    courseId={params.id}
+                    courseId={parseInt(params.id)}
                 />
 
                 <div className="mt-8 text-2xl">

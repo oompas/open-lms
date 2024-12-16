@@ -6,6 +6,7 @@ import { MdCheckCircleOutline } from "react-icons/md";
 import { RiCheckboxCircleFill, RiCheckboxBlankCircleLine } from "react-icons/ri";
 import { useAsync } from "react-async-hook";
 import { callAPI } from "@/helpers/supabase.ts";
+import { QuestionType } from "@/helpers/Enums.ts";
 
 export default function Quiz({ params }: { params: { id: string } }) {
 
@@ -15,7 +16,7 @@ export default function Quiz({ params }: { params: { id: string } }) {
     const [showConfim, setShowConfirm] = useState(false);
     const [emptySubmit, setEmptySubmit] = useState(false);
 
-    const getQuizData = useAsync(() => callAPI('get-quiz', { quizAttemptId: params.id.split('-')[1] }).then((rsp) => {
+    const getQuizData = useAsync(() => callAPI('get-quiz', { quizAttemptId: parseInt(params.id.split('-')[1]) }).then((rsp) => {
         if (rsp.data === "Invalid") {
             return rsp;
         }
@@ -51,9 +52,9 @@ export default function Quiz({ params }: { params: { id: string } }) {
         return (
             <div>
                 {quizData && quizData !== "Invalid" && quizData.questions.map((question, key) => {
-                    const answers = question.type === "MC"
+                    const answers = question.type === QuestionType.MULTIPLE_CHOICE
                         ? question.answers
-                        : question.type === "TF"
+                        : question.type === QuestionType.TRUE_FALSE
                             ? ["True", "False"]
                             : [];
 
@@ -150,9 +151,9 @@ export default function Quiz({ params }: { params: { id: string } }) {
             }
 
             const questionData = quizData?.questions.find((question) => question.id === key);
-            if (questionData.type === "SA") {
+            if (questionData.type === QuestionType.SHORT_ANSWER) {
                 responses.push({ questionId: key, answer: value });
-            } else if (questionData.type === "TF") {
+            } else if (questionData.type === QuestionType.TRUE_FALSE) {
                 responses.push({ questionId: key, answer: value === "True" ? 0 : 1 });
             } else {
                 responses.push({ questionId: key, answer: questionData.answers.indexOf(value) });

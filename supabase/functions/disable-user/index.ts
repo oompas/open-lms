@@ -1,26 +1,16 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { ErrorResponse, log, OptionsRsp, SuccessResponse } from "../_shared/helpers.ts";
-import { verifyAdministrator } from "../_shared/auth.ts";
-import { adminClient } from "../_shared/adminClient.ts";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import EdgeFunctionRequest, { RunParams } from "../_shared/EdgeFunctionRequest.ts";
+import disableUser from "./disableUser.ts";
+import { primaryKeyInt, bool } from "../_shared/validation.ts";
 
 Deno.serve(async (req) => {
+    const parameters: RunParams = {
+        metaUrl: import.meta.url,
+        req: req,
+        schemaRecord: { userId: primaryKeyInt(), disable: bool() },
+        endpointFunction: disableUser,
+        adminOnly: true
+    };
 
-    if (req.method === 'OPTIONS') {
-        return OptionsRsp();
-    }
-
-    const { userId, disable } = await req.json();
-
-    await verifyAdministrator(req);
-
-    const { data, error } = await adminClient.auth.admin.updateUserById(userId, {
-        ban_duration: disable ? "876600h": "none" // Bans for 100 years
-    });
-
-    if (error) {
-        log(`Error banning user: ${error.message}`);
-        return ErrorResponse(`Error banning user: ${error.message}`);
-    }
-
-    return SuccessResponse(data);
+    return await EdgeFunctionRequest.run(parameters);
 });

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import TextField from "@/components/TextField";
 import { callAPI } from "@/helpers/supabase.ts";
 import { useRouter } from "next/navigation";
+import { CourseStatus } from "@/helpers/Enums.ts";
 
 export default function IDCourse({
     course,
@@ -35,9 +36,9 @@ export default function IDCourse({
     setStatus: any,
     setCourseAttemptId: any,
     quizStarted: any,
-    courseAttemptId: string,
+    courseAttemptId: number,
     quizAttemptId: string,
-    courseId: string
+    courseId: number
 }) {
 
     const router = useRouter();
@@ -68,13 +69,13 @@ export default function IDCourse({
     }, [countdown]);
 
     const enrollment = () => {
-        return callAPI('course-enrollment', { id: course.id })
-            .then(() => setStatus(status === "ENROLLED" ? "NOT_ENROLLED" : "ENROLLED"))
+        return callAPI('course-enrollment', { courseId: course.id })
+            .then(() => setStatus(status === CourseStatus.ENROLLED ? CourseStatus.NOT_ENROLLED : CourseStatus.ENROLLED))
             .catch((err) => { throw new Error(`Error getting course data: ${err}`) });
     };
 
     const start = () => {
-        return callAPI('start-course', { id: course.id })
+        return callAPI('start-course', { courseId: course.id })
             .then((result) => {
                 setCourseAttemptId(result.data);
                 setCountDown(60 * course.minTime);
@@ -98,9 +99,9 @@ export default function IDCourse({
     }
 
     const renderButton = () => {
-        if (status === "NOT_ENROLLED") {
+        if (status === CourseStatus.NOT_ENROLLED) {
             return <Button text="Enroll" onClick={enrollment} icon="plus" />;
-        } else if (status === "ENROLLED") {
+        } else if (status === CourseStatus.ENROLLED) {
             return (
                 <>
                     <a href={course.link} target={"_blank"}>
@@ -113,7 +114,7 @@ export default function IDCourse({
         }
         return (
             <>
-                {quizStarted !== null && status !== "COMPLETED" &&
+                {quizStarted !== null && status !== CourseStatus.COMPLETED &&
                     <Button
                         text={quizStarted ? "Continue quiz" : "Start quiz"}
                         onClick={async () => await goToQuiz()}
@@ -123,7 +124,7 @@ export default function IDCourse({
                     />
                 }
                 <a href={course.link} target={"_blank"}>
-                    <Button text="Go to Course" filled={quizStarted === null && (status !== "ENROLLED" || status !== "COMPLETED")} icon="link"/>
+                    <Button text="Go to Course" filled={quizStarted === null && (status !== CourseStatus.ENROLLED || status !== CourseStatus.COMPLETED)} icon="link"/>
                 </a>
                 <Button text="Request Help" onClick={handleSupportRequest} icon="report"/>
             </>
@@ -147,7 +148,7 @@ export default function IDCourse({
             return `${hours}:${minutes}:${seconds}`;
         }
 
-        if (status === "NOT_ENROLLED" || status === "ENROLLED") {
+        if (status === CourseStatus.NOT_ENROLLED || status === CourseStatus.ENROLLED) {
             return format(60 * course.minTime);
         }
         return format(countdown / 1000);
@@ -159,9 +160,8 @@ export default function IDCourse({
 
     const handleSubmitFeedback = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const courseId = course.courseId;
         try {
-            await callAPI('send-course-feedback', { courseId, feedback });
+            await callAPI('send-course-help', { courseId, feedback });
             setFeedback('');
             setFeedbackSent(true);
         } catch (error) {
@@ -209,9 +209,9 @@ export default function IDCourse({
                     <div className="text-2xl text-center">{status.split('_').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}</div>
                     {course.minTime && (
                         <>
-                            <div className="text-sm mt-2">{status === "NOT_ENROLLED" ? "Minimum" : "Required"} Time:</div>
+                            <div className="text-sm mt-2">{status === CourseStatus.NOT_ENROLLED ? "Minimum" : "Required"} Time:</div>
                             <div className="text-3xl">
-                                {countdown > 0 || status === "NOT_ENROLLED" || status === "ENROLLED" ? getTime() : "Completed"}
+                                {countdown > 0 || status === CourseStatus.NOT_ENROLLED || status === CourseStatus.ENROLLED ? getTime() : "Completed"}
                             </div>
                         </>
                     )}
