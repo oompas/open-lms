@@ -292,7 +292,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     return (
         <div className="w-full">
             <div className="flex justify-between w-full bg-white p-12 rounded-2xl shadow-custom mb-4">
-                <div className="text-3xl">
+                <div className={"text-3xl" + (params.id === "new" ? " italic" : "")}>
                     {originalName}
                 </div>
 
