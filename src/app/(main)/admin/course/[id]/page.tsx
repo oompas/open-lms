@@ -34,8 +34,8 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const [minCourseTime, setMinCourseTime] = useState<null | number>(null);
 
     const [quizMinScore, setQuizMinScore] = useState<string | number>(0);
-    const [quizAttempts, setQuizAttempts] = useState<null | number>(null);
-    const [quizMaxTime, setQuizMaxTime] = useState<null | number>(null);
+    const [quizAttempts, setQuizAttempts] = useState<null | number>(1);
+    const [quizMaxTime, setQuizMaxTime] = useState<null | number>(60);
     const [preserveOrder, setPreserveOrder] = useState<boolean>(true);
 
     const [showCreateQuestion, setShowCreateQuestion] = useState(false);
@@ -426,7 +426,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                                     <div className="flex items-start space-x-4 mt-4">
                                         <Checkbox
                                             checked={quizMaxTime !== null}
-                                            setChecked={() => setQuizMaxTime(quizMaxTime === null ? 1 : null)}
+                                            setChecked={() => setQuizMaxTime(quizMaxTime === null ? 60 : null)}
                                         />
                                         <div className="flex flex-col">
                                             <div className="text-lg">Maximum quiz time</div>
