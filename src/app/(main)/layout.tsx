@@ -69,7 +69,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
     // Route to sign in screen if user isn't logged in
     useEffect(() => {
-        if (session === null && new Date().getTime() > startTime + 1_000) {
+        if (session === null && new Date().getTime() > startTime.current + 1_000) {
             router.push('/');
         }
     }, [session, isAdmin, router]);
