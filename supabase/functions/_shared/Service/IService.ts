@@ -3,7 +3,10 @@ import DatabaseError from "../Error/DatabaseError.ts";
 
 // Filter docs: https://supabase.com/docs/reference/javascript/using-filters
 type Filter = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'is' | 'in';
-type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([Filter, string, any] | ['null' | 'notnull', string])[];
+type NullFilter = 'null' | 'notnull'; // Doesn't exist directly in Supabase, handled through implementation
+type Condition = [Filter, string, any] | [NullFilter, string];
+
+type QueryConditions = Condition | Condition[];
 type QueryOptions = { order?: string, ascendOrder?: boolean, limit?: number };
 
 abstract class IService {
@@ -51,7 +54,7 @@ abstract class IService {
     }
 
     /**
-     * Gets all rows that have hte given column value
+     * Gets all rows that have the given column value
      */
     public async getByColumn(column: string, value: any) {
         try {
