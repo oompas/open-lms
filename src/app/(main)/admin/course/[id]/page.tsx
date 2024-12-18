@@ -339,15 +339,14 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 <div className="flex flex-col w-2/3 h-fit bg-white p-14 rounded-2xl shadow-custom mb-8">
                     <div className="flex flex-col mb-6">
                         <div className="text-lg">Verification Methods</div>
-                        <div className="text-sm text-gray-600 mb-4">Every course must at least have one verification
-                            method.
+                        <div className="text-sm text-gray-600 mb-4">Every course must have a knowledge quiz. Minimum time is optional.
                         </div>
 
                         {/* Minimum completion time */}
                         <div className="flex items-start space-x-4 mb-6">
                             <Checkbox
                                 checked={minCourseTime !== null}
-                                setChecked={() => setMinCourseTime(minCourseTime === null ? 1 : null)}
+                                setChecked={() => setMinCourseTime(minCourseTime === null ? 60 : null)}
                             />
                             <div className="flex flex-col">
                                 <div className="text-lg">Minimum time spent completing course</div>
@@ -363,7 +362,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
                         {/* Knowledge quiz */}
                         <div className="flex items-start space-x-4">
-                            <Checkbox checked={useQuiz} setChecked={setUseQuiz}/>
+                            <Checkbox checked={useQuiz} disabled={true}/>
                             <div className="flex flex-col">
                                 <div className="text-lg">Knowledge quiz completion</div>
                                 {useQuiz &&
