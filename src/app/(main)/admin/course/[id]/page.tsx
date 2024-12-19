@@ -197,6 +197,26 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         </div>
     );
 
+    const discardPopup = (
+        <div
+            className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    Do you want to discard your unpublished course?
+                </div>
+
+                <div className="flex flex-row space-x-4 mt-6">
+                    <Button text="Cancel" onClick={() => setShowDeletePopup(false)} style="ml-auto"/>
+                    <Button
+                        text={"Discard draft"}
+                        onClick={() => router.push("/admin/tools")}
+                        filled
+                    />
+                </div>
+            </div>
+        </div>
+    );
+
     const deletePopup = (
         <div
             className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
@@ -306,7 +326,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                             ? <BiSolidHide size={25} className="ml-4 mt-1 cursor-pointer" onClick={() => setActivatePopup(true)}/>
                             : <IoMdEye size={25} className="ml-4 mt-1 cursor-pointer" onClick={() => setActivatePopup(true)}/>
                     )}
-                    <MdDelete size={25} className="ml-3 mt-1 cursor-pointer" onClick={() => newCourse ? router.push("/admin/tools") : setShowDeletePopup(true)}/>
+                    <MdDelete size={25} className="ml-3 mt-1 cursor-pointer" onClick={() => setShowDeletePopup(true)}/>
                     {
                         newCourse
                             ? <MdAdd size={25} className="ml-3 mt-[5px] cursor-pointer" onClick={async () => setShowSavePopup(true)}/>
@@ -493,7 +513,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     </div>
 
                     {activatePopup && activationPopup}
-                    {showDeletePopup && deletePopup}
+                    {showDeletePopup && (newCourse ? discardPopup : deletePopup)}
                     {showSavePopup && savePopup}
                     {loading && loadingPopup}
                     {showAddCourseErrorPopup && addCourseErrorPopup}
