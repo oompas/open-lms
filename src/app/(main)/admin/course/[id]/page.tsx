@@ -309,8 +309,8 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                     <MdDelete size={25} className="ml-3 mt-1 cursor-pointer" onClick={() => newCourse ? router.push("/admin/tools") : setShowDeletePopup(true)}/>
                     {
                         newCourse
-                            ? <IoCreate size={22} className="ml-3 mt-[5px] cursor-pointer" onClick={async () => setShowSavePopup(true)}/>
-                            : <GrUpdate size={22} className="ml-3 mt-1 cursor-pointer" onClick={async () => setShowSavePopup(true)}/>
+                            ? <MdAdd size={25} className="ml-3 mt-[5px] cursor-pointer" onClick={async () => setShowSavePopup(true)}/>
+                            : <GrUpdate size={22} className="ml-3 mt-[5px] cursor-pointer" onClick={async () => setShowSavePopup(true)}/>
                     }
                 </div>
             </div>
