@@ -55,7 +55,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         else
             temp.push(data);
 
-        var temp_score = 0;
+        let temp_score = 0;
         temp.map((q) => (
             temp_score += q.marks
         ))

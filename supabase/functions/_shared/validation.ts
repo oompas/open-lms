@@ -50,8 +50,8 @@ const object = (data: object) => z.object(data);
 
 const union = (data: any[]) => z.union(data);
 
-const enumValues = (data: any[]) => z.enum(data);
+const enumNumbers = (data: any[]) => union(data.map((val) => literal(val)));
 
 const literal = (data: any) => z.literal(data);
 
-export { primaryKeyInt, naturalNumber, uuid, bool, number, string, array, object, union, enumValues, literal };
+export { primaryKeyInt, naturalNumber, uuid, bool, number, string, array, object, union, enumNumbers, literal };
