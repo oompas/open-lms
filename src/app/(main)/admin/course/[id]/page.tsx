@@ -258,13 +258,19 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         <div
             className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
             <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                <div className="text-lg mb-2">
+                <div className="text-[1rem] mb-2">
                     <b>{newCourse ? "Add course" : "Update course"}</b>
                     <p className="mt-2">
                         {newCourse
-                            ? <>Adding a new course will create a new course with the specified details, but <b>it will
-                                not be visible to users yet</b>. Once added, you need to publish the course using the
-                                button that will appear on the top menu</>
+                            ? <>Adding a new course will create a new course, but <b>it will not be visible to users yet</b>.
+                                Once added, you will need to activate the course with the
+                                <span className="inline-flex"><BiSolidHide size={20} className={"mx-[6px]"}/></span>
+                                icon in the top right.
+                                <br/>
+                                Please verify the course details are fully correct, <b>once the course is created you
+                                cannot edit the course directly</b>, a new version of the course will be created instead
+                                to avoid conflicts.
+                            </>
                             : <>To avoid issues with course stats and data, updating a course will <b>create a new course
                                 and retire the old course</b>. The old course cannot be attempted again, but data for
                                 the old course is still kept so users can still see they're completed the old version</>
