@@ -1,8 +1,10 @@
 import { config } from 'dotenv';
 import { execSync } from 'child_process';
 
-// Load environment variables from .env.local
-config({ path: '.env.local' });
+if (!process.env.CI) {
+    // Load environment variables from .env.local
+    config({ path: '.env.local' });
+}
 
 // Validate argument is a valid environment
 const args = process.argv.slice(2);
