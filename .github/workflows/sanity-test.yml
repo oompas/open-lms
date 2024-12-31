@@ -30,4 +30,6 @@ jobs:
               NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
               NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
               TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
-            run: pnpm run test:sanity
+            run: |
+              echo "tsb def: $TEST_SUPABASE_URL"
+              pnpm run test:sanity
