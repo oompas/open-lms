@@ -9,9 +9,6 @@ if (folder !== 'SANITY' && folder !== 'DETAILED') {
     process.exit(1);
 }
 
-console.log(`ls: `);
-execSync('ls tests/SANITY', { stdio: 'inherit' });
-
 const command = `mocha --ui tdd ./tests/${folder}/`;
 
 try {
