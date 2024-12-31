@@ -15,7 +15,7 @@ execSync('pwd', { stdio: 'inherit' });
 console.log(`ls: `);
 execSync('ls', { stdio: 'inherit' });
 
-const command = `mocha --ui tdd ./tests/${folder}/**/*.test.ts`;
+const command = `mocha --ui tdd ./tests/${folder}/`;
 
 try {
     execSync(command, { stdio: 'inherit' });
