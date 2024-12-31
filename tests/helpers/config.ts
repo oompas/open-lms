@@ -8,6 +8,9 @@ const getEnvVariable = (key: string): string => {
     return value;
 };
 
+console.log("pub: " + getEnvVariable('NEXT_PUBLIC_SUPABASE_URL'));
+console.log("tst: " + getEnvVariable('TEST_SUPABASE_URL'));
+
 const supabaseUrl = getEnvVariable('TEST_SUPABASE_URL');
 const supabaseAnonKey = getEnvVariable('TEST_SUPABASE_ANON_KEY');
 
