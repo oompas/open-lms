@@ -25,8 +25,6 @@ jobs:
           - name: Install global test tools
             run: pnpm install -g mocha ts-node
 
-          - name: Check pwd
-            run: pwd
           - name: Run sanity tests
             env:
               NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
