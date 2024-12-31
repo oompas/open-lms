@@ -30,4 +30,4 @@ const pollAccessToken = async (admin: boolean): Promise<string> => {
     throw new Error("Exceeded the 2 second timeout for polling for user access token");
 }
 
-export { signIn, signOut, pollAccessToken };
+export { signIn, pollAccessToken };
