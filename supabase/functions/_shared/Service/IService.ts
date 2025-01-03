@@ -75,13 +75,11 @@ abstract class IService {
     public async query(select: string = '*', conditions: QueryConditions = [], options: QueryOptions = {}) {
         try {
             // Wrap single conditions in an array for consistency
-            if (conditions.length && !Array.isArray(conditions[0])) {
-                conditions = [conditions];
-            }
+            const normalizedConditions = Array.isArray(conditions[0]) ? conditions : [conditions];
 
             // Setup query
             const query = adminClient.from(this.TABLE_NAME).select(select);
-            conditions.forEach(([filter, key, value]) => {
+            normalizedConditions.forEach(([filter, key, value]) => {
                 if (filter === 'null') {
                     query.is(key, null);
                 } else if (filter === 'notnull') {
