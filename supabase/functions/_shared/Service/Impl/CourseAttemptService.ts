@@ -32,7 +32,7 @@ class _courseAttemptService extends IService {
     /**
      * Gets the latest course attempt given a list of course attempts
      */
-    public getLatest(courseAttempts: object[]): object {
+    public getLatest(courseAttempts: object[]): object | null {
         if (courseAttempts.length === 0) {
             return null;
         }
