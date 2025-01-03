@@ -91,11 +91,7 @@ abstract class IService {
 
             // Apply options (if present)
             if (options.order) {
-                if (typeof options.ascendOrder === 'boolean') {
-                    query.order(options.order, { ascending: options.ascendOrder });
-                } else {
-                    query.order(options.order);
-                }
+                query.order(options.order, { ascending: options.ascendOrder ?? false });
             }
             if (typeof options.limit === 'number') {
                 if (!Number.isInteger(options.limit) || options.limit < 1) {
