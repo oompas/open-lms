@@ -23,7 +23,7 @@ abstract class IService {
                 throw error;
             }
 
-            return data;
+            return data ?? [];
         } catch (err) {
             throw new DatabaseError(`Error getting all rows from ${this.TABLE_NAME}: ${err.message}`);
         }
