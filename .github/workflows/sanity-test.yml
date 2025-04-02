@@ -27,7 +27,6 @@ jobs:
 
           - name: Run sanity tests
             env:
-              NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
               NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
               TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
               TEST_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
