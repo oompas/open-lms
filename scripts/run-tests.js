@@ -1,7 +1,12 @@
 import { config } from 'dotenv';
 import { execSync } from 'child_process';
+import { existsSync } from 'fs';
 
-config({ path: '.env.local', override: false });
+// Load .env.local file if it exists
+const envPath = '.env.local';
+if (existsSync(envPath)) {
+    config({ path: envPath, override: false });
+}
 
 const folder = process.argv[2].toLowerCase();
 if (folder !== 'sanity' && folder !== 'detailed') {
