@@ -1,7 +1,4 @@
-import { config } from 'dotenv';
 import { execSync } from 'child_process';
-
-config({ path: '.env.local', override: false });
 
 const folder = process.argv[2].toLowerCase();
 if (folder !== 'sanity' && folder !== 'detailed') {
@@ -9,9 +6,24 @@ if (folder !== 'sanity' && folder !== 'detailed') {
     process.exit(1);
 }
 
-const command = `mocha --ui tdd ./tests/${folder}/`;
+// Debug: Print available environment variables
+console.log('Available environment variables:');
+console.log('TEST_SUPABASE_URL:', process.env.TEST_SUPABASE_URL ? 'Set' : 'Not set');
+console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Not set');
+
+// Create a command that explicitly passes environment variables
+const command = `TEST_SUPABASE_URL="${process.env.TEST_SUPABASE_URL}" ` +
+    `TEST_SUPABASE_ANON_KEY="${process.env.TEST_SUPABASE_ANON_KEY}" ` +
+    `TEST_ADMIN_EMAIL="${process.env.TEST_ADMIN_EMAIL}" ` +
+    `TEST_ADMIN_PASSWORD="${process.env.TEST_ADMIN_PASSWORD}" ` +
+    `TEST_LEARNER_EMAIL="${process.env.TEST_LEARNER_EMAIL}" ` +
+    `TEST_LEARNER_PASSWORD="${process.env.TEST_LEARNER_PASSWORD}" ` +
+    `NEXT_PUBLIC_SUPABASE_URL="${process.env.NEXT_PUBLIC_SUPABASE_URL}" ` +
+    `NEXT_PUBLIC_SUPABASE_ANON_KEY="${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}" ` +
+    `mocha --ui tdd ./tests/${folder}/`;
 
 try {
+    // Remove dotenv config completely
     execSync(command, { stdio: 'inherit' });
 } catch (error) {
     process.exit(1);
