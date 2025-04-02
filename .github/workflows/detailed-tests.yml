@@ -3,7 +3,7 @@ name: CI - Full test suite
 on:
   pull_request:
     branches:
-      - '**'
+      - "**"
 
 jobs:
     test:
@@ -32,4 +32,10 @@ jobs:
             env:
               NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
               NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+              TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+              TEST_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+              TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
+              TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
+              TEST_LEARNER_EMAIL: ${{ secrets.TEST_LEARNER_EMAIL }}
+              TEST_LEARNER_PASSWORD: ${{ secrets.TEST_LEARNER_PASSWORD }}
             run: pnpm run test:detailed
