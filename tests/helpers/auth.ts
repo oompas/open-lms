@@ -47,11 +47,13 @@ const signIn = async (admin: boolean) => {
  * @param admin True to sign in with the test admin user, false to sign in with the test learner user
  */
 const pollAccessToken = async (admin: boolean): Promise<string> => {
-    const endTime = Date.now() + 2000; // 2s timeout
-    const userType = admin ? 'ADMIN' : 'LEARNER';
 
     // First try to sign in to ensure we have the correct user
     await signIn(admin);
+
+    // Try for up to 2 seconds to get the user's session
+    const endTime = Date.now() + 2000;
+    const userType = admin ? 'ADMIN' : 'LEARNER';
 
     while (Date.now() < endTime) {
         const session = await supabaseClient.auth.getSession();
@@ -72,7 +74,7 @@ const pollAccessToken = async (admin: boolean): Promise<string> => {
             }
         }
 
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     throw new Error(`Timed out (>2 seconds) waiting for ${userType} access token`);
