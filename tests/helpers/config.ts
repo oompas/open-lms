@@ -28,6 +28,12 @@ for (const envar of envars) {
 const supabaseUrl = getEnvVariable('TEST_SUPABASE_URL');
 const supabaseAnonKey = getEnvVariable('TEST_SUPABASE_ANON_KEY');
 
-const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+        // Sessions can complicate test states, it's easier to just check and sign in again
+        autoRefreshToken: false,
+        persistSession: false
+    }
+});
 
 export { supabaseClient, getEnvVariable };
