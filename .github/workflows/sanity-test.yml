@@ -26,6 +26,8 @@ jobs:
           - name: Install global test tools
             run: pnpm install -g mocha ts-node
           - name: Deploy API to test
+            env:
+              TEST_SUPABASE_REF: ${{ secrets.TEST_SUPABASE_REF }}
             run: pnpm run deployTest
 
           - name: Run sanity tests
@@ -34,6 +36,7 @@ jobs:
               NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
               TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
               TEST_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+              TEST_SUPABASE_REF: ${{ secrets.TEST_SUPABASE_REF }}
               TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
               TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
               TEST_LEARNER_EMAIL: ${{ secrets.TEST_LEARNER_EMAIL }}
