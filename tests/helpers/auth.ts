@@ -1,5 +1,14 @@
 import { getEnvVariable, supabaseClient } from "./config.ts";
-import { SignInResponse } from '@supabase/supabase-js';
+
+interface SignInResponse {
+    session?: {
+        access_token: string;
+    };
+    user?: {
+        id: string;
+        email: string;
+    };
+}
 
 // Currently signed-in user
 let currentUserType: 'ADMIN' | 'LEARNER' | null = null;
