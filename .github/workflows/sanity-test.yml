@@ -25,6 +25,8 @@ jobs:
             run: pnpm install --frozen-lockfile
           - name: Install global test tools
             run: pnpm install -g mocha ts-node
+          - name: Deploy API to test
+            run: pnpm run deployTest
 
           - name: Run sanity tests
             env:
