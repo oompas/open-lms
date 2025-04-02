@@ -26,17 +26,6 @@ jobs:
           - name: Install global test tools
             run: pnpm install -g mocha ts-node
 
-          - name: Create .env.local file
-            run: |
-              echo "TEST_SUPABASE_URL=${{ secrets.TEST_SUPABASE_URL }}" > .env.local
-              echo "TEST_SUPABASE_ANON_KEY=${{ secrets.TEST_SUPABASE_ANON_KEY }}" >> .env.local
-              echo "TEST_ADMIN_EMAIL=${{ secrets.TEST_ADMIN_EMAIL }}" >> .env.local
-              echo "TEST_ADMIN_PASSWORD=${{ secrets.TEST_ADMIN_PASSWORD }}" >> .env.local
-              echo "TEST_LEARNER_EMAIL=${{ secrets.TEST_LEARNER_EMAIL }}" >> .env.local
-              echo "TEST_LEARNER_PASSWORD=${{ secrets.TEST_LEARNER_PASSWORD }}" >> .env.local
-              echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> .env.local
-              echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.local
-
           - name: Run sanity tests
             env:
               NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
