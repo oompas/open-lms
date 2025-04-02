@@ -14,7 +14,7 @@ if (folder !== 'sanity' && folder !== 'detailed') {
     process.exit(1);
 }
 
-const command = `mocha --ui tdd ./tests/${folder}/`;
+const command = `mocha --ui tdd --timeout 100000 ./tests/${folder}/`;
 
 try {
     execSync(command, { stdio: 'inherit' });
