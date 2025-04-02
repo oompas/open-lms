@@ -1,4 +1,5 @@
 import { getEnvVariable, supabaseClient } from "./config.ts";
+import { SignInResponse } from '@supabase/supabase-js';
 
 // Currently signed-in user
 let currentUserType: 'ADMIN' | 'LEARNER' | null = null;
@@ -8,7 +9,7 @@ let currentUserType: 'ADMIN' | 'LEARNER' | null = null;
  *
  * @param admin True to sign in with the test admin account, false to sign in with the test learner account
  */
-const signIn = async (admin: boolean): Promise<object> => {
+const signIn = async (admin: boolean): Promise<SignInResponse> => {
 
     const userType = admin ? 'ADMIN' : 'LEARNER';
 
@@ -16,7 +17,13 @@ const signIn = async (admin: boolean): Promise<object> => {
     if (currentUserType === userType) {
         const session = await supabaseClient.auth.getSession();
         if (session?.data?.session) {
-            return session.data;
+            const { data: { user, session: currentSession } } = await supabaseClient.auth.getUser();
+
+            // Return in SignInResponse format
+            return {
+                user: user!,
+                session: currentSession!
+            };
         }
     }
 
