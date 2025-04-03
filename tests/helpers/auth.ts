@@ -1,4 +1,5 @@
-import { getEnvVariable, supabaseClient } from "./config.ts";
+import { supabaseClient } from "./config.ts";
+import Constants from "./constants.ts";
 
 // Currently signed-in user
 let currentUserType: 'ADMIN' | 'LEARNER' | null = null;
@@ -25,8 +26,8 @@ const signIn = async (admin: boolean) => {
         await supabaseClient.auth.signOut();
     }
 
-    const email = getEnvVariable(`TEST_${userType}_EMAIL`);
-    const password = getEnvVariable(`TEST_${userType}_PASSWORD`);
+    const email = Constants.envars[`TEST_${userType}_EMAIL`];
+    const password = Constants.envars[`TEST_${userType}_PASSWORD`];
 
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
@@ -61,7 +62,7 @@ const pollAccessToken = async (admin: boolean): Promise<string> => {
         if (session?.data?.session?.access_token) {
             // Verify this is actually the correct user type by checking email
             const userEmail = session?.data?.session?.user?.email;
-            const expectedEmail = getEnvVariable(admin ? 'TEST_ADMIN_EMAIL' : 'TEST_LEARNER_EMAIL');
+            const expectedEmail = Constants.envars[`TEST_${userType}_EMAIL`];
 
             if (userEmail === expectedEmail) {
                 return session.data.session.access_token;
