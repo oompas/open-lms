@@ -1,7 +1,19 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
+import TestDatabaseHelper from "../helpers/database.ts";
 
-suite("Basic endpoints", function() {
+suite("Sanity Tests - Basic endpoints", function() {
+
+    suiteSetup(async function() {
+        console.log(`Wiping the database pre-test suite...`);
+        await TestDatabaseHelper.wipeDatabase();
+    });
+
+    teardown(async function() {
+        console.log(`Wiping database after test...`);
+        await TestDatabaseHelper.wipeDatabase();
+    });
+
 
     suite("get-courses", function() {
 
