@@ -36,6 +36,8 @@ jobs:
 
           - name: Run detailed tests
             env:
+              IS_SANITY: false
+
               NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
               NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
