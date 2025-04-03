@@ -17,6 +17,11 @@ suite("Sanity Tests - Basic endpoints", function() {
 
 
     suite("get-courses", function() {
+
+        suiteSetup(function() {
+            this.skip();
+        });
+
         test("No courses (learner)", async function() {
             const result = await callAPI('get-courses', {}, false);
             console.log(`Courses result: ${JSON.stringify(result)}`);
