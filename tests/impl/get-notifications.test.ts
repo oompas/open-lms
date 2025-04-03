@@ -6,12 +6,10 @@ import Constants from "../helpers/constants.ts";
 suite("get-notifications", function() {
 
     suiteSetup(async function() {
-        console.log(`Wiping the database pre-test suite...`);
         await TestDatabaseHelper.wipeDatabase();
     });
 
     teardown(async function() {
-        console.log(`Wiping database after test...`);
         await TestDatabaseHelper.wipeDatabase();
     });
 

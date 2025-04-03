@@ -10,6 +10,8 @@ class TestDatabaseHelper {
 
         if (error) {
             throw new Error(`Error wiping database: ${error.message}`);
+        } else {
+            console.log(`Database wiped!`);
         }
     }
 }
