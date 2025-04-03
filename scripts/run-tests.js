@@ -16,7 +16,7 @@ if (folder !== 'sanity' && folder !== 'detailed') {
 }
 
 // Setup and run test command
-const command = `mocha --ui tdd --timeout 10000 ./tests/${folder}/`;
+const command = `mocha --ui tdd --slow 1000 --timeout 10000 ./tests/${folder}/`;
 
 try {
     execSync(command, { stdio: 'inherit' });
