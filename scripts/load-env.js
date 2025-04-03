@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import { existsSync } from "fs";
 
+// Configures .env.local if present (local development)
 const envPath = '.env.local';
 if (existsSync(envPath)) {
     console.log(`.env.local file found (local development), configuring...`);

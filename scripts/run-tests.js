@@ -1,12 +1,5 @@
-import { config } from 'dotenv';
 import { execSync } from 'child_process';
-import { existsSync } from 'fs';
-
-// Load .env.local file if it exists
-const envPath = '.env.local';
-if (existsSync(envPath)) {
-    config({ path: envPath, override: false });
-}
+import './load-env.js';
 
 // Verify a valid test folder is specified
 const folder = process.argv[2].toLowerCase();
