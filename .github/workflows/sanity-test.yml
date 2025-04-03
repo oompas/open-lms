@@ -49,4 +49,4 @@ jobs:
               TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
               TEST_LEARNER_EMAIL: ${{ secrets.TEST_LEARNER_EMAIL }}
               TEST_LEARNER_PASSWORD: ${{ secrets.TEST_LEARNER_PASSWORD }}
-            run: pnpm run test:sanity
+            run: pnpm run test
