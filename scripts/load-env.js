@@ -9,3 +9,8 @@ if (existsSync(envPath)) {
 } else {
     console.log(`No .env.local file found (GitHub actions), skipping local envar config...`);
 }
+
+if (!process.env.IS_SANITY) {
+    throw new Error("Please specify the IS_SANITY envar manually (actions env: or set in your run" +
+        " script/configuration)");
+}
