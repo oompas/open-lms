@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
 import TestDatabaseHelper from "../helpers/database.ts";
+import Constants from "../helpers/constants.ts";
 
 suite("Sanity Tests - Basic endpoints", function() {
 
@@ -63,10 +64,10 @@ suite("Sanity Tests - Basic endpoints", function() {
             expect(result).to.be.an('object');
             expect(result).to.have.keys(['name', 'email', 'signUpDate', 'role', 'completedCourses']);
 
-            expect(result).to.have.property('name').equal("Testing learner account");
-            expect(result).to.have.property('email').equal("queens.openlms@gmail.com");
+            expect(result).to.have.property('name').equal(Constants.users.LearnerName);
+            expect(result).to.have.property('email').equal(Constants.users.LearnerEmail);
             expect(result).to.have.property('role').equal("Learner");
-            expect(result).to.have.property('signUpDate').equal("2024-11-25T00:05:16.199291Z");
+            expect(result).to.have.property('signUpDate').equal(Constants.users.LearnerSignup);
             expect(result).to.have.property('completedCourses').deep.equal([]);
         });
 
@@ -77,10 +78,10 @@ suite("Sanity Tests - Basic endpoints", function() {
             expect(result).to.be.an('object');
             expect(result).to.have.keys(['name', 'email', 'signUpDate', 'role', 'completedCourses']);
 
-            expect(result).to.have.property('name').equal("Testing admin account");
-            expect(result).to.have.property('email').equal("testing.queens.openlms@gmail.com");
+            expect(result).to.have.property('name').equal(Constants.users.AdminName);
+            expect(result).to.have.property('email').equal(Constants.users.AdminEmail);
             expect(result).to.have.property('role').equal("Admin");
-            expect(result).to.have.property('signUpDate').equal("2024-11-25T00:07:57.484637Z");
+            expect(result).to.have.property('signUpDate').equal(Constants.users.AdminSignup);
             expect(result).to.have.property('completedCourses').deep.equal([]);
         });
     });
