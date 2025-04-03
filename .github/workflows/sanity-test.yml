@@ -5,6 +5,9 @@ on:
     branches:
       - "**"
 
+concurrency:
+  group: test_runs
+
 jobs:
     test:
         runs-on: ubuntu-latest
