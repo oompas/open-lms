@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
 import TestDatabaseHelper from "../helpers/database.ts";
+import Constants from "../helpers/constants.ts";
 
 suite("get-notifications", function() {
 
@@ -14,7 +15,7 @@ suite("get-notifications", function() {
         await TestDatabaseHelper.wipeDatabase();
     });
 
-    suite("get-notifications", function() {
+    suite("Sanity", function() {
         test("No notifications (learner)", async function() {
             const result = await callAPI('get-notifications', {}, false);
             console.log(`Notifications result: ${JSON.stringify(result)}`);
@@ -29,6 +30,15 @@ suite("get-notifications", function() {
 
             expect(result).to.be.an('array');
             expect(result).to.deep.equal([]);
+        });
+    });
+
+    suite("Detailed", function() {
+
+        suiteSetup(function() {
+            if (Constants.IS_SANITY) {
+                this.skip();
+            }
         });
     });
 });

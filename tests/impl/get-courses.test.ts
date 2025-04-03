@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
 import TestDatabaseHelper from "../helpers/database.ts";
+import Constants from "../helpers/constants.ts";
 
 suite("get-courses", function() {
 
@@ -14,12 +15,7 @@ suite("get-courses", function() {
         await TestDatabaseHelper.wipeDatabase();
     });
 
-
-    suite("get-courses", function() {
-
-        suiteSetup(function() {
-            this.skip();
-        });
+    suite("Sanity", function() {
 
         test("No courses (learner)", async function() {
             const result = await callAPI('get-courses', {}, false);
@@ -35,6 +31,15 @@ suite("get-courses", function() {
 
             expect(result).to.be.an('array');
             expect(result).to.deep.equal([]);
+        });
+    });
+
+    suite("Detailed", function() {
+
+        suiteSetup(function() {
+            if (Constants.IS_SANITY) {
+                this.skip();
+            }
         });
     });
 });

@@ -15,7 +15,7 @@ suite("get-profile", function() {
         await TestDatabaseHelper.wipeDatabase();
     });
 
-    suite("get-profile", function() {
+    suite("Sanity", function() {
         test("User profile (learner)", async function() {
             const result = await callAPI('get-profile', {}, false);
             console.log(`Profile result: ${JSON.stringify(result)}`);
@@ -42,6 +42,15 @@ suite("get-profile", function() {
             expect(result).to.have.property('role').equal("Admin");
             expect(result).to.have.property('signUpDate').equal(Constants.users.AdminSignup);
             expect(result).to.have.property('completedCourses').deep.equal([]);
+        });
+    });
+
+    suite("Detailed", function() {
+
+        suiteSetup(function() {
+            if (Constants.IS_SANITY) {
+                this.skip();
+            }
         });
     });
 });
