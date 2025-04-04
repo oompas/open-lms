@@ -9,31 +9,50 @@ concurrency:
   group: test_runs
 
 jobs:
+    deploy:
+      runs-on: ubuntu-latest
+      environment: Production
+      timeout-minutes: 5
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Setup pnpm
+          uses: pnpm/action-setup@v4
+          with:
+            version: 9.5.0
+
+        - name: Install dependencies
+          run: pnpm install --frozen-lockfile
+
+        - name: Deploy API to test
+          env:
+            TEST_SUPABASE_REF: ${{ secrets.TEST_SUPABASE_REF }}
+            SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          run: pnpm run deployTest
+
     test:
+        needs: deploy
         runs-on: ubuntu-latest
         environment: Production
         timeout-minutes: 60
         steps:
           - name: Checkout repository
             uses: actions/checkout@v4
+
           - name: Setup pnpm
             uses: pnpm/action-setup@v4
             with:
               version: 9.5.0
+
           - name: Setup Node.js
             uses: actions/setup-node@v4
             with:
-              node-version: 20.x
+              node-version: '22.x'
               cache: 'pnpm'
+
           - name: Install dependencies
             run: pnpm install --frozen-lockfile
-          - name: Install global test tools
-            run: pnpm install -g mocha ts-node
-          - name: Deploy API to test
-            env:
-              TEST_SUPABASE_REF: ${{ secrets.TEST_SUPABASE_REF }}
-              SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-            run: pnpm run deployTest
 
           - name: Run detailed tests
             env:
@@ -41,7 +60,6 @@ jobs:
 
               TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
               TEST_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
-              TEST_SUPABASE_REF: ${{ secrets.TEST_SUPABASE_REF }}
 
               TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
               TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
