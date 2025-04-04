@@ -32,7 +32,7 @@ jobs:
             run: pnpm install --frozen-lockfile
 
           - name: Install global test tools
-            run: pnpm install -g mocha ts-node
+            run: pnpm install -g mocha
 
           - name: Deploy API to test
             env:
