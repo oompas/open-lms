@@ -96,7 +96,7 @@ class TestCourseGenerator {
     public static async generateDummyCourses(count: number) {
         TestCourseGenerator.generatedIds.clear();
         for (let i = 0; i < count; i++) {
-            await this.generateDummyCourse();
+            await TestCourseGenerator.generateDummyCourse();
         }
         TestCourseGenerator.generatedIds.clear();
     }
