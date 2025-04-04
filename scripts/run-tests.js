@@ -2,7 +2,7 @@ import { execSync } from 'child_process';
 import './load-env.js';
 
 // Setup and run test command
-const command = `mocha --ui tdd --slow 1000 --timeout 10000 ./tests/`;
+const command = `mocha --require ts-node/register --ui tdd --slow 1000 --timeout 10000 ./tests/`;
 
 try {
     execSync(command, { stdio: 'inherit' });

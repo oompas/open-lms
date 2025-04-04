@@ -31,9 +31,6 @@ jobs:
           - name: Install dependencies
             run: pnpm install --frozen-lockfile
 
-          - name: Install global test tools
-            run: pnpm install -g ts-node
-
           - name: Deploy API to test
             env:
               TEST_SUPABASE_REF: ${{ secrets.TEST_SUPABASE_REF }}
