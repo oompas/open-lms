@@ -29,9 +29,16 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
             {
                 limit: 1
             });
+
+    // If there is no returned course, the course doesn't exist or is inactive
     if (result === null) {
-        throw new InputError(`Course with id '${courseId}' does not exist or is inactive`);
+        const result = await CourseService.query(`*`, ['eq', 'id', courseId], { limit: 1 });
+        if (result == null) {
+            throw new InputError(`Course with id '${courseId}' does not exist`);
+        }
+        throw new InputError(`Course with id '${courseId}' is inactive`);
     }
+
     const { course_attempt: courseAttempts, enrolled_course: [enrollment], ...course } = result;
     let courseStatus = enrollment?.status ?? CourseStatus.NOT_ENROLLED;
 
