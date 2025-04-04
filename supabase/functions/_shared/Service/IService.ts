@@ -107,7 +107,7 @@ abstract class IService {
             }
 
             // Handle no data returned from the query
-            // Note: limit = 1 is a special cases that returns the object (or null) insetad of an array
+            // Note: limit = 1 is a special cases that returns the object (or null) instead of an array
             if (!data || data.length === 0) {
                 return options.limit === 1 ? null : [];
             }

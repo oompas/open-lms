@@ -43,8 +43,6 @@ suite("create-course", function() {
             expect(createCourseResult).to.be.a('number');
             expect(Number.isInteger(createCourseResult)).to.be.true;
 
-            await new Promise(resolve => setTimeout(resolve, 30 * 1000));
-
             // Get the course data
             const getCourseDataResult = await callAPI('get-course-data', { courseId: createCourseResult }, true);
             console.log(`Courses result: ${JSON.stringify(getCourseDataResult)}`);
