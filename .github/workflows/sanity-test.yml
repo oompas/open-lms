@@ -9,10 +9,39 @@ concurrency:
   group: test_runs
 
 jobs:
+    deploy:
+      runs-on: ubuntu-latest
+      environment: Production
+      timeout-minutes: 5
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Setup pnpm
+          uses: pnpm/action-setup@v4
+          with:
+            version: 9.5.0
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: '22.x'
+            cache: 'pnpm'
+
+        - name: Install dependencies
+          run: pnpm install --frozen-lockfile
+
+        - name: Deploy API to test
+          env:
+            TEST_SUPABASE_REF: ${{ secrets.TEST_SUPABASE_REF }}
+            SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          run: pnpm run deployTest
+
     test:
+        needs: deploy
         runs-on: ubuntu-latest
         environment: Production
-        timeout-minutes: 10
+        timeout-minutes: 5
         steps:
           - name: Checkout repository
             uses: actions/checkout@v4
@@ -30,12 +59,6 @@ jobs:
 
           - name: Install dependencies
             run: pnpm install --frozen-lockfile
-
-          - name: Deploy API to test
-            env:
-              TEST_SUPABASE_REF: ${{ secrets.TEST_SUPABASE_REF }}
-              SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-            run: pnpm run deployTest
 
           - name: Run sanity tests
             env:
