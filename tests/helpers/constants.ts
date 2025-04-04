@@ -9,8 +9,6 @@ const getEnvVariable = (key: string): string => {
 const Constants = {
     IS_SANITY: getEnvVariable('IS_SANITY'),
     envars: {
-        NEXT_PUBLIC_SUPABASE_URL: getEnvVariable("NEXT_PUBLIC_SUPABASE_URL"),
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: getEnvVariable("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
         TEST_SUPABASE_URL: getEnvVariable("TEST_SUPABASE_URL"),
         TEST_SUPABASE_ANON_KEY: getEnvVariable("TEST_SUPABASE_ANON_KEY"),
         TEST_ADMIN_EMAIL: getEnvVariable("TEST_ADMIN_EMAIL"),
