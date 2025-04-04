@@ -20,16 +20,33 @@ const callAPI = async (endpoint: string, body: object, admin: boolean): Promise<
         const { data, error } = await supabaseClient.functions.invoke(endpoint, options);
 
         if (error) {
-            const errorResponse = await error.response.json();
+            let errorMessage;
 
-            console.log(`Error invoking function: ${errorResponse}`);
-            return { error: errorResponse };
+            // Safely try to extract detailed error information
+            try {
+                if (error.response && typeof error.response.json === 'function') {
+                    const errorResponse = await error.response.json();
+                    errorMessage = JSON.stringify(errorResponse);
+                } else if (error.message) {
+                    errorMessage = error.message;
+                } else if (typeof error === 'string') {
+                    errorMessage = error;
+                } else {
+                    errorMessage = JSON.stringify(error);
+                }
+            } catch (jsonError) {
+                errorMessage = `Error parsing error response: ${error.message || JSON.stringify(error)}`;
+            }
+
+            console.log(`Error invoking function: ${errorMessage}`);
+            return { error: errorMessage };
         }
 
         return data;
     } catch (error: any) {
-        console.error(`Error invoking Supabase Edge Function '${endpoint}': ${JSON.stringify(error)} '${error.message}'`);
-        return { error: error.message };
+        const errorMessage = error.message || JSON.stringify(error);
+        console.error(`Uncaught error invoking Supabase Edge Function '${endpoint}': ${errorMessage}`);
+        return { error: errorMessage };
     }
 }
 
