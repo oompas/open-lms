@@ -11,6 +11,7 @@ const Constants = {
     envars: {
         TEST_SUPABASE_URL: getEnvVariable("TEST_SUPABASE_URL"),
         TEST_SUPABASE_ANON_KEY: getEnvVariable("TEST_SUPABASE_ANON_KEY"),
+
         TEST_ADMIN_EMAIL: getEnvVariable("TEST_ADMIN_EMAIL"),
         TEST_ADMIN_PASSWORD: getEnvVariable("TEST_ADMIN_PASSWORD"),
         TEST_LEARNER_EMAIL: getEnvVariable("TEST_LEARNER_EMAIL"),
