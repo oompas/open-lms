@@ -1,5 +1,6 @@
 import { callAPI } from "../api.ts";
 import { expect } from "chai";
+import { faker } from '@faker-js/faker';
 
 interface CourseData {
     name: string;
@@ -20,68 +21,70 @@ interface QuestionData {
     answers?: string[];    // For MC
 }
 
+const randInt = (min: number, max: number) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Generates random int in the given range (both inclusive)
 class TestCourseGenerator {
-
-    private static generatedIds: Set<number> = new Set<number>();
-
-    // Generated unique dummy course id (note: This is not for the database primary key)
-    private static generateDummyId(): number {
-        let dummyId: number;
-
-        while (true) {
-            dummyId = Math.floor(Math.random() * 100_000) + 1;
-            if (!TestCourseGenerator.generatedIds.has(dummyId)) {
-                TestCourseGenerator.generatedIds.add(dummyId);
-                return dummyId;
-            }
-        }
-    }
 
     /**
      * Adds a randomly generated test course to the database
      */
     public static async generateDummyCourse() {
-        const dummyId = TestCourseGenerator.generateDummyId();
 
-        const courseName = `Dummy Course ${dummyId}`;
-        const courseDescription = `This is a dummy course number ${dummyId} for testing purposes.`;
-        const courseLink = `www.dummycourse${dummyId}.com`;
-        const minTime = dummyId % 3 === 0 ? 60 : null; // Some courses with min time
-        const maxQuizAttempts = dummyId % 2 === 0 ? 3 : null; // Some with limited attempts
-        const quizTimeLimit = dummyId % 4 === 0 ? 300 : null; // Some with time limit
-        const preserveQuizQuestionOrder = dummyId % 2 === 0;
-
+        // Generate course data
         const courseData: CourseData = {
-            name: courseName,
-            description: courseDescription,
-            link: courseLink,
-            minTime: minTime,
-            maxQuizAttempts: maxQuizAttempts,
-            minQuizScore: 0, // Set later (depends on quiz total marks)
-            quizTimeLimit: quizTimeLimit,
-            preserveQuizQuestionOrder: preserveQuizQuestionOrder,
+            name: faker.lorem.words(randInt(2, 8)),
+            description: faker.lorem.paragraph(),
+            link: faker.internet.url(),
+            minTime: faker.datatype.boolean() ? Math.floor(Math.random() * 240) + 30 : null,
+
+            maxQuizAttempts: faker.datatype.boolean() ? Math.floor(Math.random() * 5) + 1 : null,
+            minQuizScore: 0, // Set later (depends on total quiz marks)
+            quizTimeLimit: faker.datatype.boolean() ? Math.floor(Math.random() * 7) * 15 + 15 : null,
+            preserveQuizQuestionOrder: faker.datatype.boolean()
         };
 
-        const quizQuestions: QuestionData[] = [
-            {
-                type: "TF",
-                question: `Question 1 for ${courseName}: True or false?`,
-                marks: Math.floor(Math.random() * 2) + 1,
-                correctAnswer: dummyId % 2, // Alternate true/false
-            },
-            {
-                type: "MC",
-                question: `Question 2 for ${courseName}: Choose the correct option.`,
-                marks: Math.floor(Math.random() * 6) + 1,
-                correctAnswer: 1,
-                answers: ["Option A", "Option B", "Option C", "Option D"],
-            },
-            {
-                type: "SA",
-                question: `Question 3 for ${courseName}: Short answer question.`,
-                marks: Math.floor(Math.random() * 10) + 1,
-            },
-        ];
+        // Generate quiz questions
+        const numberOfQuestions = randInt(1, 10);
+        const quizQuestions: QuestionData[] = [];
+
+        for (let i = 0; i < numberOfQuestions; i++) {
+            const questionType = faker.helpers.arrayElement<"TF" | "MC" | "SA">(["TF", "MC", "SA"]);
+            const marks = randInt(1, 10);
+            const questionText = faker.lorem.sentence();
+
+            switch (questionType) {
+                case "TF":
+                    quizQuestions.push({
+                        type: "TF",
+                        question: questionText,
+                        marks: marks,
+                        correctAnswer: faker.datatype.boolean() ? 1 : 0,
+                    });
+                    break;
+                case "MC":
+                    const numberOfAnswers = faker.datatype.number({ min: 2, max: 5 });
+                    const answers: string[] = Array.from({ length: numberOfAnswers }, () => faker.lorem.word());
+                    const correctAnswerIndex = faker.datatype.number({ min: 0, max: numberOfAnswers - 1 });
+                    quizQuestions.push({
+                        type: "MC",
+                        question: questionText,
+                        marks: marks,
+                        correctAnswer: correctAnswerIndex,
+                        answers: answers,
+                    });
+                    break;
+                case "SA":
+                    quizQuestions.push({
+                        type: "SA",
+                        question: questionText,
+                        marks: marks,
+                    });
+                    break;
+            }
+        }
 
         const totalMarks = quizQuestions.reduce((sum, question) => sum + question.marks, 0);
         courseData.minQuizScore = Math.floor(Math.random() * totalMarks) + 1; // Random score between 1 and total marks
@@ -93,12 +96,15 @@ class TestCourseGenerator {
         expect(Number.isInteger(createCourseResult)).to.be.true;
     }
 
+    /**
+     * Generates a specified number of dummy courses
+     *
+     * @param count Number of courses to generate
+     */
     public static async generateDummyCourses(count: number) {
-        TestCourseGenerator.generatedIds.clear();
         for (let i = 0; i < count; i++) {
             await TestCourseGenerator.generateDummyCourse();
         }
-        TestCourseGenerator.generatedIds.clear();
     }
 }
 
