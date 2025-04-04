@@ -43,6 +43,12 @@ suite("create-course", function() {
             expect(createCourseResult).to.be.a('number');
             expect(Number.isInteger(createCourseResult)).to.be.true;
 
+            // Set course as active
+            const activeCourseResult = await callAPI('set-course-visibility', { courseId: createCourseResult, active: true }, true);
+            console.log(`Courses active set result: ${JSON.stringify(activeCourseResult)}`);
+
+            expect(activeCourseResult).to.be.null;
+
             // Get the course data
             const getCourseDataResult = await callAPI('get-course-data', { courseId: createCourseResult }, true);
             console.log(`Courses result: ${JSON.stringify(getCourseDataResult)}`);
