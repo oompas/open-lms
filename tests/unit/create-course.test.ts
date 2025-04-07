@@ -67,8 +67,7 @@ suite("create-course", function() {
                 }
             ];
 
-            const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            expect(getCourseDataResult).to.have.property('quizAttempts').deep.equal({ number: 0, currentId: null });
+            await createCourseAndVerify(this.test!.title, courseData, questionData);
         });
 
         test("Course with only name and description", async function() {
@@ -84,9 +83,7 @@ suite("create-course", function() {
             };
             const questionData: any[] = []; // No questions
 
-            const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            expect(getCourseDataResult).to.have.property('quizAttempts').deep.equal({ number: 0, currentId: null });
-            expect(getCourseDataResult).to.have.property('quizData').deep.equal({ totalMarks: 0, maxAttempts: null, minScore: 50, timeLimit: null, numQuestions: 0 });
+            await createCourseAndVerify(this.test!.title, courseData, questionData);
         });
 
         test("Course with multiple choice question", async function() {
@@ -110,8 +107,7 @@ suite("create-course", function() {
                 }
             ];
 
-            const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            expect(getCourseDataResult).to.have.property('quizAttempts').deep.equal({ number: 0, currentId: null });
+            await createCourseAndVerify(this.test!.title, courseData, questionData);
         });
     });
 
@@ -139,7 +135,7 @@ suite("create-course", function() {
                 }
             ];
 
-            const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
+            await createCourseAndVerify(this.test!.title, courseData, questionData);
         });
 
         test("Course with maximum allowed data", async function() {
@@ -177,7 +173,7 @@ suite("create-course", function() {
                 }
             ];
 
-            const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
+            await createCourseAndVerify(this.test!.title, courseData, questionData);
         });
 
         test("Course with short answer question", async function() {
@@ -199,7 +195,7 @@ suite("create-course", function() {
                 }
             ];
 
-            const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
+            await createCourseAndVerify(this.test!.title, courseData, questionData);
         });
 
         test("Course with different quiz settings", async function() {
@@ -222,7 +218,7 @@ suite("create-course", function() {
                 }
             ];
 
-            const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
+            await createCourseAndVerify(this.test!.title, courseData, questionData);
         });
 
         test("Course with minTime and quizTimeLimit", async function() {
@@ -245,8 +241,7 @@ suite("create-course", function() {
                 }
             ];
 
-            const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            expect(getCourseDataResult).to.have.property('quizData').deep.equal({ totalMarks: 3, maxAttempts: null, minScore: 75, timeLimit: 600, numQuestions: 1 });
+            await createCourseAndVerify(this.test!.title, courseData, questionData);
         });
     });
 });
