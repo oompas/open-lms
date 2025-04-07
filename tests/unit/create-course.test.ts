@@ -1,17 +1,11 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
-import TestDatabaseHelper from "../helpers/database.ts";
+import { setupWipeDb } from "../helpers/mocha.ts";
 
 suite("create-course", function() {
     let testStartTime: number;
 
-    suiteSetup(async function() {
-        await TestDatabaseHelper.wipeDatabase();
-    });
-
-    teardown(async function() {
-        await TestDatabaseHelper.wipeDatabase();
-    });
+    setupWipeDb();
 
     function startTimer() {
         testStartTime = performance.now();

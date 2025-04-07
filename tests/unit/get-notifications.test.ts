@@ -1,17 +1,11 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
-import TestDatabaseHelper from "../helpers/database.ts";
 import Constants from "../helpers/constants.ts";
+import { setupWipeDb } from "../helpers/mocha.ts";
 
 suite("get-notifications", function() {
 
-    suiteSetup(async function() {
-        await TestDatabaseHelper.wipeDatabase();
-    });
-
-    teardown(async function() {
-        await TestDatabaseHelper.wipeDatabase();
-    });
+    setupWipeDb();
 
     suite("Sanity", function() {
         test("No notifications (learner)", async function() {
