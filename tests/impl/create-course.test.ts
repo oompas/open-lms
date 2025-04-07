@@ -59,9 +59,9 @@ suite("create-course", function() {
         const totalMarks = expectedQuestionData.reduce((sum: number, q: any) => sum + q.marks, 0);
         expect(actualData).to.have.property('quizData').deep.equal({
             totalMarks: totalMarks,
-            maxAttempts: expectedCourseData.maxQuizAttempts !== undefined ? expectedCourseData.maxQuizAttempts : null,
+            maxAttempts: expectedCourseData.maxQuizAttempts ?? null,
             minScore: expectedCourseData.minQuizScore,
-            timeLimit: expectedCourseData.quizTimeLimit !== undefined ? expectedCourseData.quizTimeLimit : null,
+            timeLimit: expectedCourseData.quizTimeLimit ?? null,
             numQuestions: expectedQuestionData.length,
         });
     }
