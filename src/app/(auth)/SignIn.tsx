@@ -12,7 +12,9 @@ export default function SignIn({ setIsSignIn }) {
     const [email, setEmail] = useState("");
     const [password, setPass] = useState("");
     const [error, setError] = useState(null);
+
     const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+    const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
 
     const submitSignIn = async () => {
         setError(null);
@@ -26,7 +28,7 @@ export default function SignIn({ setIsSignIn }) {
     };
 
     const sendResetEmail = async () => {
-        const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email);
+        const { data, error } = await supabaseClient.auth.resetPasswordForEmail(forgotPasswordEmail);
 
         if (!error) {
             console.log(`Sent forgot password! Data: ${JSON.stringify(data, null, 4)}`);
@@ -54,8 +56,8 @@ export default function SignIn({ setIsSignIn }) {
                     <p className="mb-1 text-md">Email</p>
                     <TextField
                         style="w-full"
-                        text={email}
-                        onChange={setEmail}
+                        text={forgotPasswordEmail}
+                        onChange={setForgotPasswordEmail}
                         placeholder="john.smith@gmail.com"
                     />
 
