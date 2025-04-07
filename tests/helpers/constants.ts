@@ -25,6 +25,14 @@ const Constants = {
         AdminName: "Testing admin account",
         AdminEmail: getEnvVariable("TEST_ADMIN_EMAIL"),
         AdminSignup: "2024-11-25T00:07:57.484637Z"
+    },
+    courseStatus: {
+        NOT_ENROLLED: "NOT_ENROLLED",
+        ENROLLED: "ENROLLED",
+        IN_PROGRESS: "IN_PROGRESS",
+        AWAITING_MARKING: "AWAITING_MARKING",
+        FAILED: "FAILED",
+        COMPLETED: "COMPLETED"
     }
 }
 

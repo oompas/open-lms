@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
 import { sanitySkipDetailed, setupWipeDb } from "../helpers/mocha.ts";
+import Constants from "../helpers/constants.ts";
 
 suite("create-course", function() {
 
@@ -8,28 +9,28 @@ suite("create-course", function() {
 
     async function createCourseAndVerify(testName: string, courseData: any, questionData: any) {
 
+        // First, create the course (this returns the course ID)
         const createCourseResult = await callAPI('create-course', { course: courseData, quizQuestions: questionData }, true);
-
         expect(createCourseResult).to.be.a('number');
         expect(Number.isInteger(createCourseResult)).to.be.true;
 
+        // Next, activate the course (it can;t be queried otherwise)
         const activeCourseResult = await callAPI('set-course-visibility', { courseId: createCourseResult, active: true }, true);
         expect(activeCourseResult).to.be.null;
 
+        // Lastly, get the course's data and validate it
         const getCourseDataResult = await callAPI('get-course-data', { courseId: createCourseResult }, true);
         expect(getCourseDataResult).to.be.an('object');
         expect(getCourseDataResult).to.have.keys(['id', 'active', 'name', 'description', 'link', 'status', 'minTime', 'quizData', 'courseAttempt', 'quizAttempts']);
 
         expect(getCourseDataResult).to.have.property('id').equal(createCourseResult);
         expect(getCourseDataResult).to.have.property('active').equal(true);
-
-        // Validate course data
         expect(getCourseDataResult).to.have.property('name').equal(courseData.name);
         expect(getCourseDataResult).to.have.property('description').equal(courseData.description);
         expect(getCourseDataResult).to.have.property('link').equal(courseData.link);
+        expect(getCourseDataResult).to.have.property('status').equal(Constants.courseStatus.NOT_ENROLLED);
         expect(getCourseDataResult).to.have.property('minTime').equal(courseData.minTime);
 
-        // Validate quiz data
         const totalMarks = questionData.reduce((sum: number, q: any) => sum + q.marks, 0);
         expect(getCourseDataResult).to.have.property('quizData').deep.equal({
             totalMarks: totalMarks,
@@ -38,6 +39,9 @@ suite("create-course", function() {
             timeLimit: courseData.quizTimeLimit ?? null,
             numQuestions: questionData.length,
         });
+
+        expect(getCourseDataResult).to.have.property('courseAttempt').to.be.null;
+        expect(getCourseDataResult).to.have.property('quizAttempts').deep.equal({ number: 0, currentId: null });
 
         return getCourseDataResult;
     }
