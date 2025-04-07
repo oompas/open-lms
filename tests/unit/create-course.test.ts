@@ -45,18 +45,17 @@ suite("create-course", function() {
         expect(getCourseDataResult).to.have.property('link').equal(courseData.link);
         expect(getCourseDataResult).to.have.property('minTime').equal(courseData.minTime);
 
-        return getCourseDataResult;
-    }
-
-    function assertQuizData(actualData: any, expectedCourseData: any, expectedQuestionData: any) {
-        const totalMarks = expectedQuestionData.reduce((sum: number, q: any) => sum + q.marks, 0);
-        expect(actualData).to.have.property('quizData').deep.equal({
+        // Validate quiz data
+        const totalMarks = questionData.reduce((sum: number, q: any) => sum + q.marks, 0);
+        expect(getCourseDataResult).to.have.property('quizData').deep.equal({
             totalMarks: totalMarks,
-            maxAttempts: expectedCourseData.maxQuizAttempts ?? null,
-            minScore: expectedCourseData.minQuizScore,
-            timeLimit: expectedCourseData.quizTimeLimit ?? null,
-            numQuestions: expectedQuestionData.length,
+            maxAttempts: courseData.maxQuizAttempts ?? null,
+            minScore: courseData.minQuizScore,
+            timeLimit: courseData.quizTimeLimit ?? null,
+            numQuestions: questionData.length,
         });
+
+        return getCourseDataResult;
     }
 
     suite("Sanity", function() {
@@ -81,7 +80,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertQuizData(getCourseDataResult, courseData, questionData);
             expect(getCourseDataResult).to.have.property('quizAttempts').deep.equal({ number: 0, currentId: null });
         });
 
@@ -99,7 +97,6 @@ suite("create-course", function() {
             const questionData: any[] = []; // No questions
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertQuizData(getCourseDataResult, courseData, questionData);
             expect(getCourseDataResult).to.have.property('quizAttempts').deep.equal({ number: 0, currentId: null });
             expect(getCourseDataResult).to.have.property('quizData').deep.equal({ totalMarks: 0, maxAttempts: null, minScore: 50, timeLimit: null, numQuestions: 0 });
         });
@@ -126,7 +123,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertQuizData(getCourseDataResult, courseData, questionData);
             expect(getCourseDataResult).to.have.property('quizAttempts').deep.equal({ number: 0, currentId: null });
         });
     });
@@ -156,7 +152,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertQuizData(getCourseDataResult, courseData, questionData);
         });
 
         test("Course with maximum allowed data", async function() {
@@ -195,7 +190,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertQuizData(getCourseDataResult, courseData, questionData);
         });
 
         test("Course with short answer question", async function() {
@@ -218,7 +212,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertQuizData(getCourseDataResult, courseData, questionData);
         });
 
         test("Course with different quiz settings", async function() {
@@ -242,7 +235,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertQuizData(getCourseDataResult, courseData, questionData);
         });
 
         test("Course with minTime and quizTimeLimit", async function() {
@@ -266,7 +258,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertQuizData(getCourseDataResult, courseData, questionData);
             expect(getCourseDataResult).to.have.property('quizData').deep.equal({ totalMarks: 3, maxAttempts: null, minScore: 75, timeLimit: 600, numQuestions: 1 });
         });
     });
