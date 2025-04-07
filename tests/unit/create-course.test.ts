@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
-import { setupWipeDb } from "../helpers/mocha.ts";
+import { sanitySkipDetailed, setupWipeDb } from "../helpers/mocha.ts";
 
 suite("create-course", function() {
     let testStartTime: number;
@@ -137,6 +137,7 @@ suite("create-course", function() {
 
     suite("Detailed", function() {
 
+        sanitySkipDetailed();
 
         test("Course with minimum allowed data", async function() {
             const courseData = {

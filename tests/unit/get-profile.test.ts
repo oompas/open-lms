@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
 import Constants from "../helpers/constants.ts";
-import { setupWipeDb } from "../helpers/mocha.ts";
+import { sanitySkipDetailed, setupWipeDb } from "../helpers/mocha.ts";
 
 suite("get-profile", function() {
 
@@ -39,10 +39,6 @@ suite("get-profile", function() {
 
     suite("Detailed", function() {
 
-        suiteSetup(function() {
-            if (Constants.IS_SANITY) {
-                this.skip();
-            }
-        });
+        sanitySkipDetailed();
     });
 });
