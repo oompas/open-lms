@@ -39,14 +39,13 @@ suite("create-course", function() {
         expect(getCourseDataResult).to.have.property('id').equal(createCourseResult);
         expect(getCourseDataResult).to.have.property('active').equal(true);
 
-        return getCourseDataResult;
-    }
+        // Validate course data
+        expect(getCourseDataResult).to.have.property('name').equal(courseData.name);
+        expect(getCourseDataResult).to.have.property('description').equal(courseData.description);
+        expect(getCourseDataResult).to.have.property('link').equal(courseData.link);
+        expect(getCourseDataResult).to.have.property('minTime').equal(courseData.minTime);
 
-    function assertCourseData(actualData: any, expectedData: any) {
-        expect(actualData).to.have.property('name').equal(expectedData.name);
-        expect(actualData).to.have.property('description').equal(expectedData.description);
-        expect(actualData).to.have.property('link').equal(expectedData.link);
-        expect(actualData).to.have.property('minTime').equal(expectedData.minTime);
+        return getCourseDataResult;
     }
 
     function assertQuizData(actualData: any, expectedCourseData: any, expectedQuestionData: any) {
@@ -82,7 +81,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertCourseData(getCourseDataResult, courseData);
             assertQuizData(getCourseDataResult, courseData, questionData);
             expect(getCourseDataResult).to.have.property('quizAttempts').deep.equal({ number: 0, currentId: null });
         });
@@ -101,7 +99,6 @@ suite("create-course", function() {
             const questionData: any[] = []; // No questions
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertCourseData(getCourseDataResult, courseData);
             assertQuizData(getCourseDataResult, courseData, questionData);
             expect(getCourseDataResult).to.have.property('quizAttempts').deep.equal({ number: 0, currentId: null });
             expect(getCourseDataResult).to.have.property('quizData').deep.equal({ totalMarks: 0, maxAttempts: null, minScore: 50, timeLimit: null, numQuestions: 0 });
@@ -129,7 +126,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertCourseData(getCourseDataResult, courseData);
             assertQuizData(getCourseDataResult, courseData, questionData);
             expect(getCourseDataResult).to.have.property('quizAttempts').deep.equal({ number: 0, currentId: null });
         });
@@ -160,7 +156,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertCourseData(getCourseDataResult, courseData);
             assertQuizData(getCourseDataResult, courseData, questionData);
         });
 
@@ -200,7 +195,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertCourseData(getCourseDataResult, courseData);
             assertQuizData(getCourseDataResult, courseData, questionData);
         });
 
@@ -224,7 +218,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertCourseData(getCourseDataResult, courseData);
             assertQuizData(getCourseDataResult, courseData, questionData);
         });
 
@@ -249,7 +242,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertCourseData(getCourseDataResult, courseData);
             assertQuizData(getCourseDataResult, courseData, questionData);
         });
 
@@ -274,7 +266,6 @@ suite("create-course", function() {
             ];
 
             const getCourseDataResult = await createCourseAndVerify(this.test!.title, courseData, questionData);
-            assertCourseData(getCourseDataResult, courseData);
             assertQuizData(getCourseDataResult, courseData, questionData);
             expect(getCourseDataResult).to.have.property('quizData').deep.equal({ totalMarks: 3, maxAttempts: null, minScore: 75, timeLimit: 600, numQuestions: 1 });
         });
