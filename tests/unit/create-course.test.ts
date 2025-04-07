@@ -3,36 +3,20 @@ import { callAPI } from "../helpers/api.ts";
 import { sanitySkipDetailed, setupWipeDb } from "../helpers/mocha.ts";
 
 suite("create-course", function() {
-    let testStartTime: number;
 
     setupWipeDb();
 
-    function startTimer() {
-        testStartTime = performance.now();
-    }
-
-    function logTime(testName: string) {
-        const endTime = performance.now();
-        const duration = endTime - testStartTime;
-        console.log(`Test "${testName}" took ${duration.toFixed(2)} ms`);
-    }
-
     async function createCourseAndVerify(testName: string, courseData: any, questionData: any) {
-        startTimer();
+
         const createCourseResult = await callAPI('create-course', { course: courseData, quizQuestions: questionData }, true);
-        logTime(`${testName} - Create Course API`);
 
         expect(createCourseResult).to.be.a('number');
         expect(Number.isInteger(createCourseResult)).to.be.true;
 
-        startTimer();
         const activeCourseResult = await callAPI('set-course-visibility', { courseId: createCourseResult, active: true }, true);
-        logTime(`${testName} - Set Course Active API`);
         expect(activeCourseResult).to.be.null;
 
-        startTimer();
         const getCourseDataResult = await callAPI('get-course-data', { courseId: createCourseResult }, true);
-        logTime(`${testName} - Get Course Data API`);
         expect(getCourseDataResult).to.be.an('object');
         expect(getCourseDataResult).to.have.keys(['id', 'active', 'name', 'description', 'link', 'status', 'minTime', 'quizData', 'courseAttempt', 'quizAttempts']);
 
