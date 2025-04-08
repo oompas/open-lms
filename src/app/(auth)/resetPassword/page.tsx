@@ -5,9 +5,12 @@ import { supabaseClient } from '@/helpers/supabase.ts';
 import Button from "@/components/Button.tsx";
 
 const ResetPasswordPage = () => {
+
+    const [tokenValid, setTokenValid] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const [message, setMessage] = useState('');
     const [passwordUpdated, setPasswordUpdated] = useState(false);
+
     const router = useRouter();
 
     useEffect(() => {
@@ -17,6 +20,9 @@ const ResetPasswordPage = () => {
 
         if (!accessToken) {
             setMessage('Invalid or expired token.');
+            setTokenValid(false);
+        } else {
+            setTokenValid(true);
         }
     }, []);
 
@@ -77,13 +83,13 @@ const ResetPasswordPage = () => {
                             id="newPassword"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            required
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            disabled={!tokenValid}
                         />
                     </div>
                     <div className="flex justify-between">
                         <Button text={"Cancel"} onClick={() => router.push('/')} icon="arrow-back" iconBefore/>
-                        <Button text={"Reset Password"} onClick={async () => await handleResetPassword()} filled style=""/>
+                        <Button text={"Reset Password"} onClick={async () => await handleResetPassword()} disabled={!tokenValid} filled/>
                     </div>
                 </div>
 
