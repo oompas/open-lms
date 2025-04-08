@@ -180,11 +180,7 @@ class EdgeFunctionRequest {
      * @param userId User ID of the user to get
      * @param adminCheck true to verify the requesting user is an admin before getting user
      */
-    public getUserById = async (userId: string, adminCheck: boolean = true): Promise<object> => {
-
-        if (adminCheck && !this.isAdmin) {
-            throw new ApiError("Only admins can get specific users by id - this call shouldn't happen");
-        }
+    public getUserById = async (userId: string): Promise<object> => {
 
         const { data, error } = await adminClient.auth.admin.getUserById(userId);
 
@@ -199,10 +195,6 @@ class EdgeFunctionRequest {
      * Gets all users on the app
      */
     public getAllUsers = async (): Promise<any[]> => {
-
-        if (!this.isAdmin) {
-            throw new ApiError("Only admins can get all users - this call shouldn't happen");
-        }
 
         const { data, error } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
 

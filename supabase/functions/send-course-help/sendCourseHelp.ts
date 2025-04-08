@@ -11,7 +11,7 @@ const sendCourseHelp = async (request: EdgeFunctionRequest) => {
     const user = request.getRequestUser();
 
     const course = await CourseService.getById(courseId);
-    const courseCreator = await request.getUserById(course.user_id, false);
+    const courseCreator = await request.getUserById(course.user_id); // TODO: Store email in course
 
     request.log(`Queried course (${JSON.stringify(course)}) and course creator ${courseCreator.email}`);
 
