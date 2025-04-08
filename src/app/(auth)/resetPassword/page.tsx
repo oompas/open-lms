@@ -21,8 +21,6 @@ const ResetPasswordPage = () => {
     }, []);
 
     const handleResetPassword = async (e: React.FormEvent) => {
-        e.preventDefault();
-
         setMessage('');
 
         if (!newPassword) {
@@ -69,7 +67,7 @@ const ResetPasswordPage = () => {
                         {message}
                     </div>
                 )}
-                <form onSubmit={handleResetPassword} className="space-y-4">
+                <div className="space-y-4">
                     <div>
                         <label htmlFor="newPassword" className="block text-gray-700 text-sm font-bold mb-2">
                             New Password:
@@ -84,10 +82,10 @@ const ResetPasswordPage = () => {
                         />
                     </div>
                     <div className="flex justify-between">
-                        <Button text={"Cancel"} icon="arrow-back" iconBefore/>
-                        <Button text={"Reset Password"} filled style=""/>
+                        <Button text={"Cancel"} onClick={() => router.push('/')} icon="arrow-back" iconBefore/>
+                        <Button text={"Reset Password"} onClick={async () => await handleResetPassword()} filled style=""/>
                     </div>
-                </form>
+                </div>
 
                 {passwordUpdated && (
                     <button
