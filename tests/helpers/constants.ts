@@ -6,8 +6,19 @@ const getEnvVariable = (key: string): string => {
     return value;
 };
 
+// Parse an input string into a boolean ('true' or 'false', errors for other values)
+const parseBool = (input: string) => {
+    if (input === 'true') {
+        return true;
+    }
+    if (input === 'false') {
+        return false;
+    }
+    throw new Error(`Attempting to parse non-bool string to bool: ${input}`);
+}
+
 const Constants = {
-    IS_SANITY: getEnvVariable('IS_SANITY'),
+    IS_SANITY: parseBool(getEnvVariable('IS_SANITY')),
     envars: {
         TEST_SUPABASE_URL: getEnvVariable("TEST_SUPABASE_URL"),
         TEST_SUPABASE_ANON_KEY: getEnvVariable("TEST_SUPABASE_ANON_KEY"),
