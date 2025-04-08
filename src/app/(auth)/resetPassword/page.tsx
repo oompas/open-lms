@@ -84,23 +84,25 @@ const ResetPasswordPage = () => {
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            disabled={!tokenValid}
+                            disabled={!tokenValid || passwordUpdated}
                         />
                     </div>
-                    <div className="flex justify-between">
-                        <Button text={"Cancel"} onClick={() => router.push('/')} icon="arrow-back" iconBefore/>
-                        <Button text={"Reset Password"} onClick={async () => await handleResetPassword()} disabled={!tokenValid} filled/>
-                    </div>
+                    {passwordUpdated ? (
+                        <button
+                            onClick={() => router.push('/')}
+                            className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+                        >
+                            Sign in
+                        </button>
+                    )
+                    : (
+                        <div className="flex justify-between">
+                            <Button text={"Cancel"} onClick={() => router.push('/')} icon="arrow-back" iconBefore/>
+                            <Button text={"Reset Password"} onClick={async () => await handleResetPassword()}
+                                    disabled={!tokenValid || !newPassword} filled/>
+                        </div>
+                    )}
                 </div>
-
-                {passwordUpdated && (
-                    <button
-                        onClick={() => router.push('/')}
-                        className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
-                    >
-                        Sign in
-                    </button>
-                )}
             </div>
         </div>
     );
