@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabaseClient } from '@/helpers/supabase.ts';
+import Button from "@/components/Button.tsx";
 
 const ResetPasswordPage = () => {
     const [newPassword, setNewPassword] = useState('');
@@ -54,24 +55,43 @@ const ResetPasswordPage = () => {
     };
 
     return (
-        <div>
-            <h2>Reset Password</h2>
-            {message && <p>{message}</p>}
-            <form onSubmit={handleResetPassword}>
-                <div>
-                    <label htmlFor="newPassword">New Password:</label>
-                    <input
-                        type="password"
-                        id="newPassword"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit">Reset Password</button>
-            </form>
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+                <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">Reset Password</h2>
+                {message && (
+                    <div className={`mb-4 p-3 rounded ${passwordUpdated ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {message}
+                    </div>
+                )}
+                <form onSubmit={handleResetPassword} className="space-y-4">
+                    <div>
+                        <label htmlFor="newPassword" className="block text-gray-700 text-sm font-bold mb-2">
+                            New Password:
+                        </label>
+                        <input
+                            type="password"
+                            id="newPassword"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            required
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        />
+                    </div>
+                    <div className="flex justify-between">
+                        <Button text={"Cancel"} icon="arrow-back" iconBefore/>
+                        <Button text={"Reset Password"} filled style=""/>
+                    </div>
+                </form>
 
-            {passwordUpdated && <button onClick={() => router.push('/')}>Sign in</button>}
+                {passwordUpdated && (
+                    <button
+                        onClick={() => router.push('/')}
+                        className="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+                    >
+                        Sign in
+                    </button>
+                )}
+            </div>
         </div>
     );
 };
