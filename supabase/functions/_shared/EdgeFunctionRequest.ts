@@ -93,8 +93,8 @@ class EdgeFunctionRequest {
         this.requestUser = requestUser;
         this.isAdmin = requestUser?.user_metadata.role === "Admin" || requestUser?.user_metadata.role === "Developer";
 
-        if (adminOnly && !this.isAdmin) {
-            throw new PermissionError("Only administrators can call this endpoint");
+        if (adminOnly) {
+            this.validateAdmin(`Only administrators may call ${this.getEndpoint()}`);
         }
 
         // Validate payload
@@ -155,7 +155,7 @@ class EdgeFunctionRequest {
      * Throws an error if this user isn't an administrator
      * @param message Error message to throw
      */
-    public validateAdmin = async (message: string) => {
+    public validateAdmin = (message: string): void => {
         if (!this.isAdmin) {
             throw new PermissionError(message);
         }
