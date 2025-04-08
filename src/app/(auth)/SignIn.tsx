@@ -28,7 +28,11 @@ export default function SignIn({ setIsSignIn }) {
     };
 
     const sendResetEmail = async () => {
-        const { data, error } = await supabaseClient.auth.resetPasswordForEmail(forgotPasswordEmail);
+
+        const site = process.env.NEXT_PUBLIC_SUPABASE_REDIRECT_URL || "https://www.open-lms.ca";
+
+        const { data, error } = await supabaseClient.auth
+            .resetPasswordForEmail(forgotPasswordEmail, { redirectTo: site + '/resetPassword' });
 
         if (!error) {
             console.log(`Sent forgot password! Data: ${JSON.stringify(data, null, 4)}`);
