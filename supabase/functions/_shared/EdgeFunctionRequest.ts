@@ -152,6 +152,16 @@ class EdgeFunctionRequest {
     }
 
     /**
+     * Throws an error if this user isn't an administrator
+     * @param message Error message to throw
+     */
+    public validateAdmin = async (message: string) => {
+        if (!this.isAdmin) {
+            throw new PermissionError(message);
+        }
+    }
+
+    /**
      * Get the user object from the edge function request
      * @returns The user object, or null if no user authorization in the request
      */
