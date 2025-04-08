@@ -17,13 +17,12 @@ const ResetPasswordPage = () => {
         if (!accessToken) {
             setMessage('Invalid or expired token.');
         }
-        // You might want to store the token in state if needed for further checks
     }, []);
 
     const handleResetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        setMessage(''); // Clear previous messages
+        setMessage('');
 
         if (!newPassword) {
             setMessage('Please enter a new password.');
@@ -39,7 +38,13 @@ const ResetPasswordPage = () => {
                 setMessage(`There was an error updating your password: ${error.message}`);
             } else {
                 setMessage('Password updated successfully!');
+
+                // Signs out user to force a sign in with the new password
                 const { error } = await supabaseClient.auth.signOut();
+                if (error) {
+                    console.log(`Error signing out user: ${error.message}`);
+                }
+
                 setPasswordUpdated(true);
             }
         } catch (err) {
