@@ -1,14 +1,15 @@
 "use client";
 import '../globals.css';
 import { useSession } from "@supabase/auth-helpers-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 
     const router = useRouter();
     const session = useSession();
+    const pathname = usePathname();
 
-    if (session?.user) {
+    if (session?.user && pathname !== '/resetPassword') {
         router.push('/home');
     }
 
