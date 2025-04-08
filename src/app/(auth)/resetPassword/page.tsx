@@ -57,9 +57,15 @@ const ResetPasswordPage = () => {
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+                <img
+                    src="/openlms.png"
+                    alt="OpenLMS Logo"
+                    className="w-1/5 mx-auto mb-4"
+                />
                 <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">Reset Password</h2>
                 {message && (
-                    <div className={`mb-4 p-3 rounded ${passwordUpdated ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <div
+                        className={`mb-4 p-3 rounded ${passwordUpdated ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                         {message}
                     </div>
                 )}
