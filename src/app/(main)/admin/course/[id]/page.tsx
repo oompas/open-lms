@@ -33,10 +33,9 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
     const [minCourseTime, setMinCourseTime] = useState<null | number>(null);
 
-    const [useQuiz, setUseQuiz] = useState(true)
     const [quizMinScore, setQuizMinScore] = useState<string | number>(0);
-    const [quizAttempts, setQuizAttempts] = useState<null | number>(null);
-    const [quizMaxTime, setQuizMaxTime] = useState<null | number>(null);
+    const [quizAttempts, setQuizAttempts] = useState<null | number>(1);
+    const [quizMaxTime, setQuizMaxTime] = useState<null | number>(60);
     const [preserveOrder, setPreserveOrder] = useState<boolean>(true);
 
     const [showCreateQuestion, setShowCreateQuestion] = useState(false);
@@ -56,7 +55,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         else
             temp.push(data);
 
-        var temp_score = 0;
+        let temp_score = 0;
         temp.map((q) => (
             temp_score += q.marks
         ))
@@ -113,7 +112,6 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 setMinCourseTime(data.minTime);
                 setActive(data.active);
 
-                setUseQuiz(data.quizData !== null);
                 if (data.quizData !== null) {
                     setQuizMinScore(data.quizData.minScore);
                     setQuizAttempts(data.quizData.maxAttempts);
@@ -199,6 +197,26 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         </div>
     );
 
+    const discardPopup = (
+        <div
+            className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
+            <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
+                <div className="text-lg mb-2">
+                    Do you want to discard your unpublished course?
+                </div>
+
+                <div className="flex flex-row space-x-4 mt-6">
+                    <Button text="Cancel" onClick={() => setShowDeletePopup(false)} style="ml-auto"/>
+                    <Button
+                        text={"Discard draft"}
+                        onClick={() => router.push("/admin/tools")}
+                        filled
+                    />
+                </div>
+            </div>
+        </div>
+    );
+
     const deletePopup = (
         <div
             className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
@@ -240,13 +258,19 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
         <div
             className="fixed flex justify-center items-center w-[100vw] h-[100vh] top-0 left-0 bg-white bg-opacity-50">
             <div className="flex flex-col w-1/2 bg-white p-12 rounded-xl text-lg shadow-xl">
-                <div className="text-lg mb-2">
+                <div className="text-[1rem] mb-2">
                     <b>{newCourse ? "Add course" : "Update course"}</b>
                     <p className="mt-2">
                         {newCourse
-                            ? <>Adding a new course will create a new course with the specified details, but <b>it will
-                                not be visible to users yet</b>. Once added, you need to publish the course using the
-                                button that will appear on the top menu</>
+                            ? <>Adding a new course will create a new course, but <b>it will not be visible to users yet</b>.
+                                Once added, you will need to activate the course with the
+                                <span className="inline-flex"><BiSolidHide size={20} className={"mx-[6px]"}/></span>
+                                icon in the top right.
+                                <br/>
+                                Please verify the course details are fully correct, <b>once the course is created you
+                                cannot edit the course directly</b>, a new version of the course will be created instead
+                                to avoid conflicts.
+                            </>
                             : <>To avoid issues with course stats and data, updating a course will <b>create a new course
                                 and retire the old course</b>. The old course cannot be attempted again, but data for
                                 the old course is still kept so users can still see they're completed the old version</>
@@ -292,7 +316,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     return (
         <div className="w-full">
             <div className="flex justify-between w-full bg-white p-12 rounded-2xl shadow-custom mb-4">
-                <div className="text-3xl">
+                <div className={"text-3xl" + (params.id === "new" ? " italic" : "")}>
                     {originalName}
                 </div>
 
@@ -308,11 +332,11 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                             ? <BiSolidHide size={25} className="ml-4 mt-1 cursor-pointer" onClick={() => setActivatePopup(true)}/>
                             : <IoMdEye size={25} className="ml-4 mt-1 cursor-pointer" onClick={() => setActivatePopup(true)}/>
                     )}
-                    <MdDelete size={25} className="ml-3 mt-1 cursor-pointer" onClick={() => newCourse ? router.push("/admin/tools") : setShowDeletePopup(true)}/>
+                    <MdDelete size={25} className="ml-3 mt-1 cursor-pointer" onClick={() => setShowDeletePopup(true)}/>
                     {
                         newCourse
-                            ? <IoCreate size={22} className="ml-3 mt-[5px] cursor-pointer" onClick={async () => setShowSavePopup(true)}/>
-                            : <GrUpdate size={22} className="ml-3 mt-1 cursor-pointer" onClick={async () => setShowSavePopup(true)}/>
+                            ? <MdAdd size={25} className="ml-3 mt-[5px] cursor-pointer" onClick={async () => setShowSavePopup(true)}/>
+                            : <GrUpdate size={22} className="ml-3 mt-[5px] cursor-pointer" onClick={async () => setShowSavePopup(true)}/>
                     }
                 </div>
             </div>
@@ -339,15 +363,14 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
                 <div className="flex flex-col w-2/3 h-fit bg-white p-14 rounded-2xl shadow-custom mb-8">
                     <div className="flex flex-col mb-6">
                         <div className="text-lg">Verification Methods</div>
-                        <div className="text-sm text-gray-600 mb-4">Every course must at least have one verification
-                            method.
+                        <div className="text-sm text-gray-600 mb-4">Every course must have a knowledge quiz. Minimum time is optional.
                         </div>
 
                         {/* Minimum completion time */}
                         <div className="flex items-start space-x-4 mb-6">
                             <Checkbox
                                 checked={minCourseTime !== null}
-                                setChecked={() => setMinCourseTime(minCourseTime === null ? 1 : null)}
+                                setChecked={() => setMinCourseTime(minCourseTime === null ? 60 : null)}
                             />
                             <div className="flex flex-col">
                                 <div className="text-lg">Minimum time spent completing course</div>
@@ -363,144 +386,140 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
 
                         {/* Knowledge quiz */}
                         <div className="flex items-start space-x-4">
-                            <Checkbox checked={useQuiz} setChecked={setUseQuiz}/>
+                            <Checkbox checked={true} disabled={true}/>
                             <div className="flex flex-col">
                                 <div className="text-lg">Knowledge quiz completion</div>
-                                {useQuiz &&
-                                    <div>
-                                        { /* Min score */}
-                                        <div className="flex items-start space-x-4 mt-4">
-                                            <div className="flex flex-col">
-                                                <div className="text-lg">Minimum quiz score</div>
-                                                <div className="flex flex-row space-x-2 items-center mt-2">
-                                                    <TextField
-                                                        text={quizMinScore}
-                                                        onChange={(text: string) => {
-                                                            if (text === "") {
-                                                                setQuizMinScore(1);
-                                                                return;
-                                                            }
-                                                            if (!(/^[1-9]+$/).test(text)) {
-                                                                setQuizMinScore(1);
-                                                                return;
-                                                            }
-                                                            if (Number(text) <= 0) {
-                                                                setQuizMinScore(1);
-                                                                return;
-                                                            }
-                                                            if (Number(text) > quizTotalScore) {
-                                                                setQuizMinScore(quizTotalScore);
-                                                                return;
-                                                            }
-                                                            return setQuizMinScore(Number(text));
-                                                        }}
-                                                        style="w-24 text-right"
-                                                    />
-                                                    <div className="text-lg">
-                                                        / {quizTotalScore}
-                                                    </div>
+                                <div>
+                                    { /* Min score */}
+                                    <div className="flex items-start space-x-4 mt-4">
+                                        <div className="flex flex-col">
+                                            <div className="text-lg">Minimum quiz score</div>
+                                            <div className="flex flex-row space-x-2 items-center mt-2">
+                                                <TextField
+                                                    text={quizMinScore}
+                                                    onChange={(text: string) => {
+                                                        if (text === "") {
+                                                            setQuizMinScore(1);
+                                                            return;
+                                                        }
+                                                        if (!(/^[1-9]+$/).test(text)) {
+                                                            setQuizMinScore(1);
+                                                            return;
+                                                        }
+                                                        if (Number(text) <= 0) {
+                                                            setQuizMinScore(1);
+                                                            return;
+                                                        }
+                                                        if (Number(text) > quizTotalScore) {
+                                                            setQuizMinScore(quizTotalScore);
+                                                            return;
+                                                        }
+                                                        return setQuizMinScore(Number(text));
+                                                    }}
+                                                    style="w-24 text-right"
+                                                />
+                                                <div className="text-lg">
+                                                    / {quizTotalScore}
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
 
-                                        { /* Max quiz attempts */}
-                                        <div className="flex items-start space-x-4 mt-4">
-                                            <Checkbox
-                                                checked={quizAttempts !== null}
-                                                setChecked={() => setQuizAttempts(quizAttempts === null ? 1 : null)}
-                                            />
-                                            <div className="flex flex-col">
-                                                <div className="text-lg">Maximum attempts allowed</div>
-                                                {quizAttempts &&
-                                                    <div className="flex flex-row space-x-2 items-center mt-2">
-                                                        <TextField
-                                                            text={quizAttempts}
-                                                            onChange={setQuizAttempts}
-                                                            style="w-24 text-right"
-                                                        />
-                                                        <div className="text-lg">
-                                                            attempt{quizAttempts === 1 ? "" : "s"}
-                                                        </div>
+                                    { /* Max quiz attempts */}
+                                    <div className="flex items-start space-x-4 mt-4">
+                                        <Checkbox
+                                            checked={quizAttempts !== null}
+                                            setChecked={() => setQuizAttempts(quizAttempts === null ? 1 : null)}
+                                        />
+                                        <div className="flex flex-col">
+                                            <div className="text-lg">Maximum attempts allowed</div>
+                                            {quizAttempts &&
+                                                <div className="flex flex-row space-x-2 items-center mt-2">
+                                                    <TextField
+                                                        text={quizAttempts}
+                                                        onChange={setQuizAttempts}
+                                                        style="w-24 text-right"
+                                                    />
+                                                    <div className="text-lg">
+                                                        attempt{quizAttempts === 1 ? "" : "s"}
                                                     </div>
-                                                }
-                                            </div>
-                                        </div>
-
-                                        { /* Max quiz time */}
-                                        <div className="flex items-start space-x-4 mt-4">
-                                            <Checkbox
-                                                checked={quizMaxTime !== null}
-                                                setChecked={() => setQuizMaxTime(quizMaxTime === null ? 1 : null)}
-                                            />
-                                            <div className="flex flex-col">
-                                                <div className="text-lg">Maximum quiz time</div>
-                                                {quizMaxTime !== null &&
-                                                    <div className="flex flex-row space-x-2 items-center mt-2">
-                                                        <TextField
-                                                            text={quizMaxTime}
-                                                            onChange={setQuizMaxTime}
-                                                            style="w-24 text-right"
-                                                        />
-                                                        <div className="text-lg">
-                                                            minute{quizMaxTime === 1 ? "" : "s"}
-                                                        </div>
-                                                    </div>
-                                                }
-                                            </div>
-                                        </div>
-
-                                        { /* Preserve order */}
-                                        <div className="flex items-start space-x-4 mt-4">
-                                            <Checkbox
-                                                checked={preserveOrder}
-                                                setChecked={setPreserveOrder}
-                                            />
-                                            <div className="flex flex-col">
-                                                <div className="text-lg">Preserve question order</div>
-                                            </div>
+                                                </div>
+                                            }
                                         </div>
                                     </div>
-                                }
+
+                                    { /* Max quiz time */}
+                                    <div className="flex items-start space-x-4 mt-4">
+                                        <Checkbox
+                                            checked={quizMaxTime !== null}
+                                            setChecked={() => setQuizMaxTime(quizMaxTime === null ? 60 : null)}
+                                        />
+                                        <div className="flex flex-col">
+                                            <div className="text-lg">Maximum quiz time</div>
+                                            {quizMaxTime !== null &&
+                                                <div className="flex flex-row space-x-2 items-center mt-2">
+                                                    <TextField
+                                                        text={quizMaxTime}
+                                                        onChange={setQuizMaxTime}
+                                                        style="w-24 text-right"
+                                                    />
+                                                    <div className="text-lg">
+                                                        minute{quizMaxTime === 1 ? "" : "s"}
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    { /* Preserve order */}
+                                    <div className="flex items-start space-x-4 mt-4">
+                                        <Checkbox
+                                            checked={preserveOrder}
+                                            setChecked={setPreserveOrder}
+                                        />
+                                        <div className="flex flex-col">
+                                            <div className="text-lg">Preserve question order</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex flex-col">
-                        {useQuiz &&
-                            <div className="text-lg border-2 p-6 rounded-xl">
-                                <div className="flex flex-row items-center space-x-2 mb-4">
-                                    <div>Quiz Questions</div>
-                                    <div className="text-sm text-gray-500">({quizQuestions?.length} questions)</div>
-                                </div>
-                                <div className="flex flex-col space-y-4">
-                                    {quizQuestions?.map((question, key) => (
-                                        <QuizQuestion
-                                            key={key}
-                                            first={key === 0}
-                                            last={key === quizQuestions?.length - 1}
-                                            num={key + 1}
-                                            inData={question}
-                                            editData={handleEditQuestion}
-                                            deleteData={handleDeleteQuestion}
-                                            moveUp={handleMoveUp}
-                                            moveDown={handleMoveDown}
-                                            preserveOrder={preserveOrder}
-                                        />
-                                    ))}
-                                    <button
-                                        className="flex flex-row space-x-4 justify-center items-center border-[3px] border-red-800 p-4 rounded-xl text-red-800 font-bold hover:opacity-60 duration-75"
-                                        onClick={() => setShowCreateQuestion(true)}
-                                    >
-                                        Create a new question
-                                        <MdAdd size={24}/>
-                                    </button>
-                                </div>
+                        <div className="text-lg border-2 p-6 rounded-xl">
+                            <div className="flex flex-row items-center space-x-2 mb-4">
+                                <div>Quiz Questions</div>
+                                <div className="text-sm text-gray-500">({quizQuestions?.length} questions)</div>
                             </div>
-                        }
+                            <div className="flex flex-col space-y-4">
+                                {quizQuestions?.map((question, key) => (
+                                    <QuizQuestion
+                                        key={key}
+                                        first={key === 0}
+                                        last={key === quizQuestions?.length - 1}
+                                        num={key + 1}
+                                        inData={question}
+                                        editData={handleEditQuestion}
+                                        deleteData={handleDeleteQuestion}
+                                        moveUp={handleMoveUp}
+                                        moveDown={handleMoveDown}
+                                        preserveOrder={preserveOrder}
+                                    />
+                                ))}
+                                <button
+                                    className="flex flex-row space-x-4 justify-center items-center border-[3px] border-red-800 p-4 rounded-xl text-red-800 font-bold hover:opacity-60 duration-75"
+                                    onClick={() => setShowCreateQuestion(true)}
+                                >
+                                    Create a new question
+                                    <MdAdd size={24}/>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     {activatePopup && activationPopup}
-                    {showDeletePopup && deletePopup}
+                    {showDeletePopup && (newCourse ? discardPopup : deletePopup)}
                     {showSavePopup && savePopup}
                     {loading && loadingPopup}
                     {showAddCourseErrorPopup && addCourseErrorPopup}

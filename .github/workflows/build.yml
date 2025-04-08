@@ -1,4 +1,4 @@
-name: Build (Next.js)
+name: Build Next.js App
 
 on:
   push:
@@ -6,25 +6,29 @@ on:
       - "**"
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-          - name: Checkout
-            uses: actions/checkout@v4
-          - name: Setup pnpm
-            uses: pnpm/action-setup@v4
-            with:
-              version: 9.5.0
-          - name: Setup node
-            uses: actions/setup-node@v4
-            with:
-              node-version: 20.x
-              cache: 'pnpm'
-          - name: Install dependencies
-            run: pnpm install --frozen-lockfile
+  build:
+    runs-on: ubuntu-latest
 
-          - name: Build Next.js app
-            env:
-              NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-              NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-            run: pnpm run build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.5.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        env:
+            NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: pnpm run build

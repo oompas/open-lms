@@ -1,18 +1,12 @@
-import { config } from 'dotenv';
 import { execSync } from 'child_process';
+import './load-env.js';
 
-config({ path: '.env.local' });
-
-const folder = process.argv[2].toUpperCase();
-if (folder !== 'SANITY' && folder !== 'DETAILED') {
-    console.error('Error: Folder name must be either "SANITY" or "DETAILED".');
-    process.exit(1);
-}
-
-const command = `mocha --ui tdd tests/${folder}/**/*.test.ts`;
+// Setup and run test command
+const command = `mocha --require ts-node/register --ui tdd --slow 1000 --timeout 10000 ./tests/`;
 
 try {
     execSync(command, { stdio: 'inherit' });
 } catch (error) {
+    console.error(`Tests failed with error code: ${error.status}`);
     process.exit(1);
 }

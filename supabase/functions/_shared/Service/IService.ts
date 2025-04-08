@@ -3,7 +3,10 @@ import DatabaseError from "../Error/DatabaseError.ts";
 
 // Filter docs: https://supabase.com/docs/reference/javascript/using-filters
 type Filter = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'is' | 'in';
-type QueryConditions = [Filter, string, any] | ['null' | 'notnull', string] | ([Filter, string, any] | ['null' | 'notnull', string])[];
+type NullFilter = 'null' | 'notnull'; // Doesn't exist directly in Supabase, handled through implementation
+type Condition = [Filter, string, any] | [NullFilter, string];
+
+type QueryConditions = Condition | Condition[];
 type QueryOptions = { order?: string, ascendOrder?: boolean, limit?: number };
 
 abstract class IService {
@@ -20,7 +23,7 @@ abstract class IService {
                 throw error;
             }
 
-            return data;
+            return data ?? [];
         } catch (err) {
             throw new DatabaseError(`Error getting all rows from ${this.TABLE_NAME}: ${err.message}`);
         }
@@ -46,12 +49,12 @@ abstract class IService {
 
             return data[0];
         } catch (err) {
-            throw new DatabaseError(`Error querying ${this.TABLE_NAME} by ID: ${err.message}`);
+            throw new DatabaseError(`Error querying data by id in table ${this.TABLE_NAME}: ${err.message}`);
         }
     }
 
     /**
-     * Gets all rows that have hte given column value
+     * Gets all rows that have the given column value
      */
     public async getByColumn(column: string, value: any) {
         try {
@@ -62,7 +65,7 @@ abstract class IService {
 
             return data;
         } catch (err) {
-            throw new DatabaseError(`Error querying ${this.TABLE_NAME} by column: ${err.message}`);
+            throw new DatabaseError(`Error getting data by column in table ${this.TABLE_NAME}: ${err.message}`);
         }
     }
 
@@ -72,13 +75,11 @@ abstract class IService {
     public async query(select: string = '*', conditions: QueryConditions = [], options: QueryOptions = {}) {
         try {
             // Wrap single conditions in an array for consistency
-            if (conditions.length && !Array.isArray(conditions[0])) {
-                conditions = [conditions];
-            }
+            const normalizedConditions = Array.isArray(conditions[0]) ? conditions : [conditions];
 
             // Setup query
             const query = adminClient.from(this.TABLE_NAME).select(select);
-            conditions.forEach(([filter, key, value]) => {
+            normalizedConditions.forEach(([filter, key, value]) => {
                 if (filter === 'null') {
                     query.is(key, null);
                 } else if (filter === 'notnull') {
@@ -90,11 +91,7 @@ abstract class IService {
 
             // Apply options (if present)
             if (options.order) {
-                if (typeof options.ascendOrder === 'boolean') {
-                    query.order(options.order, { ascending: options.ascendOrder });
-                } else {
-                    query.order(options.order);
-                }
+                query.order(options.order, { ascending: options.ascendOrder ?? false });
             }
             if (typeof options.limit === 'number') {
                 if (!Number.isInteger(options.limit) || options.limit < 1) {
@@ -103,22 +100,26 @@ abstract class IService {
                 query.limit(options.limit);
             }
 
+            // Run the query, throwing any error it causes
             const { data, error } = await query;
             if (error) {
                 throw error;
             }
+
+            // Handle no data returned from the query
+            // Note: limit = 1 is a special cases that returns the object (or null) instead of an array
             if (!data || data.length === 0) {
                 return options.limit === 1 ? null : [];
             }
 
             return options.limit === 1 ? data[0] : data;
         } catch (err) {
-            throw new DatabaseError(`Error custom querying ${this.TABLE_NAME}: ${err.message}`);
+            throw new DatabaseError(`Error custom querying data from table ${this.TABLE_NAME}: ${err.message}`);
         }
     }
 
     /**
-     * Adds a new row (or multiple rows) to this table
+     * Adds one new row to this table
      */
     public async insert(rows: object){
         try {
@@ -129,7 +130,7 @@ abstract class IService {
 
             return data;
         } catch (err) {
-            throw new DatabaseError(`Error adding row to ${this.TABLE_NAME}: ${err.message}`);
+            throw new DatabaseError(`Error inserting data into table ${this.TABLE_NAME}: ${err.message}`);
         }
     }
 
@@ -145,7 +146,7 @@ abstract class IService {
 
             return data;
         } catch (err) {
-            throw new DatabaseError(`Error updating row in ${this.TABLE_NAME}: ${err.message}`);
+            throw new DatabaseError(`Error updating data by ID in table ${this.TABLE_NAME}: ${err.message}`);
         }
     }
 }

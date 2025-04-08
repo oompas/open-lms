@@ -1,6 +1,7 @@
 import { CourseAttemptService, CourseService, QuizAttemptService } from "../_shared/Service/Services.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
+import InputError from "../_shared/Error/InputError.ts";
 
 const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
 
@@ -11,7 +12,7 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
 
     request.log(`User id: ${userId}. Course id: ${courseId}`);
 
-    const { course_attempt: courseAttempts, enrolled_course: [enrollment], ...course } = await CourseService
+    const result = await CourseService
         .query(`
             *,
             course_attempt(id, start_time),
@@ -28,6 +29,17 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
             {
                 limit: 1
             });
+
+    // If there is no returned course, the course doesn't exist or is inactive
+    if (result === null) {
+        const result = await CourseService.query(`*`, ['eq', 'id', courseId], { limit: 1 });
+        if (result == null) {
+            throw new InputError(`Course with id '${courseId}' does not exist`);
+        }
+        throw new InputError(`Course with id '${courseId}' is inactive`);
+    }
+
+    const { course_attempt: courseAttempts, enrolled_course: [enrollment], ...course } = result;
     let courseStatus = enrollment?.status ?? CourseStatus.NOT_ENROLLED;
 
     request.log(`Course status: ${courseStatus}. Course attempts: ${courseAttempts?.length ?? 0}. Course: ${JSON.stringify(course)}`);

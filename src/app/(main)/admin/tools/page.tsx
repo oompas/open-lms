@@ -250,7 +250,7 @@ export default function Tools() {
             alert("Please enter a valid email address or upload a valid CSV file. CSV should be a single row of consecutive cells populated with valid emails.");
             return;
         }
-        callAPI('invite-learner')
+        callAPI('invite-learner', { email: inviteEmail })
             .then(() => {
                 alert("User(s) invited!");
                 setInviteEmail("");

@@ -19,7 +19,7 @@ class _courseService extends IService {
             description: course.description,
             link: course.link,
 
-            active: true,
+            active: false,
             version: 1,
             min_time: course.minTime,
 

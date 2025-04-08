@@ -14,13 +14,15 @@ const createCourse = async (request: EdgeFunctionRequest) => {
     course['totalQuizMarks'] = quizQuestions.reduce((sum, obj) => sum + obj.marks, 0);
     course['numQuizQuestions'] = quizQuestions.length;
 
+    request.log(`Total quiz marks: ${course['totalQuizMarks']} Num quiz questions: ${course['numQuizQuestions']}`);
+
     const courseData = await CourseService.addCourse(course, userId);
 
     request.log(`Course added to database with id ${courseData.id}`);
 
     await QuizQuestionService.setupCourseQuiz(quizQuestions, courseData.id);
 
-    request.log(`Setup quiz questions`);
+    request.log(`Quiz questions added successfully`);
 
     return courseData.id;
 }

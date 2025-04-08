@@ -22,6 +22,28 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
     const session = useSession();
 
     const getNotifications = () => {
+
+        const formatDateDifference = (now, date) => {
+            const differences = [
+                { unit: 'second', diffFn: differenceInSeconds, threshold: 60 },
+                { unit: 'minute', diffFn: differenceInMinutes, threshold: 60 },
+                { unit: 'hour', diffFn: differenceInHours, threshold: 24 },
+                { unit: 'day', diffFn: differenceInDays, threshold: 7 },
+                { unit: 'week', diffFn: differenceInWeeks, threshold: 5 },
+                { unit: 'month', diffFn: differenceInMonths, threshold: 12 },
+                { unit: 'year', diffFn: differenceInYears, threshold: Infinity }
+            ];
+
+            for (const { unit, diffFn, threshold } of differences) {
+                const diff = diffFn(now, date);
+                if (diff < threshold) {
+                    return `${diff} ${unit}${diff === 1 ? '' : 's'} ago`;
+                }
+            }
+
+            throw new Error(`Error parsing notification date difference: fallthrough case`);
+        };
+
         callAPI('get-notifications')
             .then((rsp) => {
                 const notifications = rsp.data;
@@ -29,34 +51,12 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
                 notifications.forEach((notification) => {
                     const date = parseISO(notification.date);
-
-                    if (differenceInSeconds(now, date) < 60) {
-                        const diff = differenceInSeconds(now, date);
-                        notification["date"] = diff + ` second${diff === 1 ? '' : 's'} ago`;
-                    } else if (differenceInMinutes(now, date) < 60) {
-                        const diff = differenceInMinutes(now, date);
-                        notification["date"] = diff + ` minute${diff === 1 ? '' : 's'} ago`;
-                    } else if (differenceInHours(now, date) < 24) {
-                        const diff = differenceInHours(now, date);
-                        notification["date"] = diff + ` hour${diff === 1 ? '' : 's'} ago`;
-                    } else if (differenceInDays(now, date) < 7) {
-                        const diff = differenceInDays(now, date);
-                        notification["date"] = diff + ` day${diff === 1 ? '' : 's'} ago`;
-                    } else if (differenceInWeeks(now, date) < 5) {
-                        const diff = differenceInWeeks(now, date);
-                        notification["date"] = diff + ` week${diff === 1 ? '' : 's'} ago`;
-                    } else if (differenceInMonths(now, date) < 12) {
-                        const diff = differenceInMonths(now, date);
-                        notification["date"] = diff + ` month${diff === 1 ? '' : 's'} ago`;
-                    } else {
-                        const diff = differenceInYears(now, date);
-                        notification["date"] = diff+ ` year${diff === 1 ? '' : 's'} ago`;
-                    }
+                    notification["date"] = formatDateDifference(now, date);
                 });
 
                 setNotifications(notifications);
             });
-    }
+    };
 
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
     const startTime = useRef(new Date().getTime());
@@ -69,7 +69,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
     // Route to sign in screen if user isn't logged in
     useEffect(() => {
-        if (session === null && new Date().getTime() > startTime + 1_000) {
+        if (session === null && new Date().getTime() > startTime.current + 1_000) {
             router.push('/');
         }
     }, [session, isAdmin, router]);

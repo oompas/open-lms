@@ -6,7 +6,7 @@ const setupAccount = async (request: EdgeFunctionRequest) => {
 
     const { userId, name } = request.getPayload();
 
-    request.log(`Entering setup-account function with name: ${name}`);
+    request.log(`Entering setup-account function for UUID '${userId}' with name: ${name}`);
 
     const { data, error } = await adminClient.auth.admin.getUserById(userId);
     if (error) {

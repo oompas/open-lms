@@ -12,7 +12,9 @@ export default function SignIn({ setIsSignIn }) {
     const [email, setEmail] = useState("");
     const [password, setPass] = useState("");
     const [error, setError] = useState(null);
-    const [forgotPassword, setForgotPassword] = useState(false);
+
+    const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+    const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
 
     const submitSignIn = async () => {
         setError(null);
@@ -26,14 +28,18 @@ export default function SignIn({ setIsSignIn }) {
     };
 
     const sendResetEmail = async () => {
-        const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email);
+
+        const site = process.env.NEXT_PUBLIC_SUPABASE_REDIRECT_URL || "https://www.open-lms.ca";
+
+        const { data, error } = await supabaseClient.auth
+            .resetPasswordForEmail(forgotPasswordEmail, { redirectTo: site + '/resetPassword' });
 
         if (!error) {
-            setIsSent(true);
+            console.log(`Sent forgot password! Data: ${JSON.stringify(data, null, 4)}`);
+            setForgotPasswordOpen(false);
+        } else {
+            console.log(`Error sending forgot password: ${JSON.stringify(error, null, 4)}`);
         }
-
-        console.log(`Data: ${JSON.stringify(data, null, 4)}`);
-        console.log(`Error: ${JSON.stringify(error, null, 4)}`);
     }
 
     const forgotPasswordPopup = () => {
@@ -42,7 +48,7 @@ export default function SignIn({ setIsSignIn }) {
                 className="fixed flex justify-center items-center w-screen h-screen top-0 left-0 bg-gray-900 bg-opacity-50 z-50"
                 onClick={(e) => {
                     if (e.target === e.currentTarget) {
-                        setForgotPassword(false);
+                        setForgotPasswordOpen(false);
                     }
                 }}
             >
@@ -54,14 +60,14 @@ export default function SignIn({ setIsSignIn }) {
                     <p className="mb-1 text-md">Email</p>
                     <TextField
                         style="w-full"
-                        text={email}
-                        onChange={setEmail}
+                        text={forgotPasswordEmail}
+                        onChange={setForgotPasswordEmail}
                         placeholder="john.smith@gmail.com"
                     />
 
                     <div className="flex justify-between mt-8">
-                        <Button text="Close" onClick={() => setForgotPassword(false)}/>
-                        <Button text="Send link" onClick={() => setForgotPassword(false)} icon="arrow" filled/>
+                        <Button text="Close" onClick={() => setForgotPasswordOpen(false)}/>
+                        <Button text="Send link" onClick={async () => await sendResetEmail()} icon="arrow" filled/>
                     </div>
                 </div>
             </div>
@@ -78,7 +84,7 @@ export default function SignIn({ setIsSignIn }) {
                     password={password}
                     setPass={setPass}
                     showName={false}
-                    onForgotPassword={() => setForgotPassword(true)}
+                    onForgotPassword={() => setForgotPasswordOpen(true)}
                 />
                 {error && (
                     <p className="text-red-500 mt-2">
@@ -110,7 +116,7 @@ export default function SignIn({ setIsSignIn }) {
                 </div>
             </div>
 
-            { forgotPassword && forgotPasswordPopup() }
+            { forgotPasswordOpen && forgotPasswordPopup() }
         </>
     );
 }

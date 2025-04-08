@@ -1,18 +1,12 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
+import { sanitySkipDetailed, setupWipeDb } from "../helpers/mocha.ts";
 
-suite("Basic endpoints", function() {
+suite("get-notifications", function() {
 
-    suite("get-courses", function() {
+    setupWipeDb();
 
-    });
-
-    suite("get-course-data", function() {
-
-    });
-
-    suite("get-notifications", function() {
-
+    suite("Sanity", function() {
         test("No notifications (learner)", async function() {
             const result = await callAPI('get-notifications', {}, false);
             console.log(`Notifications result: ${JSON.stringify(result)}`);
@@ -30,7 +24,8 @@ suite("Basic endpoints", function() {
         });
     });
 
-    suite("get-profile", function() {
+    suite("Detailed", function() {
 
+        sanitySkipDetailed();
     });
 });
