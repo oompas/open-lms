@@ -7,7 +7,6 @@ import { callAPI, signOut } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
 import { MdArrowBack } from "react-icons/md";
 import Link from "next/link";
-import { FaRegCheckCircle } from "react-icons/fa";
 
 export default function Profile() {
 
