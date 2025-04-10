@@ -15,7 +15,7 @@ const supabaseClient = createClient(
 /**
  * Signs up a user client-side
  */
-const signUp = async (email, password, name) => {
+const signUp = async (email: string, password: string, name: string) => {
     const site = process.env.NEXT_PUBLIC_SUPABASE_REDIRECT_URL || "https://www.open-lms.ca/";
     const creds = {
         email,
