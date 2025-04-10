@@ -15,8 +15,20 @@ const supabaseClient = createClient(
 /**
  * Signs up a user client-side
  */
-const signUp = async (email, password) => {
-    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+const signUp = async (email, password, name) => {
+    const site = process.env.NEXT_PUBLIC_SUPABASE_REDIRECT_URL || "https://www.open-lms.ca/";
+    const creds = {
+        email,
+        password,
+        options: {
+            data: {
+                display_name: name
+            },
+            emailRedirectTo: site + 'home'
+        }
+    };
+
+    const { data, error } = await supabaseClient.auth.signUp(creds);
 
     if (error) {
         console.error(`Error signing up: ${error.message}`);
