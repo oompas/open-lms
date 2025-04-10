@@ -57,7 +57,7 @@ const getProfile = async (request: EdgeFunctionRequest): Promise<object> => {
 
     request.log(`Queried user data, ${enrollments.length} enrollments, ${completedCourses.length} completed course attempts, and ${quizAttempts.length} completed quiz attempts`);
 
-    const enrolledCourseData = enrollments.map((enrollment) => {
+    const enrolledCourseData: {}[] = enrollments.map((enrollment) => {
         return {
             courseId: enrollment.course.id,
             name: enrollment.course.name
@@ -66,7 +66,7 @@ const getProfile = async (request: EdgeFunctionRequest): Promise<object> => {
 
     request.log(`Built data for ${enrolledCourseData.length} enrolled courses`);
 
-    const completedCourseData = completedCourses.map((courseAttempt) => {
+    const completedCourseData: {}[] = completedCourses.map((courseAttempt) => {
         const course = enrollments.find((enrollment) => enrollment.course.id === courseAttempt.course_id);
         return {
             name: course.name,
@@ -76,7 +76,7 @@ const getProfile = async (request: EdgeFunctionRequest): Promise<object> => {
 
     request.log(`Built data for ${completedCourseData.length} completed courses`);
 
-    const quizAttemptData = (quizAttempts.map(async (quizAttempt) => {
+    const quizAttemptData: {}[] = (quizAttempts.map(async (quizAttempt) => {
         const course = enrollments.find((enrollment) => enrollment.course.id === quizAttempt.course_id);
         return {
             id: quizAttempt.id,

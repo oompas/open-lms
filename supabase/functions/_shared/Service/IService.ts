@@ -33,7 +33,7 @@ abstract class IService {
      * Gets the document that matches the given id (note: this uses the id column which must be unique),
      * throwing an error if no document is found
      */
-    public async getById(id: number | string) {
+    public async getById(id: number | string): Promise<any> {
         try {
             const { data, error } = await adminClient.from(this.TABLE_NAME).select().eq('id', id);
             if (error) {
@@ -56,7 +56,7 @@ abstract class IService {
     /**
      * Gets all rows that have the given column value
      */
-    public async getByColumn(column: string, value: any) {
+    public async getByColumn(column: string, value: any): Promise<any> {
         try {
             const { data, error } = await adminClient.from(this.TABLE_NAME).select().eq(column, value);
             if (error) {
@@ -72,7 +72,7 @@ abstract class IService {
     /**
      * Run a query on this table to return desired rows
      */
-    public async query(select: string = '*', conditions: QueryConditions = [], options: QueryOptions = {}) {
+    public async query(select: string = '*', conditions: QueryConditions = [], options: QueryOptions = {}): Promise<any> {
         try {
             // Wrap single conditions in an array for consistency
             const normalizedConditions = Array.isArray(conditions[0]) ? conditions : [conditions];
@@ -121,7 +121,7 @@ abstract class IService {
     /**
      * Adds one new row to this table
      */
-    public async insert(rows: object){
+    public async insert(rows: object): Promise<any>{
         try {
             const { data, error } = await adminClient.from(this.TABLE_NAME).insert(rows);
             if (error) {
@@ -137,7 +137,7 @@ abstract class IService {
     /**
      * Updates the row with the given id with the given update
      */
-    public async updateById(id: number | string, update: object) {
+    public async updateById(id: number | string, update: object): Promise<any> {
         try {
             const { data, error } = await adminClient.from(this.TABLE_NAME).update(update).eq('id', id);
             if (error) {
