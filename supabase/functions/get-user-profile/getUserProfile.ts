@@ -14,26 +14,22 @@ const getUserProfile = async (request: EdgeFunctionRequest) => {
 
     const [user, enrollments, completedCourses, quizAttempts] = await Promise.all([
         request.getUserById(userId),
-        EnrollmentService.query('*', ['eq', 'user_id', userId]),
+        EnrollmentService.query('*, course(*)', ['eq', 'user_id', userId]),
         CourseAttemptService.query('*', [['eq', 'user_id', userId], ['eq', 'pass', true]]),
         QuizAttemptService.query('*', [['eq', 'user_id', userId], ['notnull', 'end_time']])
     ]);
 
     request.log(`Queried user data, ${enrollments.length} enrollments, ${completedCourses.length} completed course attempts, and ${quizAttempts.length} completed quiz attempts`);
 
-    const enrolledCourses = await CourseService.query('*', ['in', 'id', enrollments.map((e) => e.course_id)]);
-
-    request.log(`Queried the ${enrolledCourses.length} corresponding courses for user enrollments`);
-
-    const enrolledCourseData = enrolledCourses.map((course) => {
+    const enrolledCourseData = enrollments.map((enrollment) => {
         return {
-            courseId: course.id,
-            name: course.name
+            courseId: enrollment.course.id,
+            name: enrollment.course.name
         };
     });
 
     const completedCourseData = completedCourses.map((courseAttempt) => {
-        const course = enrolledCourses.find((course) => course.id === courseAttempt.course_id);
+        const course = enrollments.find((enrollment) => enrollment.course.id === courseAttempt.course_id);
         return {
             name: course.name,
             completionTime: courseAttempt.end_time
@@ -41,7 +37,7 @@ const getUserProfile = async (request: EdgeFunctionRequest) => {
     });
 
     const quizAttemptData = (quizAttempts.map(async (quizAttempt) => {
-        const course = enrolledCourses.find((course) => course.id === quizAttempt.course_id);
+        const course = enrollments.find((enrollment) => enrollment.course.id === quizAttempt.course_id);
         return {
             id: quizAttempt.id,
             endTime: quizAttempt.end_time,
