@@ -46,22 +46,6 @@ export default function SignUp({ setIsSignIn }) {
                 showName={true}
                 isSignUpPage={true}
             />
-            {/*{isInvalidName && (*/}
-            {/*    <p className="text-red-500 mt-2" style={{maxWidth: "300px"}}>*/}
-            {/*        Name must be at least one character long.*/}
-            {/*    </p>*/}
-            {/*)}*/}
-            {/*{isInvalidEmail && (*/}
-            {/*    <p className="text-red-500 mt-2" style={{maxWidth: "300px"}}>*/}
-            {/*        Invalid email format.*/}
-            {/*    </p>*/}
-            {/*)}*/}
-            {/*{isInvalidPass && (*/}
-            {/*    <p className="text-red-500 mt-2" style={{maxWidth: "300px"}}>*/}
-            {/*        Password must be at least ten characters long, contain at least one uppercase letter, one*/}
-            {/*        lowercase letter, one number, and one special character.*/}
-            {/*    </p>*/}
-            {/*)}*/}
 
             <div className="flex justify-between mt-6">
                 <Button

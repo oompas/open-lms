@@ -61,10 +61,6 @@ export default function AuthForm({
             <div className="flex flex-col">
                 <p className="mb-1 text-md">Password</p>
                 <TextField text={password} onChange={handlePasswordChange} placeholder="**********" hidden={true}/>
-                {/* Conditionally display the password validation messages */}
-                {password && isSignUpPage && passwordValidationMessages.map((message, index) => (
-                    <p key={index} className="mt-1 text-sm text-red-500">{message}</p>
-                ))}
                 {onForgotPassword && (
                     <div className="mt-3 mb-2 text-gray-500 cursor-pointer" onClick={onForgotPassword}>Forgot your password?</div>
                 )}
