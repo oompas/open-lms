@@ -109,7 +109,7 @@ export default function SignIn({ setIsSignIn }) {
                         {isEmailInvalid && (
                             <div
                                 className="absolute right-2 top-[3.15rem] transform -translate-y-1/2 cursor-pointer"
-                                onMouseEnter={() => { if (isEmailInvalid) { setEmailErrorVisible(true) }}}
+                                onMouseEnter={() => setEmailErrorVisible(isEmailInvalid)}
                                 onMouseLeave={() => setEmailErrorVisible(false)}
                             >
                                 <FiAlertCircle className="text-red-500" size={25} />
