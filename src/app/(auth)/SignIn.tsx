@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from "next/navigation";
 import { signIn, supabaseClient } from "@/helpers/supabase.ts";
 import Button from "@/components/Button.tsx";
 import TextField from "@/components/TextField.tsx";
 import { validateEmailAndLength, validatePassword } from "@/components/TextField";
+import { FiAlertCircle } from 'react-icons/fi';
 
 export default function SignIn({ setIsSignIn }) {
 
@@ -18,21 +19,54 @@ export default function SignIn({ setIsSignIn }) {
     const [emailValidationMessage, setEmailValidationMessage] = useState("");
     const [passwordValidationMessages, setPasswordValidationMessages] = useState<string[]>([]);
 
+    const [isEmailInvalid, setIsEmailInvalid] = useState(false);
+    const [isPasswordInvalid, setIsPasswordInvalid] = useState(false);
+
     const handleEmailChange = (newEmail: string) => {
         setEmail(newEmail);
-        setEmailValidationMessage(validateEmailAndLength(newEmail));
+        // Removed immediate validation, will validate on submit
     };
 
     const handlePasswordChange = (newPass: string) => {
         setPassword(newPass);
-        setPasswordValidationMessages(validatePassword(newPass));
+        // Removed immediate validation, will validate on submit
     };
 
     const submitSignIn = async () => {
         setError(null);
+        setIsEmailInvalid(false);
+        setIsPasswordInvalid(false);
+
+        const emailError = validateEmailAndLength(email);
+        const passwordErrors = validatePassword(password);
+
+        if (emailError) {
+            setIsEmailInvalid(true);
+            setEmailValidationMessage(emailError);
+            return;
+        }
+
+        if (passwordErrors.length > 0) {
+            setIsPasswordInvalid(true);
+            setPasswordValidationMessages(passwordErrors);
+            return;
+        }
+
         const { error } = await signIn(email, password);
         if (error) {
             setError(error.code);
+            if (error.code === "auth/invalid-credential" || error.code === "auth/invalid-email" || error.code === "auth/user-not-found") {
+                setIsEmailInvalid(true);
+                setEmailValidationMessage("Invalid email or user not found.");
+                setIsPasswordInvalid(true);
+                setPasswordValidationMessages(["Invalid password."]);
+            } else if (error.code === "auth/wrong-password") {
+                setIsPasswordInvalid(true);
+                setPasswordValidationMessages(["Invalid password."]);
+            } else if (error.code === "auth/missing-password") {
+                setIsPasswordInvalid(true);
+                setPasswordValidationMessages(["Please enter your password."]);
+            }
         } else {
             router.push('/home');
         }
@@ -55,7 +89,7 @@ export default function SignIn({ setIsSignIn }) {
                 <div className="bg-white p-8 rounded-lg shadow-lg min-w-[60vh] min-h-[30vh]">
                     <h2 className="text-2xl font-bold mb-4">Forgot your password?</h2>
                     <p className="mb-1 text-md">Email</p>
-                    <TextField style="w-full" text={forgotPasswordEmail} onChange={setForgotPasswordEmail} placeholder="john.smith@gmail.com" />
+                    <TextField style="w-full" text={forgotPasswordEmail} onChange={setForgotPasswordEmail} placeholder="john.smith@gmail.com" isInvalid={false} /> {/* No validation here yet */}
                     <div className="flex justify-between mt-8">
                         <Button text="Close" onClick={() => setForgotPasswordOpen(false)} />
                         <Button text="Send link" onClick={async () => await sendResetEmail()} icon="arrow" filled />
@@ -70,17 +104,35 @@ export default function SignIn({ setIsSignIn }) {
             <div className="">
                 <div className="text-xl font-bold mb-4">Sign In</div>
                 <div className="flex flex-col space-y-4">
-                    <div className="flex flex-col">
+                    <div className="flex flex-col relative">
                         <p className="mb-1 text-md">Email</p>
-                        <TextField text={email} onChange={handleEmailChange} placeholder="name@email.com" hidden={false} />
-                        {emailValidationMessage && <p className="mt-1 text-sm text-red-500">{emailValidationMessage}</p>}
+                        <TextField
+                            text={email}
+                            onChange={handleEmailChange}
+                            placeholder="name@email.com"
+                            hidden={false}
+                            isInvalid={isEmailInvalid}
+                        />
+                        {isEmailInvalid && (
+                            <div className="absolute right-2 top-[3.15rem] transform -translate-y-1/2 cursor-pointer" title={emailValidationMessage}>
+                                <FiAlertCircle className="text-red-500" size={25} />
+                            </div>
+                        )}
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col relative">
                         <p className="mb-1 text-md">Password</p>
-                        <TextField text={password} onChange={handlePasswordChange} placeholder="**********" hidden={true} />
-                        {passwordValidationMessages.map((msg, idx) => (
-                            <p key={idx} className="mt-1 text-sm text-red-500">{msg}</p>
-                        ))}
+                        <TextField
+                            text={password}
+                            onChange={handlePasswordChange}
+                            placeholder="**********"
+                            hidden={true}
+                            isInvalid={isPasswordInvalid}
+                        />
+                        {isPasswordInvalid && (
+                            <div className="absolute right-2 top-[3.15rem] transform -translate-y-1/2 cursor-pointer" title={passwordValidationMessages.join(', ')}>
+                                <FiAlertCircle className="text-red-500" size={25} />
+                            </div>
+                        )}
                         <div className="mt-3 mb-2 text-gray-500 cursor-pointer" onClick={() => setForgotPasswordOpen(true)}>Forgot your password?</div>
                     </div>
                 </div>
