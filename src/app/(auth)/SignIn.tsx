@@ -22,15 +22,8 @@ export default function SignIn({ setIsSignIn }) {
     const [isEmailInvalid, setIsEmailInvalid] = useState(false);
     const [isPasswordInvalid, setIsPasswordInvalid] = useState(false);
 
-    const handleEmailChange = (newEmail: string) => {
-        setEmail(newEmail);
-        // Removed immediate validation, will validate on submit
-    };
-
-    const handlePasswordChange = (newPass: string) => {
-        setPassword(newPass);
-        // Removed immediate validation, will validate on submit
-    };
+    const [emailErrorVisible, setEmailErrorVisible] = useState(false);
+    const [passwordErrorVisible, setPasswordErrorVisible] = useState(false);
 
     const submitSignIn = async () => {
         setError(null);
@@ -108,14 +101,23 @@ export default function SignIn({ setIsSignIn }) {
                         <p className="mb-1 text-md">Email</p>
                         <TextField
                             text={email}
-                            onChange={handleEmailChange}
+                            onChange={setEmail}
                             placeholder="name@email.com"
                             hidden={false}
                             isInvalid={isEmailInvalid}
                         />
                         {isEmailInvalid && (
-                            <div className="absolute right-2 top-[3.15rem] transform -translate-y-1/2 cursor-pointer" title={emailValidationMessage}>
+                            <div
+                                className="absolute right-2 top-[3.15rem] transform -translate-y-1/2 cursor-pointer"
+                                onMouseEnter={() => { if (isEmailInvalid) { setEmailErrorVisible(true) }}}
+                                onMouseLeave={() => setEmailErrorVisible(false)}
+                            >
                                 <FiAlertCircle className="text-red-500" size={25} />
+                            </div>
+                        )}
+                        {emailErrorVisible && (
+                            <div className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded shadow-md z-10">
+                                {emailValidationMessage}
                             </div>
                         )}
                     </div>
@@ -123,14 +125,23 @@ export default function SignIn({ setIsSignIn }) {
                         <p className="mb-1 text-md">Password</p>
                         <TextField
                             text={password}
-                            onChange={handlePasswordChange}
+                            onChange={setPassword}
                             placeholder="**********"
                             hidden={true}
                             isInvalid={isPasswordInvalid}
                         />
                         {isPasswordInvalid && (
-                            <div className="absolute right-2 top-[3.15rem] transform -translate-y-1/2 cursor-pointer" title={passwordValidationMessages.join(', ')}>
+                            <div
+                                className="absolute right-2 top-[3.15rem] transform -translate-y-1/2 cursor-pointer"
+                                onMouseEnter={() => setPasswordErrorVisible(isPasswordInvalid)}
+                                onMouseLeave={() => setPasswordErrorVisible(false)}
+                            >
                                 <FiAlertCircle className="text-red-500" size={25} />
+                            </div>
+                        )}
+                        {passwordErrorVisible && (
+                            <div className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded shadow-md z-10">
+                                {passwordValidationMessages.join(', ')}
                             </div>
                         )}
                         <div className="mt-3 mb-2 text-gray-500 cursor-pointer" onClick={() => setForgotPasswordOpen(true)}>Forgot your password?</div>
@@ -148,8 +159,10 @@ export default function SignIn({ setIsSignIn }) {
                 )}
                 <div className="">
                     <div className="flex justify-between mt-4">
-                        <Button text="Sign Up" onClick={() => setIsSignIn(false)} style="border-[3px] border-red-800" filled={false} />
-                        <Button text="Sign In" onClick={async () => await submitSignIn()} style="ml-4" icon="arrow" filled />
+                        <Button text="Sign Up" onClick={() => setIsSignIn(false)} style="border-[3px] border-red-800"
+                                filled={false}/>
+                        <Button text="Sign In" onClick={async () => await submitSignIn()} style="ml-4" icon="arrow"
+                                filled/>
                     </div>
                 </div>
             </div>
