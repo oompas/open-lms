@@ -3,7 +3,7 @@ import { callAPI, signUp } from "@/helpers/supabase.ts";
 import Button from "@/components/Button.tsx";
 import TextField from "@/components/TextField.tsx";
 import { validateEmailAndLength, validatePassword } from "@/components/TextField";
-import { FiAlertCircle, FiInfo } from 'react-icons/fi'; // Import icons
+import { FiAlertCircle, FiInfo } from 'react-icons/fi';
 
 export default function SignUp({ setIsSignIn }) {
 
@@ -212,8 +212,10 @@ export default function SignUp({ setIsSignIn }) {
                         </div>
                     )}
                     {passwordErrorVisible && isPasswordInvalid && (
-                        <div className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded shadow-md z-10">
-                            {passwordValidationMessages.join(', ')}
+                        <div className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded shadow-md z-10 max-h-14 overflow-y-auto">
+                            {passwordValidationMessages.map((msg, index) => (
+                                <div key={index}>{msg}</div>
+                            ))}
                         </div>
                     )}
                     {!isPasswordInvalid && passwordValidationMessages.length === 0 && (

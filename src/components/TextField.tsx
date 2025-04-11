@@ -9,7 +9,6 @@ export function validateEmailAndLength(input: string): string {
 }
 
 export function validatePassword(input: string): string[] {
-    const trimmedInput = input.trim();
     const minLength = 10;
     const upperCaseFormat = /[A-Z]/;
     const lowerCaseFormat = /[a-z]/;
@@ -18,28 +17,24 @@ export function validatePassword(input: string): string[] {
 
     let errors = [];
 
-    if (input !== trimmedInput) {
-        errors.push("Password should not have leading or trailing whitespace.");
-    }
-
     if (input.length < minLength) {
-        errors.push("Password is too short. It should be at least 10 characters.");
+        errors.push("Password must be at least 10 characters");
     }
 
     if (!upperCaseFormat.test(input)) {
-        errors.push("Password should contain at least one uppercase letter.");
+        errors.push("Password requires an uppercase letter");
     }
 
     if (!lowerCaseFormat.test(input)) {
-        errors.push("Password should contain at least one lowercase letter.");
+        errors.push("Password requires a lowercase letter");
     }
 
     if (!numberFormat.test(input)) {
-        errors.push("Password should contain at least one number.");
+        errors.push("Password required a number");
     }
 
     if (!specialCharFormat.test(input)) {
-        errors.push("Password should contain at least one special character.");
+        errors.push("Password requires a special character");
     }
 
     if (errors.length === 0) {
