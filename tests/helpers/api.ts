@@ -38,15 +38,14 @@ const callAPI = async (endpoint: string, body: object, admin: boolean): Promise<
                 errorMessage = `Error parsing error response: ${error.message || JSON.stringify(error)}`;
             }
 
-            console.log(`Error invoking function: ${errorMessage}`);
-            return { error: errorMessage };
+            throw new Error(errorMessage);
         }
 
         return data;
     } catch (error: any) {
         const errorMessage = error.message || JSON.stringify(error);
-        console.error(`Uncaught error invoking Supabase Edge Function '${endpoint}': ${errorMessage}`);
-        return { error: errorMessage };
+        console.error(`Error invoking Supabase Edge Function '${endpoint}': ${errorMessage}`);
+        throw error;
     }
 }
 
