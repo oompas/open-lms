@@ -116,7 +116,7 @@ function getRemoteFunctions(supabaseRef) {
 // Delete a remote function
 function deleteRemoteFunction(supabaseRef, functionName) {
     try {
-        const command = `supabase functions delete ${functionName} --project-ref ${supabaseRef} --force`;
+        const command = `supabase functions delete ${functionName} --project-ref ${supabaseRef}`;
         console.log(`Deleting remote function: ${functionName}`);
         execSync(command, { stdio: 'inherit' });
     } catch (error) {
