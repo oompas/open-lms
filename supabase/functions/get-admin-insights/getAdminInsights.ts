@@ -23,7 +23,7 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
             id: quizAttempt.id,
             courseName: course.name,
             timestamp: new Date(quizAttempt.end_time),
-            userName: user.user_metadata.name
+            userName: user.display_name
         }
     });
 
@@ -43,14 +43,14 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
 
     request.log(`Constructed insights for ${courseInsights.length} courses`);
 
-    const learners = users.filter((user) => user.user_metadata.role === "Learner").map((user: any) => {
+    const learners = users.filter((user) => (user.app_metadata.role ?? "Learner") === "Learner").map((user: any) => {
         const userEnrollments = enrollments.filter(e => e.user_id === user.id);
 
         return {
             id: user.id,
             email: user.email,
-            name: user.user_metadata.name,
-            role: user.user_metadata.role,
+            name: user.display_name,
+            role: user.app_metadata.role ?? "Learner",
 
             coursesEnrolled: userEnrollments.length,
             coursesAttempted: userEnrollments.filter((e) => e.status !== CourseStatus.ENROLLED).length,
@@ -60,13 +60,13 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
 
     request.log(`Constructed data for ${learners.length} learners`);
 
-    const admins = users.filter((user) => user.user_metadata.role === "Admin" || user.user_metadata.role === "Developer")
+    const admins = users.filter((user) => user.app_metadata.role === "Admin" || user.app_metadata.role === "Developer")
         .map((user: any) => {
             return {
                 id: user.id,
                 email: user.email,
-                name: user.user_metadata.name,
-                role: user.user_metadata.role,
+                name: user.display_name,
+                role: user.app_metadata.role ?? "Learner",
 
                 coursesCreated: courses.filter(c => c.user_id === user.id).length,
                 coursesActive: courses.filter(c => c.user_id === user.id && c.active).length

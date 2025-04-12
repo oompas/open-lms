@@ -22,9 +22,9 @@ const getUserReports = async (request: EdgeFunctionRequest) => {
 
         return {
             'User ID': user.id,
-            'Name': user.user_metadata.name,
+            'Name': user.display_name,
             'Email': user.email,
-            'Role': user.user_metadata.role,
+            'Role': user.app_metadata.role ?? "Learner",
             'Account Disabled?': user.disabled ? "Yes" : "No",
 
             'Email Verified?': user.emailVerified ? "Yes" : "No",

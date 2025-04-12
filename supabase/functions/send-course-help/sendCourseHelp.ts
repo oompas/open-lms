@@ -30,7 +30,7 @@ const sendCourseHelp = async (request: EdgeFunctionRequest) => {
               </header>
               <section style="margin-bottom: 20px;">
                   <h2 style="font-size: 24px; color: #333333; text-align: center">User request for Course "${course.name}"</h2>
-                  <p style="font-size: 16px; color: #555;">Request info: <br> Name: ${user.user_metadata.name} <br> Email: ${user.email} <br> ID: ${user.id} <br> </p>
+                  <p style="font-size: 16px; color: #555;">Request info: <br> Name: ${user.display_name} <br> Email: ${user.email} <br> ID: ${user.id} <br> </p>
                   <p style="font-size: 16px; color: #555;">User request: ${feedback}</p>
               </section>
               <footer style="font-size: 12px; color: #666666; text-align: center;">
