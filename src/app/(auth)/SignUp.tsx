@@ -124,7 +124,6 @@ export default function SignUp({ setIsSignIn }) {
             }
         } else {
             console.log("User signed up:", data);
-            callAPI('setup-account', { name: name, userId: data.user.id });
             setShowVerifyEmailPopup(true);
         }
     };
