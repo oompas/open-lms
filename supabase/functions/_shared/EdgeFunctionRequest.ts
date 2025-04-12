@@ -91,7 +91,7 @@ class EdgeFunctionRequest {
 
         this.payload = payload;
         this.requestUser = requestUser;
-        this.isAdmin = requestUser?.user_metadata.role === "Admin" || requestUser?.user_metadata.role === "Developer";
+        this.isAdmin = requestUser?.app_metadata?.role === "Administrator" || requestUser?.app_metadata?.role === "Developer";
 
         if (adminOnly) {
             this.validateAdmin(`Only administrators may call ${this.getEndpoint()}`);
