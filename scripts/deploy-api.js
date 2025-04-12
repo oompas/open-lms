@@ -12,7 +12,7 @@ import path from 'path'
  config({ path: '.env.local' });
 
 // Validate argument is a valid environment
- const args = process.argv.slice(2);
+const args = process.argv.slice(2);
 if (args.length !== 1) {
     console.error('Error: Please provide exactly one argument for the environment (DEV, TEST, or PROD).');
     process.exit(1);
@@ -54,7 +54,7 @@ try {
  * Delete cloud functions not present locally
  */
 
-// Get the project's
+// Get the project's functions directory
 const projectRoot = process.cwd();
 const functionsDir = path.join(projectRoot, 'supabase', 'functions');
 
