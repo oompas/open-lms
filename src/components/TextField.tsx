@@ -38,7 +38,7 @@ export function validatePassword(input: string): string[] {
     }
 
     if (errors.length === 0) {
-        return [""];
+        return [];
     }
 
     return errors;
