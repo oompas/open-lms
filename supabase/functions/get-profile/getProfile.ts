@@ -8,7 +8,7 @@ const getProfile = async (request: EdgeFunctionRequest): Promise<object> => {
     if (!userId) {
         const user = request.getRequestUser();
 
-        request.log(`Entering getProfile for user ${user}`);
+        request.log(`Entering getProfile for user ${user.email}`);
 
         const completedCourseQuery = await CourseAttemptService
             .query(`
