@@ -5,7 +5,7 @@ import { bool, uuid } from "../_shared/validation.ts";
 
 Deno.serve(async (req) => {
     const parameters: RunParams = {
-        endpointName: import.meta.url,
+        metaUrl: import.meta.url,
         req: req,
         schemaRecord: { userId: uuid(), disable: bool() },
         endpointFunction: disableUser,
