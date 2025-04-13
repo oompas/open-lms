@@ -10,7 +10,6 @@ export interface RunParams {
     schemaRecord: Record<string, z.ZodTypeAny>;
     endpointFunction: (request: EdgeFunctionRequest) => Promise<any>;
     adminOnly?: boolean;
-    disableAuthCheck?: boolean;
 }
 
 class EdgeFunctionRequest {
@@ -35,9 +34,8 @@ class EdgeFunctionRequest {
      * @param schemaRecord Record of fields this request should have
      * @param endpointFunction Function to run the business logic for this endpoint
      * @param adminOnly Throws an error if this endpoint can only be called by admins/developers
-     * @param disableAuthCheck Doesn't verify requesting user if true (sets requestUser to null)
      */
-    public static async run({ metaUrl, req, schemaRecord, endpointFunction, adminOnly, disableAuthCheck }: RunParams) {
+    public static async run({ metaUrl, req, schemaRecord, endpointFunction, adminOnly }: RunParams) {
 
         const token = req.headers.get('Authorization')?.replace('Bearer ', '');
         const request: EdgeFunctionRequest = new EdgeFunctionRequest(metaUrl, req, schemaRecord, token);
@@ -47,7 +45,7 @@ class EdgeFunctionRequest {
                 return request.OptionsRsp();
             }
 
-            await request.validateRequest(adminOnly ?? false, disableAuthCheck ?? false);
+            await request.validateRequest(adminOnly ?? false);
 
             const rsp = await endpointFunction(request);
 
@@ -82,11 +80,11 @@ class EdgeFunctionRequest {
     /**
      * Gets, stores and strictly validates the payload against the given schema, as well as getting the requesting user
      */
-    public async validateRequest(adminOnly: boolean, disableAuthCheck: boolean): Promise<Record<string, any>> {
+    public async validateRequest(adminOnly: boolean): Promise<Record<string, any>> {
 
         const [payload, requestUser] = await Promise.all([
             this.req.json(),
-            disableAuthCheck ? null : this.getUserFromReq()
+            this.getUserFromReq()
         ]);
 
         this.payload = payload;
@@ -178,7 +176,6 @@ class EdgeFunctionRequest {
     /**
      * Gets a user object that has the specific ID. Note this should only be done by admins
      * @param userId User ID of the user to get
-     * @param adminCheck true to verify the requesting user is an admin before getting user
      */
     public getUserById = async (userId: string): Promise<object> => {
 
