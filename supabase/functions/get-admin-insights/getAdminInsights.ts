@@ -23,7 +23,7 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
             id: quizAttempt.id,
             courseName: course.name,
             timestamp: new Date(quizAttempt.end_time),
-            userName: user.display_name
+            userName: user.user_metadata.display_name
         }
     });
 
@@ -49,7 +49,7 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
         return {
             id: user.id,
             email: user.email,
-            name: user.display_name,
+            name: user.user_metadata.display_name,
             role: user.app_metadata.role ?? "Learner",
 
             coursesEnrolled: userEnrollments.length,
@@ -65,7 +65,7 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
             return {
                 id: user.id,
                 email: user.email,
-                name: user.display_name,
+                name: user.user_metadata.display_name,
                 role: user.app_metadata.role ?? "Learner",
 
                 coursesCreated: courses.filter(c => c.user_id === user.id).length,

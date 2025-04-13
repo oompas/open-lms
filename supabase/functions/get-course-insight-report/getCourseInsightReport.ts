@@ -41,7 +41,7 @@ const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
         const latestQuizAttempt = QuizAttemptService.getLatest(userQuizAttempts);
 
         return {
-            name: user.display_name,
+            name: user.user_metadata.display_name,
             userId: user.id,
             status: enrollment.status,
             latestQuizAttemptId: latestQuizAttempt ? latestQuizAttempt.id : null,

@@ -56,7 +56,7 @@ const getQuizAttempt = async (request: EdgeFunctionRequest) => {
 
     return {
         courseName: course.name,
-        submitterName: user.display_name,
+        submitterName: user.user_metadata.display_name,
         completionTime: new Date(quizAttempt.end_time),
         saQuestions: saQuestions,
         otherQuestions: otherQuestions,

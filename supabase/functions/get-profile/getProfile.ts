@@ -36,9 +36,9 @@ const getProfile = async (request: EdgeFunctionRequest): Promise<object> => {
         request.log(`Parsed completed course data: ${JSON.stringify(completedCourseData)}`);
 
         return {
-            name: user.display_name,
+            name: user.user_metadata.display_name,
             email: user.email,
-            role: user.app_metadata.role  ?? "Learner",
+            role: user.app_metadata.role ?? "Learner",
             signUpDate: user.created_at,
             completedCourses: completedCourseData
         }
@@ -92,7 +92,7 @@ const getProfile = async (request: EdgeFunctionRequest): Promise<object> => {
 
     return {
         userId: user.id,
-        name: user.display_name,
+        name: user.user_metadata.display_name,
         email: user.email,
         role: user.app_metadata.role ?? "Learner",
         disabled: !!user.banned_until,
