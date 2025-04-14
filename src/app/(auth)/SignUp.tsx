@@ -145,7 +145,7 @@ export default function SignUp({ setIsSignIn }) {
             <div className="text-xl font-bold mb-4">Create Account</div>
             <div className="flex flex-col space-y-4">
                 <div className="flex flex-col relative">
-                    <p className="mb-1 text-md">Name</p>
+                    <p className="mb-1 text-md">Full Name</p>
                     <TextField
                         text={name || ""}
                         onChange={handleNameChange}
