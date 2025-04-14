@@ -127,7 +127,10 @@ export default function Insights({ params }: { params: { id: string } }) {
                 <div className="flex flex-row bg-white w-full p-12 rounded-2xl shadow-custom overflow-y-scroll sm:no-scrollbar mb-4">
                     <div className="flex flex-col">
                         {/* @ts-ignore */}
-                        <div className="text-xl font-bold mb-4">{data ? data.courseName : ""} {}</div>
+                        <div className="text-xl font-bold mb-4">
+                            {data && <div className={"inline-block"}>{data.courseName}</div>}
+                            {data && !data.isActive && <div className={"ml-1 text-red-600 inline-block"}>[Inactive]</div>}
+                        </div>
                         {/* @ts-ignore */}
                         <div className="text-xl mb-4">Average Completion Time: {getAverageTime()}</div>
                         <div className="flex flex-row space-x-6">
