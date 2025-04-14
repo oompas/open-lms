@@ -31,7 +31,7 @@ suite("get-profile", function() {
 
             expect(result).to.have.property('name').equal(Constants.users.AdminName);
             expect(result).to.have.property('email').equal(Constants.users.AdminEmail);
-            expect(result).to.have.property('role').equal("Admin");
+            expect(result).to.have.property('role').equal("Administrator");
             expect(result).to.have.property('signUpDate').equal(Constants.users.AdminSignup);
             expect(result).to.have.property('completedCourses').deep.equal([]);
         });

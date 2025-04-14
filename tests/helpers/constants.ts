@@ -31,11 +31,11 @@ const Constants = {
     users: {
         LearnerName: "Test Learner",
         LearnerEmail: getEnvVariable("TEST_LEARNER_EMAIL"),
-        LearnerSignup: "2024-11-25T00:05:16.199291Z",
+        LearnerSignup: "2025-04-14T15:27:01.952027Z",
 
         AdminName: "Test Admin",
         AdminEmail: getEnvVariable("TEST_ADMIN_EMAIL"),
-        AdminSignup: "2024-11-25T00:07:57.484637Z"
+        AdminSignup: "2025-04-14T15:28:54.576427Z"
     },
     courseStatus: {
         NOT_ENROLLED: "NOT_ENROLLED",
