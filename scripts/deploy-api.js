@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { execSync } from 'child_process';
 import fs from 'fs';
-import path from 'path'
+import path from 'path';
 
 
 /**
@@ -79,17 +79,13 @@ function getRemoteFunctions(supabaseRef) {
         const lines = output.trim().split('\n');
 
         if (lines.length <= 2) {
-            console.warn('Warning: Could not parse remote function list.');
-            return [];
+            throw new Error('Could not parse remote function list.');
         }
 
-        // Find the index of the 'NAME' column
+        // Validate header
         const header = lines[0].trim().split(/\s+/);
-        const nameIndex = header.indexOf('NAME') - 1;
-
-        if (nameIndex === -1) {
-            console.warn('Warning: Could not find "NAME" column in remote function list.');
-            return [];
+        if (!header.includes('NAME')) {
+            throw new Error('Could not find "NAME" column in remote function list.');
         }
 
         const functionNames = [];
@@ -98,11 +94,9 @@ function getRemoteFunctions(supabaseRef) {
             const line = lines[i].trim();
             if (line) {
                 const columns = line.split(/\s{2,}/); // Split by two or more spaces
-                if (columns[nameIndex] && columns[nameIndex].trim() !== '') {
-                    const val = columns[nameIndex].substring(1).trim();
-                    if (/^[a-z]+(-[a-z]+)*$/.test(val)) {
-                        functionNames.push(val);
-                    }
+                const name = columns[header.indexOf('NAME')].trim();
+                if (name) {
+                    functionNames.push(name);
                 }
             }
         }
@@ -117,8 +111,9 @@ function getRemoteFunctions(supabaseRef) {
 function deleteRemoteFunction(supabaseRef, functionName) {
     try {
         const command = `supabase functions delete ${functionName} --project-ref ${supabaseRef}`;
-        console.log(`Deleting remote function: ${functionName}`);
+        console.log(`Initiating deletion of remote function: ${functionName}`);
         execSync(command, { stdio: 'inherit' });
+        console.log(`Successfully deleted remote function: ${functionName}`);
     } catch (error) {
         console.error(`Error deleting remote function "${functionName}":`, error.message);
         process.exit(1);
@@ -133,7 +128,7 @@ const remoteFunctions = getRemoteFunctions(supabaseRef);
 const functionsToDelete = remoteFunctions.filter(func => !localFunctions.includes(func));
 
 if (functionsToDelete.length > 0) {
-    console.log('Functions to delete from the cloud:', functionsToDelete);
+    console.log('Identified functions to delete from the cloud:', functionsToDelete);
     functionsToDelete.forEach(funcToDelete => {
         deleteRemoteFunction(supabaseRef, funcToDelete);
     });
