@@ -29,11 +29,11 @@ const Constants = {
         TEST_LEARNER_PASSWORD: getEnvVariable("TEST_LEARNER_PASSWORD")
     },
     users: {
-        LearnerName: "Testing learner account",
+        LearnerName: "Test Learner",
         LearnerEmail: getEnvVariable("TEST_LEARNER_EMAIL"),
         LearnerSignup: "2024-11-25T00:05:16.199291Z",
 
-        AdminName: "Testing admin account",
+        AdminName: "Test Admin",
         AdminEmail: getEnvVariable("TEST_ADMIN_EMAIL"),
         AdminSignup: "2024-11-25T00:07:57.484637Z"
     },
