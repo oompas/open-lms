@@ -87,7 +87,7 @@ export default function LearnerLayout({ children }: { children: React.ReactNode 
 
     useEffect(() => {
        const role = session?.user?.app_metadata?.role ?? "Learner";
-        if (role === 'Admin' || role === 'Developer') {
+        if (role === 'Administrator' || role === 'Developer') {
             setIsAdmin(true);
         }
     }, [session]);
