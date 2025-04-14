@@ -63,6 +63,7 @@ const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
 
     return {
         courseName: courseData.name,
+        isActive: courseData.active,
         numEnrolled: numEnrolled,
         numStarted: numStarted,
         numComplete: numCompleted,
