@@ -60,7 +60,7 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
 
     request.log(`Constructed data for ${learners.length} learners`);
 
-    const admins = users.filter((user) => user.app_metadata.role === "Admin" || user.app_metadata.role === "Developer")
+    const admins = users.filter((user) => user.app_metadata.role === "Administrator" || user.app_metadata.role === "Developer")
         .map((user: any) => {
             return {
                 id: user.id,
