@@ -8,7 +8,9 @@
     "dev": "next dev",
     "deployDev": "node scripts/deploy-api.js DEV",
     "deployTest": "node scripts/deploy-api.js TEST",
-    "test": "node scripts/run-tests.js"
+    "test": "node scripts/run-tests.js",
+    "merge-sql": "node sql/mergeScripts.js",
+    "merge-sql-test": "node sql/mergeScripts.js TEST"
   },
   "dependencies": {
     "@supabase/auth-helpers-react": "^0.5.0",
