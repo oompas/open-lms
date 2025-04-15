@@ -1,5 +1,3 @@
--- ORDER: 2
-
 /**
  * Create database tables
  */

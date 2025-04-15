@@ -1,5 +1,3 @@
--- ORDER: 3
-
 /**
  * Add indices to tables
  * Use b-tree as default unless you're certain another option is more efficient and won't cause issues

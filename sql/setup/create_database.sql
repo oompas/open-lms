@@ -1,5 +1,3 @@
--- ORDER: 1
-
 /**
  * Delete and re-create all database tables (ALL DATABASE DATA IS LOST !!!)
  */

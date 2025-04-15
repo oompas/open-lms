@@ -1,6 +1,3 @@
--- ORDER: 4
--- ENV_IGNORE: TEST
-
 /**
  * Generate some dummy data to populate the database
  */
