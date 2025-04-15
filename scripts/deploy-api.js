@@ -1,15 +1,11 @@
-import { config } from 'dotenv';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-
+import './load-env.js';
 
 /**
  * Configure and validate the environment
  */
-
-// Load environment variables from .env.local
-config({ path: '.env.local' });
 
 // Validate argument is a valid environment
 const args = process.argv.slice(2);
