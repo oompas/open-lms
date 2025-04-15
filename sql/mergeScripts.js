@@ -5,87 +5,55 @@ import path from 'node:path';
 const args = process.argv.slice(2);
 const environment = args[0].toUpperCase();
 
-if (!environment) {
-    console.error(`Error: must specify an environment through arguments`);
-    process.exit(1);
-}
+const environments = ["PROD", "DEV", "TEST"];
 if (args.length !== 1) {
     console.error(`Error: Exactly one argument must be provided, the environment`);
     process.exit(1);
 }
+if (!environments.includes(environment)) {
+    console.error(`Environment '${environment}' is not recognised`);
+    process.exit(1);
+}
 
-// Configure and log input and output paths
+// configure and log input and output paths
 const sourceFolder = './sql/setup';
 const outputFile = './sql/merged_setup.sql';
+const configFile = './sql/mergeConfig.json';
 
 console.log(`Starting SQL script merge for environment: ${environment}`);
-console.log(`Merging scripts from ${sourceFolder} into output file ${outputFile}\n`);
+console.log(`Merging scripts from ${sourceFolder} into output file ${outputFile} with configurations from ${configFile}\n`);
 
 try {
-    // Get and validate the SQL files in the provided directory
-    const setupFolderPath = path.join(process.cwd(), sourceFolder);
-    const sqlFiles = await fs.readdir(setupFolderPath);
+    // Read the JSON configuration file
+    const configPath = path.join(process.cwd(), configFile);
+    const configContent = await fs.readFile(configPath, 'utf8');
+    const config = JSON.parse(configContent);
 
-    if (sqlFiles.length === 0) {
-        throw new Error(`No SQL files found in the '${sourceFolder}' folder.`);
+    // Validate the configuration
+    if (!config.scriptsOrder || !config.ignoreScripts) {
+        throw new Error(`Invalid configuration file: must have a scriptsOrder array and ignoreScripts object`);
     }
 
-    const nonSql = sqlFiles.filter((f) => !f.endsWith('.sql'));
-    if (nonSql.length !== 0) {
-        throw new Error(`Non-SQL files found in directory ${sourceFolder}: ${nonSql.join(', ')}`);
-    }
-
-    console.log(`Files in folder: ${sqlFiles.join(', ')}`);
-
-    // Parse each SQL file
+    // Read and prepare SQL scripts based on the JSON configuration
     const scripts = [];
-    for (const file of sqlFiles) {
-        const filePath = path.join(setupFolderPath, file);
+    for (let i = 0; i < config.scriptsOrder.length; ++i) {
+        const script = config.scriptsOrder[i];
+        if (config.ignoreScripts[environment].includes(script)) {
+            continue;
+        }
+
+        const filePath = path.join(process.cwd(), sourceFolder, script);
         try {
             const content = await fs.readFile(filePath, 'utf8');
-            const lines = content.split('\n');
-
-            // Get the script's order
-            let order = Infinity;
-            const orderMatch = lines[0].match(/^--\s*ORDER:\s*(\d+)/i);
-            if (orderMatch) {
-                order = parseInt(orderMatch[1], 10);
-                lines.shift();
-            } else {
-                throw new Error(`All script must have '-- ORDER: n' as their first line`);
-            }
-
-            // Parse the script's ignored environments (if present)
-            let ignoreEnvironments = [];
-            const ignoreMatch = lines[0].match(/^--\s*ENV_IGNORE:\s*(.+)/i);
-            if (ignoreMatch) {
-                ignoreEnvironments = ignoreMatch[1].split(',').map(env => env.trim());
-                lines.shift();
-            }
-
-            scripts.push({ name: file, path: filePath, content: lines.join(''), order, ignoreEnvironments });
+            const fullContent = `-- SQL from: ${script}\n\n` + content + '\n\n';
+            scripts.push(fullContent);
         } catch (readError) {
-            console.error(`Error reading file '${file}': ${readError.message}`);
+            console.error(`Error reading file '${script}': ${readError.message}`);
             process.exit(1);
         }
     }
 
-    // Sort scripts based on their order
-    scripts.sort((a, b) => a.order - b.order);
-
-    let mergedContent = '';
-    for (const script of scripts) {
-        if (script.ignoreEnvironments.includes(environment)) {
-            console.log(`Ignoring script '${script.name}' for environment '${environment}'.`);
-            continue;
-        }
-
-        mergedContent += `-- SQL from: ${script.name} (${script.order})\n\n`;
-        mergedContent += script.content.trim();
-        mergedContent += '\n\n';
-    }
-
-    await fs.writeFile(outputFile, mergedContent.trim() + '\n', 'utf8');
+    await fs.writeFile(outputFile, scripts.join('\n'), 'utf8');
     console.log(`\nSuccessfully merged SQL scripts into '${outputFile}'.`);
 
 } catch (error) {
