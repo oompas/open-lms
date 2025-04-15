@@ -1,0 +1,11 @@
+{
+  "scriptsOrder": [
+    "01_create_database.sql",
+    "02_create_tables.sql",
+    "03_create_indices.sql",
+    "04_insert_dummy_data.sql"
+  ],
+  "ignoreScripts": {
+    "test": ["04_insert_dummy_data.sql"]
+  }
+}
