@@ -9,7 +9,8 @@
     "deployDev": "node scripts/deploy-api.js DEV",
     "deployTest": "node scripts/deploy-api.js TEST",
     "test": "node scripts/run-tests.js",
-    "merge-sql": "node sql/mergeScripts.js",
+    "merge-sql-prod": "node sql/mergeScripts.js PROD",
+    "merge-sql-dev": "node sql/mergeScripts.js DEV",
     "merge-sql-test": "node sql/mergeScripts.js TEST"
   },
   "dependencies": {

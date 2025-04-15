@@ -30,8 +30,18 @@ try {
     const config = JSON.parse(configContent);
 
     // Validate the configuration
+    const sourceFolderPath = path.join(process.cwd(), sourceFolder);
+    const sourceFiles = await fs.readdir(sourceFolderPath);
+    const ignoredFakeFiles = Object.values(config.ignoreScripts).flat().filter(script => !sourceFiles.includes(script));
+
     if (!config.scriptsOrder || !config.ignoreScripts) {
-        throw new Error(`Invalid configuration file: must have a scriptsOrder array and ignoreScripts object`);
+        throw new Error(`Invalid configuration file: must have scriptsOrder and ignoreScripts`);
+    }
+    if (sourceFiles.length !== config.scriptsOrder.length) {
+        throw new Error(`Mismatch: You have defined ${config.scriptsOrder.length} scripts in the configuration, but ${sourceFiles.length} scripts exist`);
+    }
+    if (ignoredFakeFiles.length !== 0) {
+        throw new Error(`You have ignored scripts that don;t exist: ${ignoredFakeFiles.join(', ')}`);
     }
 
     // Read and prepare SQL scripts based on the JSON configuration
@@ -42,10 +52,10 @@ try {
             continue;
         }
 
-        const filePath = path.join(process.cwd(), sourceFolder, script);
+        const filePath = path.join(sourceFolderPath, script);
         try {
             const content = await fs.readFile(filePath, 'utf8');
-            const fullContent = `-- SQL from: ${script}\n\n` + content + '\n\n';
+            const fullContent = `-- SQL from: ${script}\n\n` + content.trim() + '\n\n';
             scripts.push(fullContent);
         } catch (readError) {
             console.error(`Error reading file '${script}': ${readError.message}`);
@@ -53,8 +63,8 @@ try {
         }
     }
 
-    await fs.writeFile(outputFile, scripts.join('\n'), 'utf8');
-    console.log(`\nSuccessfully merged SQL scripts into '${outputFile}'.`);
+    await fs.writeFile(outputFile, scripts.join(''), 'utf8');
+    console.log(`Successfully merged SQL scripts into '${outputFile}'.`);
 
 } catch (error) {
     console.error(`An error occurred during the merge process: ${error.message}`);
