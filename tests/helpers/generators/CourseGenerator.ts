@@ -29,7 +29,7 @@ const randInt = (min: number, max: number) => {
 class TestCourseGenerator {
 
     /**
-     * Adds a randomly generated test course to the database
+     * Adds a randomly generated test course to the database, activates it, and returns the course ID
      */
     public static async generateDummyCourse() {
 
@@ -90,21 +90,31 @@ class TestCourseGenerator {
         courseData.minQuizScore = Math.floor(Math.random() * totalMarks) + 1; // Random score between 1 and total marks
 
         // Create and verify course
-        const createCourseResult = await callAPI('create-course', { course: courseData, quizQuestions: quizQuestions }, true);
+        const courseId = await callAPI('create-course', { course: courseData, quizQuestions: quizQuestions }, true);
 
-        expect(createCourseResult).to.be.a('number');
-        expect(Number.isInteger(createCourseResult)).to.be.true;
+        expect(courseId).to.be.a('number');
+        expect(Number.isInteger(courseId)).to.be.true;
+
+        // Set course visibility to active
+        const setCourseActive = await callAPI('set-course-visibility', { courseId: courseId, active: true }, true);
+        expect(setCourseActive).to.be.null;
+
+        return courseId;
     }
 
     /**
      * Generates a specified number of dummy courses
      *
      * @param count Number of courses to generate
+     * @return List of course IDs generated
      */
     public static async generateDummyCourses(count: number) {
+        const courseIds = [];
         for (let i = 0; i < count; i++) {
-            await TestCourseGenerator.generateDummyCourse();
+            const courseId = await TestCourseGenerator.generateDummyCourse();
+            courseIds.push(courseId);
         }
+        return courseIds
     }
 }
 

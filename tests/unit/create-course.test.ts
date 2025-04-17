@@ -14,7 +14,7 @@ suite("create-course", function() {
         expect(createCourseResult).to.be.a('number');
         expect(Number.isInteger(createCourseResult)).to.be.true;
 
-        // Next, activate the course (it can;t be queried otherwise)
+        // Next, activate the course (it can't be queried otherwise)
         const activeCourseResult = await callAPI('set-course-visibility', { courseId: createCourseResult, active: true }, true);
         expect(activeCourseResult).to.be.null;
 

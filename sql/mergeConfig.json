@@ -6,7 +6,7 @@
     "insert_dummy_data.sql"
   ],
   "ignoreScripts": {
-    "PROD": [],
+    "PROD": ["insert_dummy_data.sql"],
     "DEV": [],
     "TEST": ["insert_dummy_data.sql"]
   }
