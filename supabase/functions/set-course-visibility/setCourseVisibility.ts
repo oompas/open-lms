@@ -5,7 +5,11 @@ const setCourseVisibility = async (request: EdgeFunctionRequest) => {
 
     const { courseId, active } = request.getPayload();
 
+    request.log(`Entering setCourseVisibility with courseId: ${courseId} and active: ${active}`);
+
     await CourseService.setActiveStatus(courseId, active);
+
+    request.log(`Course successfully set to ${active ? "active" : "inactive"}`);
 
     return null;
 }
