@@ -46,8 +46,7 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
         user_id: quizQuestionAttempts[0].user_id,
         direct: true,
         title: `Your ${course.name} quiz has been marked`,
-        link: `/course/${course.id}`,
-        read: false
+        link: `/course/${course.id}`
     };
     await NotificationService.addNotification(notification);
 
