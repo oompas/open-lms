@@ -36,7 +36,7 @@ class TestCourseGenerator {
         // Generate course data
         const courseData: CourseData = {
             name: faker.lorem.words(randInt(2, 8)),
-            description: faker.lorem.paragraph(),
+            description: faker.lorem.paragraph().substring(0, 200),
             link: faker.internet.url(),
             minTime: faker.datatype.boolean() ? Math.floor(Math.random() * 240) + 30 : null,
 
