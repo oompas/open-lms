@@ -65,9 +65,9 @@ class TestCourseGenerator {
                     });
                     break;
                 case "MC":
-                    const numberOfAnswers = faker.datatype.number({ min: 2, max: 5 });
+                    const numberOfAnswers = faker.number.int({ min: 2, max: 5 });
                     const answers: string[] = Array.from({ length: numberOfAnswers }, () => faker.lorem.word());
-                    const correctAnswerIndex = faker.datatype.number({ min: 0, max: numberOfAnswers - 1 });
+                    const correctAnswerIndex = faker.number.int({ min: 0, max: numberOfAnswers - 1 });
                     quizQuestions.push({
                         type: "MC",
                         question: questionText,
