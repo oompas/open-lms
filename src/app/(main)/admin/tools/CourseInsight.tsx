@@ -29,7 +29,7 @@ export default function CourseInsight({
                 {!courseData.avgTime ? "-" : courseData.avgTime + " minutes"}
             </td>
             <td className="border p-2">
-                {!courseData.avgQuizScore ? "-" : courseData.avgQuizScore + "%"}
+                {!courseData.quizPassRate ? "-" : courseData.quizPassRate + "%"}
             </td>
         </tr>
     )

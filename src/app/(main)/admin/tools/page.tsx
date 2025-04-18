@@ -10,10 +10,8 @@ import { downloadZip } from "client-zip";
 import AdminInsight from "@/app/(main)/admin/tools/AdminInsight";
 import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
-import { BsDownload } from "react-icons/bs";
 import { FiDownload } from "react-icons/fi";
-import { IoAdd, IoPersonAdd, IoSearch } from "react-icons/io5";
-import { IoMdAdd } from "react-icons/io";
+import { IoPersonAdd, IoSearch } from "react-icons/io5";
 import { MdAdd } from "react-icons/md";
 
 export default function Tools() {
@@ -135,7 +133,7 @@ export default function Tools() {
                             <th className="py-1">Course Name</th>
                             <th className="py-1">Learners Completed</th>
                             <th className="py-1">Average Completion Time</th>
-                            <th className="py-1">Average Quiz Score</th>
+                            <th className="py-1">Quiz Pass Rate</th>
                         </tr>
                     </thead>
                     <tbody>
