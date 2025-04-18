@@ -33,6 +33,25 @@ suite("set-course-visibility", function() {
 
         sanitySkipDetailed();
 
+        test("Repeatedly activate/deactivate course", async function() {
+            const repetitions = 10;
+            const courseId = await TestCourseGenerator.generateDummyCourse();
+
+            for (let i = 0; i < repetitions; ++i) {
+                await updateVisibilityAndVerify(courseId, false);
+                await updateVisibilityAndVerify(courseId, true);
+            }
+        });
+
+        test("Deactivate/active multiple courses", async function() {
+            const courseIds: number[] = await TestCourseGenerator.generateDummyCourses(10);
+
+            for (let courseId of courseIds) {
+                await updateVisibilityAndVerify(courseId, false);
+                await updateVisibilityAndVerify(courseId, true);
+            }
+        });
+
         test("Activate already active course", async function() {
             const courseId = await TestCourseGenerator.generateDummyCourse();
 
@@ -81,6 +100,15 @@ suite("set-course-visibility", function() {
 
             try {
                 await callAPI('set-course-visibility', { courseId }, true);
+                expect.fail("Expected an error but did not get one");
+            } catch (error: any) {
+                expect(error.message).to.include("Invalid input");
+            }
+        });
+
+        test("No parameters provided", async function() {
+            try {
+                await callAPI('set-course-visibility', {}, true);
                 expect.fail("Expected an error but did not get one");
             } catch (error: any) {
                 expect(error.message).to.include("Invalid input");

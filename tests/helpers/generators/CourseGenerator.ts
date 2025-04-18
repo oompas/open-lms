@@ -31,7 +31,7 @@ class TestCourseGenerator {
     /**
      * Adds a randomly generated test course to the database, activates it, and returns the course ID
      */
-    public static async generateDummyCourse() {
+    public static async generateDummyCourse(): Promise<number> {
 
         // Generate course data
         const courseData: CourseData = {
@@ -108,9 +108,9 @@ class TestCourseGenerator {
      * @param count Number of courses to generate
      * @return List of course IDs generated
      */
-    public static async generateDummyCourses(count: number) {
+    public static async generateDummyCourses(count: number): Promise<number[]> {
         const courseIds = [];
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < count; ++i) {
             const courseId = await TestCourseGenerator.generateDummyCourse();
             courseIds.push(courseId);
         }
