@@ -5,7 +5,7 @@ import ApiError from "../_shared/Error/ApiError.ts";
 const readNotification = async (request: EdgeFunctionRequest): Promise<Response> => {
 
     const { notificationId } = request.getPayload();
-    const userId = await request.getRequestUserId();
+    const userId = request.getRequestUserId();
 
     request.log(`Entering readNotification for user ${userId} with notificationId ${notificationId}`);
 
