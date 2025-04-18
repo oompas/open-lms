@@ -7,11 +7,24 @@ suite("set-course-visibility", function() {
 
     setupWipeDb();
 
-    async function updateVisibilityAndVerify(courseId: number, active: boolean) {
+    /**
+     * Updates the course visibility as desired, verifying the result
+     */
+    async function updateVisibilityAndVerify(courseId: number, active: boolean): Promise<void> {
         await callAPI('set-course-visibility', { courseId, active }, true);
 
         const updatedCourse = await callAPI('get-course-data', { courseId, adminView: true }, true);
         expect(updatedCourse.active).to.equal(active);
+    }
+
+    /**
+     * Tests invalid input, verifying an error is thrown
+     */
+    async function failureCase(payload: object, expectedError: string, admin = true): Promise<void> {
+        try {
+            await callAPI('set-course-visibility', payload, admin);
+            expect.fail("Expected an error but did not get one");
+        } catch (error) {}
     }
 
     suite("Sanity", function() {
@@ -55,86 +68,52 @@ suite("set-course-visibility", function() {
         test("Activate already active course", async function() {
             const courseId = await TestCourseGenerator.generateDummyCourse();
 
-            try {
-                await callAPI('set-course-visibility', { courseId, active: true }, true);
-                expect.fail("Expected an error but did not get one");
-            } catch (error: any) {
-                expect(error.message).to.include(`The course with ID ${courseId} is already active`);
-            }
+            await failureCase({ courseId, active: true }, `The course with ID ${courseId} is already active`);
         });
 
         test("Deactivate already inactive course", async function() {
             const courseId = await TestCourseGenerator.generateDummyCourse();
             await updateVisibilityAndVerify(courseId, false);
 
-            try {
-                await callAPI('set-course-visibility', { courseId, active: false }, true);
-                expect.fail("Expected an error but did not get one");
-            } catch (error: any) {
-                expect(error.message).to.include(`The course with ID ${courseId} is already inactive`);
-            }
+            await failureCase({ courseId, active: false }, `The course with ID ${courseId} is already inactive`);
         });
 
         test("Non-existent course ID", async function() {
             const nonExistentCourseId = -1;
 
-            try {
-                await callAPI('set-course-visibility', { courseId: nonExistentCourseId, active: false }, true);
-                expect.fail("Expected an error but did not get one");
-            } catch (error: any) {
-                expect(error.message).to.include(`Error updating course with ID ${nonExistentCourseId}`);
-            }
+            await failureCase({ courseId: nonExistentCourseId, active: false }, `Error updating course with ID ${nonExistentCourseId}`);
         });
 
         test("No course ID", async function() {
-            try {
-                await callAPI('set-course-visibility', { active: false }, true);
-                expect.fail("Expected an error but did not get one");
-            } catch (error: any) {
-                expect(error.message).to.include("Invalid input");
-            }
+            await failureCase({ active: false }, "Invalid input");
         });
 
         test("No active status provided", async function() {
             const courseId = await TestCourseGenerator.generateDummyCourse();
 
-            try {
-                await callAPI('set-course-visibility', { courseId }, true);
-                expect.fail("Expected an error but did not get one");
-            } catch (error: any) {
-                expect(error.message).to.include("Invalid input");
-            }
+            await failureCase({ courseId }, "Invalid input");
         });
 
         test("No parameters provided", async function() {
-            try {
-                await callAPI('set-course-visibility', {}, true);
-                expect.fail("Expected an error but did not get one");
-            } catch (error: any) {
-                expect(error.message).to.include("Invalid input");
-            }
+            await failureCase({}, "Invalid input");
         });
 
         test("Non-numeric course ID", async function() {
             const active = true;
 
-            try {
-                await callAPI('set-course-visibility', { courseId: "invalid", active }, true);
-                expect.fail("Expected an error but did not get one");
-            } catch (error: any) {
-                expect(error.message).to.include("Invalid input");
-            }
+            await failureCase({ courseId: "invalid", active }, "Invalid input");
         });
 
         test("Non-boolean active parameter", async function() {
             const courseId = await TestCourseGenerator.generateDummyCourse();
 
-            try {
-                await callAPI('set-course-visibility', { courseId, active: "invalid" }, true);
-                expect.fail("Expected an error but did not get one");
-            } catch (error: any) {
-                expect(error.message).to.include("Invalid input");
-            }
+            await failureCase({ courseId, active: "invalid" }, "Invalid input");
+        });
+
+        test("Non-admin call", async function() {
+            const courseId = await TestCourseGenerator.generateDummyCourse();
+
+            await failureCase({ courseId, active: false }, "Only administrators may call this endpoint");
         });
     });
 });
