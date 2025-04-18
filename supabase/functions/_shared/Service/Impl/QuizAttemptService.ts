@@ -46,10 +46,9 @@ class _quizAttemptService extends IService {
      * Note the quiz attempt must have all questions marked (can't have unmarked short answers), and the 'score' and
      * 'pass' fields are defined too. This doesn't update the quiz attempt, it (possibly) updates the course attempt
      *
-     * @param request Edge function request (for logging)
      * @param quizAttemptId ID of the marked quiz attempt to handle
      */
-    public async handleMarkedQuiz(request: EdgeFunctionRequest, quizAttemptId: number) {
+    public async handleMarkedQuiz(quizAttemptId: number) {
         const timestamp = getCurrentTimestampTz();
 
         const quizAttempt = await QuizAttemptService.getById(quizAttemptId);
@@ -61,7 +60,6 @@ class _quizAttemptService extends IService {
             await EnrollmentService.updateStatus(courseAttempt.user_id, courseAttempt.course_id, CourseStatus.COMPLETED);
 
             if (error) {
-                request.logErr(`Error updating course attempt to pass: ${error.message}`);
                 throw new Error(`Error updating course attempt to pass: ${error.message}`);
             }
 
@@ -77,7 +75,6 @@ class _quizAttemptService extends IService {
             await EnrollmentService.updateStatus(courseAttempt.user_id, courseAttempt.course_id, CourseStatus.FAILED);
 
             if (error) {
-                request.logErr(`Error updating course attempt to failure: ${error.message}`);
                 throw new Error(`Error updating course attempt to failure: ${error.message}`);
             }
         }
