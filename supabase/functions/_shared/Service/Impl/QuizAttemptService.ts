@@ -57,11 +57,11 @@ class _quizAttemptService extends IService {
 
         // If the quiz passes, the course attempt passes
         if (quizAttempt.pass === true) {
-            const { data, error } = await adminClient.from('course_attempt').update({ pass: true, end_time: timestamp }).eq('id', courseAttempt.id);
+            const { error } = await adminClient.from('course_attempt').update({ pass: true, end_time: timestamp }).eq('id', courseAttempt.id);
             await EnrollmentService.updateStatus(courseAttempt.user_id, courseAttempt.course_id, CourseStatus.COMPLETED);
 
             if (error) {
-                request.log(`Error updating course attempt to pass: ${error.message}`);
+                request.logErr(`Error updating course attempt to pass: ${error.message}`);
                 throw new Error(`Error updating course attempt to pass: ${error.message}`);
             }
 
@@ -73,11 +73,11 @@ class _quizAttemptService extends IService {
 
         const maxQuizAttempts = course.max_quiz_attempts;
         if (quizAttemptQuery.length >= maxQuizAttempts) {
-            const { data, error } = await adminClient.from('course_attempt').update({ pass: false, end_time: timestamp }).eq('id', courseAttempt.id);
+            const { error } = await adminClient.from('course_attempt').update({ pass: false, end_time: timestamp }).eq('id', courseAttempt.id);
             await EnrollmentService.updateStatus(courseAttempt.user_id, courseAttempt.course_id, CourseStatus.FAILED);
 
             if (error) {
-                request.log(`Error updating course attempt to failure: ${error.message}`);
+                request.logErr(`Error updating course attempt to failure: ${error.message}`);
                 throw new Error(`Error updating course attempt to failure: ${error.message}`);
             }
         }
