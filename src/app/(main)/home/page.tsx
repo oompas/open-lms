@@ -29,7 +29,7 @@ export default function Home() {
 
         const filteredCourses = courseData.filter((course) =>
             isEnrolledView
-                ? course.status !== CourseStatus.NOT_ENROLLED
+                ? course.status !== CourseStatus.NOT_ENROLLED && filters.includes(course.status)
                 : course.status === CourseStatus.NOT_ENROLLED && (
                 course.name.toLowerCase().includes(search.toLowerCase()) ||
                 course.description.toLowerCase().includes(search.toLowerCase())
