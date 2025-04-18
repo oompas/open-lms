@@ -18,7 +18,7 @@ const getQuizAttempt = async (request: EdgeFunctionRequest) => {
     request.log(`Queried quiz attempt: ${JSON.stringify(quizAttempt)}`);
 
     const [course, user, questionAttempts, questions] = await Promise.all([
-        CourseAttemptService.getById(quizAttempt.course_id),
+        CourseAttemptService.getById(quizAttempt.course_attempt_id),
         request.getUserById(quizAttempt.user_id),
         QuizQuestionAttemptService.query('*', ['eq', 'quiz_attempt_id', quizAttemptId]),
         QuizQuestionService.query('*', ['eq', 'course_id', quizAttempt.course_id])
