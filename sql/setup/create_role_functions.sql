@@ -8,9 +8,9 @@ CREATE OR REPLACE FUNCTION set_user_as_administrator(user_id uuid)
 RETURNS void AS
 $$
 BEGIN
-UPDATE auth.users
-SET raw_app_meta_data = jsonb_set(coalesce(raw_app_meta_data, '{}'::jsonb), '{role}', to_jsonb('Administrator'::text))
-WHERE id = user_id;
+    UPDATE auth.users
+    SET raw_app_meta_data = jsonb_set(coalesce(raw_app_meta_data, '{}'::jsonb), '{role}', to_jsonb('Administrator'::text))
+    WHERE id = user_id;
 END;
 $$
 LANGUAGE plpgsql SECURITY definer;
@@ -20,9 +20,9 @@ CREATE OR REPLACE FUNCTION set_user_as_developer(user_id uuid)
 RETURNS void AS
 $$
 BEGIN
-UPDATE auth.users
-SET raw_app_meta_data = jsonb_set(coalesce(raw_app_meta_data, '{}'::jsonb), '{role}', to_jsonb('Developer'::text))
-WHERE id = user_id;
+    UPDATE auth.users
+    SET raw_app_meta_data = jsonb_set(coalesce(raw_app_meta_data, '{}'::jsonb), '{role}', to_jsonb('Developer'::text))
+    WHERE id = user_id;
 END;
 $$
 LANGUAGE plpgsql SECURITY definer;
@@ -32,9 +32,9 @@ CREATE OR REPLACE FUNCTION remove_user_role(user_id uuid)
 RETURNS void AS
 $$
 BEGIN
-UPDATE auth.users
-SET raw_app_meta_data = raw_app_meta_data - 'role'
-WHERE id = user_id;
+    UPDATE auth.users
+    SET raw_app_meta_data = raw_app_meta_data - 'role'
+    WHERE id = user_id;
 END;
 $$
 LANGUAGE plpgsql SECURITY definer;

@@ -5,27 +5,29 @@ DO $$
 DECLARE
 target_user_id UUID;
 BEGIN
+    -- Find the user ID for the target email
 SELECT id
 INTO target_user_id
 FROM auth.users
 WHERE email = '18rem8@queensu.ca';
 
+-- Check if the user was found before inserting courses
 IF target_user_id IS NOT NULL THEN
-        INSERT INTO
-            public.course (
-                id,
-                name,
-                description,
-                link,
-                user_id,
-                min_time,
-                max_quiz_attempts,
-                min_quiz_score,
-                preserve_quiz_question_order,
-                quiz_time_limit,
-                total_quiz_marks,
-                num_quiz_questions
-            )
+        -- Insert course data
+        INSERT INTO public.course (
+            id,
+            name,
+            description,
+            link,
+            user_id,
+            min_time,
+            max_quiz_attempts,
+            min_quiz_score,
+            preserve_quiz_question_order,
+            quiz_time_limit,
+            total_quiz_marks,
+            num_quiz_questions
+        )
         VALUES
             (
                 1,
@@ -33,13 +35,13 @@ IF target_user_id IS NOT NULL THEN
                 'Learn the symptoms and treatments for the West Nile virus',
                 'https://www.queensu.ca/risk/safety/general/west-nile-virus',
                 target_user_id,
-                NULL,
-                1,
-                7,
-                FALSE,
-                30,
-                10,
-                4
+                NULL, -- min_time
+                1,    -- max_quiz_attempts
+                7,    -- min_quiz_score
+                FALSE,-- preserve_quiz_question_order
+                30,   -- quiz_time_limit
+                10,   -- total_quiz_marks
+                4     -- num_quiz_questions
             ),
             (
                 2,
@@ -47,13 +49,13 @@ IF target_user_id IS NOT NULL THEN
                 'Learn the risks associated with off-campus work',
                 'https://www.queensu.ca/risk/safety/general/student-placements',
                 target_user_id,
-                15,
-                NULL,
-                NULL,
-                NULL,
-                NULL,
-                NULL,
-                NULL
+                15,   -- min_time
+                NULL, -- max_quiz_attempts
+                NULL, -- min_quiz_score
+                NULL, -- preserve_quiz_question_order
+                NULL, -- quiz_time_limit
+                NULL, -- total_quiz_marks
+                NULL  -- num_quiz_questions
             ),
             (
                 3,
@@ -61,13 +63,13 @@ IF target_user_id IS NOT NULL THEN
                 'Learn how to create a comfortable and efficient work environment',
                 'https://www.queensu.ca/risk/safety/general/ergonomics',
                 target_user_id,
-                240,
-                3,
-                6,
-                TRUE,
-                15,
-                8,
-                3
+                240,  -- min_time
+                3,    -- max_quiz_attempts
+                6,    -- min_quiz_score
+                TRUE, -- preserve_quiz_question_order
+                15,   -- quiz_time_limit
+                8,    -- total_quiz_marks
+                3     -- num_quiz_questions
             ),
             (
                 4,
@@ -75,13 +77,13 @@ IF target_user_id IS NOT NULL THEN
                 'Learn Ontario''s designated dangerous substances',
                 'https://www.queensu.ca/risk/designated-substances',
                 target_user_id,
-                60,
-                2,
-                8,
-                TRUE,
-                30,
-                10,
-                4
+                60,   -- min_time
+                2,    -- max_quiz_attempts
+                8,    -- min_quiz_score
+                TRUE, -- preserve_quiz_question_order
+                30,   -- quiz_time_limit
+                10,   -- total_quiz_marks
+                4     -- num_quiz_questions
             ),
             (
                 5,
@@ -89,21 +91,21 @@ IF target_user_id IS NOT NULL THEN
                 'Understand the health risks of asbestos and effective safety measures',
                 'https://www.queensu.ca/risk/safety/general/asbestos',
                 target_user_id,
-                20,
-                NULL,
-                NULL,
-                NULL,
-                NULL,
-                NULL,
-                NULL
+                20,   -- min_time
+                NULL, -- max_quiz_attempts
+                NULL, -- min_quiz_score
+                NULL, -- preserve_quiz_question_order
+                NULL, -- quiz_time_limit
+                NULL, -- total_quiz_marks
+                NULL  -- num_quiz_questions
             );
 ELSE
         RAISE NOTICE 'User with email 18rem8@queensu.ca not found. Skipping course data insertion.';
 END IF;
 END $$;
 
-INSERT INTO
-    public.quiz_question (
+-- Insert quiz question data
+INSERT INTO public.quiz_question (
     course_id,
     question_order,
     question,
@@ -149,7 +151,6 @@ VALUES
         2,
         '["Handle it with gloves", "Place the bird in a 6 mil bag", "Inspect under its wings for rotten flesh", "Contact Environmental Health & Safety (32999)"]'
     ),
-
     (
         3,
         1,
@@ -177,7 +178,6 @@ VALUES
         3,
         '["Request at the Queen''s Kinesiology office", "Contact Queen''s Health & Safety services", "Send an email to Doug White", "Request at the Queen''s Ergonomic Consulting Program"]'
     ),
-
     (
         4,
         1,
