@@ -36,7 +36,7 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
             active: course.active,
 
             numEnrolled: enrollments.filter((e) => e.course_id === course.id).length,
-            numComplete: 0,
+            numComplete: enrollments.filter((e) => e.course_id === course.id && e.status == CourseStatus.COMPLETED).length,
             avgTime: 0,
             avgQuizScore: 0
         }
