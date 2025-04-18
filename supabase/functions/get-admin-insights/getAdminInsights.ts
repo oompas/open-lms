@@ -1,16 +1,23 @@
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { CourseService, EnrollmentService, QuizAttemptService } from "../_shared/Service/Services.ts";
+import {
+    CourseAttemptService,
+    CourseService,
+    EnrollmentService,
+    QuizAttemptService
+} from "../_shared/Service/Services.ts";
 
 const getAdminInsights = async (request: EdgeFunctionRequest) => {
 
     request.log(`Entering getAdminInsights...`);
 
-    const [users, quizzesToMark, courses, enrollments] = await Promise.all([
+    const [users, quizzesToMark, courses, enrollments, completedCourseAttempts, completedQuizAttempts] = await Promise.all([
         request.getAllUsers(),
         QuizAttemptService.query('*', [['null', 'pass'], ['notnull', 'end_time']]),
         CourseService.getAllRows(),
-        EnrollmentService.getAllRows()
+        EnrollmentService.getAllRows(),
+        CourseAttemptService.query('*', ['notnull', 'pass']),
+        QuizAttemptService.query('*', ['notnull', 'pass'])
     ]);
 
     request.log(`Queried ${users.length} users, ${quizzesToMark.length} quizzes to mark, ${courses.length} courses, and ${enrollments.length} course enrollments`);
@@ -30,6 +37,23 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
     request.log(`Constructed data for ${quizAttemptsToMark.length} quiz attempts to mark`);
 
     const courseInsights = courses.map((course: any) => {
+        const _completedCourseAttempts = completedCourseAttempts.filter((a) => a.course_id == course.id);
+        const _completedQuizAttempts = completedQuizAttempts.filter((q) => q.course_id === course.id);
+        const maxQuizScore = course.total_quiz_marks;
+
+        // Calculate average time spent on course attempts
+        const totalTimeSpent = _completedCourseAttempts.reduce((total, attempt) => {
+            const startTime = new Date(attempt.start_time).getTime();
+            const endTime = new Date(attempt.end_time).getTime();
+            return total + (endTime - startTime) / 1000; // Convert milliseconds to seconds
+        }, 0);
+
+        const avgTime = _completedCourseAttempts.length > 0 ? totalTimeSpent / _completedCourseAttempts.length : 0;
+
+        // Calculate average quiz score
+        const totalQuizScore = _completedQuizAttempts.reduce((total, attempt) => total + attempt.score, 0);
+        const avgQuizScore = _completedQuizAttempts.length > 0 ? (totalQuizScore / (_completedQuizAttempts.length * maxQuizScore)) * 100 : 0;
+
         return {
             id: course.id,
             name: course.name,
@@ -37,8 +61,8 @@ const getAdminInsights = async (request: EdgeFunctionRequest) => {
 
             numEnrolled: enrollments.filter((e) => e.course_id === course.id).length,
             numComplete: enrollments.filter((e) => e.course_id === course.id && e.status == CourseStatus.COMPLETED).length,
-            avgTime: 0,
-            avgQuizScore: 0
+            avgTime: avgTime,
+            avgQuizScore: avgQuizScore
         }
     });
 
