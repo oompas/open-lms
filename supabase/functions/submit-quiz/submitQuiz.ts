@@ -47,7 +47,6 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
 
     request.log(`Responses verification passed!`);
 
-    // Mark quiz questions
     let marksAchieved = 0;
     let autoMark = true;
     const quizQuestionAttempts = quizQuestions.map((q) => {
@@ -78,15 +77,19 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
             marks_achieved: marks
         };
     });
-    if (quizQuestionAttempts instanceof Response) return quizQuestionAttempts;
+
+    request.log(`Constructed ${quizQuestionAttempts.length} question attempt objects, inserting to the database...`);
 
     await QuizQuestionAttemptService.insert(quizQuestionAttempts);
 
+    request.log(`Successfully added quiz question attempts to the database`);
+
     if (marksAchieved >= course.min_quiz_score) {
-        autoMark = true; // If the user gets enough marks to pass without the short answers, pass them
+        autoMark = true;
+
+        request.log(`User achieved enough marks to pass without short answer questions!`);
     }
 
-    // Update quiz attempt
     const update = {
         end_time: timestamp,
         ...(autoMark && { pass: marksAchieved >= course.min_quiz_score }),
@@ -94,12 +97,15 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
     };
     await QuizAttemptService.updateById(quizAttemptId, update);
 
-    // Handle quiz marked or awaiting marking
+    request.log(`Updated quiz attempt`);
+
     if (autoMark) {
         await QuizAttemptService.handleMarkedQuiz(quizAttemptId);
     } else {
         await EnrollmentService.updateStatus(userId, course.id, CourseStatus.AWAITING_MARKING);
     }
+
+    request.log(`Handled marked quiz`);
 
     return null;
 }
