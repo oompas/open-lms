@@ -20,6 +20,9 @@ const sourceFolder = './sql/setup';
 const outputFile = './sql/merged_setup.sql';
 const configFile = './sql/mergeConfig.json';
 
+// Delete old generated script (to not cause confusion if this script fails)
+await fs.rm(path.join(process.cwd(), outputFile), { force: true });
+
 console.log(`Starting SQL script merge for environment: ${environment}`);
 console.log(`Merging scripts from ${sourceFolder} into output file ${outputFile} with configurations from ${configFile}\n`);
 

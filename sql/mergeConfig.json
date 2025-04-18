@@ -3,6 +3,8 @@
     "create_database.sql",
     "create_tables.sql",
     "create_indices.sql",
+    "secure_database.sql",
+    "create_role_functions.sql",
     "insert_dummy_data.sql"
   ],
   "ignoreScripts": {
