@@ -26,7 +26,7 @@ export default function CourseInsight({
                 {!courseData.numEnrolled ? "-" : courseData.numComplete + "/" + courseData.numEnrolled}
             </td>
             <td className="border p-2">
-                {!courseData.avgTime ? "-" : Math.round(courseData.avgTime / 60) + " minutes"}
+                {!courseData.avgTime ? "-" : courseData.avgTime + " minutes"}
             </td>
             <td className="border p-2">
                 {!courseData.avgQuizScore ? "-" : courseData.avgQuizScore + "%"}
