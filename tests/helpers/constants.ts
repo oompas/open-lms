@@ -32,10 +32,12 @@ const Constants = {
         LearnerName: "Test Learner",
         LearnerEmail: getEnvVariable("TEST_LEARNER_EMAIL"),
         LearnerSignup: "2025-04-14T15:27:01.952027Z",
+        LearnerUUID: "d6552bc5-9cca-4a91-a0db-5433a0765275",
 
         AdminName: "Test Admin",
         AdminEmail: getEnvVariable("TEST_ADMIN_EMAIL"),
-        AdminSignup: "2025-04-14T15:28:54.576427Z"
+        AdminSignup: "2025-04-14T15:28:54.576427Z",
+        AdminUUID: "8b1e773c-196b-40ea-b8d0-27f7bd5b7b6e"
     },
     courseStatus: {
         NOT_ENROLLED: "NOT_ENROLLED",
