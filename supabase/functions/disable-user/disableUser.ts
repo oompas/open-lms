@@ -26,7 +26,7 @@ const disableUser = async (request: EdgeFunctionRequest) => {
 
     request.log(`User ${userId} is not an Administrator/Developer, processing with ${disable ? "disabling" : "enabling"}`);
 
-    const { data, error } = await adminClient.auth.admin.updateUserById(userId, {
+    const { error } = await adminClient.auth.admin.updateUserById(userId, {
         ban_duration: disable ? "876600h" : "none" // Bans for 100 years
     });
 
@@ -37,7 +37,7 @@ const disableUser = async (request: EdgeFunctionRequest) => {
 
     request.log(`disableUser completed successfully for user ${userId}`);
 
-    return data;
+    return null;
 }
 
 export default disableUser;
