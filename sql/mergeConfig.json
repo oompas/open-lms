@@ -5,11 +5,12 @@
     "create_indices.sql",
     "secure_database.sql",
     "create_role_functions.sql",
+    "create_test_db_funcs.sql",
     "insert_dummy_data.sql"
   ],
   "ignoreScripts": {
-    "PROD": ["insert_dummy_data.sql"],
-    "DEV": [],
+    "PROD": ["insert_dummy_data.sql", "create_test_db_funcs.sql"],
+    "DEV": ["create_test_db_funcs.sql"],
     "TEST": ["insert_dummy_data.sql"]
   }
 }
