@@ -128,7 +128,7 @@ class EdgeFunctionRequest {
         }
 
         // Log error to database + server console
-        const errObject = {
+        const errorObject = {
             endpoint: this.getEndpoint(),
             request_uuid: this.getUUID(),
             type: errorType,
@@ -138,15 +138,14 @@ class EdgeFunctionRequest {
             stack_trace: err.stack
         };
 
-        const { error } = await adminClient.from('error_log').insert(errObject);
+        const { error } = await adminClient.from('error_log').insert(errorObject);
         if (error) {
             this.logErr(`Error logging error: ${JSON.stringify(error)}`, `HandleEndpointError`);
         }
 
-        this.logErr(`Error caught: ${JSON.stringify(errObject)}`, `HandleEndpointError`);
+        this.logErr(`Error caught: ${JSON.stringify(errorObject)}`, `HandleEndpointError`);
 
-        // Just return the uuid - don't expose internal data
-        return this._makeResponse(this.getUUID(), statusCode);
+        return this._makeResponse({ error: errorObject }, statusCode);
     }
 
     /**
