@@ -20,25 +20,10 @@ const callAPI = async (endpoint: string, body: object, admin: boolean): Promise<
         const { data, error } = await supabaseClient.functions.invoke(endpoint, options);
 
         if (error) {
-            let errorMessage;
+            const errorData = await error?.context?.json();
+            console.log(`Error caught: ${JSON.stringify(errorData, null, 4)}`);
 
-            // Safely try to extract detailed error information
-            try {
-                if (error.response && typeof error.response.json === 'function') {
-                    const errorResponse = await error.response.json();
-                    errorMessage = JSON.stringify(errorResponse);
-                } else if (error.message) {
-                    errorMessage = error.message;
-                } else if (typeof error === 'string') {
-                    errorMessage = error;
-                } else {
-                    errorMessage = JSON.stringify(error);
-                }
-            } catch (jsonError) {
-                errorMessage = `Error parsing error response: ${error.message || JSON.stringify(error)}`;
-            }
-
-            throw new Error(errorMessage);
+            throw new Error(errorData.message);
         }
 
         return data;
