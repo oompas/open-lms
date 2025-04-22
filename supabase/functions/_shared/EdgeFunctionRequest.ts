@@ -145,7 +145,10 @@ class EdgeFunctionRequest {
 
         this.logErr(`Error caught: ${JSON.stringify(errorObject)}`, `HandleEndpointError`);
 
-        return this._makeResponse({ error: errorObject }, statusCode);
+        // Omit stack trace details from returned value
+        const { stack_trace, ...errorWithoutStack } = errorObject;
+
+        return this._makeResponse({ error: errorWithoutStack }, statusCode);
     }
 
     /**
