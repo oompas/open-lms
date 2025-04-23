@@ -5,8 +5,8 @@ import ApiError from "./Error/ApiError.ts";
  * Get the user object from the edge function request
  * @returns The user object, or null if no user authorization in the request
  */
-const getUserFromReq = async (): Promise<object> => {
-    const { data: { user }, error } = await adminClient.auth.getUser(this.token);
+const getUserFromReq = async (token: string): Promise<object> => {
+    const { data: { user }, error } = await adminClient.auth.getUser(token);
 
     if (error) {
         throw new Error(`Error getting user in getUserFromReq: ${error.message}`);

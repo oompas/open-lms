@@ -3,6 +3,7 @@ import ValidationError from "./Error/ValidationError.ts";
 import ApiError from "./Error/ApiError.ts";
 import { adminClient } from "./adminClient.ts";
 import PermissionError from "./Error/PermissionError.ts";
+import { getUserFromReq } from "./auth.ts";
 
 export interface RunParams {
     metaUrl: string;
@@ -84,7 +85,7 @@ class EdgeFunctionRequest {
 
         const [payload, requestUser] = await Promise.all([
             this.req.json(),
-            this.getUserFromReq()
+            getUserFromReq(this.token)
         ]);
 
         this.payload = payload;
