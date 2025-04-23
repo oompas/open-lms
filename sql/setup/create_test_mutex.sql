@@ -58,7 +58,7 @@ BEGIN
         RETURN FALSE;
     END IF;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Release mutex at the end of test execution
 -- This saves unnecessary wait time; if a test's timeout is 5 minutes, but it completes in 2 minutes, releasing
@@ -80,4 +80,4 @@ BEGIN
     -- Return true if this function actually deleted the mutex
     RETURN v_rows_deleted > 0;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
