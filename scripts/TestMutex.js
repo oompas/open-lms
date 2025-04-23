@@ -40,7 +40,7 @@ class TestMutex {
             }
 
             if (data === true) {
-                console.log(`[TestMutex] Mutex acquired for execution ${this.executionId}`);
+                console.log(`[TestMutex] Mutex acquired and verified for execution ${this.executionId}\n`);
                 return true;
             }
 
@@ -50,7 +50,7 @@ class TestMutex {
             await new Promise(resolve => setTimeout(resolve, this.pollIntervalSeconds * 1000));
         }
 
-        throw new Error(`[TestMutex] Failed to acquire mutex after ${attempts} attempts`);
+        throw new Error(`[TestMutex] Failed to acquire mutex after ${attempts} attempts\n`);
     }
 
     /**
