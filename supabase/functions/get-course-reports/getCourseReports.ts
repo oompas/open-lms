@@ -29,18 +29,19 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
                     'Name': course.name,
                     'Description': course.description,
                     'Link': course.link,
-                    'Minimum course time (minutes)': course.minTime ?? "None",
+                    'Minimum course time (minutes)': course.min_time ?? "None",
 
                     'Active?': course.active ? "Yes" : "No",
                     'Creation time': new Date(course.created_at).toLocaleString(),
                     'Version': course.version,
                     'Creator user ID': course.userId,
 
-                    'Has quiz?': course.quiz ? "Yes" : "No",
-                    'Quiz max attempts': course.quiz ? course.quiz?.maxAttempts ?? "Unlimited" : "-",
-                    'Quiz min score': course.quiz ? course.quiz?.minScore ?? "None" : "-",
-                    'Quiz preserve order?': course.quiz ? course.quiz?.preserveOrder ? "Yes" : "No" : "-",
-                    'Quiz time limit (minutes)': course.quiz ? course.quiz?.timeLimit ?? "Unlimited" : "-",
+                    'Quiz max attempts': course.max_quiz_attempts ?? "Unlimited",
+                    'Quiz min score': course.min_quiz_score ?? "None",
+                    'Quiz preserve question order?': course.preserve_quiz_question_order ? "Yes" : "No",
+                    'Quiz time limit (minutes)': course.quiz_time_limit ?? "Unlimited",
+                    'Quiz total marks': course.total_quiz_marks,
+                    'Quiz number of questions': course.num_quiz_questions
                 };
             }));
         }),
@@ -50,12 +51,15 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
                 return {
                     'Question ID': question.id,
                     'Course ID': question.course_id,
+                    'Created at': new Date(question.created_at).toLocaleString(),
 
                     'Question (commas removed)': question.question.replace(/,/g, ''),
                     'Type': question.type === QuestionType.MULTIPLE_CHOICE ? "Multiple Choice" : question.type === QuestionType.TRUE_FALSE ? "True/False" : "Short Answer",
+                    'Marks': question.marks,
                     'Answer options (mc/tf only)': question.answers ? JSON.stringify(question.answers).replace(/,/g, ' ') : null,
                     'Correct answer (mc/tf only)': (question.answers && question.correctAnswer) ? question.answers[question.correctAnswer] : null,
                     'Question stats': JSON.stringify(question.submitted_answers).replace(/,/g, ' '),
+                    'Order': question.order ?? "N/A"
                 };
             }));
         }),
@@ -92,12 +96,13 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
                 return {
                     'Quiz question attempt ID': attempt.id,
                     'Course ID': attempt.course_id,
-                    'Question ID': attempt.question_id,
+                    'Quiz attempt ID': attempt.quiz_attempt_id,
                     'User ID': attempt.user_id,
                     'Course attempt ID': attempt.course_attempt_id,
-                    'Quiz question ID': attempt.question_id,
+                    'Quiz question ID': attempt.quiz_question_id,
 
-                    'Response (commas removed, number for mc/tf)': typeof attempt.response === 'string' ? attempt.response.replace(/,/g, '') : attempt.response,
+                    'Type': attempt.type === QuestionType.MULTIPLE_CHOICE ? "Multiple Choice" : attempt.type === QuestionType.TRUE_FALSE ? "True/False" : "Short Answer",
+                    'Response (commas removed & number for mc/tf)': typeof attempt.response === 'string' ? attempt.response.replace(/,/g, '') : attempt.response,
                     'Max marks': attempt.maxMarks,
                     'Marks achieved': attempt.marksAchieved ?? "Not marked",
                 };

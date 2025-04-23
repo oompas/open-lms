@@ -8,7 +8,7 @@ const getUserReports = async (request: EdgeFunctionRequest) => {
     request.log(`Entering getUserReports...`);
 
     const [userRecords, enrollments, courseAttempts] = await Promise.all([
-        getAllUsers,
+        getAllUsers(),
         EnrollmentService.getAllRows(),
         CourseAttemptService.getAllRows()
     ]);
