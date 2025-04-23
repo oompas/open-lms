@@ -2,32 +2,28 @@ import { createClient } from "@supabase/supabase-js";
 
 class TestMutex {
 
-    private readonly client;
-
-    private readonly executionId: string = crypto.randomUUID();
-    private readonly environment: 'github-actions' | 'local';
-
-    private readonly testTimeoutMinutes: number;
-    private readonly pollIntervalSeconds: number = 10;
-    private readonly maxRetryAttempts: number = 3600 / this.pollIntervalSeconds;
-
-    public constructor(environment, testTimeout) {
+    constructor(environment, testTimeout) {
         this.client = createClient(process.env.TEST_SUPABASE_URL, process.env.TEST_SUPABASE_ANON_KEY);
+
+        this.executionId = crypto.randomUUID();
         this.environment = environment;
+
         this.testTimeoutMinutes = testTimeout;
+        this.pollIntervalSeconds = 10;
+        this.maxRetryAttempts = 3600 / this.pollIntervalSeconds;
     }
 
     /**
      * Try to acquire the mutex, retrying if necessary
      * @returns {Promise<boolean>} True if mutex acquired, false otherwise
      */
-    public async acquire() {
+    async acquire() {
         console.log(`[TestMutex] Trying to acquire mutex for execution ${this.executionId} in ${this.environment}`);
 
         let attempts = 0;
         while (attempts < this.maxRetryAttempts) {
             // Try to acquire the mutex
-            const { data, error } = await this.supabase.rpc('try_acquire_mutex', {
+            const { data, error } = await this.client.rpc('try_acquire_mutex', {
                 p_execution_id: this.executionId,
                 p_environment: this.environment,
                 p_duration_minutes: this.testTimeoutMinutes
@@ -64,7 +60,7 @@ class TestMutex {
     async release() {
         console.log(`[TestMutex] Releasing mutex for execution ${this.executionId}`);
 
-        const { data, error } = await this.supabase.rpc('release_mutex', {
+        const { data, error } = await this.client.rpc('release_mutex', {
             p_execution_id: this.executionId
         });
 
