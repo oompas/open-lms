@@ -6,6 +6,7 @@ import {
     QuizQuestionService
 } from "../_shared/Service/Services.ts";
 import { QuestionType } from "../_shared/Enum/QuestionType.ts";
+import { getUserById } from "../_shared/auth.ts";
 
 const getQuizAttempt = async (request: EdgeFunctionRequest) => {
 
@@ -19,7 +20,7 @@ const getQuizAttempt = async (request: EdgeFunctionRequest) => {
 
     const [course, user, questionAttempts, questions] = await Promise.all([
         CourseAttemptService.getById(quizAttempt.course_attempt_id),
-        request.getUserById(quizAttempt.user_id),
+        getUserById(quizAttempt.user_id),
         QuizQuestionAttemptService.query('*', ['eq', 'quiz_attempt_id', quizAttemptId]),
         QuizQuestionService.query('*', ['eq', 'course_id', quizAttempt.course_id])
     ]);

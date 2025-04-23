@@ -6,6 +6,7 @@ import {
     QuizQuestionService
 } from "../_shared/Service/Services.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
+import { getUserById } from "../_shared/auth.ts";
 
 const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
 
@@ -35,7 +36,7 @@ const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
     request.log(`Course has ${numEnrolled} enrollments, ${numStarted} started users, ${numCompleted} completions, and an average completion time of ${averageTime} seconds`);
 
     const learnerData = await Promise.all(enrollments.map(async (enrollment) => {
-        const user = await request.getUserById(enrollment.user_id);
+        const user = await getUserById(enrollment.user_id);
 
         const userQuizAttempts = quizAttempts.filter((attempt) => attempt.user_id === user.id);
         const latestQuizAttempt = QuizAttemptService.getLatest(userQuizAttempts);

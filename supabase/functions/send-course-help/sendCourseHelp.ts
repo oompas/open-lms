@@ -1,6 +1,7 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { sendEmail } from "../_shared/emails.ts";
 import { CourseService } from "../_shared/Service/Services.ts";
+import { getUserById } from "../_shared/auth.ts";
 
 const sendCourseHelp = async (request: EdgeFunctionRequest) => {
 
@@ -11,7 +12,7 @@ const sendCourseHelp = async (request: EdgeFunctionRequest) => {
     const user = request.getRequestUser();
 
     const course = await CourseService.getById(courseId);
-    const courseCreator = await request.getUserById(course.user_id); // TODO: Store email in course
+    const courseCreator = await getUserById(course.user_id); // TODO: Store email in course
 
     request.log(`Queried course (${JSON.stringify(course)}) and course creator ${courseCreator.email}`);
 

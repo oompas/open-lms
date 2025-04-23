@@ -1,5 +1,6 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { CourseAttemptService, EnrollmentService, QuizAttemptService } from "../_shared/Service/Services.ts";
+import { getUserById } from "../_shared/auth.ts";
 
 const getProfile = async (request: EdgeFunctionRequest): Promise<object> => {
 
@@ -49,7 +50,7 @@ const getProfile = async (request: EdgeFunctionRequest): Promise<object> => {
     request.validateAdmin("Getting a user profile for a specific user requires admin permissions");
 
     const [user, enrollments, completedCourses, quizAttempts] = await Promise.all([
-        request.getUserById(userId),
+        getUserById(userId),
         EnrollmentService.query('*, course(*)', ['eq', 'user_id', userId]),
         CourseAttemptService.query('*', [['eq', 'user_id', userId], ['eq', 'pass', true]]),
         QuizAttemptService.query('*', [['eq', 'user_id', userId], ['notnull', 'end_time']])
