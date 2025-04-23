@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import './load-env.js';
+import "./TestMutex.js";
 
 if (!process.env.IS_SANITY) {
     throw new Error("Please specify the IS_SANITY envar manually (actions env: or set in your run" +
