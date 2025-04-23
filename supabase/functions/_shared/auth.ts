@@ -33,15 +33,24 @@ const getUserById = async (userId: string): Promise<object> => {
 /**
  * Gets all users on the app
  */
-const getAllUsers = async (): Promise<any[]> => {
+const getAllUsers = async (): Promise<object[]> => {
+    let allUsers = [];
+    let page = 1;
+    let hasMore = true;
 
-    const { data, error } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    while (hasMore) {
+        const { data: { users }, error } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 });
 
-    if (error) {
-        throw ApiError(error.message);
+        if (error) {
+            throw new ApiError(error.message);
+        }
+
+        allUsers = allUsers.concat(users);
+        hasMore = users.length === 1000;
+        page++;
     }
 
-    return data.users;
+    return allUsers;
 }
 
 export { getUserFromReq, getUserById, getAllUsers };
