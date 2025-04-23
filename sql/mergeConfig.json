@@ -3,10 +3,10 @@
     "create_database.sql",
     "create_tables.sql",
     "create_indices.sql",
+    "create_test_mutex.sql",
     "secure_database.sql",
     "create_role_functions.sql",
     "create_test_db_funcs.sql",
-    "create_test_mutex.sql",
     "insert_dummy_data.sql"
   ],
   "ignoreScripts": {

@@ -6,7 +6,7 @@
  */
 
 -- Store test mutex to block concurrent execution
-CREATE TABLE IF NOT EXISTS test_mutex (
+CREATE TABLE public.test_mutex (
     id SERIAL PRIMARY KEY,
     execution_id UUID NOT NULL,
     environment TEXT NOT NULL,
