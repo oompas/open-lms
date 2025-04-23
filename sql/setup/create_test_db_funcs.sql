@@ -14,6 +14,7 @@ FOR tbl_name IN
     FROM information_schema.tables
 WHERE table_schema = 'public'
   AND table_name <> 'error_log'
+  AND table_name <> 'test_mutex'
     LOOP
         EXECUTE format('TRUNCATE TABLE %I CASCADE', tbl_name);
         RAISE NOTICE 'Truncated table: %', tbl_name;
