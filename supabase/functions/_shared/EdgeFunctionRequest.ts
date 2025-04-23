@@ -190,20 +190,6 @@ class EdgeFunctionRequest {
         return data.user;
     }
 
-    /**
-     * Gets all users on the app
-     */
-    public getAllUsers = async (): Promise<any[]> => {
-
-        const { data, error } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
-
-        if (error) {
-            throw ApiError(error.message);
-        }
-
-        return data.users;
-    }
-
     // Helper for response construction
     private _makeResponse(data: any, status?: number) {
         const headers = {

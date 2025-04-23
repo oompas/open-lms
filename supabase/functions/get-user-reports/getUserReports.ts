@@ -1,13 +1,14 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { toCSV } from "../_shared/helpers.ts";
 import { CourseAttemptService, EnrollmentService } from "../_shared/Service/Services.ts";
+import { getAllUsers } from "../_shared/auth.ts";
 
 const getUserReports = async (request: EdgeFunctionRequest) => {
 
     request.log(`Entering getUserReports...`);
 
     const [userRecords, enrollments, courseAttempts] = await Promise.all([
-        request.getAllUsers(),
+        getAllUsers,
         EnrollmentService.getAllRows(),
         CourseAttemptService.getAllRows()
     ]);

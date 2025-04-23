@@ -6,13 +6,14 @@ import {
     EnrollmentService,
     QuizAttemptService
 } from "../_shared/Service/Services.ts";
+import { getAllUsers } from "../_shared/auth.ts";
 
 const getAdminInsights = async (request: EdgeFunctionRequest) => {
 
     request.log(`Entering getAdminInsights...`);
 
     const [users, quizzesToMark, courses, enrollments, completedCourseAttempts, completedQuizAttempts] = await Promise.all([
-        request.getAllUsers(),
+        getAllUsers(),
         QuizAttemptService.query('*', [['null', 'pass'], ['notnull', 'end_time']]),
         CourseService.getAllRows(),
         EnrollmentService.getAllRows(),
