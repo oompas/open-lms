@@ -105,7 +105,7 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
         })
     ]);
 
-    request.log(`Date constructed - returning success...`);
+    request.log(`Data constructed - returning success...`);
 
     return tables;
 }
