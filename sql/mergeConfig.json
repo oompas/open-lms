@@ -6,11 +6,12 @@
     "secure_database.sql",
     "create_role_functions.sql",
     "create_test_db_funcs.sql",
+    "create_test_mutex.sql",
     "insert_dummy_data.sql"
   ],
   "ignoreScripts": {
-    "PROD": ["insert_dummy_data.sql", "create_test_db_funcs.sql"],
-    "DEV": ["create_test_db_funcs.sql"],
+    "PROD": ["insert_dummy_data.sql", "create_test_db_funcs.sql", "create_test_mutex.sql"],
+    "DEV": ["create_test_db_funcs.sql", "create_test_mutex.sql"],
     "TEST": ["insert_dummy_data.sql"]
   }
 }
