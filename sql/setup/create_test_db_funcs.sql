@@ -1,3 +1,8 @@
+/**
+ * Database functions for the test environment
+ * Rather than creating test-only edge functions or changing security rules, define test environment functions
+ */
+
 -- Wipes the database with the exception of the error_log table
 CREATE OR REPLACE FUNCTION wipe_db()
 RETURNS void AS $$
