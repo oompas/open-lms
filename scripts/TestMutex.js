@@ -2,15 +2,18 @@ import { createClient } from "@supabase/supabase-js";
 
 class TestMutex {
 
-    constructor(environment, testTimeout) {
+    constructor(environment, testTimeout, testType) {
         this.client = createClient(process.env.TEST_SUPABASE_URL, process.env.TEST_SUPABASE_ANON_KEY);
 
         this.executionId = crypto.randomUUID();
         this.environment = environment;
+        this.testType = testType
 
         this.testTimeoutMinutes = testTimeout;
         this.pollIntervalSeconds = 10;
         this.maxRetryAttempts = 3600 / this.pollIntervalSeconds;
+
+        this.passed = true;
     }
 
     /**
@@ -26,7 +29,8 @@ class TestMutex {
             const { data, error } = await this.client.rpc('try_acquire_mutex', {
                 p_execution_id: this.executionId,
                 p_environment: this.environment,
-                p_duration_minutes: this.testTimeoutMinutes
+                p_duration_minutes: this.testTimeoutMinutes,
+                p_test_type: this.testType
             });
 
             if (error) {
@@ -54,6 +58,14 @@ class TestMutex {
     }
 
     /**
+     * Flags that a test has failed
+     * Note: Failed as in the test runner ran fine (didn't crash), but a test failed
+     */
+    testFailed() {
+        this.passed = false;
+    }
+
+    /**
      * Release the mutex
      * @returns {Promise<boolean>} True if mutex was released, false if it wasn't found
      */
@@ -61,7 +73,8 @@ class TestMutex {
         console.log(`[TestMutex] Releasing mutex for execution ${this.executionId}`);
 
         const { data, error } = await this.client.rpc('release_mutex', {
-            p_execution_id: this.executionId
+            p_execution_id: this.executionId,
+            p_pass_fail: this.passed
         });
 
         if (error) {
