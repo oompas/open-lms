@@ -7,6 +7,7 @@ suite("invite-learner", function() {
     setupWipeDb();
 
     teardown(async function() {
+        // Only 2 emails per second may be sent; this avoids rate limiting
         await new Promise(resolve => setTimeout(resolve, 500));
     });
 
@@ -47,6 +48,9 @@ suite("invite-learner", function() {
         test("Invite user multiple times", async function() {
             for (let i = 0; i < 10; ++i) {
                 await validCase();
+
+                // Avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
         });
 
