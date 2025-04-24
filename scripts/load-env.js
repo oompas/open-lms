@@ -3,9 +3,9 @@ import { existsSync } from "fs";
 
 // Configures .env.local if present (local development)
 const envPath = '.env.local';
-const environment = existsSync(envPath) ? 'local' : 'github-actions';
+const environment = existsSync(envPath) ? 'LOCAL' : 'GITHUB_ACTIONS';
 
-if (environment === 'local') {
+if (environment === 'LOCAL') {
     console.log(`.env.local file found (local development), configuring...`);
     config({ path: envPath, override: false });
 } else {
