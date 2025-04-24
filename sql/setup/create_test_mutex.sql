@@ -30,11 +30,6 @@ CREATE INDEX IF NOT EXISTS idx_test_execution_active
     ON public.test_execution(end_time, expiration_time)
     WHERE end_time IS NULL;
 
--- Index for the complete_test_run function
--- This optimizes lookups by execution_id
-CREATE INDEX IF NOT EXISTS idx_test_execution_execution_id
-    ON public.test_execution(execution_id);
-
 
 -- Function that checks if a test may proceed, adding a lock if it can
 CREATE OR REPLACE FUNCTION try_acquire_mutex(
