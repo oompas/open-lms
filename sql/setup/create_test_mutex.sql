@@ -7,77 +7,116 @@
 
 -- Store test mutex to block concurrent execution
 CREATE TABLE public.test_mutex (
-    id SERIAL PRIMARY KEY,
-    execution_id UUID NOT NULL,
-    environment TEXT NOT NULL,
-    time_acquired TIMESTAMPTZ NOT NULL,
-    expiration_time TIMESTAMPTZ NOT NULL
+    execution_id UUID PRIMARY KEY,
+    environment TEXT CHECK (environment IN ('LOCAL', 'GITHUB_ACTIONS')),
+    test_type TEXT CHECK (test_type IN ('SANITY', 'DETAILED')),
+
+    start_time TIMESTAMPTZ NOT NULL,
+    expiration_time TIMESTAMPTZ NOT NULL,
+    end_time TIMESTAMPTZ,
+    execution_time TEXT,
+
+    timeout_minutes INTEGER,
+    pass_fail BOOLEAN
 );
 
 -- Add an index to improve query performance
 CREATE INDEX IF NOT EXISTS idx_test_mutex_expiration
     ON public.test_mutex(expiration_time);
 
+-- Index for the try_acquire_mutex function
+-- This optimizes the query that checks for active test runs
+CREATE INDEX IF NOT EXISTS idx_test_mutex_active
+    ON public.test_mutex(end_time, expiration_time)
+    WHERE end_time IS NULL;
+
+-- Index for the complete_test_run function
+-- This optimizes lookups by execution_id
+CREATE INDEX IF NOT EXISTS idx_test_mutex_execution_id
+    ON public.test_mutex(execution_id);
+
 
 -- Function that checks if a test may proceed, adding a lock if it can
 CREATE OR REPLACE FUNCTION try_acquire_mutex(
   p_execution_id UUID,
   p_environment TEXT,
-  p_duration_minutes INTEGER
+  p_duration_minutes INTEGER,
+  p_test_type TEXT
 ) RETURNS BOOLEAN AS $$
 DECLARE
-    v_can_proceed BOOLEAN;
+v_can_proceed BOOLEAN;
 BEGIN
     -- Lock the table to prevent race conditions during the check and insert
-    -- This ensures only one test can acquire the lock at a time
     LOCK TABLE public.test_mutex IN ACCESS EXCLUSIVE MODE;
 
-    -- Check if there's an active mutex (non-expired)
-    SELECT COUNT(*) = 0 INTO v_can_proceed
-    FROM public.test_mutex
-    WHERE expiration_time > NOW();
+    -- Check if there's an active test running (no end_time yet)
+SELECT COUNT(*) = 0 INTO v_can_proceed
+FROM public.test_mutex
+WHERE end_time IS NULL
+  AND expiration_time > NOW();
 
-    -- If there's no active mutex or only expired ones
-    IF v_can_proceed THEN
-        -- Clean up any expired mutexes
-        DELETE FROM public.test_mutex
-        WHERE expiration_time <= NOW();
-
-        -- Create a new mutex for this test run
-        INSERT INTO public.test_mutex (time_acquired, expiration_time, execution_id, environment)
+-- If there's no active test or only completed ones
+IF v_can_proceed THEN
+        -- Create a new record for this test run
+        -- We no longer delete expired entries, as we want to keep the history
+        INSERT INTO public.test_mutex (
+            start_time,
+            expiration_time,
+            execution_id,
+            environment,
+            test_type,
+            timeout_minutes
+        )
         VALUES (
            NOW(),
            NOW() + (p_duration_minutes * INTERVAL '1 minute'),
            p_execution_id,
-           p_environment
+           p_environment,
+           p_test_type,
+           p_duration_minutes
         );
 
-        RETURN TRUE;
-    ELSE
+RETURN TRUE;
+ELSE
         -- Cannot proceed, mutex is held by another test
         RETURN FALSE;
-    END IF;
+END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Release mutex at the end of test execution
 -- This saves unnecessary wait time; if a test's timeout is 5 minutes, but it completes in 2 minutes, releasing
 -- the mutex will save 3 minutes of wait time as the test doesn't need to wait until the mutex expires
-CREATE OR REPLACE FUNCTION release_mutex(
-    p_execution_id UUID
+CREATE OR REPLACE FUNCTION complete_test_run(
+    p_execution_id UUID,
+    p_pass_fail BOOLEAN
 ) RETURNS BOOLEAN AS $$
 DECLARE
-    v_rows_deleted INTEGER;
+v_rows_updated INTEGER;
+    v_start_time TIMESTAMPTZ;
 BEGIN
-    -- Delete the mutex for this execution
-    WITH deleted AS (
-        DELETE FROM public.test_mutex
-        WHERE execution_id = p_execution_id
-        RETURNING *
-    )
-    SELECT COUNT(*) INTO v_rows_deleted FROM deleted;
+    -- Get the start time for the execution
+SELECT start_time INTO v_start_time
+FROM public.test_mutex
+WHERE execution_id = p_execution_id;
 
-    -- Return true if this function actually deleted the mutex
-    RETURN v_rows_deleted > 0;
+-- Check if the test run exists
+IF v_start_time IS NULL THEN
+        RAISE EXCEPTION 'No test run found with execution_id: %', p_execution_id;
+END IF;
+
+    -- Update the record for this execution
+WITH updated AS (
+UPDATE public.test_mutex
+SET end_time = NOW(),
+    execution_time = TO_CHAR((NOW() - v_start_time), 'HH24:MI:SS'),
+    pass_fail = p_pass_fail
+WHERE execution_id = p_execution_id
+    RETURNING *
+    )
+SELECT COUNT(*) INTO v_rows_updated FROM updated;
+
+-- Return true if this function actually updated the record
+RETURN v_rows_updated > 0;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

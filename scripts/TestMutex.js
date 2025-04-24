@@ -72,7 +72,7 @@ class TestMutex {
     async release() {
         console.log(`[TestMutex] Releasing mutex for execution ${this.executionId}`);
 
-        const { data, error } = await this.client.rpc('release_mutex', {
+        const { data, error } = await this.client.rpc('complete_test_run', {
             p_execution_id: this.executionId,
             p_pass_fail: this.passed
         });
