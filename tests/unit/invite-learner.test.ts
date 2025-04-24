@@ -6,6 +6,10 @@ suite("invite-learner", function() {
 
     setupWipeDb();
 
+    teardown(async function() {
+        await new Promise(resolve => setTimeout(resolve, 500));
+    });
+
     const TEST_EMAIL = "delivered@resend.dev";
 
     /**
