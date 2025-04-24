@@ -20,12 +20,7 @@ CREATE TABLE public.test_execution (
     pass_fail BOOLEAN
 );
 
--- Add an index to improve query performance
-CREATE INDEX IF NOT EXISTS idx_test_execution_expiration
-    ON public.test_execution(expiration_time);
-
--- Index for the try_acquire_mutex function
--- This optimizes the query that checks for active test runs
+-- Optimize the query that checks for active test runs
 CREATE INDEX IF NOT EXISTS idx_test_execution_active
     ON public.test_execution(end_time, expiration_time)
     WHERE end_time IS NULL;
