@@ -17,7 +17,7 @@ CREATE TABLE public.test_execution (
     execution_time TEXT,
 
     timeout_minutes INTEGER,
-    pass_fail BOOLEAN
+    passed BOOLEAN
 );
 
 -- Optimize the query that checks for active test runs
@@ -76,7 +76,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Release mutex at the end of test execution to save wait time, and saves execution data
 CREATE OR REPLACE FUNCTION complete_test_run(
     p_execution_id UUID,
-    p_pass_fail BOOLEAN
+    p_passed BOOLEAN
 ) RETURNS BOOLEAN AS $$
 DECLARE
     v_rows_updated INTEGER;
@@ -97,7 +97,7 @@ BEGIN
         UPDATE public.test_execution
         SET end_time = NOW(),
             execution_time = TO_CHAR((NOW() - v_start_time), 'HH24:MI:SS'),
-            pass_fail = p_pass_fail
+            passed = p_passed
         WHERE execution_id = p_execution_id
         RETURNING *
     )

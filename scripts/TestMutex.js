@@ -74,7 +74,7 @@ class TestMutex {
 
         const { data, error } = await this.client.rpc('complete_test_run', {
             p_execution_id: this.executionId,
-            p_pass_fail: this.passed
+            p_passed: this.passed
         });
 
         if (error) {
