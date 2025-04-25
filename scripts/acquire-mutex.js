@@ -10,14 +10,14 @@ await testMutex.acquire();
 
 // Create hook to release mutex after tests finish
 export const mochaHooks = {
-    afterEach: [
+    teardown: [
         function() {
             if (this.currentTest.state === 'failed') {
                 testMutex.testFailed();
             }
         }
     ],
-    afterAll: [
+    suiteTeardown: [
         async function() {
             await testMutex.release();
         }
