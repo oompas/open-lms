@@ -1,7 +1,12 @@
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 import { execSync } from 'child_process';
-import "./acquire-mutex.js"; // Loads envars & acquires mutex
+import "./load-env.js";
 
-const command = `mocha --require ts-node/register --ui tdd --slow 1000 --timeout 10000 ./tests/`;
+// Require mutex file for mocha hooks
+const mutexFilePath = resolve(dirname(fileURLToPath(import.meta.url)), './acquire-mutex.js');
+
+const command = `mocha --require ts-node/register --require ${mutexFilePath} --ui tdd --slow 1000 --timeout 10000 ./tests/`;
 
 try {
     execSync(command, { stdio: 'inherit' });
