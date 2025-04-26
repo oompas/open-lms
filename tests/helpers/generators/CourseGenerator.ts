@@ -114,7 +114,7 @@ class TestCourseGenerator {
             const courseId = await TestCourseGenerator.generateDummyCourse();
             courseIds.push(courseId);
         }
-        return courseIds
+        return courseIds;
     }
 }
 
