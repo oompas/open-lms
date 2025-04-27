@@ -1,6 +1,6 @@
 {
   "scriptsOrder": [
-    "create_database.sql",
+    "clean_database.sql",
     "create_tables.sql",
     "create_indices.sql",
     "create_test_mutex.sql",
