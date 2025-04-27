@@ -2,6 +2,8 @@
  * Create database tables
  */
 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- Auto generate UUIDs in database
+
 -- High-level course info (name, link, description, etc)
 CREATE TABLE
     public.course (
