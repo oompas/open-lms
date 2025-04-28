@@ -165,7 +165,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION complete_test_run(
     p_execution_id UUID,
     p_passed BOOLEAN
-) AS $$
+) RETURNS VOID AS $$
 DECLARE
     v_rows_updated INTEGER;
     v_start_time TIMESTAMPTZ;
