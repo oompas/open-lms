@@ -165,7 +165,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION complete_test_run(
     p_execution_id UUID,
     p_passed BOOLEAN
-) RETURNS BOOLEAN AS $$
+) AS $$
 DECLARE
     v_rows_updated INTEGER;
     v_start_time TIMESTAMPTZ;
@@ -173,28 +173,26 @@ BEGIN
     -- Lock the table to prevent race conditions
     LOCK TABLE public.test_execution IN ACCESS EXCLUSIVE MODE;
 
-    -- Get the start time for the execution
+    -- Get the start time for this execution
     SELECT start_time INTO v_start_time
         FROM public.test_execution
         WHERE execution_id = p_execution_id;
 
-    -- Check if the test run exists
+    -- Verify this test run exists
     IF v_start_time IS NULL THEN
         RAISE EXCEPTION 'No test run found with execution_id: %', p_execution_id;
     END IF;
 
     -- Update the record for this execution
-    WITH updated AS (
-        UPDATE public.test_execution
-        SET end_time = NOW(),
-            execution_time = TO_CHAR((NOW() - v_start_time), 'HH24:MI:SS'),
-            passed = p_passed
-        WHERE execution_id = p_execution_id
-        RETURNING *
-    )
-    SELECT COUNT(*) INTO v_rows_updated FROM updated;
+    UPDATE public.test_execution
+    SET end_time = NOW(),
+        execution_time = TO_CHAR((NOW() - v_start_time), 'HH24:MI:SS'),
+        passed = p_passed
+    WHERE execution_id = p_execution_id;
 
-    -- Return true if this function actually updated the record
-    RETURN v_rows_updated > 0;
+    -- Verify this test execution was updated
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Failed to update test run with execution_id: %', p_execution_id;
+    END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
