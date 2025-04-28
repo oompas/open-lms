@@ -72,7 +72,7 @@ class TestMutex {
     async release() {
         console.log(`[TestMutex] Releasing mutex for execution ${this.executionId}`);
 
-        const { data, error } = await this.client.rpc('complete_test_run', {
+        const { error } = await this.client.rpc('complete_test_run', {
             p_execution_id: this.executionId,
             p_passed: this.passed
         });
@@ -82,17 +82,8 @@ class TestMutex {
             throw error;
         }
 
-        if (data !== true && data !== false) {
-            console.error(`[TestMutex] Invalid value returned from release_mutex: ${data}`);
-            throw error;
-        }
-
-        if (data === true) {
-            console.log(`[TestMutex] Mutex released for execution ${this.executionId}`);
-            return true;
-        }
-
-        throw new Error(`[TestMutex] Function release_mutex returned false value (no mutex was deleted)`);
+        console.log(`[TestMutex] Mutex released for execution ${this.executionId}`);
+        return true;
     }
 }
 
