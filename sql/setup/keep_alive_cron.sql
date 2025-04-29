@@ -16,5 +16,5 @@ $$ LANGUAGE plpgsql;
 SELECT cron.schedule(
     'keep_project_alive',
     '0 9 */6 * *',
-    $$SELECT public.keep_alive();$$
+    'SELECT public.keep_alive()'
 );
