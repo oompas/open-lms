@@ -52,8 +52,8 @@ BEGIN
         SELECT 1
         FROM public.test_execution
         WHERE execution_id = p_execution_id
-            AND queue_time IS NOT NULL
-            AND start_time IS NULL
+          AND queue_time IS NOT NULL
+          AND start_time IS NULL
     ) INTO v_is_queued;
 
     /**
@@ -78,7 +78,16 @@ BEGIN
         FROM public.test_execution
         WHERE queue_time IS NOT NULL
           AND start_time IS NULL
-        ORDER BY queue_time
+        ORDER BY
+        CASE
+            WHEN environment = 'LOCAL' THEN 1
+            WHEN environment = 'GITHUB_ACTIONS' THEN 2
+            END,
+        CASE
+            WHEN test_type = 'SANITY' THEN 1
+            WHEN test_type = 'DETAILED' THEN 2
+            END,
+        queue_time
         LIMIT 1;
 
         IF v_oldest_queued_id = p_execution_id THEN
