@@ -14,6 +14,17 @@ BEGIN
     END LOOP;
 END $$;
 
+-- Unschedule all cron jobs
+DO $$
+DECLARE
+    job_id_to_unschedule INTEGER;
+BEGIN
+FOR job_id_to_unschedule IN SELECT jobid FROM cron.job
+    LOOP
+        PERFORM cron.unschedule(job_id_to_unschedule);
+    END LOOP;
+END$$;
+
 -- Deletes all database functions
 DO $$
 DECLARE
