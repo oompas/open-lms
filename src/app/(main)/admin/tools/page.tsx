@@ -189,7 +189,6 @@ export default function Tools() {
         await callAPI('get-course-reports')
             .then(async (response: { data: string }) => {
 
-                // Since there's multiple files, create a zip file
                 const currentTime = new Date().toLocaleString().replace(/,/g, '').replace(/ /g, '_');
 
                 const excelBlob = new Blob([Buffer.from(response.data, 'base64')], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
