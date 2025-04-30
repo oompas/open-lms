@@ -6,7 +6,6 @@ import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import TextField from "@/components/TextField";
-import { downloadZip } from "client-zip";
 import AdminInsight from "@/app/(main)/admin/tools/AdminInsight";
 import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
@@ -188,24 +187,17 @@ export default function Tools() {
 
     const downloadCourseReports = async () => {
         await callAPI('get-course-reports')
-            .then(async (response: { data: { courses: string, quizQuestions: string, courseAttempts: string, quizAttempts: string, quizQuestionAttempts: string } }) => {
+            .then(async (response: { data: string }) => {
 
                 // Since there's multiple files, create a zip file
                 const currentTime = new Date().toLocaleString().replace(/,/g, '').replace(/ /g, '_');
 
-                const courses = { name: "course_data.csv", lastModified: new Date(), input: response.data.courses };
-                const quizQuestions = { name: "quiz_question_data.csv", lastModified: new Date(), input: response.data.quizQuestions };
-                const courseAttempts = { name: "course_attempt_data.csv", lastModified: new Date(), input: response.data.courseAttempts };
-                const quizAttempts = { name: "quiz_attempt_data.csv", lastModified: new Date(), input: response.data.quizAttempts };
-                const quizQuestionAttempts = { name: "quiz_question_attempt_data.csv", lastModified: new Date(), input: response.data.quizQuestionAttempts };
+                const excelBlob = new Blob([Buffer.from(response.data, 'base64')], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
-                const blob = await downloadZip([courses, quizQuestions, courseAttempts, quizAttempts, quizQuestionAttempts]).blob();
-
-                // Download the zip file on the user's browser
                 const file = document.createElement("a");
-                file.href = URL.createObjectURL(blob);
-                file.download = `OpenLMS_Course_Reports${currentTime}.zip`;
-                document.body.appendChild(file); // Required for this to work in FireFox
+                file.href = URL.createObjectURL(excelBlob);
+                file.download = `OpenLMS_Course_Reports${currentTime}.xlsx`;
+                document.body.appendChild(file);
                 file.click();
                 file.remove();
 
