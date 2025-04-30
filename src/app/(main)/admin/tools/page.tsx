@@ -12,6 +12,7 @@ import { useAsync } from "react-async-hook";
 import { FiDownload } from "react-icons/fi";
 import { IoPersonAdd, IoSearch } from "react-icons/io5";
 import { MdAdd } from "react-icons/md";
+import Checkbox from "@/components/Checkbox.tsx";
 
 export default function Tools() {
 
@@ -30,6 +31,7 @@ export default function Tools() {
     const [userSearch, setUserSearch] = useState("");
     const [inviteEmail, setInviteEmail] = useState("");
     const [csvEmails, setCsvEmails] = useState<string[]>([]);
+    const [includeAdminsReports, setIncludeAdminsReports] = useState<boolean>(true);
 
     const getQuizzesToMark = () => {
         if (adminInsights.loading) {
@@ -206,7 +208,7 @@ export default function Tools() {
     }
 
     const downloadUserReports = async () => {
-        await callAPI('get-user-reports')
+        await callAPI('get-user-reports', { withAdmins: includeAdminsReports })
             .then((response: { data: string }) => {
 
                 const currentTime = new Date().toLocaleString().replace(/,/g, '').replace(/ /g, '_');
@@ -326,6 +328,16 @@ export default function Tools() {
                     Downloading user reports will download all user-related data, and a summary of their course progress.
                     To see all course progress data in more details, download the course reports instead
                 </div>
+                <div className="flex mt-2">
+                    <Checkbox
+                        checked={includeAdminsReports}
+                        setChecked={setIncludeAdminsReports}
+                        style="mr-2"
+                    />
+                    <div className="mt-[1px] italic font-bold">
+                        Include Admins and Developers?
+                    </div>
+                </div>
                 <div className="flex flex-row mt-4">
                     <Button text="Cancel" onClick={() => setCurrentPopup(null)} style="ml-auto"/>
                     <Button text="Download" onClick={() => downloadUserReports()} style="ml-4" filled/>
@@ -336,14 +348,10 @@ export default function Tools() {
 
     const renderPopup = () => {
         switch (currentPopup) {
-            case PopupType.InviteLearner:
-                return invitePopup;
-            case PopupType.DowloadCourseReports:
-                return downloadCourseReportsPopup;
-            case PopupType.DownloadUserReports:
-                return downloadUserReportsPopup;
-            default:
-                return null;
+            case PopupType.InviteLearner: return invitePopup;
+            case PopupType.DowloadCourseReports: return downloadCourseReportsPopup;
+            case PopupType.DownloadUserReports: return downloadUserReportsPopup;
+            default: return null;
         }
     }
 
@@ -423,7 +431,6 @@ export default function Tools() {
             <div className="h-4" />
 
             {renderPopup()}
-
         </main>
     )
 }

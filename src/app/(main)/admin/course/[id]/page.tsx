@@ -11,7 +11,6 @@ import { callAPI } from "@/helpers/supabase.ts";
 import { BiSolidHide } from "react-icons/bi";
 import { GrUpdate } from "react-icons/gr";
 import { IoMdEye } from "react-icons/io";
-import { IoCreate } from "react-icons/io5";
 
 export default function AdminCourse({ params }: { params: { id: string } }) {
 
@@ -48,7 +47,7 @@ export default function AdminCourse({ params }: { params: { id: string } }) {
     const toNumber = (val: string | number | null) => val === null ? null : Number(val);
 
     const handleAddQuestion = (num: number, data: any) => {
-        // called by "save question" in create question modal
+        // Called by "save question" in create question modal
         const temp = [...quizQuestions];
         if (num != -1)
             temp[num] = data;
