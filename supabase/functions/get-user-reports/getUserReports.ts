@@ -15,9 +15,9 @@ const getUserReports = async (request: EdgeFunctionRequest) => {
         CourseAttemptService.getAllRows()
     ]);
 
-    const userRecords = withAdmins ? userQuery : userQuery.filter((user) => user.app_metadata.role === "Learner");
+    const userRecords = withAdmins ? userQuery : userQuery.filter((user) => (user.app_metadata.role ?? "Learner") === "Learner");
 
-    request.log(`Queried ${userRecords.length} users${!withAdmins && " (filtering out non-learners)"}, ${enrollments.length} enrollments, and ${courseAttempts.length} courses`);
+    request.log(`Queried ${userRecords.length} ${withAdmins ? "learners" : "users"}, ${enrollments.length} enrollments, and ${courseAttempts.length} courses`);
 
     const userData = userRecords.map((user) => {
 
