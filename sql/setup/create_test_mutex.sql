@@ -27,10 +27,19 @@ CREATE INDEX IF NOT EXISTS idx_test_execution_active
     WHERE end_time IS NULL;
 
 -- Optimize the query for finding the oldest queued test
-CREATE INDEX IF NOT EXISTS idx_test_execution_queue_time
-    ON public.test_execution(queue_time)
-    WHERE start_time IS NULL AND queue_time IS NOT NULL;
-
+CREATE INDEX IF NOT EXISTS idx_test_execution_priority_queue
+ON public.test_execution (
+    CASE
+        WHEN environment = 'LOCAL' THEN 1
+        WHEN environment = 'GITHUB_ACTIONS' THEN 2
+    END,
+    CASE
+        WHEN test_type = 'SANITY' THEN 1
+        WHEN test_type = 'DETAILED' THEN 2
+    END,
+    queue_time
+)
+WHERE start_time IS NULL AND queue_time IS NOT NULL;
 
 -- Function that checks if a test may proceed, adding a lock if it can, or queuing if required
 CREATE OR REPLACE FUNCTION try_acquire_mutex(
