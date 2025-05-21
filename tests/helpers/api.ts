@@ -25,6 +25,8 @@ const callAPI = async (endpoint: string, body: object, admin: boolean): Promise<
         throw new Error(errorData.error.message);
     }
 
+    console.log(`\nEndpoint result: ${JSON.stringify(data, null, 4)}`);
+
     return data;
 }
 

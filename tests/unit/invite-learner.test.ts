@@ -27,9 +27,7 @@ suite("invite-learner", function() {
     async function invalidCase(email: any, adminCall: boolean = true) {
         try {
             await callAPI('invite-learner', { email }, adminCall);
-        } catch (e: any) {
-            console.log(`Error: ${e.message}`);
-        }
+        } catch (e: any) { }
     }
 
     suite("Sanity", function() {

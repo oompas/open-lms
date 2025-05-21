@@ -9,8 +9,6 @@ suite("get-admin-insights", function() {
     suite("Sanity", function() {
         test("Admin (no data)", async function() {
             const result = await callAPI('get-admin-insights', {}, true);
-
-            console.log(`result: ${JSON.stringify(result, null, 4)}`);
         });
 
         test("Non-admin", async function() {
@@ -18,7 +16,7 @@ suite("get-admin-insights", function() {
                 await callAPI('get-admin-insights', {}, false);
                 expect.fail("Calling as a non-admin should throw an error");
             } catch (err: any) {
-                console.log(`Err msg: ${err.message}`);
+
             }
         });
     });

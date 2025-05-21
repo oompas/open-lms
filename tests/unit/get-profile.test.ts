@@ -10,7 +10,6 @@ suite("get-profile", function() {
     suite("Sanity", function() {
         test("User profile (learner)", async function() {
             const result = await callAPI('get-profile', {}, false);
-            console.log(`Profile result: ${JSON.stringify(result)}`);
 
             expect(result).to.be.an('object');
             expect(result).to.have.keys(['name', 'email', 'signUpDate', 'role', 'completedCourses']);
@@ -24,7 +23,6 @@ suite("get-profile", function() {
 
         test("User profile (admin)", async function() {
             const result = await callAPI('get-profile', {}, true);
-            console.log(`Profile result: ${JSON.stringify(result)}`);
 
             expect(result).to.be.an('object');
             expect(result).to.have.keys(['name', 'email', 'signUpDate', 'role', 'completedCourses']);
