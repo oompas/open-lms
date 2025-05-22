@@ -1,21 +1,19 @@
 import { expect } from 'chai';
 
-// Define the error types
+// Copying the error format from the API
 type ErrorType = 'VALIDATION' | 'PERMISSION' | 'LOGIC' | 'INPUT' | 'DATABASE' | 'UNCAUGHT';
-
-// Define the error object structure
-interface ErrorObject {
+type ErrorObject = {
     endpoint: string;
-    request_uuid: string; // Not validated
+    request_uuid: string; // Not validated here (UUIDs are randomly generated)
     type: ErrorType;
     request_user_id: string;
     payload: Record<string, any>;
     message: string;
-    stack_trace: string; // Not validated
+    stack_trace: string; // Not validated here (complex + we don't care about specific files/lines where the error came from)
 }
 
-// Define the validation parameters structure
-interface ValidationParams {
+// Any combination of the parameters (excl. req uuid & trace) can be validated here
+type ValidationParams = {
     endpoint?: string;
     type?: ErrorType;
     request_user_id?: string;
@@ -24,13 +22,20 @@ interface ValidationParams {
 }
 
 /**
- * Validates an error object against expected parameters
+ * Validates a returned error object against expected parameters
+ *
  * @param errorObject The error object to validate
- * @param validationParams Parameters to validate against
- * @returns True if validation passes, throws error otherwise
+ * @param validationParams Parameter(s) to validate against
+ * @returns True if validation passes, throws an error otherwise
  */
 function validateError(errorObject: ErrorObject, validationParams: ValidationParams): boolean {
-    // Validate only the fields specified in the validation params
+
+    // Check that validationParams has at least one property to validate
+    const validationKeys = Object.keys(validationParams);
+    if (validationKeys.length === 0) {
+        throw new Error('Invalid validationParams: must contain at least one property to validate');
+    }
+
     if (validationParams.endpoint !== undefined) {
         try {
             expect(errorObject.endpoint).to.equal(validationParams.endpoint);
@@ -42,8 +47,8 @@ function validateError(errorObject: ErrorObject, validationParams: ValidationPar
     if (validationParams.type !== undefined) {
         const validErrorTypes: ErrorType[] = ['VALIDATION', 'PERMISSION', 'LOGIC', 'INPUT', 'DATABASE', 'UNCAUGHT'];
 
+        // First check the type is valid, then verify it matches the expected value
         try {
-            // Ensure the error's type is valid
             expect(validErrorTypes).to.include(errorObject.type);
         } catch (error) {
             throw new Error(`Type validation failed: "${errorObject.type}" is not a valid error type`);
