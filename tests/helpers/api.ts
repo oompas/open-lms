@@ -22,7 +22,7 @@ const callAPI = async (endpoint: string, body: object, admin: boolean): Promise<
         const errorData = await error?.context?.json();
         console.log(`Error caught: ${JSON.stringify(errorData, null, 4)}`);
 
-        throw new Error(errorData.error.message);
+        throw new Error(JSON.stringify(errorData.error));
     }
 
     console.log(`\nEndpoint result: ${JSON.stringify(data, null, 4)}`);

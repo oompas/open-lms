@@ -24,11 +24,14 @@ export type ValidationParams = {
 /**
  * Validates a returned error object against expected parameters
  *
- * @param errorObject The error object to validate
+ * @param err The error to validate
  * @param validationParams Parameter(s) to validate against
  * @returns True if validation passes, throws an error otherwise
  */
-function validateError(errorObject: ErrorObject, validationParams: ValidationParams): boolean {
+function validateError(err: any, validationParams: ValidationParams): boolean {
+
+    // Tests get errors with stringified error data as the message, parse this to an object
+    const errorObject: ErrorObject = JSON.parse(err.message);
 
     // Check that validationParams has at least one property to validate
     const validationKeys = Object.keys(validationParams);
