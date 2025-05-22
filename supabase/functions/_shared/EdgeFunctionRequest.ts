@@ -1,9 +1,10 @@
 import { z, ZodError, ZodSchema } from "npm:zod@3.23.8";
 import ValidationError from "./Error/ValidationError.ts";
-import ApiError from "./Error/ApiError.ts";
+import ApiError from "./Error/types/ApiError.ts";
 import { adminClient } from "./adminClient.ts";
 import PermissionError from "./Error/PermissionError.ts";
 import { getUserFromReq } from "./auth.ts";
+import ErrorObject from "./Error/types/ErrorData.ts";
 
 export interface RunParams {
     metaUrl: string;
@@ -129,7 +130,7 @@ class EdgeFunctionRequest {
         }
 
         // Log error to database + server console
-        const errorObject = {
+        const errorObject: ErrorObject = {
             endpoint: this.getEndpoint(),
             request_uuid: this.getUUID(),
             type: errorType,

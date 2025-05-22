@@ -1,5 +1,5 @@
 import { adminClient } from "./adminClient.ts";
-import ApiError from "./Error/ApiError.ts";
+import ApiError from "./Error/types/ApiError.ts";
 
 /**
  * Get the user object from the edge function request

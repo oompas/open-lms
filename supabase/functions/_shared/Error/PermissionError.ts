@@ -1,4 +1,4 @@
-import ApiError from "./ApiError.ts";
+import ApiError from "./types/ApiError.ts";
 
 class PermissionError extends ApiError {
     public constructor(message: string) {

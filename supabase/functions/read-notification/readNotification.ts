@@ -1,6 +1,6 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { adminClient } from "../_shared/adminClient.ts";
-import ApiError from "../_shared/Error/ApiError.ts";
+import ApiError from "../_shared/Error/types/ApiError.ts";
 
 const readNotification = async (request: EdgeFunctionRequest): Promise<Response> => {
 
