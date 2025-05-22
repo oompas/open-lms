@@ -13,7 +13,7 @@ type ErrorObject = {
 }
 
 // Any combination of the parameters (excl. req uuid & trace) can be validated here
-type ValidationParams = {
+export type ValidationParams = {
     endpoint?: string;
     type?: ErrorType;
     request_user_id?: string;
