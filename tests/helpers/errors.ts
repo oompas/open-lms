@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 // Copying the error format from the API
-type ErrorType = 'VALIDATION' | 'PERMISSION' | 'LOGIC' | 'INPUT' | 'DATABASE' | 'UNCAUGHT';
+export type ErrorType = 'VALIDATION' | 'PERMISSION' | 'LOGIC' | 'INPUT' | 'DATABASE' | 'UNCAUGHT';
 type ErrorObject = {
     endpoint: string;
     request_uuid: string; // Not validated here (UUIDs are randomly generated)
