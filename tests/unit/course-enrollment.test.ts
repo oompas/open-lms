@@ -2,6 +2,8 @@ import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
 import { sanitySkipDetailed, setupWipeDb } from "../helpers/mocha.ts";
 import TestCourseGenerator from "../helpers/generators/CourseGenerator.ts";
+import { validateError, ValidationParams } from "../helpers/errors.ts";
+import Constants from "../helpers/constants.ts";
 
 suite("courseEnrollment", function() {
 
@@ -18,12 +20,20 @@ suite("courseEnrollment", function() {
     /**
      * Runs a test case for invalid inputs/context, ensuring an error is thrown
      */
-    async function invalidCase(courseId: any, errorMessage: string, adminCall: boolean = false) {
+    async function invalidCase(courseId: any, errorMessage: string, adminCall: boolean = false, errType = undefined) {
         try {
             await callAPI('course-enrollment', { courseId }, adminCall);
-            expect.fail("Expected an error but did not get one");
+            expect.fail("Expected an error but didn't get one");
         } catch (error: any) {
-            expect(error.message).to.include(errorMessage);
+            const validationParams: ValidationParams = {
+                endpoint: "course-enrollment",
+                type: errType,
+                request_user_id: adminCall ? Constants.users.AdminUUID : Constants.users.LearnerUUID,
+                payload: { courseId },
+                message: errorMessage
+            };
+
+            validateError(error, validationParams);
         }
     }
 
@@ -67,14 +77,26 @@ suite("courseEnrollment", function() {
             }
         });
 
-        test("Handle non-existent course ID", async function() {
-            const nonExistentCourseId = "non-existent-course-id";
+        test("Handle zero course ID", async function() {
+            const nonExistentCourseId = 0;
 
-            await invalidCase(nonExistentCourseId, "");
+            await invalidCase(nonExistentCourseId, "Payload validation failed: Number must be greater than or equal to 1");
+        });
+
+        test("Handle negative course ID", async function() {
+            const nonExistentCourseId = -123;
+
+            await invalidCase(nonExistentCourseId, "Payload validation failed: Number must be greater than or equal to 1");
+        });
+
+        test("Handle string course ID", async function() {
+            const nonExistentCourseId = "1";
+
+            await invalidCase(nonExistentCourseId, "Payload validation failed: Expected number, received string");
         });
 
         test("Handle no course id", async function() {
-            await invalidCase(null, "");
+            await invalidCase(null, "Payload validation failed: Expected number, received null");
         });
     });
 });
