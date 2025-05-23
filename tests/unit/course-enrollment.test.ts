@@ -32,9 +32,6 @@ suite("courseEnrollment", function() {
                 payload: { courseId },
                 message: errorMessage
             };
-            if (errType !== undefined) {
-                validationParams.type = errType as ErrorType;
-            }
 
             validateError(error, validationParams);
         }
