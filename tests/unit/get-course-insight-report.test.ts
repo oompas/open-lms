@@ -57,8 +57,8 @@ suite("getCourseInsightReport", function() {
 
             if (learner.latestQuizAttemptTime !== null) {
                 expect(learner.latestQuizAttemptTime).to.be.a('number');
-                expect(learner.latestQuizAttemptTime).to.be.at.least(0);
-                expect(Number.isInteger(learner.latestQuizAttemptId)).to.be.true;
+                expect(learner.latestQuizAttemptTime).to.be.at.least(1); // Can't complete a quiz in zero seconds
+                expect(Number.isInteger(learner.latestQuizAttemptTime)).to.be.true; // Time in milliseconds
             } else {
                 expect(learner.latestQuizAttemptTime).to.be.null;
             }
