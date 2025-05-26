@@ -7,7 +7,7 @@ suite("create-course", function() {
 
     setupWipeDb();
 
-    async function createCourseAndVerify(testName: string, courseData: any, questionData: any) {
+    async function createCourseAndVerify(courseData: any, questionData: any) {
 
         // First, create the course (this returns the course ID)
         const createCourseResult = await callAPI('create-course', { course: courseData, quizQuestions: questionData }, true);
@@ -67,7 +67,7 @@ suite("create-course", function() {
                 }
             ];
 
-            await createCourseAndVerify(this.test!.title, courseData, questionData);
+            await createCourseAndVerify(courseData, questionData);
         });
 
         test("Course with only name and description", async function() {
@@ -83,7 +83,7 @@ suite("create-course", function() {
             };
             const questionData: any[] = []; // No questions
 
-            await createCourseAndVerify(this.test!.title, courseData, questionData);
+            await createCourseAndVerify(courseData, questionData);
         });
 
         test("Course with multiple choice question", async function() {
@@ -107,7 +107,7 @@ suite("create-course", function() {
                 }
             ];
 
-            await createCourseAndVerify(this.test!.title, courseData, questionData);
+            await createCourseAndVerify(courseData, questionData);
         });
     });
 
@@ -135,7 +135,7 @@ suite("create-course", function() {
                 }
             ];
 
-            await createCourseAndVerify(this.test!.title, courseData, questionData);
+            await createCourseAndVerify(courseData, questionData);
         });
 
         test("Course with maximum allowed data", async function() {
@@ -173,7 +173,7 @@ suite("create-course", function() {
                 }
             ];
 
-            await createCourseAndVerify(this.test!.title, courseData, questionData);
+            await createCourseAndVerify(courseData, questionData);
         });
 
         test("Course with short answer question", async function() {
@@ -195,7 +195,7 @@ suite("create-course", function() {
                 }
             ];
 
-            await createCourseAndVerify(this.test!.title, courseData, questionData);
+            await createCourseAndVerify(courseData, questionData);
         });
 
         test("Course with different quiz settings", async function() {
@@ -218,7 +218,7 @@ suite("create-course", function() {
                 }
             ];
 
-            await createCourseAndVerify(this.test!.title, courseData, questionData);
+            await createCourseAndVerify(courseData, questionData);
         });
 
         test("Course with minTime and quizTimeLimit", async function() {
@@ -237,11 +237,11 @@ suite("create-course", function() {
                     type: "TF",
                     question: "Time is relative.",
                     marks: 3,
-                    correctAnswer: 1
+                    correctAnswer: 0
                 }
             ];
 
-            await createCourseAndVerify(this.test!.title, courseData, questionData);
+            await createCourseAndVerify(courseData, questionData);
         });
     });
 });
