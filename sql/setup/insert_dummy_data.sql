@@ -181,7 +181,7 @@ VALUES
     (
         4,
         1,
-        'Dangeous substances can be biological, chemical or physical',
+        'Dangerous substances can be biological, chemical or physical',
         1,
         'TF',
         0,
