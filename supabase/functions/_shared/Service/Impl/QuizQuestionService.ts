@@ -12,6 +12,15 @@ class _quizQuestionService extends IService {
     public async setupCourseQuiz(questions: object[], courseId: string) {
 
         const questionData = questions.map((question, index) => {
+
+            // Setup answer stats (exclude SA, start all at zero)
+            const answerStats = question.type === QuestionType.SHORT_ANSWER ? null : {};
+            if (answerStats !== null) {
+                for (const answer of (question.answers ?? ["True", "False"])) {
+                    answerStats[answer] = 0;
+                }
+            }
+
             return {
                 course_id: courseId,
                 question_order: index,
@@ -20,7 +29,7 @@ class _quizQuestionService extends IService {
                 type: question.type,
                 correct_answer: question.correctAnswer,
                 answers: question.answers,
-                submitted_answers: question.type === QuestionType.SHORT_ANSWER ? null : {}
+                submitted_answers: answerStats
             };
         });
 
