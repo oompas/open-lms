@@ -106,7 +106,8 @@ INSERT INTO public.quiz_question (
     marks,
     type,
     correct_answer,
-    answers
+    answers,
+    submitted_answers
 )
 VALUES
     (
@@ -116,7 +117,8 @@ VALUES
         2,
         'MC',
         2,
-        '["Freshwater snails", "Person-To-Person", "Mosquitos", "Birds"]'
+        '["Freshwater snails", "Person-To-Person", "Mosquitos", "Birds"]',
+        '{"Freshwater snails": 0, "Person-To-Person": 0, "Mosquitos": 0, "Birds": 0}'
     ),
     (
         1,
@@ -125,7 +127,8 @@ VALUES
         2,
         'TF',
         0,
-        NULL
+        NULL,
+        '{"True": 0, "False": 0}'
     ),
     (
         1,
@@ -133,6 +136,7 @@ VALUES
         'What can be done to minimize your risk of West Nile virus?',
         3,
         'SA',
+        NULL,
         NULL,
         NULL
     ),
@@ -143,7 +147,8 @@ VALUES
         3,
         'MC',
         2,
-        '["Handle it with gloves", "Place the bird in a 6 mil bag", "Inspect under its wings for rotten flesh", "Contact Environmental Health & Safety (32999)"]'
+        '["Handle it with gloves", "Place the bird in a 6 mil bag", "Inspect under its wings for rotten flesh", "Contact Environmental Health & Safety (32999)"]',
+        '{"Handle it with gloves": 0, "Place the bird in a 6 mil bag": 0, "Inspect under its wings for rotten flesh": 0, "Contact Environmental Health & Safety (32999)": 0}'
     ),
     (
         3,
@@ -152,7 +157,8 @@ VALUES
         3,
         'TF',
         1,
-        NULL
+        NULL,
+        '{"True": 0, "False": 0}'
     ),
     (
         3,
@@ -161,7 +167,8 @@ VALUES
         2,
         'MC',
         1,
-        '["Antiergons", "Musculoskeletal disorders", "RSIP", "Physical fidgeting"]'
+        '["Antiergons", "Musculoskeletal disorders", "RSIP", "Physical fidgeting"]',
+        '{"Antiergons": 0, "Musculoskeletal disorders": 0, "RSIP": 0, "Physical fidgeting": 0}'
     ),
     (
         3,
@@ -170,7 +177,8 @@ VALUES
         3,
         'MC',
         3,
-        '["Request at the Queen''s Kinesiology office", "Contact Queen''s Health & Safety services", "Send an email to Doug White", "Request at the Queen''s Ergonomic Consulting Program"]'
+        '["Request at the Queen''s Kinesiology office", "Contact Queen''s Health & Safety services", "Send an email to Doug White", "Request at the Queen''s Ergonomic Consulting Program"]',
+        '{"Request at the Queen''s Kinesiology office": 0, "Contact Queen''s Health & Safety services": 0, "Send an email to Doug White": 0, "Request at the Queen''s Ergonomic Consulting Program": 0}'
     ),
     (
         4,
@@ -179,7 +187,8 @@ VALUES
         1,
         'TF',
         0,
-        NULL
+        NULL,
+        '{"True": 0, "False": 0}'
     ),
     (
         4,
@@ -188,7 +197,8 @@ VALUES
         3,
         'MC',
         0,
-        '["Calcium chloride", "Asbestos", "Mercury", "Acrylonitrile"]'
+        '["Calcium chloride", "Asbestos", "Mercury", "Acrylonitrile"]',
+        '{"Calcium chloride": 0, "Asbestos": 0, "Mercury": 0, "Acrylonitrile": 0}'
     ),
     (
         4,
@@ -197,7 +207,8 @@ VALUES
         2,
         'TF',
         1,
-        NULL
+        NULL,
+        '{"True": 0, "False": 0}'
     ),
     (
         4,
@@ -205,6 +216,7 @@ VALUES
         'You are assigned to plan and supervise a rennovation at Queens. How do you ensure designated substances don''t harm any workers?',
         5,
         'SA',
+        NULL,
         NULL,
         NULL
     );
