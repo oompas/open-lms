@@ -71,8 +71,22 @@ suite("getCourseInsightReport", function() {
 
                 expect(question.question).to.be.a('string').and.not.to.be.empty;
                 expect(question.marks).to.be.a('number').and.be.at.least(1).and.satisfy(Number.isInteger);
-                expect(question.stats).to.be.an('object');
+                expect(question.stats).to.be.an('object'); // TODO - expand for object property checks
             });
+
+            // Logical consistency checks
+            expect(result.numStarted).to.be.at.most(result.numEnrolled);
+            expect(result.numComplete).to.be.at.most(result.numStarted);
+
+            if (result.numComplete === 0) {
+                expect(result.avgTime).to.be.null; // No average time if there are no completions
+            }
+
+            if (result.avgTime !== null) {
+                expect(result.numComplete).to.be.greaterThan(0); // If there's an average time, completions are required
+            }
+
+            expect(result.numEnrolled).to.equal(result.learners.length); // All enrolled learners must be present
         } catch (err: any) {
             throw new Error(errMsgDetails + err.message);
         }
