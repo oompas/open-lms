@@ -47,7 +47,7 @@ class _quizQuestionService extends IService {
      *
      * @param submittedAnswers Object with question IDs mapping to the selected answer (the answer itself, not its index)
      */
-    public async incrementQuestionStats(submittedAnswers: { [key: number]: string }) {
+    public async incrementQuestionStats(submittedAnswers: { [id: number]: string }) {
 
         // Query current question values
         const questionIds = Object.keys(submittedAnswers);

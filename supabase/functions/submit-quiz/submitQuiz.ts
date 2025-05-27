@@ -101,6 +101,17 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
 
     await QuizQuestionAttemptService.insert(quizQuestionAttempts);
 
+    request.log(`Updating question answer statistics...`);
+
+    const questionData = quizQuestionAttempts.map((attempt) => {
+        const questionId = attempt.quiz_question_id;
+        const response = (quizQuestions.find(q => q.id === questionId).answers ?? ["True", "False"])[attempt.response];
+
+        return { [questionId]: response };
+    });
+
+    await QuizQuestionService.incrementQuestionStats(questionData);
+
 
     /**
      * Step 5: Update quiz attempt now its marked (end time, status, etc)
