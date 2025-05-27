@@ -1,5 +1,4 @@
 import IService from "../IService.ts";
-import EdgeFunctionRequest from "../../EdgeFunctionRequest.ts";
 import { CourseAttemptService, EnrollmentService, QuizAttemptService } from "../Services.ts";
 import { getCurrentTimestampTz } from "../../helpers.ts";
 import { adminClient } from "../../adminClient.ts";
