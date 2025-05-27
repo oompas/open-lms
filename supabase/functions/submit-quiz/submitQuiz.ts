@@ -101,14 +101,12 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
 
     await QuizQuestionAttemptService.insert(quizQuestionAttempts);
 
-    request.log(`Successfully added quiz question attempts to the database`);
-
 
     /**
      * Step 5: Update quiz attempt now its marked (end time, status, etc)
      */
 
-    if (marksAchieved >= course.min_quiz_score) {
+    if (!autoMark && marksAchieved >= course.min_quiz_score) {
         autoMark = true;
 
         request.log(`User achieved enough marks to pass without short answer questions!`);
