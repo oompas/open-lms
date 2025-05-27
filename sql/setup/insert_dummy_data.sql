@@ -13,92 +13,86 @@ WHERE email = '18rem8@queensu.ca';
 
 -- Check if the user was found before inserting courses
 IF target_user_id IS NOT NULL THEN
-        -- Insert course data
-        INSERT INTO public.course (
-            id,
-            name,
-            description,
-            link,
-            user_id,
-            min_time,
-            max_quiz_attempts,
-            min_quiz_score,
-            preserve_quiz_question_order,
-            quiz_time_limit,
-            total_quiz_marks,
-            num_quiz_questions
-        )
-        VALUES
-            (
-                1,
-                'West Nile virus safety',
-                'Learn the symptoms and treatments for the West Nile virus',
-                'https://www.queensu.ca/risk/safety/general/west-nile-virus',
-                target_user_id,
-                NULL, -- min_time
-                1,    -- max_quiz_attempts
-                7,    -- min_quiz_score
-                FALSE,-- preserve_quiz_question_order
-                30,   -- quiz_time_limit
-                10,   -- total_quiz_marks
-                4     -- num_quiz_questions
-            ),
-            (
-                2,
-                'Work placement pre-departure training',
-                'Learn the risks associated with off-campus work',
-                'https://www.queensu.ca/risk/safety/general/student-placements',
-                target_user_id,
-                15,   -- min_time
-                NULL, -- max_quiz_attempts
-                NULL, -- min_quiz_score
-                NULL, -- preserve_quiz_question_order
-                NULL, -- quiz_time_limit
-                NULL, -- total_quiz_marks
-                NULL  -- num_quiz_questions
-            ),
-            (
-                3,
-                'Queen''s Ergonomics training',
-                'Learn how to create a comfortable and efficient work environment',
-                'https://www.queensu.ca/risk/safety/general/ergonomics',
-                target_user_id,
-                240,  -- min_time
-                3,    -- max_quiz_attempts
-                6,    -- min_quiz_score
-                TRUE, -- preserve_quiz_question_order
-                15,   -- quiz_time_limit
-                8,    -- total_quiz_marks
-                3     -- num_quiz_questions
-            ),
-            (
-                4,
-                'Dangerous substances',
-                'Learn Ontario''s designated dangerous substances',
-                'https://www.queensu.ca/risk/designated-substances',
-                target_user_id,
-                60,   -- min_time
-                2,    -- max_quiz_attempts
-                8,    -- min_quiz_score
-                TRUE, -- preserve_quiz_question_order
-                30,   -- quiz_time_limit
-                10,   -- total_quiz_marks
-                4     -- num_quiz_questions
-            ),
-            (
-                5,
-                'Queen''s asbestos safety training',
-                'Understand the health risks of asbestos and effective safety measures',
-                'https://www.queensu.ca/risk/safety/general/asbestos',
-                target_user_id,
-                20,   -- min_time
-                NULL, -- max_quiz_attempts
-                NULL, -- min_quiz_score
-                NULL, -- preserve_quiz_question_order
-                NULL, -- quiz_time_limit
-                NULL, -- total_quiz_marks
-                NULL  -- num_quiz_questions
-            );
+    -- Insert course data
+    INSERT INTO public.course (
+        name,
+        description,
+        link,
+        user_id,
+        min_time,
+        max_quiz_attempts,
+        min_quiz_score,
+        preserve_quiz_question_order,
+        quiz_time_limit,
+        total_quiz_marks,
+        num_quiz_questions
+    )
+    VALUES
+    (
+        'West Nile virus safety',
+        'Learn the symptoms and treatments for the West Nile virus',
+        'https://www.queensu.ca/risk/safety/general/west-nile-virus',
+        target_user_id,
+        NULL, -- min_time
+        1,    -- max_quiz_attempts
+        7,    -- min_quiz_score
+        FALSE,-- preserve_quiz_question_order
+        30,   -- quiz_time_limit
+        10,   -- total_quiz_marks
+        4     -- num_quiz_questions
+    ),
+    (
+        'Work placement pre-departure training',
+        'Learn the risks associated with off-campus work',
+        'https://www.queensu.ca/risk/safety/general/student-placements',
+        target_user_id,
+        15,   -- min_time
+        NULL, -- max_quiz_attempts
+        NULL, -- min_quiz_score
+        NULL, -- preserve_quiz_question_order
+        NULL, -- quiz_time_limit
+        NULL, -- total_quiz_marks
+        NULL  -- num_quiz_questions
+    ),
+    (
+        'Queen''s Ergonomics training',
+        'Learn how to create a comfortable and efficient work environment',
+        'https://www.queensu.ca/risk/safety/general/ergonomics',
+        target_user_id,
+        240,  -- min_time
+        3,    -- max_quiz_attempts
+        6,    -- min_quiz_score
+        TRUE, -- preserve_quiz_question_order
+        15,   -- quiz_time_limit
+        8,    -- total_quiz_marks
+        3     -- num_quiz_questions
+    ),
+    (
+        'Dangerous substances',
+        'Learn Ontario''s designated dangerous substances',
+        'https://www.queensu.ca/risk/designated-substances',
+        target_user_id,
+        60,   -- min_time
+        2,    -- max_quiz_attempts
+        8,    -- min_quiz_score
+        TRUE, -- preserve_quiz_question_order
+        30,   -- quiz_time_limit
+        10,   -- total_quiz_marks
+        4     -- num_quiz_questions
+    ),
+    (
+        'Queen''s asbestos safety training',
+        'Understand the health risks of asbestos and effective safety measures',
+        'https://www.queensu.ca/risk/safety/general/asbestos',
+        target_user_id,
+        20,   -- min_time
+        NULL, -- max_quiz_attempts
+        NULL, -- min_quiz_score
+        NULL, -- preserve_quiz_question_order
+        NULL, -- quiz_time_limit
+        NULL, -- total_quiz_marks
+        NULL  -- num_quiz_questions
+    );
 ELSE
         RAISE NOTICE 'User with email 18rem8@queensu.ca not found. Skipping course data insertion.';
 END IF;
