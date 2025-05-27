@@ -29,9 +29,9 @@ const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
     const numCompleted = enrollments.filter((enrollment) => enrollment.status === CourseStatus.COMPLETED).length;
 
     const completedAttempts = courseAttempts.filter((attempt) => attempt.pass == true);
-    const averageTime = completedAttempts.reduce((sum, attempt) => {
+    const averageTime = completedAttempts.length ? (completedAttempts.reduce((sum, attempt) => {
         return sum + (new Date(attempt.end_time) - new Date(attempt.start_time));
-    }, 0) / completedAttempts.length / 1000; // Time in seconds
+    }, 0) / completedAttempts.length / 1000) : null; // Time in seconds
 
     request.log(`Course has ${numEnrolled} enrollments, ${numStarted} started users, ${numCompleted} completions, and an average completion time of ${averageTime} seconds`);
 
