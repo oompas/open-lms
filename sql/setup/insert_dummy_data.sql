@@ -213,7 +213,7 @@ VALUES
     (
         4,
         4,
-        'You are assigned to plan and supervise a rennovation at Queens. How do you ensure designated substances don''t harm any workers?',
+        'You are assigned to plan and supervise a renovation at Queens. How do you ensure designated substances don''t harm any workers?',
         5,
         'SA',
         NULL,
