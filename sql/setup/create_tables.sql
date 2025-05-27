@@ -45,7 +45,7 @@ CREATE TABLE
         answers JSON,
 
         -- Stats for this question: How many of each answer have been submitted e.g: { "Ontario": 2, "Alberta": 1 }
-        submitted_answers JSON NOT NULL DEFAULT '{}',
+        submitted_answers JSON,
 
         FOREIGN KEY (course_id) REFERENCES public.course(id)
 );
