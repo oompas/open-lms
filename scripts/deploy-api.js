@@ -36,7 +36,7 @@ if (!supabaseRef) {
 }
 
 // Build and execute the deploy command
-const command = `supabase functions deploy --project-ref ${supabaseRef}`;
+const command = `supabase functions deploy --project-ref ${supabaseRef} --jobs 50 --use-api`;
 
 try {
     execSync(command, { stdio: 'inherit' });
