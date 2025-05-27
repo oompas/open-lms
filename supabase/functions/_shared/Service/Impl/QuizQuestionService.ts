@@ -1,6 +1,8 @@
 import IService from "../IService.ts";
 import { adminClient } from "../../adminClient.ts";
 import { QuestionType } from "../../Enum/QuestionType.ts";
+import DatabaseError from "../../Error/DatabaseError.ts";
+import LogicError from "../../Error/LogicError.ts";
 
 class _quizQuestionService extends IService {
 
@@ -43,7 +45,7 @@ class _quizQuestionService extends IService {
     /**
      * Increments answer statistics for each question in a quiz
      *
-     * @param submittedAnswers Object with question IDs mapping to the selected answer (the answer itself, not itsindex)
+     * @param submittedAnswers Object with question IDs mapping to the selected answer (the answer itself, not its index)
      */
     public async incrementQuestionStats(submittedAnswers: { [key: number]: string }) {
 
@@ -56,7 +58,11 @@ class _quizQuestionService extends IService {
             .not('submitted_answers', 'is', null);
 
         if (fetchError) {
-            throw new Error(`Error fetching question stats: ${fetchError.message}`);
+            throw new DatabaseError(`Error fetching question stats: ${fetchError.message}`);
+        }
+
+        if (questions.length !== questionIds.length) {
+            throw new LogicError(`Expected to query ${questionIds.length} questions to update stats for, but queried ${questions.length}`);
         }
 
         // Increment the selected answer locally
