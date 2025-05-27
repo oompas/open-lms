@@ -1,5 +1,6 @@
 import IService from "../IService.ts";
 import { adminClient } from "../../adminClient.ts";
+import { QuestionType } from "../../Enum/QuestionType.ts";
 
 class _quizQuestionService extends IService {
 
@@ -19,7 +20,7 @@ class _quizQuestionService extends IService {
                 type: question.type,
                 correct_answer: question.correctAnswer,
                 answers: question.answers,
-                submitted_answers: {}
+                submitted_answers: question.type === QuestionType.SHORT_ANSWER ? null : {}
             };
         });
 
