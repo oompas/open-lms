@@ -55,6 +55,7 @@ const getCourseInsightReport = async (request: EdgeFunctionRequest) => {
     const questionData = quizQuestions.map((question) => {
         return {
             question: question.question,
+            type: question.type,
             marks: question.marks,
             stats: question.submitted_answers
         };
