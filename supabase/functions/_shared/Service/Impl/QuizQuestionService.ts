@@ -23,7 +23,7 @@ class _quizQuestionService extends IService {
             // Setup answer stats (exclude SA, start all at zero)
             const answerStats = question.type === QuestionType.SHORT_ANSWER ? null : {};
             if (answerStats !== null) {
-                for (const answer of (question.answers ?? ["True", "False"])) {
+                for (const answer of answers) {
                     answerStats[answer] = 0;
                 }
             }
