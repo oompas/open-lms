@@ -15,6 +15,11 @@ class _quizQuestionService extends IService {
 
         const questionData = questions.map((question, index) => {
 
+            let answers = question.answers;
+            if (question.type === QuestionType.TRUE_FALSE) {
+                answers = ["True", "False"];
+            }
+
             // Setup answer stats (exclude SA, start all at zero)
             const answerStats = question.type === QuestionType.SHORT_ANSWER ? null : {};
             if (answerStats !== null) {
@@ -30,7 +35,7 @@ class _quizQuestionService extends IService {
                 marks: question.marks,
                 type: question.type,
                 correct_answer: question.correctAnswer,
-                answers: question.answers,
+                answers: answers,
                 submitted_answers: answerStats
             };
         });
