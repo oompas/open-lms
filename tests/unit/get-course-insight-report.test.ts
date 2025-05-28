@@ -5,6 +5,7 @@ import TestCourseGenerator from "../helpers/generators/CourseGenerator.ts";
 import { ErrorType, validateError, ValidationParams } from "../helpers/errors.ts";
 import Constants from "../helpers/constants.ts";
 import { CourseStatus } from "../helpers/Enum/CourseStatus.ts";
+import { QuestionType } from "../helpers/Enum/QuestionType.ts";
 
 suite("getCourseInsightReport", function() {
 
@@ -67,9 +68,10 @@ suite("getCourseInsightReport", function() {
 
             result.questions.forEach((question: any) => {
                 expect(question).to.be.an('object');
-                expect(question).to.have.all.keys('question', 'marks', 'stats');
+                expect(question).to.have.all.keys('question', 'type', 'marks', 'stats');
 
                 expect(question.question).to.be.a('string').and.not.to.be.empty;
+                expect(question.type).to.be.a('string').and.to.be.oneOf(Object.values(QuestionType));
                 expect(question.marks).to.be.a('number').and.be.at.least(1).and.satisfy(Number.isInteger);
                 expect(question.stats).to.be.an('object'); // TODO - expand for object property checks
             });
