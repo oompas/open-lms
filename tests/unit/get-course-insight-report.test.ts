@@ -73,7 +73,24 @@ suite("getCourseInsightReport", function() {
                 expect(question.question).to.be.a('string').and.not.to.be.empty;
                 expect(question.type).to.be.a('string').and.to.be.oneOf(Object.values(QuestionType));
                 expect(question.marks).to.be.a('number').and.be.at.least(1).and.satisfy(Number.isInteger);
-                expect(question.stats).to.be.an('object'); // TODO - expand for object property checks
+
+                if (question.type === QuestionType.SHORT_ANSWER) {
+                    expect(question.stats).to.be.null;
+                } else if (question.type === QuestionType.TRUE_FALSE) {
+                    expect(question.stats).to.be.an('object');
+                    expect(question.stats).to.have.all.keys('True', 'False');
+                    expect(question.stats.True).to.be.a('number').and.to.be.at.least(0);
+                    expect(question.stats.False).to.be.a('number').and.to.be.at.least(0);
+                } else if (question.type === QuestionType.MULTIPLE_CHOICE) {
+                    expect(question.stats).to.be.an('object');
+                    expect(Object.keys(question.stats).length).to.be.at.least(2);
+                    for (const key in question.stats) {
+                        expect(key).to.be.a('string');
+                        expect(question.stats[key]).to.be.a('number').and.to.be.at.least(0);
+                    }
+                } else {
+                    expect.fail(`Unknown question type: ${question.type}`);
+                }
             });
 
             // Logical consistency checks
