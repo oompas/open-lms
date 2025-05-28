@@ -50,7 +50,7 @@ class _quizQuestionService extends IService {
     public async incrementQuestionStats(submittedAnswers: { [id: number]: string }) {
 
         // Query current question values
-        const questionIds = Object.keys(submittedAnswers);
+        const questionIds: string[] = Object.keys(submittedAnswers);
         const { data: questions, error: fetchError } = await adminClient
             .from(this.TABLE_NAME)
             .select('id, submitted_answers')
@@ -66,25 +66,29 @@ class _quizQuestionService extends IService {
         }
 
         // Increment the selected answer locally
-        const updates = questions.map(question => {
-            const selectedAnswer = submittedAnswers[question.id];
+        questions.forEach((question: { id: number, submitted_answers: object }) => {
+            if (!(question.id in submittedAnswers)) {
+                throw new LogicError(`Question ID ${question.id} is not present in submittedAnswers: ${JSON.stringify(submittedAnswers)}`);
+            }
 
-            return {
-                id: question.id,
-                submitted_answers: {
-                    ...question.submitted_answers,
-                    [selectedAnswer]: currentStats[selectedAnswer] + 1
-                }
-            };
+            const answer: string = submittedAnswers[question.id];
+            if (!(answer in question.submitted_answers)) {
+                throw new LogicError(`Answer ${answer} is not present in question's submitted answers: ${JSON.stringify(question.submitted_answers)}`);
+            }
+
+            question.submitted_answers[submittedAnswers[question.id]] += 1;
         });
 
-        // Updates question database records with the new values
-        const { error: updateError } = await adminClient
-            .from(this.TABLE_NAME)
-            .upsert(updates);
-
-        if (updateError) {
-            throw new Error(`Error updating question stats: ${updateError.message}`);
+        // Updates question records with the new values
+        try {
+            await Promise.all(questions.map(updateData => {
+                return adminClient
+                    .from(this.TABLE_NAME)
+                    .update({ submitted_answers: updateData.submitted_answers })
+                    .eq('id', updateData.id);
+            }));
+        } catch (err: any) {
+            throw new DatabaseError(`Error updating quiz question answer stats: ${err.message}`);
         }
     }
 }
