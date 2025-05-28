@@ -107,7 +107,7 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
     const questionData = {};
     quizQuestionAttempts.filter(q => q.type !== QuestionType.SHORT_ANSWER).map((attempt) => {
         const questionId = attempt.quiz_question_id;
-        questionData[questionId] = (quizQuestions.find(q => q.id === questionId).answers ?? ["True", "False"])[attempt.response];
+        questionData[questionId] = quizQuestions.find(q => q.id === questionId).answers[attempt.response];
     });
 
     await QuizQuestionService.incrementQuestionStats(questionData);
