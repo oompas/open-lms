@@ -15,14 +15,15 @@ class _quizQuestionService extends IService {
 
         const questionData = questions.map((question, index) => {
 
+            // Setup answers (hardcode for t/f) and answering statistics
             let answers = question.answers;
+            let answerStats = null;
+
             if (question.type === QuestionType.TRUE_FALSE) {
                 answers = ["True", "False"];
             }
-
-            // Setup answer stats (exclude SA, start all at zero)
-            const answerStats = question.type === QuestionType.SHORT_ANSWER ? null : {};
-            if (answerStats !== null) {
+            if (question.type !== QuestionType.SHORT_ANSWER) {
+                answerStats = {};
                 for (const answer of answers) {
                     answerStats[answer] = 0;
                 }
