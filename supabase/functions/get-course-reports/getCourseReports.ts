@@ -39,7 +39,6 @@ const getCourseReports = async (request: EdgeFunctionRequest) => {
 
     const quizQuestionDataPromise: Promise<object[]> = QuizQuestionService.getAllRows().then((quizQuestions) =>
         quizQuestions.map((question) => {
-            if (question.type === QuestionType.TRUE_FALSE) question.answers = ["True", "False"];
             return {
                 'Question ID': question.id,
                 'Course ID': question.course_id,
