@@ -3,7 +3,8 @@ import { getCurrentTimestampTz } from "../_shared/helpers.ts";
 import {
     CourseService,
     EnrollmentService,
-    QuizAttemptService, QuizQuestionAttemptService,
+    QuizAttemptService,
+    QuizQuestionAttemptService,
     QuizQuestionService
 } from "../_shared/Service/Services.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
@@ -103,11 +104,10 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
 
     request.log(`Updating question answer statistics...`);
 
-    const questionData = quizQuestionAttempts.filter(q => q.type !== QuestionType.SHORT_ANSWER).map((attempt) => {
+    const questionData = {};
+    quizQuestionAttempts.filter(q => q.type !== QuestionType.SHORT_ANSWER).map((attempt) => {
         const questionId = attempt.quiz_question_id;
-        const response = (quizQuestions.find(q => q.id === questionId).answers ?? ["True", "False"])[attempt.response];
-
-        return { [questionId]: response };
+        questionData[questionId] = (quizQuestions.find(q => q.id === questionId).answers ?? ["True", "False"])[attempt.response];
     });
 
     await QuizQuestionService.incrementQuestionStats(questionData);
