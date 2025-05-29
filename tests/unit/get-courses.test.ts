@@ -136,10 +136,7 @@ suite("get-courses", function() {
 
         test("Inactive courses are not returned", async function() {
             const activeCourseId = await TestCourseGenerator.generateDummyCourse();
-            const inactiveCourseId = await TestCourseGenerator.generateDummyCourse();
-
-            // Deactivate one course
-            await callAPI('set-course-visibility', { courseId: inactiveCourseId, active: false }, true);
+            const inactiveCourseId = await TestCourseGenerator.generateDummyCourse(false);
 
             const result = await callAPI('get-courses', {}, false);
 
