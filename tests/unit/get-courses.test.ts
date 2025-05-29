@@ -223,15 +223,6 @@ suite("get-courses", function() {
             });
         });
 
-        test("Courses are returned in consistent order", async function() {
-            const courseIds = await TestCourseGenerator.generateDummyCourses(5);
-
-            const result1 = await callAPI('get-courses', {}, false);
-            const result2 = await callAPI('get-courses', {}, false);
-
-            expect(result1).to.deep.equal(result2);
-        });
-
         test("Function is idempotent", async function() {
             const numCourses = 20;
             const numCalls = 10;
