@@ -82,10 +82,7 @@ suite("getCourseData", function() {
         });
 
         test("Get data for inactive course", async function() {
-            const courseId = await TestCourseGenerator.generateDummyCourse();
-
-            // Set course to inactive
-            await callAPI('set-course-visibility', { courseId, active: false }, true);
+            const courseId = await TestCourseGenerator.generateDummyCourse(false);
 
             await invalidCase({ courseId, adminView: false }, `Course with id '${courseId}' is inactive`, "INPUT");
         });
