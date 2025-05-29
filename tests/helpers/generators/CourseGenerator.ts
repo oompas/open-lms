@@ -31,7 +31,7 @@ class TestCourseGenerator {
     /**
      * Adds a randomly generated test course to the database, activates it, and returns the course ID
      */
-    public static async generateDummyCourse(): Promise<number> {
+    public static async generateDummyCourse(active: boolean = true): Promise<number> {
 
         // Generate course data
         const courseData: CourseData = {
@@ -95,9 +95,10 @@ class TestCourseGenerator {
         expect(courseId).to.be.a('number');
         expect(Number.isInteger(courseId)).to.be.true;
 
-        // Set course visibility to active
-        const setCourseActive = await callAPI('set-course-visibility', { courseId: courseId, active: true }, true);
-        expect(setCourseActive).to.be.null;
+        if (active) {
+            const setCourseActive = await callAPI('set-course-visibility', { courseId: courseId, active: true }, true);
+            expect(setCourseActive).to.be.null;
+        }
 
         return courseId;
     }
