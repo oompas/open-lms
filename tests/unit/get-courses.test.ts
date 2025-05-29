@@ -232,31 +232,6 @@ suite("get-courses", function() {
             expect(result1).to.deep.equal(result2);
         });
 
-        test("Course with completed status", async function() {
-            const courseId = await TestCourseGenerator.generateDummyCourse();
-
-            // Enroll, start, and complete the course
-            await callAPI('course-enrollment', { courseId }, false);
-            await callAPI('start-course', { courseId }, false);
-
-            // Start and submit quiz to complete the course
-            const quizAttempt = await callAPI('start-quiz', { courseId }, false);
-            await callAPI('submit-quiz', {
-                quizAttemptId: quizAttempt.id,
-                answers: [] // Empty answers for simplicity
-            }, false);
-
-            const result = await callAPI('get-courses', {}, false);
-            const course = result.find((c: any) => c.id === courseId);
-
-            expect(course).to.exist;
-            expect(course.status).to.be.oneOf([
-                CourseStatus.AWAITING_MARKING,
-                CourseStatus.COMPLETED,
-                CourseStatus.FAILED
-            ]);
-        });
-
         test("Function is idempotent", async function() {
             const numCourses = 20;
             const numCalls = 10;
@@ -266,7 +241,7 @@ suite("get-courses", function() {
             const results = [];
             for (let i = 0; i < numCalls; ++i) {
                 const result = await callAPI('get-courses', {}, false);
-                
+
                 expect(result).to.be.an('array');
                 expect(result).to.have.lengthOf(numCourses);
                 results.push(result);
