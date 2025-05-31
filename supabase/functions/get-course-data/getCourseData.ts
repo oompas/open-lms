@@ -64,17 +64,17 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
 
         request.log(`Course quiz data: ${JSON.stringify(quizData)}`);
 
-        let attempts = null;
+        let courseAttemptData = null;
         const latestCourseAttempt = CourseAttemptService.getLatest(courseAttempts);
         if (latestCourseAttempt !== null) {
-            attempts = {
+            courseAttemptData = {
                 numAttempts: courseAttempts.length,
                 currentAttemptId: latestCourseAttempt.id,
                 currentStartTime: new Date(latestCourseAttempt.start_time)
             }
         }
 
-        request.log(`Course attempt data: ${JSON.stringify(attempts)}`);
+        request.log(`Course attempt data: ${JSON.stringify(courseAttemptData)}`);
 
         const quizAttemptData = {
             number: 0,
@@ -104,7 +104,7 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
             status: courseStatus,
 
             quizData: quizData,
-            courseAttempt: attempts,
+            courseAttempt: courseAttemptData,
             quizAttempts: quizAttemptData
         };
     } else {
