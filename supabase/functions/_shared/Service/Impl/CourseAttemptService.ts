@@ -1,6 +1,5 @@
 import IService from "../IService.ts";
 import { adminClient } from "../../adminClient.ts";
-import { getCurrentTimestampTz } from "../../helpers.ts";
 import DatabaseError from "../../Error/DatabaseError.ts";
 
 class _courseAttemptService extends IService {
