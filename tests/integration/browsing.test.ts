@@ -1,7 +1,5 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
-import TestDatabaseHelper from "../helpers/database.ts";
-import Constants from "../helpers/constants.ts";
 import TestCourseGenerator from "../helpers/generators/CourseGenerator.ts";
 import { setupWipeDb, sanitySkipDetailed } from "../helpers/mocha.ts";
 
