@@ -2,49 +2,13 @@ import { callAPI } from "../api.ts";
 import { expect } from "chai";
 import { faker } from '@faker-js/faker';
 import { CourseStatus } from "./../Enum/CourseStatus.ts";
-
-type CourseData = {
-    name: string;
-    description: string;
-    link: string;
-    minTime: number | null;
-    maxQuizAttempts: number | null;
-    minQuizScore: number;
-    quizTimeLimit: number | null;
-    preserveQuizQuestionOrder: boolean;
-}
-
-type QuestionData = {
-    type: "TF" | "MC" | "SA";
-    question: string;
-    marks: number;
-    correctAnswer?: number; // For TF and MC
-    answers?: string[];    // For MC
-}
-
-export type CourseWithStatus = {
-    courseId: number;
-    status: CourseStatus;
-    quizAttemptId?: number;
-}
-
-export type GenerateCourseOptions = {
-    active?: boolean;
-    asAdmin?: boolean;
-    courseData?: Partial<CourseData>;
-    questionCount?: number;
-}
-
-export type GenerateCourseWithStatusOptions = {
-    active?: boolean;
-    asAdmin?: boolean;
-    courseData?: Partial<CourseData>;
-    questionCount?: number;
-
-    targetStatus: CourseStatus;
-    userId?: string;
-    submitCorrectAnswers?: boolean;
-}
+import {
+    CourseData,
+    CourseWithStatus,
+    GenerateCourseOptions,
+    GenerateCourseWithStatusOptions,
+    QuestionData
+} from "./types.ts";
 
 const randInt = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
