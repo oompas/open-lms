@@ -61,9 +61,18 @@ suite("integration: browsing", function() {
             // 4. Get course data to view content
             const courseData = await callAPI('get-course-data', { courseId, adminView: false }, false);
             expect(courseData).to.be.an('object');
-            expect(courseData.course).to.exist;
-            expect(courseData.quizQuestions).to.be.an('array');
-            expect(courseData.attempts).to.exist;
+            expect(courseData).to.have.all.keys(["id", "name", "description", "link", "minTime", "status", "quizData", "courseAttempt", "quizAttempts"]);
+
+            expect(courseData.quizData).to.be.an('object');
+            expect(courseData.quizData).to.have.all.keys(["totalMarks", "maxAttempts", "minScore", "timeLimit", "numQuestions"]);
+
+            expect(courseData.courseAttempt).to.be.an('object');
+            expect(courseData.courseAttempt).to.have.all.keys(["numAttempts", "currentAttemptId", "currentStartTime"]);
+            expect(courseData.courseAttempt.numAttempts).to.equal(1);
+
+            expect(courseData.quizAttempts).to.be.an('object');
+            expect(courseData.quizAttempts).to.have.all.keys(["number"]);
+            expect(courseData.quizAttempts.number).to.equal(0);
         });
 
         test("Admin views dashboard insights", async function() {
