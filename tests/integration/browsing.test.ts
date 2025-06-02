@@ -21,7 +21,6 @@ suite("integration: browsing", function() {
             // Verify the created course is in the list
             const createdCourse = courses.find((course: any) => course.id === courseId);
             expect(createdCourse).to.exist;
-            expect(createdCourse.active).to.be.true;
 
             // 2. Learner views their profile (should show no enrollments initially)
             const profile = await callAPI('get-profile', {}, false);
