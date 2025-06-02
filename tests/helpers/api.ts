@@ -9,7 +9,7 @@ import { pollAccessToken } from "./auth.ts";
  * @param admin True to sign in with admin test account, false to sign in with learner test account
  */
 const callAPI = async (endpoint: string, body: object, admin: boolean): Promise<any> => {
-    console.log(`Calling API endpoint: ${endpoint} as ${admin ? 'admin' : 'learner'} with body: ${JSON.stringify(body)}`);
+    console.log(`\nCalling API endpoint: ${endpoint} as ${admin ? 'admin' : 'learner'} with body: ${JSON.stringify(body)}`);
     const accessToken = await pollAccessToken(admin);
 
     const options = {
@@ -20,12 +20,12 @@ const callAPI = async (endpoint: string, body: object, admin: boolean): Promise<
 
     if (error) {
         const errorData = await error?.context?.json();
-        console.log(`Error caught: ${JSON.stringify(errorData, null, 4)}`);
+        console.log(`Error caught: ${JSON.stringify(errorData, null, 4)}\n`);
 
         throw new Error(JSON.stringify(errorData.error));
     }
 
-    console.log(`\nEndpoint result: ${JSON.stringify(data, null, 4)}`);
+    console.log(`Endpoint result: ${JSON.stringify(data, null, 4)}\n`);
 
     return data;
 }
