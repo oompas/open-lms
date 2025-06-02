@@ -92,13 +92,12 @@ suite("integration: browsing", function() {
             expect(insights.admins).to.be.an('array');
 
             // 2. Admin views user reports
-            const userReports = await callAPI('get-user-reports', { withAdmins: false }, true);
-            expect(userReports).to.be.an('object');
-            expect(userReports.csv).to.be.a('string');
+            const userReports = await callAPI('get-user-reports', { withAdmins: true }, true);
+            expect(userReports).to.be.a('string');
 
             // 3. Admin views course reports
             const courseReports = await callAPI('get-course-reports', {}, true);
-            expect(courseReports).to.exist; // Returns Excel file buffer
+            expect(courseReports).to.be.a('string');
         });
     });
 
