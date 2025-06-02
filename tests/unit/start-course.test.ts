@@ -13,9 +13,9 @@ suite("start-course", function() {
     /**
      * Helper function to set up a course in enrolled state ready to be started
      */
-    async function setupEnrolledCourse(): Promise<number> {
+    async function setupEnrolledCourse(adminCall: boolean = false): Promise<number> {
         const courseId = await TestCourseGenerator.generateDummyCourse();
-        await callAPI('course-enrollment', { courseId }, false);
+        await callAPI('course-enrollment', { courseId }, adminCall);
         return courseId;
     }
 
@@ -68,7 +68,7 @@ suite("start-course", function() {
         });
 
         test("Admin starts an enrolled course", async function() {
-            const courseId = await setupEnrolledCourse();
+            const courseId = await setupEnrolledCourse(true);
             await validCase(courseId, true);
         });
 
