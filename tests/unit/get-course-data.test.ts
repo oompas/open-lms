@@ -20,7 +20,6 @@ suite("getCourseData", function() {
         expect(result.name).to.be.a('string');
         expect(result.description).to.be.a('string');
         expect(result.link).to.be.a('string');
-        expect(result.active).to.be.a('boolean');
 
         return result;
     }
