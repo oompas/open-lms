@@ -49,10 +49,10 @@ suite("integration: browsing", function() {
             expect(enrollmentResult).to.be.null; // Successful enrollment returns null
 
             // 2. Verify enrollment by checking profile
-            const profileAfterEnrollment = await callAPI('get-profile', {}, false);
-            expect(profileAfterEnrollment.enrolledCourses).to.be.an('array');
-            expect(profileAfterEnrollment.enrolledCourses.length).to.equal(1);
-            expect(profileAfterEnrollment.enrolledCourses[0].id).to.equal(courseId);
+            const courses = await callAPI('get-courses', {}, false);
+            expect(courses).to.be.an('array');
+            expect(courses.length).to.equal(1);
+            expect(courses[0].status).to.equal(Constants.courseStatus.ENROLLED);
 
             // 3. Learner starts the course
             const startCourseResult = await callAPI('start-course', { courseId }, false);
