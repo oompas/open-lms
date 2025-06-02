@@ -52,7 +52,7 @@ suite("integration: browsing", function() {
             const courses = await callAPI('get-courses', {}, false);
             expect(courses).to.be.an('array');
             expect(courses.length).to.equal(1);
-            expect(courses[0].status).to.equal(Constants.courseStatus.ENROLLED);
+            expect(courses[0].status).to.equal(Constants.enums.CourseStatus.ENROLLED);
 
             // 3. Learner starts the course
             const startCourseResult = await callAPI('start-course', { courseId }, false);

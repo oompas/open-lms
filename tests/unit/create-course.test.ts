@@ -27,7 +27,7 @@ suite("create-course", function() {
         expect(getCourseDataResult).to.have.property('name').equal(courseData.name);
         expect(getCourseDataResult).to.have.property('description').equal(courseData.description);
         expect(getCourseDataResult).to.have.property('link').equal(courseData.link);
-        expect(getCourseDataResult).to.have.property('status').equal(Constants.courseStatus.NOT_ENROLLED);
+        expect(getCourseDataResult).to.have.property('status').equal(Constants.enums.CourseStatus.NOT_ENROLLED);
         expect(getCourseDataResult).to.have.property('minTime').equal(courseData.minTime);
 
         const totalMarks = questionData.reduce((sum: number, q: any) => sum + q.marks, 0);

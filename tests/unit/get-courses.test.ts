@@ -24,7 +24,7 @@ suite("get-courses", function() {
         expect(course.totalQuizMarks).to.be.a('number');
 
         // Validate status is one of the expected values
-        expect(Object.values(Constants.courseStatus)).to.include(course.status);
+        expect(Object.values(Constants.enums.CourseStatus)).to.include(course.status);
     }
 
     /**
