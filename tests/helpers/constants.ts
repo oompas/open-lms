@@ -1,5 +1,3 @@
-import { QuestionType } from "./Enum/QuestionType.ts";
-
 const getEnvVariable = (key: string): string => {
     const value = process.env[key];
     if (!value) {

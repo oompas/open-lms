@@ -5,7 +5,6 @@ import TestCourseGenerator from "../helpers/generators/CourseGenerator.ts";
 import { ErrorType, validateError, ValidationParams } from "../helpers/errors.ts";
 import Constants from "../helpers/constants.ts";
 import { CourseStatus } from "../helpers/Enum/CourseStatus.ts";
-import { QuestionType } from "../helpers/Enum/QuestionType.ts";
 
 suite("getCourseInsightReport", function() {
 
@@ -71,17 +70,17 @@ suite("getCourseInsightReport", function() {
                 expect(question).to.have.all.keys('question', 'type', 'marks', 'stats');
 
                 expect(question.question).to.be.a('string').and.not.to.be.empty;
-                expect(question.type).to.be.a('string').and.to.be.oneOf(Object.values(QuestionType));
+                expect(question.type).to.be.a('string').and.to.be.oneOf(Object.values(Constants.enums.QuestionType));
                 expect(question.marks).to.be.a('number').and.be.at.least(1).and.satisfy(Number.isInteger);
 
-                if (question.type === QuestionType.SHORT_ANSWER) {
+                if (question.type === Constants.enums.QuestionType.SHORT_ANSWER) {
                     expect(question.stats).to.be.null;
-                } else if (question.type === QuestionType.TRUE_FALSE) {
+                } else if (question.type === Constants.enums.QuestionType.TRUE_FALSE) {
                     expect(question.stats).to.be.an('object');
                     expect(question.stats).to.have.all.keys('True', 'False');
                     expect(question.stats.True).to.be.a('number').and.to.be.at.least(0);
                     expect(question.stats.False).to.be.a('number').and.to.be.at.least(0);
-                } else if (question.type === QuestionType.MULTIPLE_CHOICE) {
+                } else if (question.type === Constants.enums.QuestionType.MULTIPLE_CHOICE) {
                     expect(question.stats).to.be.an('object');
                     expect(Object.keys(question.stats).length).to.be.at.least(2);
                     for (const key in question.stats) {
