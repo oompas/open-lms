@@ -179,7 +179,7 @@ class TestCourseGenerator {
                 await callAPI('start-course', { courseId }, asAdmin);
 
                 // Get courseAttemptId from get-course-data
-                const courseData = await callAPI('get-course-data', { courseId }, asAdmin);
+                const courseData = await callAPI('get-course-data', { courseId, adminView: false }, asAdmin);
                 const courseAttemptId = courseData.courseAttempt?.currentAttemptId;
 
                 const quizAttempt = await callAPI('start-quiz', { courseId, courseAttemptId }, asAdmin);
@@ -198,7 +198,7 @@ class TestCourseGenerator {
                 await callAPI('start-course', { courseId }, asAdmin);
 
                 // Get courseAttemptId from get-course-data
-                const courseDataCompleted = await callAPI('get-course-data', { courseId }, asAdmin);
+                const courseDataCompleted = await callAPI('get-course-data', { courseId, adminView: false }, asAdmin);
                 const courseAttemptIdCompleted = courseDataCompleted.courseAttempt?.currentAttemptId;
 
                 const completedQuizAttempt = await callAPI('start-quiz', { courseId, courseAttemptId: courseAttemptIdCompleted }, asAdmin);
@@ -238,7 +238,7 @@ class TestCourseGenerator {
                 await callAPI('start-course', { courseId }, asAdmin);
 
                 // Get courseAttemptId from get-course-data
-                const courseDataFailed = await callAPI('get-course-data', { courseId }, asAdmin);
+                const courseDataFailed = await callAPI('get-course-data', { courseId, adminView: false }, asAdmin);
                 const courseAttemptIdFailed = courseDataFailed.courseAttempt?.currentAttemptId;
 
                 const failedQuizAttempt = await callAPI('start-quiz', { courseId, courseAttemptId: courseAttemptIdFailed }, asAdmin);
