@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
 import TestCourseGenerator from "../helpers/generators/CourseGenerator.ts";
 import { setupWipeDb, sanitySkipDetailed } from "../helpers/mocha.ts";
+import Constants from "../helpers/constants.ts";
 
 suite("integration: browsing", function() {
 
@@ -21,14 +22,18 @@ suite("integration: browsing", function() {
             // Verify the created course is in the list
             const createdCourse = courses.find((course: any) => course.id === courseId);
             expect(createdCourse).to.exist;
+            expect(createdCourse).to.have.all.keys(["id", "name", "description", "status", "minTime", "totalQuizMarks"]);
 
             // 2. Learner views their profile (should show no enrollments initially)
             const profile = await callAPI('get-profile', {}, false);
             expect(profile).to.be.an('object');
-            expect(profile.user).to.exist;
-            expect(profile.enrolledCourses).to.be.an('array');
+            expect(profile).to.have.all.keys(["name", "email", "role", "signUpDate", "completedCourses"]);
+            expect(profile.name).to.be.a('string');
+            expect(profile.email).to.equal(Constants.users.LearnerEmail);
+            expect(profile.role).to.equal("Learner");
+            expect(profile.signUpDate).to.equal(Constants.users.LearnerSignup);
             expect(profile.completedCourses).to.be.an('array');
-            expect(profile.quizAttempts).to.be.an('array');
+            expect(profile.completedCourses).to.be.empty;
 
             // 3. Learner checks notifications (should be empty initially)
             const notifications = await callAPI('get-notifications', {}, false);
