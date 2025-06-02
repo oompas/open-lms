@@ -188,7 +188,7 @@ class TestCourseGenerator {
                 // Submit quiz with empty answers to trigger manual marking
                 await callAPI('submit-quiz', {
                     quizAttemptId: quizAttemptId,
-                    answers: []
+                    responses: []
                 }, asAdmin);
                 break;
 
@@ -216,12 +216,12 @@ class TestCourseGenerator {
 
                     await callAPI('submit-quiz', {
                         quizAttemptId: quizAttemptId,
-                        answers: correctAnswers
+                        responses: correctAnswers
                     }, asAdmin);
                 } else {
                     await callAPI('submit-quiz', {
                         quizAttemptId: quizAttemptId,
-                        answers: []
+                        responses: []
                     }, asAdmin);
                 }
 
@@ -259,7 +259,7 @@ class TestCourseGenerator {
 
                 await callAPI('submit-quiz', {
                     quizAttemptId: quizAttemptId,
-                    answers: wrongAnswers
+                    responses: wrongAnswers
                 }, asAdmin);
 
                 // Mark the quiz attempt as failed (admin action)
