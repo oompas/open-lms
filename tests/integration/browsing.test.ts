@@ -3,6 +3,7 @@ import { callAPI } from "../helpers/api.ts";
 import TestCourseGenerator from "../helpers/generators/CourseGenerator.ts";
 import { setupWipeDb, sanitySkipDetailed } from "../helpers/mocha.ts";
 import Constants from "../helpers/constants.ts";
+import { CourseStatus } from "../helpers/enum/CourseStatus.ts";
 
 suite("integration: browsing", function() {
 
@@ -52,7 +53,7 @@ suite("integration: browsing", function() {
             const courses = await callAPI('get-courses', {}, false);
             expect(courses).to.be.an('array');
             expect(courses.length).to.equal(1);
-            expect(courses[0].status).to.equal(Constants.enums.CourseStatus.ENROLLED);
+            expect(courses[0].status).to.equal(CourseStatus.ENROLLED);
 
             // 3. Learner starts the course
             const startCourseResult = await callAPI('start-course', { courseId }, false);

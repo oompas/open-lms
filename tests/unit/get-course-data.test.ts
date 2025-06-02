@@ -4,6 +4,7 @@ import { sanitySkipDetailed, setupWipeDb } from "../helpers/mocha.ts";
 import TestCourseGenerator from "../helpers/generators/CourseGenerator.ts";
 import { ErrorType, validateError, ValidationParams } from "../helpers/errors.ts";
 import Constants from "../helpers/constants.ts";
+import { CourseStatus } from "../helpers/enum/CourseStatus.ts";
 
 suite("getCourseData", function() {
 
@@ -51,7 +52,7 @@ suite("getCourseData", function() {
             await callAPI('course-enrollment', { courseId }, false);
 
             const result = await validCase(courseId);
-            expect(result.status).to.equal(Constants.enums.CourseStatus.ENROLLED);
+            expect(result.status).to.equal(CourseStatus.ENROLLED);
             expect(result).to.have.property('quizData');
             expect(result).to.have.property('courseAttempt');
             expect(result).to.have.property('quizAttempts');
@@ -76,7 +77,7 @@ suite("getCourseData", function() {
             const courseId = await TestCourseGenerator.generateDummyCourse();
 
             const result = await validCase(courseId);
-            expect(result.status).to.equal(Constants.enums.CourseStatus.NOT_ENROLLED);
+            expect(result.status).to.equal(CourseStatus.NOT_ENROLLED);
         });
 
         test("Get data for inactive course", async function() {

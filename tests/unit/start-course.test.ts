@@ -4,6 +4,7 @@ import { sanitySkipDetailed, setupWipeDb } from "../helpers/mocha.ts";
 import TestCourseGenerator from "../helpers/generators/CourseGenerator.ts";
 import { ErrorType, validateError, ValidationParams } from "../helpers/errors.ts";
 import Constants from "../helpers/constants.ts";
+import { CourseStatus } from "../helpers/enum/CourseStatus.ts";
 
 suite("start-course", function() {
 
@@ -21,7 +22,7 @@ suite("start-course", function() {
     /**
      * Helper function to verify course status after starting
      */
-    async function verifyCourseStatus(courseId: number, expectedStatus: Constants.enums.CourseStatus, adminCall: boolean = false) {
+    async function verifyCourseStatus(courseId: number, expectedStatus: CourseStatus, adminCall: boolean = false) {
         const courses = await callAPI('get-courses', {}, adminCall);
         const course = courses.find((c: any) => c.id === courseId);
         expect(course).to.exist;
@@ -36,7 +37,7 @@ suite("start-course", function() {
         expect(result).to.be.null;
 
         // Verify the course status changed to IN_PROGRESS
-        await verifyCourseStatus(courseId, Constants.enums.CourseStatus.IN_PROGRESS, adminCall);
+        await verifyCourseStatus(courseId, CourseStatus.IN_PROGRESS, adminCall);
     }
 
     /**
@@ -102,7 +103,7 @@ suite("start-course", function() {
 
             // Verify all courses are in progress
             for (const courseId of courseIds) {
-                await verifyCourseStatus(courseId, Constants.enums.CourseStatus.IN_PROGRESS);
+                await verifyCourseStatus(courseId, CourseStatus.IN_PROGRESS);
             }
         });
 
@@ -134,13 +135,13 @@ suite("start-course", function() {
             const courseId = await setupEnrolledCourse();
 
             // Verify initial status is ENROLLED
-            await verifyCourseStatus(courseId, Constants.enums.CourseStatus.ENROLLED);
+            await verifyCourseStatus(courseId, CourseStatus.ENROLLED);
 
             // Start the course
             await callAPI('start-course', { courseId }, false);
 
             // Verify status changed to IN_PROGRESS
-            await verifyCourseStatus(courseId, Constants.enums.CourseStatus.IN_PROGRESS);
+            await verifyCourseStatus(courseId, CourseStatus.IN_PROGRESS);
         });
 
         test("Cannot start course that doesn't exist", async function() {
@@ -222,7 +223,7 @@ suite("start-course", function() {
             }, false);
 
             expect(result).to.be.null;
-            await verifyCourseStatus(courseId, Constants.enums.CourseStatus.IN_PROGRESS);
+            await verifyCourseStatus(courseId, CourseStatus.IN_PROGRESS);
         });
 
         test("Start course after unenrolling and re-enrolling", async function() {
@@ -270,7 +271,7 @@ suite("start-course", function() {
 
             // Verify all courses are in progress
             for (const courseId of courseIds) {
-                await verifyCourseStatus(courseId, Constants.enums.CourseStatus.IN_PROGRESS);
+                await verifyCourseStatus(courseId, CourseStatus.IN_PROGRESS);
             }
         });
 
@@ -297,9 +298,9 @@ suite("start-course", function() {
             const course1 = courses.find((c: any) => c.id === courseIds[1]);
             const course2 = courses.find((c: any) => c.id === courseIds[2]);
 
-            expect(course0.status).to.equal(Constants.enums.CourseStatus.IN_PROGRESS);
-            expect(course1.status).to.equal(Constants.enums.CourseStatus.IN_PROGRESS);
-            expect(course2.status).to.equal(Constants.enums.CourseStatus.NOT_ENROLLED);
+            expect(course0.status).to.equal(CourseStatus.IN_PROGRESS);
+            expect(course1.status).to.equal(CourseStatus.IN_PROGRESS);
+            expect(course2.status).to.equal(CourseStatus.NOT_ENROLLED);
         });
 
         test("Start course after completing another course", async function() {
@@ -321,7 +322,7 @@ suite("start-course", function() {
             await validCase(courseIds[1]);
 
             // Verify second course is in progress
-            await verifyCourseStatus(courseIds[1], Constants.enums.CourseStatus.IN_PROGRESS);
+            await verifyCourseStatus(courseIds[1], CourseStatus.IN_PROGRESS);
         });
 
         test("Empty payload object", async function() {
