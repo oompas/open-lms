@@ -49,9 +49,9 @@ const Constants = {
             COMPLETED: "COMPLETED"
         },
         QuestionType: {
-            MULTIPLE_CHOICE = "MC",
-            TRUE_FALSE = "TF",
-            SHORT_ANSWER = "SA"
+            MULTIPLE_CHOICE: "MC",
+            TRUE_FALSE: "TF",
+            SHORT_ANSWER: "SA"
         }
     }
 }
