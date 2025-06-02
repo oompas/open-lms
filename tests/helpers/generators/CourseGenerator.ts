@@ -9,6 +9,7 @@ import {
     GenerateCourseWithStatusOptions,
     QuestionData
 } from "./types.ts";
+import Constants from "../constants.ts";
 
 const randInt = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -158,7 +159,7 @@ class TestCourseGenerator {
         let quizAttemptId: number | undefined;
 
         switch (targetStatus) {
-            case CourseStatus.NOT_ENROLLED:
+            case Constants.enums.CourseStatus.NOT_ENROLLED:
                 // Do nothing - course is already not enrolled by default
                 break;
 
