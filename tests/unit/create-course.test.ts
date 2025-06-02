@@ -21,10 +21,9 @@ suite("create-course", function() {
         // Lastly, get the course's data and validate it
         const getCourseDataResult = await callAPI('get-course-data', { courseId: createCourseResult, adminView: false }, true);
         expect(getCourseDataResult).to.be.an('object');
-        expect(getCourseDataResult).to.have.keys(['id', 'active', 'name', 'description', 'link', 'status', 'minTime', 'quizData', 'courseAttempt', 'quizAttempts']);
+        expect(getCourseDataResult).to.have.keys(['id', 'name', 'description', 'link', 'status', 'minTime', 'quizData', 'courseAttempt', 'quizAttempts']);
 
         expect(getCourseDataResult).to.have.property('id').equal(createCourseResult);
-        expect(getCourseDataResult).to.have.property('active').equal(true);
         expect(getCourseDataResult).to.have.property('name').equal(courseData.name);
         expect(getCourseDataResult).to.have.property('description').equal(courseData.description);
         expect(getCourseDataResult).to.have.property('link').equal(courseData.link);
