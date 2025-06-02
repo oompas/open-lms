@@ -38,21 +38,6 @@ const Constants = {
         AdminEmail: getEnvVariable("TEST_ADMIN_EMAIL"),
         AdminSignup: "2025-04-14T15:28:54.576427Z",
         AdminUUID: "8b1e773c-196b-40ea-b8d0-27f7bd5b7b6e"
-    },
-    enums: {
-        CourseStatus: {
-            NOT_ENROLLED: "NOT_ENROLLED",
-            ENROLLED: "ENROLLED",
-            IN_PROGRESS: "IN_PROGRESS",
-            AWAITING_MARKING: "AWAITING_MARKING",
-            FAILED: "FAILED",
-            COMPLETED: "COMPLETED"
-        },
-        QuestionType: {
-            MULTIPLE_CHOICE: "MC",
-            TRUE_FALSE: "TF",
-            SHORT_ANSWER: "SA"
-        }
     }
 }
 
