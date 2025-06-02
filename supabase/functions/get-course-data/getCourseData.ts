@@ -95,7 +95,6 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
 
         return {
             id: course.id,
-            active: course.active,
             name: course.name,
             description: course.description,
             link: course.link,
