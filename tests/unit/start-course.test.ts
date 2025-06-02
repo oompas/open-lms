@@ -22,8 +22,8 @@ suite("start-course", function() {
     /**
      * Helper function to verify course status after starting
      */
-    async function verifyCourseStatus(courseId: number, expectedStatus: CourseStatus) {
-        const courses = await callAPI('get-courses', {}, false);
+    async function verifyCourseStatus(courseId: number, expectedStatus: CourseStatus, adminCall: boolean = false) {
+        const courses = await callAPI('get-courses', {}, adminCall);
         const course = courses.find((c: any) => c.id === courseId);
         expect(course).to.exist;
         expect(course.status).to.equal(expectedStatus);
@@ -37,7 +37,7 @@ suite("start-course", function() {
         expect(result).to.be.null;
 
         // Verify the course status changed to IN_PROGRESS
-        await verifyCourseStatus(courseId, CourseStatus.IN_PROGRESS);
+        await verifyCourseStatus(courseId, CourseStatus.IN_PROGRESS, adminCall);
     }
 
     /**
