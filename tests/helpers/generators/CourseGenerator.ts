@@ -10,6 +10,8 @@ import {
 } from "./types.ts";
 import Constants from "../constants.ts";
 
+const CourseStatus = Constants.enums.CourseStatus;
+
 const randInt = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -151,29 +153,29 @@ class TestCourseGenerator {
      */
     public static async setCourseStatus(
         courseId: number,
-        targetStatus: Constants.enums.CourseStatus,
+        targetStatus: typeof CourseStatus,
         asAdmin: boolean = false,
         submitCorrectAnswers: boolean = true
     ): Promise<{ quizAttemptId?: number }> {
         let quizAttemptId: number | undefined;
 
         switch (targetStatus) {
-            case Constants.enums.CourseStatus.NOT_ENROLLED:
+            case CourseStatus.NOT_ENROLLED:
                 // Do nothing - course is already not enrolled by default
                 break;
 
-            case Constants.enums.CourseStatus.ENROLLED:
+            case CourseStatus.ENROLLED:
                 // Enroll in the course
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 break;
 
-            case Constants.enums.CourseStatus.IN_PROGRESS:
+            case CourseStatus.IN_PROGRESS:
                 // Enroll and start the course
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 await callAPI('start-course', { courseId }, asAdmin);
                 break;
 
-            case Constants.enums.CourseStatus.AWAITING_MARKING:
+            case CourseStatus.AWAITING_MARKING:
                 // Enroll, start course, start quiz, and submit with short answers
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 await callAPI('start-course', { courseId }, asAdmin);
@@ -192,7 +194,7 @@ class TestCourseGenerator {
                 }, asAdmin);
                 break;
 
-            case Constants.enums.CourseStatus.COMPLETED:
+            case CourseStatus.COMPLETED:
                 // Enroll, start course, start quiz, submit with correct answers, and mark as passed
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 await callAPI('start-course', { courseId }, asAdmin);
@@ -232,7 +234,7 @@ class TestCourseGenerator {
                 }, true);
                 break;
 
-            case Constants.enums.CourseStatus.FAILED:
+            case CourseStatus.FAILED:
                 // Enroll, start course, start quiz, submit with wrong answers, and mark as failed
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 await callAPI('start-course', { courseId }, asAdmin);
@@ -281,7 +283,7 @@ class TestCourseGenerator {
         count: number = 6,
         asAdmin: boolean = false
     ): Promise<CourseWithStatus[]> {
-        const statuses = Object.values(Constants.enums.CourseStatus);
+        const statuses = Object.values(CourseStatus);
         const courses: CourseWithStatus[] = [];
 
         for (let i = 0; i < count; i++) {
@@ -301,7 +303,7 @@ class TestCourseGenerator {
      */
     public static async enrollUserInCourse(
         courseId: number,
-        targetStatus: Constants.enums.CourseStatus = Constants.enums.CourseStatus.ENROLLED,
+        targetStatus: typeof CourseStatus = CourseStatus.ENROLLED,
         asAdmin: boolean = false,
         submitCorrectAnswers: boolean = true
     ): Promise<{ quizAttemptId?: number }> {
@@ -407,7 +409,7 @@ class TestCourseGenerator {
      */
     public static async verifyCourseStatus(
         courseId: number,
-        expectedStatus: Constants.enums.CourseStatus,
+        expectedStatus: typeof CourseStatus,
         asAdmin: boolean = false
     ): Promise<void> {
         const courses = await callAPI('get-courses', {}, asAdmin);
