@@ -8,9 +8,7 @@ import {
     GenerateCourseWithStatusOptions,
     QuestionData
 } from "./types.ts";
-import Constants from "../constants.ts";
-
-const CourseStatus = Constants.enums.CourseStatus;
+import { CourseStatus } from "../enum/CourseStatus.ts";
 
 const randInt = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -153,7 +151,7 @@ class TestCourseGenerator {
      */
     public static async setCourseStatus(
         courseId: number,
-        targetStatus: typeof CourseStatus,
+        targetStatus: CourseStatus,
         asAdmin: boolean = false,
         submitCorrectAnswers: boolean = true
     ): Promise<{ quizAttemptId?: number }> {
@@ -303,7 +301,7 @@ class TestCourseGenerator {
      */
     public static async enrollUserInCourse(
         courseId: number,
-        targetStatus: typeof CourseStatus = CourseStatus.ENROLLED,
+        targetStatus: CourseStatus = CourseStatus.ENROLLED,
         asAdmin: boolean = false,
         submitCorrectAnswers: boolean = true
     ): Promise<{ quizAttemptId?: number }> {
@@ -409,7 +407,7 @@ class TestCourseGenerator {
      */
     public static async verifyCourseStatus(
         courseId: number,
-        expectedStatus: typeof CourseStatus,
+        expectedStatus: CourseStatus,
         asAdmin: boolean = false
     ): Promise<void> {
         const courses = await callAPI('get-courses', {}, asAdmin);
