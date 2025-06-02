@@ -3,11 +3,11 @@ import { callAPI } from "../helpers/api.ts";
 import TestCourseGenerator from "../helpers/generators/CourseGenerator.ts";
 import { setupWipeDb, sanitySkipDetailed } from "../helpers/mocha.ts";
 
-suite("browsing", function() {
-    setupWipeDb();
-    sanitySkipDetailed();
+suite("integration: browsing", function() {
 
-    suite("Simple User Workflows", function() {
+    setupWipeDb();
+
+    suite("Sanity", function() {
 
         test("Learner browses available courses and views profile", async function() {
             // Setup: Create a test course
@@ -90,7 +90,9 @@ suite("browsing", function() {
         });
     });
 
-    suite("Complex User Workflows", function() {
+    suite("Detailed", function() {
+
+        sanitySkipDetailed();
 
         test("Complete learner journey: Browse → Enroll → Study → Take Quiz → Complete Course", async function() {
             // Setup: Create a test course with known quiz structure
@@ -488,9 +490,6 @@ suite("browsing", function() {
             //     disable: true
             // }, true);
         });
-    });
-
-    suite("Edge Cases and Error Handling", function() {
 
         test("Attempting to access non-existent course", async function() {
             const nonExistentCourseId = 99999;
