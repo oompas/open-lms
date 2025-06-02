@@ -59,7 +59,7 @@ suite("integration: browsing", function() {
             expect(startCourseResult).to.be.null;
 
             // 4. Get course data to view content
-            const courseData = await callAPI('get-course-data', { courseId }, false);
+            const courseData = await callAPI('get-course-data', { courseId, adminView: false }, false);
             expect(courseData).to.be.an('object');
             expect(courseData.course).to.exist;
             expect(courseData.quizQuestions).to.be.an('array');
