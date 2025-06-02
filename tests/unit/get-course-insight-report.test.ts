@@ -4,7 +4,6 @@ import { sanitySkipDetailed, setupWipeDb } from "../helpers/mocha.ts";
 import TestCourseGenerator from "../helpers/generators/CourseGenerator.ts";
 import { ErrorType, validateError, ValidationParams } from "../helpers/errors.ts";
 import Constants from "../helpers/constants.ts";
-import { CourseStatus } from "../helpers/Enum/CourseStatus.ts";
 
 suite("getCourseInsightReport", function() {
 
@@ -37,7 +36,7 @@ suite("getCourseInsightReport", function() {
 
                 expect(learner.name).to.be.a('string');
                 expect(learner.userId).to.be.a('string').and.to.match(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/);
-                expect(learner.status).to.be.a('string').and.to.be.oneOf(Object.values(CourseStatus));
+                expect(learner.status).to.be.a('string').and.to.be.oneOf(Object.values(Constants.enums.CourseStatus));
 
                 // If one quiz field is null, both must logically be null
                 if (learner.latestQuizAttemptId === null || learner.latestQuizAttemptTime === null) {

@@ -3,7 +3,6 @@ import { callAPI } from "../helpers/api.ts";
 import { sanitySkipDetailed, setupWipeDb } from "../helpers/mocha.ts";
 import TestCourseGenerator from "../helpers/generators/CourseGenerator.ts";
 import Constants from "../helpers/constants.ts";
-import { CourseStatus } from "../helpers/Enum/CourseStatus.ts";
 
 suite("get-courses", function() {
 
@@ -85,7 +84,7 @@ suite("get-courses", function() {
             const course = result[0];
             validateCourseStructure(course);
             expect(course.id).to.equal(courseId);
-            expect(course.status).to.equal(CourseStatus.NOT_ENROLLED);
+            expect(course.status).to.equal(Constants.enums.CourseStatus.NOT_ENROLLED);
         });
 
         test("Single active course - enrolled", async function() {
@@ -100,7 +99,7 @@ suite("get-courses", function() {
             const course = result[0];
             validateCourseStructure(course);
             expect(course.id).to.equal(courseId);
-            expect(course.status).to.equal(CourseStatus.ENROLLED);
+            expect(course.status).to.equal(Constants.enums.CourseStatus.ENROLLED);
         });
     });
 
@@ -129,9 +128,9 @@ suite("get-courses", function() {
             const enrolledCourse = result.find((c: any) => c.id === enrolledCourseId);
             const inProgressCourse = result.find((c: any) => c.id === inProgressCourseId);
 
-            expect(notEnrolledCourse.status).to.equal(CourseStatus.NOT_ENROLLED);
-            expect(enrolledCourse.status).to.equal(CourseStatus.ENROLLED);
-            expect(inProgressCourse.status).to.equal(CourseStatus.IN_PROGRESS);
+            expect(notEnrolledCourse.status).to.equal(Constants.enums.CourseStatus.NOT_ENROLLED);
+            expect(enrolledCourse.status).to.equal(Constants.enums.CourseStatus.ENROLLED);
+            expect(inProgressCourse.status).to.equal(Constants.enums.CourseStatus.IN_PROGRESS);
         });
 
         test("Inactive courses are not returned", async function() {
@@ -197,8 +196,8 @@ suite("get-courses", function() {
 
             // Check that we have the expected mix of statuses
             const statuses = result.map((c: any) => c.status);
-            expect(statuses).to.include(CourseStatus.NOT_ENROLLED);
-            expect(statuses).to.include(CourseStatus.ENROLLED);
+            expect(statuses).to.include(Constants.enums.CourseStatus.NOT_ENROLLED);
+            expect(statuses).to.include(Constants.enums.CourseStatus.ENROLLED);
         });
 
         test("Courses with null minTime", async function() {

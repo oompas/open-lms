@@ -1,4 +1,4 @@
-import { CourseStatus } from "../Enum/CourseStatus.ts";
+import Constants from "../constants.ts";
 
 export type CourseData = {
     name: string;
@@ -21,7 +21,7 @@ export type QuestionData = {
 
 export type CourseWithStatus = {
     courseId: number;
-    status: CourseStatus;
+    status: Constants.enums.CourseStatus;
     quizAttemptId?: number;
 }
 
@@ -38,7 +38,7 @@ export type GenerateCourseWithStatusOptions = {
     courseData?: Partial<CourseData>;
     questionCount?: number;
 
-    targetStatus: CourseStatus;
+    targetStatus: Constants.enums.CourseStatus;
     userId?: string;
     submitCorrectAnswers?: boolean;
 }

@@ -1,7 +1,6 @@
 import { callAPI } from "../api.ts";
 import { expect } from "chai";
 import { faker } from '@faker-js/faker';
-import { CourseStatus } from "./../Enum/CourseStatus.ts";
 import {
     CourseData,
     CourseWithStatus,
@@ -152,7 +151,7 @@ class TestCourseGenerator {
      */
     public static async setCourseStatus(
         courseId: number,
-        targetStatus: CourseStatus,
+        targetStatus: Constants.enums.CourseStatus,
         asAdmin: boolean = false,
         submitCorrectAnswers: boolean = true
     ): Promise<{ quizAttemptId?: number }> {
@@ -163,18 +162,18 @@ class TestCourseGenerator {
                 // Do nothing - course is already not enrolled by default
                 break;
 
-            case CourseStatus.ENROLLED:
+            case Constants.enums.CourseStatus.ENROLLED:
                 // Enroll in the course
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 break;
 
-            case CourseStatus.IN_PROGRESS:
+            case Constants.enums.CourseStatus.IN_PROGRESS:
                 // Enroll and start the course
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 await callAPI('start-course', { courseId }, asAdmin);
                 break;
 
-            case CourseStatus.AWAITING_MARKING:
+            case Constants.enums.CourseStatus.AWAITING_MARKING:
                 // Enroll, start course, start quiz, and submit with short answers
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 await callAPI('start-course', { courseId }, asAdmin);
@@ -193,7 +192,7 @@ class TestCourseGenerator {
                 }, asAdmin);
                 break;
 
-            case CourseStatus.COMPLETED:
+            case Constants.enums.CourseStatus.COMPLETED:
                 // Enroll, start course, start quiz, submit with correct answers, and mark as passed
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 await callAPI('start-course', { courseId }, asAdmin);
@@ -233,7 +232,7 @@ class TestCourseGenerator {
                 }, true);
                 break;
 
-            case CourseStatus.FAILED:
+            case Constants.enums.CourseStatus.FAILED:
                 // Enroll, start course, start quiz, submit with wrong answers, and mark as failed
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 await callAPI('start-course', { courseId }, asAdmin);
@@ -284,7 +283,7 @@ class TestCourseGenerator {
         count: number = 6,
         asAdmin: boolean = false
     ): Promise<CourseWithStatus[]> {
-        const statuses = Object.values(CourseStatus);
+        const statuses = Object.values(Constants.enums.CourseStatus);
         const courses: CourseWithStatus[] = [];
 
         for (let i = 0; i < count; i++) {
@@ -304,7 +303,7 @@ class TestCourseGenerator {
      */
     public static async enrollUserInCourse(
         courseId: number,
-        targetStatus: CourseStatus = CourseStatus.ENROLLED,
+        targetStatus: Constants.enums.CourseStatus = Constants.enums.CourseStatus.ENROLLED,
         asAdmin: boolean = false,
         submitCorrectAnswers: boolean = true
     ): Promise<{ quizAttemptId?: number }> {
@@ -410,7 +409,7 @@ class TestCourseGenerator {
      */
     public static async verifyCourseStatus(
         courseId: number,
-        expectedStatus: CourseStatus,
+        expectedStatus: Constants.enums.CourseStatus,
         asAdmin: boolean = false
     ): Promise<void> {
         const courses = await callAPI('get-courses', {}, asAdmin);
