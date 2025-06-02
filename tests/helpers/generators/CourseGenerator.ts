@@ -250,9 +250,7 @@ class TestCourseGenerator {
                     if (question.type === 'TF') {
                         return question.correctAnswer === 1 ? 0 : 1; // Opposite of correct
                     } else if (question.type === 'MC') {
-                        // Choose a wrong answer
-                        const wrongIndex = (question.correctAnswer + 1) % question.answers.length;
-                        return wrongIndex;
+                        return (question.correctAnswer + 1) % question.answers.length; // Choose a wrong answer
                     }
                     return "Wrong answer"; // For short answer questions
                 });
