@@ -178,7 +178,11 @@ class TestCourseGenerator {
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 await callAPI('start-course', { courseId }, asAdmin);
 
-                const quizAttempt = await callAPI('start-quiz', { courseId }, asAdmin);
+                // Get courseAttemptId from get-course-data
+                const courseData = await callAPI('get-course-data', { courseId }, asAdmin);
+                const courseAttemptId = courseData.courseAttempt?.currentAttemptId;
+
+                const quizAttempt = await callAPI('start-quiz', { courseId, courseAttemptId }, asAdmin);
                 quizAttemptId = quizAttempt.id;
 
                 // Submit quiz with empty answers to trigger manual marking
@@ -193,12 +197,16 @@ class TestCourseGenerator {
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 await callAPI('start-course', { courseId }, asAdmin);
 
-                const completedQuizAttempt = await callAPI('start-quiz', { courseId }, asAdmin);
+                // Get courseAttemptId from get-course-data
+                const courseDataCompleted = await callAPI('get-course-data', { courseId }, asAdmin);
+                const courseAttemptIdCompleted = courseDataCompleted.courseAttempt?.currentAttemptId;
+
+                const completedQuizAttempt = await callAPI('start-quiz', { courseId, courseAttemptId: courseAttemptIdCompleted }, asAdmin);
                 quizAttemptId = completedQuizAttempt.id;
 
                 if (submitCorrectAnswers) {
                     // Get quiz questions to provide correct answers
-                    const quiz = await callAPI('get-quiz', { courseId }, asAdmin);
+                    const quiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
                     const correctAnswers = quiz.questions.map((question: any) => {
                         if (question.type === 'TF' || question.type === 'MC') {
                             return question.correctAnswer;
@@ -229,11 +237,15 @@ class TestCourseGenerator {
                 await callAPI('course-enrollment', { courseId }, asAdmin);
                 await callAPI('start-course', { courseId }, asAdmin);
 
-                const failedQuizAttempt = await callAPI('start-quiz', { courseId }, asAdmin);
+                // Get courseAttemptId from get-course-data
+                const courseDataFailed = await callAPI('get-course-data', { courseId }, asAdmin);
+                const courseAttemptIdFailed = courseDataFailed.courseAttempt?.currentAttemptId;
+
+                const failedQuizAttempt = await callAPI('start-quiz', { courseId, courseAttemptId: courseAttemptIdFailed }, asAdmin);
                 quizAttemptId = failedQuizAttempt.id;
 
                 // Submit with wrong answers
-                const quiz = await callAPI('get-quiz', { courseId }, asAdmin);
+                const quiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
                 const wrongAnswers = quiz.questions.map((question: any) => {
                     if (question.type === 'TF') {
                         return question.correctAnswer === 1 ? 0 : 1; // Opposite of correct
