@@ -14,14 +14,14 @@ suite("get-courses", function() {
      */
     function validateCourseStructure(course: any) {
         expect(course).to.be.an('object');
-        expect(course).to.have.all.keys(['id', 'name', 'description', 'status', 'minTime', 'total_quiz_marks']);
+        expect(course).to.have.all.keys(['id', 'name', 'description', 'status', 'minTime', 'totalQuizMarks']);
 
         expect(course.id).to.be.a('number');
         expect(course.name).to.be.a('string');
         expect(course.description).to.be.a('string');
         expect(course.status).to.be.a('string');
         expect(course.minTime).to.satisfy((val: any) => val === null || typeof val === 'number');
-        expect(course.total_quiz_marks).to.be.a('number');
+        expect(course.totalQuizMarks).to.be.a('number');
 
         // Validate status is one of the expected values
         expect(Object.values(Constants.courseStatus)).to.include(course.status);
@@ -175,7 +175,7 @@ suite("get-courses", function() {
             expect(course.name).to.equal(courseData.name);
             expect(course.description).to.equal(courseData.description);
             expect(course.minTime).to.equal(courseData.minTime);
-            expect(course.total_quiz_marks).to.equal(courseData.quizData.totalMarks);
+            expect(course.totalQuizMarks).to.equal(courseData.quizData.totalMarks);
         });
 
         test("Large number of courses", async function() {
