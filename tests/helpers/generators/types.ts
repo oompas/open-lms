@@ -1,4 +1,3 @@
-import Constants from "../constants.ts";
 import { CourseStatus } from "../enum/CourseStatus.ts";
 
 export type CourseData = {
