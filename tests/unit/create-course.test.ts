@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
 import { sanitySkipDetailed, setupWipeDb } from "../helpers/mocha.ts";
-import Constants from "../helpers/constants.ts";
 import { CourseStatus } from "../helpers/enum/CourseStatus.ts";
 
 suite("create-course", function() {
