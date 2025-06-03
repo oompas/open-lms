@@ -2,7 +2,7 @@ import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { CourseService, QuizQuestionService } from "../_shared/Service/Services.ts";
 import { QuestionType } from "../_shared/Enum/QuestionType.ts";
 
-const getCourseDataAdmin = async (request: EdgeFunctionRequest): Promise<object> => {
+const getCourseDataAdmin = async (request: EdgeFunctionRequest, userId: string, courseId: number): Promise<object> => {
 
     request.validateAdmin("Requesting user must be an admin for course data's adminView");
 

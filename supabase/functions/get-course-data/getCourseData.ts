@@ -12,10 +12,10 @@ const getCourseData = async (request: EdgeFunctionRequest): Promise<object> => {
     request.log(`User id: ${userId}. Course id: ${courseId}. Admin view? ${adminView}`);
 
     if (!adminView) {
-        return getCourseDataLearner(request);
+        return getCourseDataLearner(request, userId, courseId);
     }
 
-    return getCourseDataAdmin(request);
+    return getCourseDataAdmin(request, userId, courseId);
 }
 
 export default getCourseData;

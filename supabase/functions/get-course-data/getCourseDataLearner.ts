@@ -3,7 +3,7 @@ import { CourseAttemptService, CourseService, QuizAttemptService } from "../_sha
 import InputError from "../_shared/Error/InputError.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
 
-const getCourseDataLearner = async (request: EdgeFunctionRequest): Promise<object> => {
+const getCourseDataLearner = async (request: EdgeFunctionRequest, userId: string, courseId: number): Promise<object> => {
 
     const result = await CourseService
         .query(`
