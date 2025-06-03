@@ -9,6 +9,7 @@ import {
     QuestionData
 } from "./types.ts";
 import { CourseStatus } from "../enum/CourseStatus.ts";
+import { QuestionType } from "../enum/QuestionType.ts";
 
 const randInt = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -55,34 +56,34 @@ class TestCourseGenerator {
         const quizQuestions: QuestionData[] = [];
 
         for (let i = 0; i < questionCount; i++) {
-            const questionType = faker.helpers.arrayElement<"TF" | "MC" | "SA">(["TF", "MC", "SA"]);
+            const questionType = faker.helpers.arrayElement<QuestionType>(Object.values(QuestionType));
             const marks = randInt(1, 10);
             const questionText = faker.lorem.sentence();
 
             switch (questionType) {
-                case "TF":
+                case QuestionType.TRUE_FALSE:
                     quizQuestions.push({
-                        type: "TF",
+                        type: QuestionType.TRUE_FALSE,
                         question: questionText,
                         marks: marks,
                         correctAnswer: faker.datatype.boolean() ? 1 : 0,
                     });
                     break;
-                case "MC":
+                case QuestionType.MULTIPLE_CHOICE:
                     const numberOfAnswers = faker.number.int({ min: 2, max: 5 });
                     const answers: string[] = Array.from({ length: numberOfAnswers }, () => faker.lorem.word());
                     const correctAnswerIndex = faker.number.int({ min: 0, max: numberOfAnswers - 1 });
                     quizQuestions.push({
-                        type: "MC",
+                        type: QuestionType.MULTIPLE_CHOICE,
                         question: questionText,
                         marks: marks,
                         correctAnswer: correctAnswerIndex,
                         answers: answers,
                     });
                     break;
-                case "SA":
+                case QuestionType.SHORT_ANSWER:
                     quizQuestions.push({
-                        type: "SA",
+                        type: QuestionType.SHORT_ANSWER,
                         question: questionText,
                         marks: marks,
                     });
@@ -188,11 +189,11 @@ class TestCourseGenerator {
                 // Get quiz questions to provide appropriate answers
                 const awaitingQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
                 const responses = awaitingQuiz.questions.map((question: any) => {
-                    if (question.type === 'SA') {
+                    if (question.type === QuestionType.SHORT_ANSWER) {
                         return "This is a short answer that requires manual marking";
-                    } else if (question.type === 'TF') {
+                    } else if (question.type === QuestionType.TRUE_FALSE) {
                         return question.correctAnswer;
-                    } else if (question.type === 'MC') {
+                    } else if (question.type === QuestionType.MULTIPLE_CHOICE) {
                         return question.correctAnswer;
                     }
                     return "";
@@ -221,7 +222,7 @@ class TestCourseGenerator {
                     // Get quiz questions to provide correct answers
                     const completedQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
                     const correctAnswers = completedQuiz.questions.map((question: any) => {
-                        if (question.type === 'TF' || question.type === 'MC') {
+                        if (question.type === QuestionType.TRUE_FALSE || question.type === QuestionType.MULTIPLE_CHOICE) {
                             return question.correctAnswer;
                         }
                         return "Correct answer"; // For short answer questions
@@ -260,9 +261,9 @@ class TestCourseGenerator {
                 // Submit with wrong answers
                 const failedQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
                 const wrongAnswers = failedQuiz.questions.map((question: any) => {
-                    if (question.type === 'TF') {
+                    if (question.type === QuestionType.TRUE_FALSE) {
                         return question.correctAnswer === 1 ? 0 : 1; // Opposite of correct
-                    } else if (question.type === 'MC') {
+                    } else if (question.type === QuestionType.MULTIPLE_CHOICE) {
                         return (question.correctAnswer + 1) % question.answers.length; // Choose a wrong answer
                     }
                     return "Wrong answer"; // For short answer questions
@@ -325,7 +326,7 @@ class TestCourseGenerator {
      * Creates a course with specific quiz configuration for testing
      */
     public static async generateCourseWithQuizConfig(options: {
-        questionTypes?: Array<"TF" | "MC" | "SA">;
+        questionTypes?: Array<QuestionType>;
         questionCount?: number;
         timeLimit?: number | null;
         maxAttempts?: number | null;
@@ -334,7 +335,7 @@ class TestCourseGenerator {
         asAdmin?: boolean;
     } = {}): Promise<number> {
         const {
-            questionTypes = ["TF", "MC", "SA"],
+            questionTypes = Object.values(QuestionType),
             questionCount = 5,
             timeLimit = null,
             maxAttempts = null,
@@ -358,29 +359,29 @@ class TestCourseGenerator {
             const questionText = faker.lorem.sentence();
 
             switch (questionType) {
-                case "TF":
+                case QuestionType.TRUE_FALSE:
                     quizQuestions.push({
-                        type: "TF",
+                        type: QuestionType.TRUE_FALSE,
                         question: questionText,
                         marks: marks,
                         correctAnswer: faker.datatype.boolean() ? 1 : 0,
                     });
                     break;
-                case "MC":
+                case QuestionType.MULTIPLE_CHOICE:
                     const numberOfAnswers = faker.number.int({ min: 2, max: 5 });
                     const answers: string[] = Array.from({ length: numberOfAnswers }, () => faker.lorem.word());
                     const correctAnswerIndex = faker.number.int({ min: 0, max: numberOfAnswers - 1 });
                     quizQuestions.push({
-                        type: "MC",
+                        type: QuestionType.MULTIPLE_CHOICE,
                         question: questionText,
                         marks: marks,
                         correctAnswer: correctAnswerIndex,
                         answers: answers,
                     });
                     break;
-                case "SA":
+                case QuestionType.SHORT_ANSWER:
                     quizQuestions.push({
-                        type: "SA",
+                        type: QuestionType.SHORT_ANSWER,
                         question: questionText,
                         marks: marks,
                     });
