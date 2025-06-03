@@ -9,7 +9,7 @@ const readNotification = async (request: EdgeFunctionRequest): Promise<Response>
 
     request.log(`Entering readNotification for user ${userId} with notificationId ${notificationId}`);
 
-    const query = adminClient.from('notification').update({ read: true }).eq('user_id', userId);
+    const query = adminClient.from('notification').update({ read: true }).eq('user_id', userId); // TODO: Extract to service
     if (notificationId) {
         query.eq('id', notificationId);
     }
