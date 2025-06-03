@@ -182,13 +182,26 @@ class TestCourseGenerator {
                 const courseData = await callAPI('get-course-data', { courseId, adminView: false }, asAdmin);
                 const courseAttemptId = courseData.courseAttempt?.currentAttemptId;
 
-                const quizAttempt = await callAPI('start-quiz', { courseId, courseAttemptId }, asAdmin);
-                quizAttemptId = quizAttempt.id;
+                const quizAttemptID = await callAPI('start-quiz', { courseId, courseAttemptId }, asAdmin);
+                quizAttemptId = quizAttemptID;
 
-                // Submit quiz with empty answers to trigger manual marking
+                // Get quiz questions to provide appropriate answers
+                const awaitingQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
+                const responses = awaitingQuiz.questions.map((question: any) => {
+                    if (question.type === 'SA') {
+                        return "This is a short answer that requires manual marking";
+                    } else if (question.type === 'TF') {
+                        return question.correctAnswer;
+                    } else if (question.type === 'MC') {
+                        return question.correctAnswer;
+                    }
+                    return "";
+                });
+
+                // Submit quiz - if there are SA questions, it will go to awaiting marking
                 await callAPI('submit-quiz', {
                     quizAttemptId: quizAttemptId,
-                    responses: []
+                    responses: responses
                 }, asAdmin);
                 break;
 
@@ -201,13 +214,13 @@ class TestCourseGenerator {
                 const courseDataCompleted = await callAPI('get-course-data', { courseId, adminView: false }, asAdmin);
                 const courseAttemptIdCompleted = courseDataCompleted.courseAttempt?.currentAttemptId;
 
-                const completedQuizAttempt = await callAPI('start-quiz', { courseId, courseAttemptId: courseAttemptIdCompleted }, asAdmin);
-                quizAttemptId = completedQuizAttempt.id;
+                const completedQuizAttemptId = await callAPI('start-quiz', { courseId, courseAttemptId: courseAttemptIdCompleted }, asAdmin);
+                quizAttemptId = completedQuizAttemptId;
 
                 if (submitCorrectAnswers) {
                     // Get quiz questions to provide correct answers
-                    const quiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
-                    const correctAnswers = quiz.questions.map((question: any) => {
+                    const completedQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
+                    const correctAnswers = completedQuiz.questions.map((question: any) => {
                         if (question.type === 'TF' || question.type === 'MC') {
                             return question.correctAnswer;
                         }
@@ -241,12 +254,12 @@ class TestCourseGenerator {
                 const courseDataFailed = await callAPI('get-course-data', { courseId, adminView: false }, asAdmin);
                 const courseAttemptIdFailed = courseDataFailed.courseAttempt?.currentAttemptId;
 
-                const failedQuizAttempt = await callAPI('start-quiz', { courseId, courseAttemptId: courseAttemptIdFailed }, asAdmin);
-                quizAttemptId = failedQuizAttempt.id;
+                const failedQuizAttemptId = await callAPI('start-quiz', { courseId, courseAttemptId: courseAttemptIdFailed }, asAdmin);
+                quizAttemptId = failedQuizAttemptId;
 
                 // Submit with wrong answers
-                const quiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
-                const wrongAnswers = quiz.questions.map((question: any) => {
+                const failedQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
+                const wrongAnswers = failedQuiz.questions.map((question: any) => {
                     if (question.type === 'TF') {
                         return question.correctAnswer === 1 ? 0 : 1; // Opposite of correct
                     } else if (question.type === 'MC') {
