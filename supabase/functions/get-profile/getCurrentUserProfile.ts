@@ -1,7 +1,7 @@
 import { CourseAttemptService } from "../_shared/Service/Services.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 
-const getCurrentUserProfile = async (request: EdgeFunctionRequest) => {
+const getCurrentUserProfile = async (request: EdgeFunctionRequest): Promise<object> => {
 
     const user = request.getRequestUser();
 

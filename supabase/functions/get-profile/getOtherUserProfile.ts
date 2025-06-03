@@ -2,7 +2,7 @@ import { getUserById } from "../_shared/auth.ts";
 import { CourseAttemptService, EnrollmentService, QuizAttemptService } from "../_shared/Service/Services.ts";
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 
-const getOtherUserProfile = async (request: EdgeFunctionRequest) => {
+const getOtherUserProfile = async (request: EdgeFunctionRequest): Promise<object> => {
 
     request.log(`Entering getProfile (admin) to get the profile of user ${userId}`);
 
