@@ -1,4 +1,5 @@
 import { CourseStatus } from "../enum/CourseStatus.ts";
+import { QuestionType } from "../enum/QuestionType.ts";
 
 export type CourseData = {
     name: string;
@@ -12,7 +13,7 @@ export type CourseData = {
 }
 
 export type QuestionData = {
-    type: "TF" | "MC" | "SA";
+    type: QuestionType;
     question: string;
     marks: number;
     correctAnswer?: number; // For TF and MC
