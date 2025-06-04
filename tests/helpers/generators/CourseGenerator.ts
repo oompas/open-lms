@@ -130,7 +130,6 @@ class TestCourseGenerator {
         const {
             targetStatus,
             asAdmin = false,
-            submitCorrectAnswers = true,
             ...courseOptions
         } = options;
 
@@ -138,7 +137,7 @@ class TestCourseGenerator {
         const courseId = await this.generateCourse({ ...courseOptions, asAdmin: true });
 
         // Progress the course to the target status
-        const result = await this.setCourseStatus(courseId, targetStatus, asAdmin, submitCorrectAnswers);
+        const result = await this.setCourseStatus(courseId, targetStatus, asAdmin);
 
         return {
             courseId,
@@ -153,8 +152,7 @@ class TestCourseGenerator {
     public static async setCourseStatus(
         courseId: number,
         targetStatus: CourseStatus,
-        asAdmin: boolean = false,
-        submitCorrectAnswers: boolean = true
+        asAdmin: boolean = false
     ): Promise<{ quizAttemptId?: number }> {
         let quizAttemptId: number | undefined;
 
@@ -224,37 +222,32 @@ class TestCourseGenerator {
                 const completedQuizAttemptId = await callAPI('start-quiz', { courseId, courseAttemptId: courseAttemptIdCompleted }, asAdmin);
                 quizAttemptId = completedQuizAttemptId;
 
-                if (submitCorrectAnswers) {
-                    // Get quiz questions to provide correct answers
-                    const completedQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
-                    const correctAnswers = completedQuiz.questions.map((question: any) => {
-                        let answer;
-                        if (question.type === QuestionType.TRUE_FALSE || question.type === QuestionType.MULTIPLE_CHOICE) {
-                            answer = question.correctAnswer;
-                        } else {
-                            answer = "Correct answer"; // For short answer questions
-                        }
-                        return {
-                            questionId: question.id,
-                            answer: answer
-                        };
-                    });
+                // Get quiz questions to provide correct answers
+                const completedQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
+                const correctAnswers = completedQuiz.questions.map((question: any) => {
+                    let answer;
+                    if (question.type === QuestionType.TRUE_FALSE || question.type === QuestionType.MULTIPLE_CHOICE) {
+                        answer = question.correctAnswer;
+                    } else {
+                        answer = "Correct answer"; // For short answer questions
+                    }
+                    return {
+                        questionId: question.id,
+                        answer: answer
+                    };
+                });
 
-                    await callAPI('submit-quiz', {
-                        quizAttemptId: quizAttemptId,
-                        responses: correctAnswers
-                    }, asAdmin);
-                } else {
-                    await callAPI('submit-quiz', {
-                        quizAttemptId: quizAttemptId,
-                        responses: []
-                    }, asAdmin);
-                }
+                await callAPI('submit-quiz', {
+                    quizAttemptId: quizAttemptId,
+                    responses: correctAnswers
+                }, asAdmin);
 
                 // Mark the quiz attempt as passed (admin action)
                 await callAPI('mark-quiz-attempt', {
                     quizAttemptId: quizAttemptId,
-                    passed: true
+                    marks: {
+
+                    }
                 }, true);
                 break;
 
@@ -334,10 +327,9 @@ class TestCourseGenerator {
     public static async enrollUserInCourse(
         courseId: number,
         targetStatus: CourseStatus = CourseStatus.ENROLLED,
-        asAdmin: boolean = false,
-        submitCorrectAnswers: boolean = true
+        asAdmin: boolean = false
     ): Promise<{ quizAttemptId?: number }> {
-        return this.setCourseStatus(courseId, targetStatus, asAdmin, submitCorrectAnswers);
+        return this.setCourseStatus(courseId, targetStatus, asAdmin);
     }
 
     /**
