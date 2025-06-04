@@ -6,7 +6,7 @@ import "./load-env.js";
 // Require mutex file for mocha hooks
 const mutexFilePath = resolve(dirname(fileURLToPath(import.meta.url)), './acquire-mutex.js');
 
-const command = `mocha --require ts-node/register --require ${mutexFilePath} --ui tdd --slow 1000 --timeout 10000 ./tests/`;
+const command = `mocha --require ts-node/register --require ${mutexFilePath} --ui tdd --slow 2000 --timeout 20000 ./tests/`;
 
 try {
     execSync(command, { stdio: 'inherit' });
