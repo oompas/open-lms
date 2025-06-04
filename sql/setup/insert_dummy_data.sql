@@ -3,18 +3,18 @@
  */
 DO $$
 DECLARE
-target_user_id UUID;
-BEGIN
-    -- Find the user ID for the target email
+    target_user_id UUID;
+BEGIN -- Find the user ID for the target email
 SELECT id
-INTO target_user_id
-FROM auth.users
+    INTO target_user_id
+    FROM auth.users
 WHERE email = '18rem8@queensu.ca';
 
 -- Check if the user was found before inserting courses
 IF target_user_id IS NOT NULL THEN
     -- Insert course data
     INSERT INTO public.course (
+        user_email,
         name,
         description,
         link,
@@ -29,6 +29,7 @@ IF target_user_id IS NOT NULL THEN
     )
     VALUES
     (
+        '18rem8@queensu.ca',
         'West Nile virus safety',
         'Learn the symptoms and treatments for the West Nile virus',
         'https://www.queensu.ca/risk/safety/general/west-nile-virus',
@@ -42,6 +43,7 @@ IF target_user_id IS NOT NULL THEN
         4     -- num_quiz_questions
     ),
     (
+        '18rem8@queensu.ca',
         'Work placement pre-departure training',
         'Learn the risks associated with off-campus work',
         'https://www.queensu.ca/risk/safety/general/student-placements',
@@ -55,6 +57,7 @@ IF target_user_id IS NOT NULL THEN
         NULL  -- num_quiz_questions
     ),
     (
+        '18rem8@queensu.ca',
         'Queen''s Ergonomics training',
         'Learn how to create a comfortable and efficient work environment',
         'https://www.queensu.ca/risk/safety/general/ergonomics',
@@ -68,6 +71,7 @@ IF target_user_id IS NOT NULL THEN
         3     -- num_quiz_questions
     ),
     (
+        '18rem8@queensu.ca',
         'Dangerous substances',
         'Learn Ontario''s designated dangerous substances',
         'https://www.queensu.ca/risk/designated-substances',
@@ -81,6 +85,7 @@ IF target_user_id IS NOT NULL THEN
         4     -- num_quiz_questions
     ),
     (
+        '18rem8@queensu.ca',
         'Queen''s asbestos safety training',
         'Understand the health risks of asbestos and effective safety measures',
         'https://www.queensu.ca/risk/safety/general/asbestos',
