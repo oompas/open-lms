@@ -19,7 +19,7 @@ const readNotification = async (request: EdgeFunctionRequest): Promise<Response>
         throw error;
     }
     if (!data) {
-        throw ApiError(`No notifications updated`);
+        throw new ApiError(`No notifications updated`);
     }
 
     request.log(`Successfully read ${data.length} notifications`);
