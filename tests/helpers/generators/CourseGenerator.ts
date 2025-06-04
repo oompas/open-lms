@@ -286,9 +286,13 @@ class TestCourseGenerator {
                 }, asAdmin);
 
                 // Mark the quiz attempt as failed (admin action)
+                const marks = wrongAnswers
+                    .filter((answer) => answer.type === QuestionType.SHORT_ANSWER)
+                    .map((answer) => ({ questionAttemptId: answer.id, marksAchieved: 0 }));
+
                 await callAPI('mark-quiz-attempt', {
                     quizAttemptId: quizAttemptId,
-                    passed: false
+                    marks: marks
                 }, true);
                 break;
 
