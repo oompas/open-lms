@@ -18,7 +18,7 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
     request.log(`Entering markQuizAttempt for user ${userId} at timestamp ${timestamp} with quizAttemptId ${quizAttemptId} and marks ${JSON.stringify(marks)}`);
 
     await Promise.all(marks.map(async (mark) =>
-        adminClient.from('quiz_question_attempt').update({ marks_achieved: mark.marks }).eq('id', mark.questionAttemptId)
+        adminClient.from('quiz_question_attempt').update({ marks_achieved: mark.marksAchieved }).eq('id', mark.questionAttemptId)
     ));
 
     request.log(`Successfully marked ${marks.length} quiz questions`);
