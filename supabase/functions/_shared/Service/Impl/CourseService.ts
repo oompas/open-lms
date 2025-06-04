@@ -2,6 +2,7 @@ import IService from "../IService.ts";
 import { adminClient } from "../../adminClient.ts";
 import DatabaseError from "../../Error/DatabaseError.ts";
 import InputError from "../../Error/InputError.ts";
+import { getUserById } from "../../auth.ts";
 
 class _courseService extends IService {
 
@@ -12,9 +13,12 @@ class _courseService extends IService {
      */
     public async addCourse(course: object, userId: string) {
 
+        const courseCreator = await getUserById(userId);
+
         // id and created_at are auto-generated
         const courseData = {
             user_id: userId,
+            user_email: courseCreator.email,
             name: course.name,
             description: course.description,
             link: course.link,

@@ -11,6 +11,7 @@ CREATE TABLE
         created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
 
         user_id UUID NOT NULL,
+        user_email TEXT NOT NULL,
 
         name TEXT NOT NULL,
         description TEXT,
