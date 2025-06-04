@@ -188,16 +188,11 @@ class TestCourseGenerator {
 
                 // Get quiz questions to provide appropriate answers
                 const awaitingQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
-                const responses = awaitingQuiz.questions.map((question: any) => {
-                    if (question.type === QuestionType.SHORT_ANSWER) {
-                        return "This is a short answer that requires manual marking";
-                    } else if (question.type === QuestionType.TRUE_FALSE) {
-                        return question.correctAnswer;
-                    } else if (question.type === QuestionType.MULTIPLE_CHOICE) {
-                        return question.correctAnswer;
-                    }
-                    return "";
-                });
+                const responses = awaitingQuiz.questions.map((question: any) => ({
+                    questionId: question.id,
+                    answer: question.type === QuestionType.SHORT_ANSWER ? "This is a short answer that requires manual marking" :
+                        (question.type === QuestionType.TRUE_FALSE || question.type === QuestionType.MULTIPLE_CHOICE) ? question.correctAnswer : ""
+                }));
 
                 // Submit quiz - if there are SA questions, it will go to awaiting marking
                 await callAPI('submit-quiz', {
@@ -221,12 +216,10 @@ class TestCourseGenerator {
                 if (submitCorrectAnswers) {
                     // Get quiz questions to provide correct answers
                     const completedQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
-                    const correctAnswers = completedQuiz.questions.map((question: any) => {
-                        if (question.type === QuestionType.TRUE_FALSE || question.type === QuestionType.MULTIPLE_CHOICE) {
-                            return question.correctAnswer;
-                        }
-                        return "Correct answer"; // For short answer questions
-                    });
+                    const correctAnswers = completedQuiz.questions.map((question: any) => ({
+                        questionId: question.id,
+                        answer: (question.type === QuestionType.TRUE_FALSE || question.type === QuestionType.MULTIPLE_CHOICE) ? question.correctAnswer : "Correct answer"
+                    }));
 
                     await callAPI('submit-quiz', {
                         quizAttemptId: quizAttemptId,
@@ -260,14 +253,12 @@ class TestCourseGenerator {
 
                 // Submit with wrong answers
                 const failedQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
-                const wrongAnswers = failedQuiz.questions.map((question: any) => {
-                    if (question.type === QuestionType.TRUE_FALSE) {
-                        return question.correctAnswer === 1 ? 0 : 1; // Opposite of correct
-                    } else if (question.type === QuestionType.MULTIPLE_CHOICE) {
-                        return (question.correctAnswer + 1) % question.answers.length; // Choose a wrong answer
-                    }
-                    return "Wrong answer"; // For short answer questions
-                });
+                const wrongAnswers = failedQuiz.questions.map((question: any) => ({
+                    questionId: question.id,
+                    answer: question.type === QuestionType.TRUE_FALSE ? (question.correctAnswer === 1 ? 0 : 1) :
+                        question.type === QuestionType.MULTIPLE_CHOICE ? (question.correctAnswer + 1) % question.answers.length :
+                            "Wrong answer"
+                }));
 
                 await callAPI('submit-quiz', {
                     quizAttemptId: quizAttemptId,
