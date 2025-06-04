@@ -1,6 +1,5 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
-import { adminClient } from "../_shared/adminClient.ts";
-import ApiError from "../_shared/Error/types/ApiError.ts";
+import { NotificationService } from "../_shared/Service/Services.ts";
 
 const readNotification = async (request: EdgeFunctionRequest): Promise<Response> => {
 
@@ -9,20 +8,15 @@ const readNotification = async (request: EdgeFunctionRequest): Promise<Response>
 
     request.log(`Entering readNotification for user ${userId} with notificationId ${notificationId}`);
 
-    const query = adminClient.from('notification').update({ read: true }).eq('user_id', userId); // TODO: Extract to service
     if (notificationId) {
-        query.eq('id', notificationId);
-    }
-    const { data, error } = await query;
+        await NotificationService.readNotification(userId, notificationId);
 
-    if (error) {
-        throw error;
-    }
-    if (!data) {
-        throw new ApiError(`No notifications updated`);
-    }
+        request.log(`Successfully read notification`);
+    } else {
+        const numRead: number = await NotificationService.readAllNotifications(userId);
 
-    request.log(`Successfully read ${data.length} notifications`);
+        request.log(`Successfully read ${numRead} notifications`);
+    }
 
     return null;
 }
