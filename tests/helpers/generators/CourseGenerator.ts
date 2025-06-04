@@ -188,11 +188,22 @@ class TestCourseGenerator {
 
                 // Get quiz questions to provide appropriate answers
                 const awaitingQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
-                const responses = awaitingQuiz.questions.map((question: any) => ({
-                    questionId: question.id,
-                    answer: question.type === QuestionType.SHORT_ANSWER ? "This is a short answer that requires manual marking" :
-                        (question.type === QuestionType.TRUE_FALSE || question.type === QuestionType.MULTIPLE_CHOICE) ? question.correctAnswer : ""
-                }));
+                const responses = awaitingQuiz.questions.map((question: any) => {
+                    let answer;
+                    if (question.type === QuestionType.SHORT_ANSWER) {
+                        answer = "This is a short answer that requires manual marking";
+                    } else if (question.type === QuestionType.TRUE_FALSE) {
+                        answer = question.correctAnswer;
+                    } else if (question.type === QuestionType.MULTIPLE_CHOICE) {
+                        answer = question.correctAnswer;
+                    } else {
+                        answer = "";
+                    }
+                    return {
+                        questionId: question.id,
+                        answer: answer
+                    };
+                });
 
                 // Submit quiz - if there are SA questions, it will go to awaiting marking
                 await callAPI('submit-quiz', {
@@ -216,10 +227,18 @@ class TestCourseGenerator {
                 if (submitCorrectAnswers) {
                     // Get quiz questions to provide correct answers
                     const completedQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
-                    const correctAnswers = completedQuiz.questions.map((question: any) => ({
-                        questionId: question.id,
-                        answer: (question.type === QuestionType.TRUE_FALSE || question.type === QuestionType.MULTIPLE_CHOICE) ? question.correctAnswer : "Correct answer"
-                    }));
+                    const correctAnswers = completedQuiz.questions.map((question: any) => {
+                        let answer;
+                        if (question.type === QuestionType.TRUE_FALSE || question.type === QuestionType.MULTIPLE_CHOICE) {
+                            answer = question.correctAnswer;
+                        } else {
+                            answer = "Correct answer"; // For short answer questions
+                        }
+                        return {
+                            questionId: question.id,
+                            answer: answer
+                        };
+                    });
 
                     await callAPI('submit-quiz', {
                         quizAttemptId: quizAttemptId,
@@ -253,12 +272,20 @@ class TestCourseGenerator {
 
                 // Submit with wrong answers
                 const failedQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
-                const wrongAnswers = failedQuiz.questions.map((question: any) => ({
-                    questionId: question.id,
-                    answer: question.type === QuestionType.TRUE_FALSE ? (question.correctAnswer === 1 ? 0 : 1) :
-                        question.type === QuestionType.MULTIPLE_CHOICE ? (question.correctAnswer + 1) % question.answers.length :
-                            "Wrong answer"
-                }));
+                const wrongAnswers = failedQuiz.questions.map((question: any) => {
+                    let answer;
+                    if (question.type === QuestionType.TRUE_FALSE) {
+                        answer = question.correctAnswer === 1 ? 0 : 1; // Opposite of correct
+                    } else if (question.type === QuestionType.MULTIPLE_CHOICE) {
+                        answer = (question.correctAnswer + 1) % question.answers.length; // Choose a wrong answer
+                    } else {
+                        answer = "Wrong answer"; // For short answer questions
+                    }
+                    return {
+                        questionId: question.id,
+                        answer: answer
+                    };
+                });
 
                 await callAPI('submit-quiz', {
                     quizAttemptId: quizAttemptId,
