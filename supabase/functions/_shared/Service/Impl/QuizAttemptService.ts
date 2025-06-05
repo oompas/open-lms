@@ -68,7 +68,7 @@ class _quizAttemptService extends IService {
         const course = await CourseService.getById(courseId);
 
         const maxQuizAttempts = course.max_quiz_attempts;
-        if (quizAttempts.length >= maxQuizAttempts) {
+        if (maxQuizAttempts !== null && quizAttempts.length >= maxQuizAttempts) {
             const { error } = await adminClient.from('course_attempt').update({ pass: false, end_time: timestamp }).eq('id', courseAttemptId);
             if (error) {
                 throw new Error(`Error updating course attempt to failure: ${error.message}`);
