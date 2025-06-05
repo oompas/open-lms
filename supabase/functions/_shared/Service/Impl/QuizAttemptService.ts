@@ -51,6 +51,7 @@ class _quizAttemptService extends IService {
 
         const quizAttempts = await QuizAttemptService.query('*', ['eq', 'course_attempt_id', courseAttemptId]); // All quiz attempts
         const latestQuizAttempt = this.getLatest(quizAttempts);
+        const userId = latestQuizAttempt.user_id;
         const courseId = latestQuizAttempt.course_id;
 
         // If the quiz passes, the course attempt passes
