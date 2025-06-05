@@ -46,7 +46,7 @@ const markQuizAttempt = async (request: EdgeFunctionRequest) => {
 
     request.log(`Successfully updated quiz attempt. Handling marked quiz...`);
 
-    await QuizAttemptService.handleMarkedQuiz(quizAttemptId);
+    await QuizAttemptService.handleMarkedQuiz(quizQuestionAttempts[0].course_attempt_id, timestamp);
 
     request.log(`Successfully handled marked quiz`);
 

@@ -133,7 +133,7 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
     request.log(`Updated quiz attempt`);
 
     if (autoMark) {
-        await QuizAttemptService.handleMarkedQuiz(quizAttemptId);
+        await QuizAttemptService.handleMarkedQuiz(quizAttempt.course_attempt_id, timestamp);
     } else {
         await EnrollmentService.updateStatus(userId, course.id, CourseStatus.AWAITING_MARKING);
     }
