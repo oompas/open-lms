@@ -181,19 +181,23 @@ class TestCourseGenerator {
                 const courseData = await callAPI('get-course-data', { courseId, adminView: false }, asAdmin);
                 const courseAttemptId = courseData.courseAttempt?.currentAttemptId;
 
+                // Get admin course data to get correct answers
+                const adminCourseDataAwaiting = await callAPI('get-course-data', { courseId, adminView: true }, true);
+
                 const quizAttemptID = await callAPI('start-quiz', { courseId, courseAttemptId }, asAdmin);
                 quizAttemptId = quizAttemptID;
 
-                // Get quiz questions to provide appropriate answers
+                // Get quiz questions as learner
                 const awaitingQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
+
+                // Map responses
                 const responses = awaitingQuiz.questions.map((question: any) => {
+                    const adminQuestion = adminCourseDataAwaiting.quizQuestions.find((q: any) => q.id === question.id);
                     let answer;
                     if (question.type === QuestionType.SHORT_ANSWER) {
                         answer = "This is a short answer that requires manual marking";
-                    } else if (question.type === QuestionType.TRUE_FALSE) {
-                        answer = question.correctAnswer;
-                    } else if (question.type === QuestionType.MULTIPLE_CHOICE) {
-                        answer = question.correctAnswer;
+                    } else if (question.type === QuestionType.TRUE_FALSE || question.type === QuestionType.MULTIPLE_CHOICE) {
+                        answer = adminQuestion.correctAnswer;
                     } else {
                         answer = "";
                     }
@@ -219,15 +223,21 @@ class TestCourseGenerator {
                 const courseDataCompleted = await callAPI('get-course-data', { courseId, adminView: false }, asAdmin);
                 const courseAttemptIdCompleted = courseDataCompleted.courseAttempt?.currentAttemptId;
 
+                // Get admin course data to get correct answers
+                const adminCourseDataCompleted = await callAPI('get-course-data', { courseId, adminView: true }, true);
+
                 const completedQuizAttemptId = await callAPI('start-quiz', { courseId, courseAttemptId: courseAttemptIdCompleted }, asAdmin);
                 quizAttemptId = completedQuizAttemptId;
 
-                // Get quiz questions to provide correct answers
+                // Get quiz questions as learner
                 const completedQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
+
+                // Map to correct answers using admin data
                 const correctAnswers = completedQuiz.questions.map((question: any) => {
+                    const adminQuestion = adminCourseDataCompleted.quizQuestions.find((q: any) => q.id === question.id);
                     let answer;
                     if (question.type === QuestionType.TRUE_FALSE || question.type === QuestionType.MULTIPLE_CHOICE) {
-                        answer = question.correctAnswer;
+                        answer = adminQuestion.correctAnswer;
                     } else {
                         answer = "Correct answer"; // For short answer questions
                     }
@@ -242,11 +252,16 @@ class TestCourseGenerator {
                     responses: correctAnswers
                 }, asAdmin);
 
-                // Mark the quiz attempt as passed (admin action)
-                const marks = correctAnswers
-                    .filter((answer: any) => answer.type === QuestionType.SHORT_ANSWER)
-                    .map((answer: any ) => ({ questionAttemptId: answer.id, marksAchieved: 0 })); // TODO
+                // Get the quiz attempt data to get question attempt ids
+                const quizAttemptData = await callAPI('get-quiz-attempt', { quizAttemptId: quizAttemptId }, true);
 
+                // Mark short answer questions with full marks
+                const marks = quizAttemptData.saQuestions.map((sa: any) => ({
+                    questionAttemptId: sa.questionAttemptId,
+                    marksAchieved: sa.marks
+                }));
+
+                // Mark the quiz attempt
                 await callAPI('mark-quiz-attempt', {
                     quizAttemptId: quizAttemptId,
                     marks: marks
@@ -262,17 +277,23 @@ class TestCourseGenerator {
                 const courseDataFailed = await callAPI('get-course-data', { courseId, adminView: false }, asAdmin);
                 const courseAttemptIdFailed = courseDataFailed.courseAttempt?.currentAttemptId;
 
+                // Get admin course data to get correct answers
+                const adminCourseDataFailed = await callAPI('get-course-data', { courseId, adminView: true }, true);
+
                 const failedQuizAttemptId = await callAPI('start-quiz', { courseId, courseAttemptId: courseAttemptIdFailed }, asAdmin);
                 quizAttemptId = failedQuizAttemptId;
 
-                // Submit with wrong answers
+                // Get quiz questions as learner
                 const failedQuiz = await callAPI('get-quiz', { quizAttemptId: quizAttemptId }, asAdmin);
+
+                // Map to wrong answers using admin data
                 const wrongAnswers = failedQuiz.questions.map((question: any) => {
+                    const adminQuestion = adminCourseDataFailed.quizQuestions.find((q: any) => q.id === question.id);
                     let answer;
                     if (question.type === QuestionType.TRUE_FALSE) {
-                        answer = question.correctAnswer === 1 ? 0 : 1; // Opposite of correct
+                        answer = adminQuestion.correctAnswer === 1 ? 0 : 1; // Opposite of correct
                     } else if (question.type === QuestionType.MULTIPLE_CHOICE) {
-                        answer = (question.correctAnswer + 1) % question.answers.length; // Choose a wrong answer
+                        answer = (adminQuestion.correctAnswer + 1) % question.answers.length; // Choose a wrong answer
                     } else {
                         answer = "Wrong answer"; // For short answer questions
                     }
@@ -287,14 +308,19 @@ class TestCourseGenerator {
                     responses: wrongAnswers
                 }, asAdmin);
 
-                // Mark the quiz attempt as failed (admin action)
-                const marks = wrongAnswers
-                    .filter((answer: any) => answer.type === QuestionType.SHORT_ANSWER)
-                    .map((answer: any ) => ({ questionAttemptId: answer.id, marksAchieved: 0 }));
+                // Get the quiz attempt data to get question attempt ids
+                const quizAttemptDataFailed = await callAPI('get-quiz-attempt', { quizAttemptId: quizAttemptId }, true);
 
+                // Mark short answer questions with 0 marks
+                const marksFailed = quizAttemptDataFailed.saQuestions.map((sa: any) => ({
+                    questionAttemptId: sa.questionAttemptId,
+                    marksAchieved: 0
+                }));
+
+                // Mark the quiz attempt
                 await callAPI('mark-quiz-attempt', {
                     quizAttemptId: quizAttemptId,
-                    marks: marks
+                    marks: marksFailed
                 }, true);
                 break;
 

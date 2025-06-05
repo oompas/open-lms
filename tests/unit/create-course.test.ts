@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { callAPI } from "../helpers/api.ts";
 import { sanitySkipDetailed, setupWipeDb } from "../helpers/mocha.ts";
 import { CourseStatus } from "../helpers/enum/CourseStatus.ts";
+import TestCourseGenerator from "../helpers/generators/CourseGenerator.ts";
 
 suite("create-course", function() {
 
@@ -107,6 +108,36 @@ suite("create-course", function() {
             ];
 
             await createCourseAndVerify(courseData, questionData);
+        });
+
+        test("Generate course - not enrolled", async function() {
+            const result = await TestCourseGenerator.generateCourseWithStatus({ asAdmin: true, active: true, targetStatus: CourseStatus.NOT_ENROLLED });
+            console.log(`Generate course result: ${JSON.stringify(result, null, 4)}`);
+        });
+
+        test("Generate course - enrolled", async function() {
+            const result = await TestCourseGenerator.generateCourseWithStatus({ asAdmin: true, active: true, targetStatus: CourseStatus.ENROLLED });
+            console.log(`Generate course result: ${JSON.stringify(result, null, 4)}`);
+        });
+
+        test("Generate course - in progress", async function() {
+            const result = await TestCourseGenerator.generateCourseWithStatus({ asAdmin: true, active: true, targetStatus: CourseStatus.IN_PROGRESS });
+            console.log(`Generate course result: ${JSON.stringify(result, null, 4)}`);
+        });
+
+        test("Generate course - awaiting marking", async function() {
+            const result = await TestCourseGenerator.generateCourseWithStatus({ asAdmin: true, active: true, targetStatus: CourseStatus.AWAITING_MARKING });
+            console.log(`Generate course result: ${JSON.stringify(result, null, 4)}`);
+        });
+
+        test("Generate course - completed", async function() {
+            const result = await TestCourseGenerator.generateCourseWithStatus({ asAdmin: true, active: true, targetStatus: CourseStatus.COMPLETED });
+            console.log(`Generate course result: ${JSON.stringify(result, null, 4)}`);
+        });
+
+        test("Generate course - failed", async function() {
+            const result = await TestCourseGenerator.generateCourseWithStatus({ asAdmin: true, active: true, targetStatus: CourseStatus.FAILED });
+            console.log(`Generate course result: ${JSON.stringify(result, null, 4)}`);
         });
     });
 
