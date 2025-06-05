@@ -1,5 +1,5 @@
 import IService from "../IService.ts";
-import { CourseAttemptService, EnrollmentService, QuizAttemptService } from "../Services.ts";
+import { CourseAttemptService, CourseService, EnrollmentService, QuizAttemptService } from "../Services.ts";
 import { getCurrentTimestampTz } from "../../helpers.ts";
 import { adminClient } from "../../adminClient.ts";
 import { CourseStatus } from "../../Enum/CourseStatus.ts";
