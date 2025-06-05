@@ -243,11 +243,13 @@ class TestCourseGenerator {
                 }, asAdmin);
 
                 // Mark the quiz attempt as passed (admin action)
+                const marks = correctAnswers
+                    .filter((answer: any) => answer.type === QuestionType.SHORT_ANSWER)
+                    .map((answer: any ) => ({ questionAttemptId: answer.id, marksAchieved: 0 })); // TODO
+
                 await callAPI('mark-quiz-attempt', {
                     quizAttemptId: quizAttemptId,
-                    marks: {
-
-                    }
+                    marks: marks
                 }, true);
                 break;
 
