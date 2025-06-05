@@ -9,17 +9,19 @@ class _courseAttemptService extends IService {
     /**
      * Starts a new course attempt for a given course and user
      */
-    public async startAttempt(courseId: number, userId: string) {
+    public async startAttempt(courseId: number, userId: string): Promise<number> {
         const courseAttempt = {
             course_id: courseId,
             user_id: userId
         };
 
-        const { error } = await adminClient.from(this.TABLE_NAME).insert(courseAttempt);
+        const { data, error } = await adminClient.from(this.TABLE_NAME).insert(courseAttempt).select();
 
         if (error) {
             throw new DatabaseError(`Error adding new course attempt: ${error.message}`);
         }
+
+        return data[0].id;
     }
 
     /**
