@@ -8,6 +8,7 @@ import AvailableCourse from "@/app/(main)/home/AvailableCourse.tsx";
 import { IoSchool, IoSearch, IoTimeOutline } from "react-icons/io5";
 import { AiOutlineForm } from "react-icons/ai";
 import { CourseStatus } from "@/helpers/Enums.ts";
+import { FaInfinity } from "react-icons/fa6";
 
 export default function Home() {
 
@@ -64,13 +65,12 @@ export default function Home() {
 
         const formatTime = (minTime, quizMarks) => (
             <div className="flex">
-                {minTime && (
-                    <div className="flex mr-2">
-                        <IoTimeOutline size={18} className="mr-1 mt-[2px]"/>
-                        {minTime >= 60 && `${Math.floor(minTime / 60)} hr `}
-                        {minTime % 60 !== 0 && `${minTime % 60} min`}
-                    </div>
-                )}
+                <div className="flex mr-2">
+                    <IoTimeOutline size={18} className="mr-1 mt-[2px]"/>
+                    {minTime >= 60 && `${Math.floor(minTime / 60)} hr `}
+                    {minTime % 60 !== 0 && `${minTime % 60} min`}
+                    {!minTime && <FaInfinity className={"mt-[3px] mr-1"}/>}
+                </div>
                 {quizMarks && (
                     <div className="flex">
                         <AiOutlineForm size={18} className="mr-1 mt-[2px]" />
@@ -91,7 +91,7 @@ export default function Home() {
                         description={course.description}
                         id={course.id}
                         status={isEnrolledView ? course.status : undefined}
-                        time={formatTime(course.minTime, course.total_quiz_marks)}
+                        time={formatTime(course.minTime, course.totalQuizMarks)}
                     />
                 ))}
             </div>
