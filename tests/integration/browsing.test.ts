@@ -57,7 +57,9 @@ suite("integration: browsing", function() {
 
             // 3. Learner starts the course
             const startCourseResult = await callAPI('start-course', { courseId }, false);
-            expect(startCourseResult).to.be.null;
+            expect(startCourseResult).to.be.a('number');
+            expect(Number.isInteger(startCourseResult)).to.be.true;
+            expect(startCourseResult).to.be.at.least(1);
 
             // 4. Get course data to view content
             const courseData = await callAPI('get-course-data', { courseId, adminView: false }, false);
