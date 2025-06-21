@@ -33,8 +33,10 @@ suite("start-course", function() {
      * Runs a test for valid inputs & context, ensuring the endpoint works properly
      */
     async function validCase(courseId: number, adminCall: boolean = false): Promise<void> {
-        const result = await callAPI('start-course', { courseId }, adminCall);
-        expect(result).to.be.null;
+        const startCourseResult = await callAPI('start-course', { courseId }, adminCall);
+        expect(startCourseResult).to.be.a('number');
+        expect(Number.isInteger(startCourseResult)).to.be.true;
+        expect(startCourseResult).to.be.at.least(1);
 
         // Verify the course status changed to IN_PROGRESS
         await verifyCourseStatus(courseId, CourseStatus.IN_PROGRESS, adminCall);
