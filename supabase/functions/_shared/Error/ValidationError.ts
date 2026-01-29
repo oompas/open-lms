@@ -1,4 +1,4 @@
-import ApiError from "./ApiError.ts";
+import ApiError from "./types/ApiError.ts";
 
 class ValidationError extends ApiError {
     public constructor(message: string) {

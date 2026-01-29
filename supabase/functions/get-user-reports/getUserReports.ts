@@ -1,18 +1,23 @@
 import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { toCSV } from "../_shared/helpers.ts";
 import { CourseAttemptService, EnrollmentService } from "../_shared/Service/Services.ts";
+import { getAllUsers } from "../_shared/auth.ts";
 
 const getUserReports = async (request: EdgeFunctionRequest) => {
 
-    request.log(`Entering getUserReports...`);
+    const { withAdmins } = request.getPayload();
 
-    const [userRecords, enrollments, courseAttempts] = await Promise.all([
-        request.getAllUsers(),
+    request.log(`Entering getUserReports ${withAdmins ? "with" : "without"} admin data...`);
+
+    const [userQuery, enrollments, courseAttempts] = await Promise.all([
+        getAllUsers(),
         EnrollmentService.getAllRows(),
         CourseAttemptService.getAllRows()
     ]);
 
-    request.log(`Queried ${userRecords.length} users, ${enrollments.length} enrollments, and ${courseAttempts.length} courses`);
+    const userRecords = withAdmins ? userQuery : userQuery.filter((user) => (user.app_metadata.role ?? "Learner") === "Learner");
+
+    request.log(`Queried ${userRecords.length} ${withAdmins ? "learners" : "users"}, ${enrollments.length} enrollments, and ${courseAttempts.length} courses`);
 
     const userData = userRecords.map((user) => {
 
@@ -22,9 +27,9 @@ const getUserReports = async (request: EdgeFunctionRequest) => {
 
         return {
             'User ID': user.id,
-            'Name': user.user_metadata.name,
+            'Name': user.user_metadata.display_name,
             'Email': user.email,
-            'Role': user.user_metadata.role,
+            'Role': user.app_metadata.role ?? "Learner",
             'Account Disabled?': user.disabled ? "Yes" : "No",
 
             'Email Verified?': user.emailVerified ? "Yes" : "No",

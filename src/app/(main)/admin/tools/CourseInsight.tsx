@@ -7,6 +7,7 @@ export default function CourseInsight({
     courseData: {
         id: string,
         name: string,
+        active: boolean,
         numEnrolled: number,
         numComplete: number,
         avgTime: number,
@@ -16,7 +17,7 @@ export default function CourseInsight({
     return (
         <tr key={courseData.id} className="border">
             <td className="border p-2">
-                <Link href={"/admin/course/" + courseData.id + "/insights"} className="flex flex-row items-center hover:opacity-60">
+                <Link href={"/admin/course/" + courseData.id + "/insights"} className={`flex flex-row items-center hover:opacity-60 ${!courseData.active && "text-gray-400"}`}>
                     {courseData.name}
                     <LuExternalLink className="ml-1" color="rgb(153 27 27" />
                 </Link>
@@ -28,7 +29,7 @@ export default function CourseInsight({
                 {!courseData.avgTime ? "-" : courseData.avgTime + " minutes"}
             </td>
             <td className="border p-2">
-                {!courseData.avgQuizScore ? "-" : courseData.avgQuizScore + "%"}
+                {!courseData.quizPassRate ? "-" : courseData.quizPassRate + "%"}
             </td>
         </tr>
     )

@@ -1,8 +1,10 @@
 import { z, ZodError, ZodSchema } from "npm:zod@3.23.8";
 import ValidationError from "./Error/ValidationError.ts";
-import ApiError from "./Error/ApiError.ts";
+import ApiError from "./Error/types/ApiError.ts";
 import { adminClient } from "./adminClient.ts";
 import PermissionError from "./Error/PermissionError.ts";
+import { getUserFromReq } from "./auth.ts";
+import ErrorObject from "./Error/types/ErrorData.ts";
 
 export interface RunParams {
     metaUrl: string;
@@ -10,7 +12,6 @@ export interface RunParams {
     schemaRecord: Record<string, z.ZodTypeAny>;
     endpointFunction: (request: EdgeFunctionRequest) => Promise<any>;
     adminOnly?: boolean;
-    disableAuthCheck?: boolean;
 }
 
 class EdgeFunctionRequest {
@@ -35,9 +36,8 @@ class EdgeFunctionRequest {
      * @param schemaRecord Record of fields this request should have
      * @param endpointFunction Function to run the business logic for this endpoint
      * @param adminOnly Throws an error if this endpoint can only be called by admins/developers
-     * @param disableAuthCheck Doesn't verify requesting user if true (sets requestUser to null)
      */
-    public static async run({ metaUrl, req, schemaRecord, endpointFunction, adminOnly, disableAuthCheck }: RunParams) {
+    public static async run({ metaUrl, req, schemaRecord, endpointFunction, adminOnly }: RunParams) {
 
         const token = req.headers.get('Authorization')?.replace('Bearer ', '');
         const request: EdgeFunctionRequest = new EdgeFunctionRequest(metaUrl, req, schemaRecord, token);
@@ -47,7 +47,7 @@ class EdgeFunctionRequest {
                 return request.OptionsRsp();
             }
 
-            await request.validateRequest(adminOnly ?? false, disableAuthCheck ?? false);
+            await request.validateRequest(adminOnly ?? false);
 
             const rsp = await endpointFunction(request);
 
@@ -82,19 +82,19 @@ class EdgeFunctionRequest {
     /**
      * Gets, stores and strictly validates the payload against the given schema, as well as getting the requesting user
      */
-    public async validateRequest(adminOnly: boolean, disableAuthCheck: boolean): Promise<Record<string, any>> {
+    public async validateRequest(adminOnly: boolean): Promise<Record<string, any>> {
 
         const [payload, requestUser] = await Promise.all([
             this.req.json(),
-            disableAuthCheck ? null : this.getUserFromReq()
+            getUserFromReq(this.token)
         ]);
 
         this.payload = payload;
         this.requestUser = requestUser;
-        this.isAdmin = requestUser?.user_metadata.role === "Admin" || requestUser?.user_metadata.role === "Developer";
+        this.isAdmin = requestUser.app_metadata?.role === "Administrator" || requestUser.app_metadata?.role === "Developer";
 
-        if (adminOnly && !this.isAdmin) {
-            throw new PermissionError("Only administrators can call this endpoint");
+        if (adminOnly) {
+            this.validateAdmin(`Only administrators may call ${this.getEndpoint()}`);
         }
 
         // Validate payload
@@ -130,7 +130,7 @@ class EdgeFunctionRequest {
         }
 
         // Log error to database + server console
-        const errObject = {
+        const errorObject: ErrorObject = {
             endpoint: this.getEndpoint(),
             request_uuid: this.getUUID(),
             type: errorType,
@@ -140,67 +140,27 @@ class EdgeFunctionRequest {
             stack_trace: err.stack
         };
 
-        const { error } = await adminClient.from('error_log').insert(errObject);
+        const { error } = await adminClient.from('error_log').insert(errorObject);
         if (error) {
             this.logErr(`Error logging error: ${JSON.stringify(error)}`, `HandleEndpointError`);
         }
 
-        this.logErr(`Error caught: ${JSON.stringify(errObject)}`, `HandleEndpointError`);
+        this.logErr(`Error caught: ${JSON.stringify(errorObject)}`, `HandleEndpointError`);
 
-        // Just return the uuid - don't expose internal data
-        return this._makeResponse(this.getUUID(), statusCode);
+        // Omit stack trace details from returned value
+        const { stack_trace, ...errorWithoutStack } = errorObject;
+
+        return this._makeResponse({ error: errorWithoutStack }, statusCode);
     }
 
     /**
-     * Get the user object from the edge function request
-     * @returns The user object, or null if no user authorization in the request
+     * Throws an error if this user isn't an administrator
+     * @param message Error message to throw
      */
-    private getUserFromReq = async (): Promise<object> => {
-        const { data: { user }, error } = await adminClient.auth.getUser(this.token);
-
-        if (error) {
-            throw new Error(`Error getting user in getUserFromReq: ${error.message}`);
-        }
-
-        return user;
-    }
-
-    /**
-     * Gets a user object that has the specific ID. Note this should only be done by admins
-     * @param userId User ID of the user to get
-     * @param adminCheck true to verify the requesting user is an admin before getting user
-     */
-    public getUserById = async (userId: string, adminCheck: boolean = true): Promise<object> => {
-
-        if (adminCheck && !this.isAdmin) {
-            throw new ApiError("Only admins can get specific users by id - this call shouldn't happen");
-        }
-
-        const { data, error } = await adminClient.auth.admin.getUserById(userId);
-
-        if (error) {
-            throw new ApiError(error.message);
-        }
-
-        return data.user;
-    }
-
-    /**
-     * Gets all users on the app
-     */
-    public getAllUsers = async (): Promise<any[]> => {
-
+    public validateAdmin = (message: string): void => {
         if (!this.isAdmin) {
-            throw new ApiError("Only admins can get all users - this call shouldn't happen");
+            throw new PermissionError(message);
         }
-
-        const { data, error } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
-
-        if (error) {
-            throw ApiError(error.message);
-        }
-
-        return data.users;
     }
 
     // Helper for response construction

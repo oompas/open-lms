@@ -1,7 +1,7 @@
 import IService from "../IService.ts";
-import { CourseStatus } from "./CourseService.ts";
 import { adminClient } from "../../adminClient.ts";
 import DatabaseError from "../../Error/DatabaseError.ts";
+import { CourseStatus } from "../../Enum/CourseStatus.ts";
 
 class _enrollmentService extends IService {
 

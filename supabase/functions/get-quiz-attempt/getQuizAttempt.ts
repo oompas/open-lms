@@ -6,6 +6,7 @@ import {
     QuizQuestionService
 } from "../_shared/Service/Services.ts";
 import { QuestionType } from "../_shared/Enum/QuestionType.ts";
+import { getUserById } from "../_shared/auth.ts";
 
 const getQuizAttempt = async (request: EdgeFunctionRequest) => {
 
@@ -18,8 +19,8 @@ const getQuizAttempt = async (request: EdgeFunctionRequest) => {
     request.log(`Queried quiz attempt: ${JSON.stringify(quizAttempt)}`);
 
     const [course, user, questionAttempts, questions] = await Promise.all([
-        CourseAttemptService.getById(quizAttempt.course_id),
-        request.getUserById(quizAttempt.user_id),
+        CourseAttemptService.getById(quizAttempt.course_attempt_id),
+        getUserById(quizAttempt.user_id),
         QuizQuestionAttemptService.query('*', ['eq', 'quiz_attempt_id', quizAttemptId]),
         QuizQuestionService.query('*', ['eq', 'course_id', quizAttempt.course_id])
     ]);
@@ -56,7 +57,7 @@ const getQuizAttempt = async (request: EdgeFunctionRequest) => {
 
     return {
         courseName: course.name,
-        submitterName: user.user_metadata.name,
+        submitterName: user.user_metadata.display_name,
         completionTime: new Date(quizAttempt.end_time),
         saQuestions: saQuestions,
         otherQuestions: otherQuestions,

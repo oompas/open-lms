@@ -1,0 +1,18 @@
+{
+  "scriptsOrder": [
+    "clean_database.sql",
+    "create_tables.sql",
+    "create_indices.sql",
+    "create_test_mutex.sql",
+    "secure_database.sql",
+    "create_role_functions.sql",
+    "create_test_db_funcs.sql",
+    "keep_alive_cron.sql",
+    "insert_dummy_data.sql"
+  ],
+  "ignoreScripts": {
+    "PROD": ["insert_dummy_data.sql", "create_test_db_funcs.sql", "create_test_mutex.sql"],
+    "DEV": ["create_test_db_funcs.sql", "create_test_mutex.sql"],
+    "TEST": ["insert_dummy_data.sql"]
+  }
+}

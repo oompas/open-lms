@@ -11,7 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     // Route user back to learner homepage if they're not an admin/dev
     useEffect(() => {
         if (typeof window !== 'undefined' && document.readyState === 'complete') {
-            const role = session?.user?.user_metadata?.role;
+            const role = session?.user?.app_metadata?.role ?? "Learner";
             if (role === 'Learner') {
                 router.push('/home');
             }

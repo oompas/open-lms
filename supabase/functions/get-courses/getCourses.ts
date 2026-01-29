@@ -33,7 +33,7 @@ const getCourses = async (request: EdgeFunctionRequest): Promise<object[]> => {
                 description: course.description,
                 status: course.enrolled_course[0]?.status ?? CourseStatus.NOT_ENROLLED,
                 minTime: course.min_time,
-                total_quiz_marks: course.total_quiz_marks,
+                totalQuizMarks: course.total_quiz_marks,
             }
         });
 

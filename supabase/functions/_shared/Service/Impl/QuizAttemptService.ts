@@ -1,7 +1,5 @@
 import IService from "../IService.ts";
-import EdgeFunctionRequest from "../../EdgeFunctionRequest.ts";
-import { CourseAttemptService, EnrollmentService, QuizAttemptService } from "../Services.ts";
-import { getCurrentTimestampTz } from "../../helpers.ts";
+import { CourseAttemptService, CourseService, EnrollmentService, QuizAttemptService } from "../Services.ts";
 import { adminClient } from "../../adminClient.ts";
 import { CourseStatus } from "../../Enum/CourseStatus.ts";
 
@@ -46,40 +44,38 @@ class _quizAttemptService extends IService {
      * Note the quiz attempt must have all questions marked (can't have unmarked short answers), and the 'score' and
      * 'pass' fields are defined too. This doesn't update the quiz attempt, it (possibly) updates the course attempt
      *
-     * @param request Edge function request (for logging)
-     * @param quizAttemptId ID of the marked quiz attempt to handle
+     * @param courseAttemptId ID of the latest course attempt
+     * @param timestamp Timestamp at the start of the calling endpoint (use getCurrentTimestampTz)
      */
-    public async handleMarkedQuiz(request: EdgeFunctionRequest, quizAttemptId: number) {
-        const timestamp = getCurrentTimestampTz();
+    public async handleMarkedQuiz(courseAttemptId: number, timestamp: string) {
 
-        const quizAttempt = await QuizAttemptService.getById(quizAttemptId);
-        const courseAttempt = await CourseAttemptService.getById(quizAttempt.course_attempt_id);
+        const quizAttempts = await QuizAttemptService.query('*', ['eq', 'course_attempt_id', courseAttemptId]); // All quiz attempts
+        const latestQuizAttempt = this.getLatest(quizAttempts);
+        const userId = latestQuizAttempt.user_id;
+        const courseId = latestQuizAttempt.course_id;
 
         // If the quiz passes, the course attempt passes
-        if (quizAttempt.pass === true) {
-            const { data, error } = await adminClient.from('course_attempt').update({ pass: true, end_time: timestamp }).eq('id', courseAttempt.id);
-            await EnrollmentService.updateStatus(courseAttempt.user_id, courseAttempt.course_id, CourseStatus.COMPLETED);
-
+        if (latestQuizAttempt.pass === true) {
+            const { error } = await adminClient.from('course_attempt').update({ pass: true, end_time: timestamp }).eq('id', courseAttemptId);
             if (error) {
-                request.log(`Error updating course attempt to pass: ${error.message}`);
                 throw new Error(`Error updating course attempt to pass: ${error.message}`);
             }
 
+            await EnrollmentService.updateStatus(userId, courseId, CourseStatus.COMPLETED);
             return;
         }
 
         // If the quiz attempt fails, check if they're out of attempts (fail the course), otherwise they can try again
-        const course = await CourseService.getById(quizAttempt.course_id);
+        const course = await CourseService.getById(courseId);
 
         const maxQuizAttempts = course.max_quiz_attempts;
-        if (quizAttemptQuery.length >= maxQuizAttempts) {
-            const { data, error } = await adminClient.from('course_attempt').update({ pass: false, end_time: timestamp }).eq('id', courseAttempt.id);
-            await EnrollmentService.updateStatus(courseAttempt.user_id, courseAttempt.course_id, CourseStatus.FAILED);
-
+        if (maxQuizAttempts !== null && quizAttempts.length >= maxQuizAttempts) {
+            const { error } = await adminClient.from('course_attempt').update({ pass: false, end_time: timestamp }).eq('id', courseAttemptId);
             if (error) {
-                request.log(`Error updating course attempt to failure: ${error.message}`);
                 throw new Error(`Error updating course attempt to failure: ${error.message}`);
             }
+
+            await EnrollmentService.updateStatus(userId, courseId, CourseStatus.FAILED);
         }
     }
 }

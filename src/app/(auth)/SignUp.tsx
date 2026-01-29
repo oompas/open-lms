@@ -1,25 +1,132 @@
-import AuthForm from "@/components/AuthForm.tsx";
-import Button from "@/components/Button.tsx";
+import { useState } from 'react';
 import { callAPI, signUp } from "@/helpers/supabase.ts";
-import React, { useState } from "react";
+import Button from "@/components/Button.tsx";
+import TextField from "@/components/TextField.tsx";
+import { validateEmailAndLength, validatePassword } from "@/components/TextField";
+import { FiAlertCircle, FiInfo } from 'react-icons/fi';
 
 export default function SignUp({ setIsSignIn }) {
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
     const [showVerifyEmailPopup, setShowVerifyEmailPopup] = useState(false);
 
+    const [emailValidationMessage, setEmailValidationMessage] = useState("");
+    const [passwordValidationMessages, setPasswordValidationMessages] = useState<string[]>([]);
+
+    const [isNameInvalid, setIsNameInvalid] = useState(false);
+    const [isEmailInvalid, setIsEmailInvalid] = useState(false);
+    const [isPasswordInvalid, setIsPasswordInvalid] = useState(false);
+
+    const [emailErrorVisible, setEmailErrorVisible] = useState(false);
+    const [passwordErrorVisible, setPasswordErrorVisible] = useState(false);
+    const [nameErrorVisible, setNameErrorVisible] = useState(false);
+    const [passwordInfoVisible, setPasswordInfoVisible] = useState(false);
+
+    const handleNameChange = (newName: string) => {
+        setName(newName);
+        setIsNameInvalid(false); // Reset error on change
+    };
+
+    const handleEmailChange = (newEmail: string) => {
+        setEmail(newEmail);
+        setIsEmailInvalid(false); // Reset error on change
+        setEmailValidationMessage(validateEmailAndLength(newEmail));
+    };
+
+    const handlePasswordChange = (newPass: string) => {
+        setPassword(newPass);
+        setIsPasswordInvalid(false); // Reset error on change
+        setPasswordValidationMessages(validatePassword(newPass));
+    };
+
+    const handleEmailIconMouseEnter = () => {
+        if (isEmailInvalid) {
+            setEmailErrorVisible(true);
+        }
+    };
+
+    const handleEmailIconMouseLeave = () => {
+        setEmailErrorVisible(false);
+    };
+
+    const handlePasswordIconMouseEnter = () => {
+        if (isPasswordInvalid) {
+            setPasswordErrorVisible(true);
+        }
+    };
+
+    const handlePasswordIconMouseLeave = () => {
+        setPasswordErrorVisible(false);
+    };
+
+    const handleNameIconMouseEnter = () => {
+        if (isNameInvalid) {
+            setNameErrorVisible(true);
+        }
+    };
+
+    const handleNameIconMouseLeave = () => {
+        setNameErrorVisible(false);
+    };
+
+    const handlePasswordInfoMouseEnter = () => {
+        if (!isPasswordInvalid && passwordValidationMessages.length === 0) {
+            setPasswordInfoVisible(true);
+        }
+    };
+
+    const handlePasswordInfoMouseLeave = () => {
+        setPasswordInfoVisible(false);
+    };
+
     const submitSignUp = async () => {
-        const { data, error } = await signUp(email, password);
+        setIsNameInvalid(false);
+        setIsEmailInvalid(false);
+        setIsPasswordInvalid(false);
+
+        let hasError = false;
+
+        if (!name.trim()) {
+            setIsNameInvalid(true);
+            setNameErrorVisible(true);
+            hasError = true;
+        }
+
+        const emailError = validateEmailAndLength(email);
+        if (emailError) {
+            setIsEmailInvalid(true);
+            setEmailValidationMessage(emailError);
+            setEmailErrorVisible(true);
+            hasError = true;
+        }
+
+        const passwordErrors = validatePassword(password);
+        if (password.length < 10 || passwordErrors.length > 0) {
+            setIsPasswordInvalid(true);
+            setPasswordValidationMessages([...passwordErrors, "Password must be at least 10 characters long and meet all requirements."]);
+            setPasswordErrorVisible(true);
+            hasError = true;
+        }
+
+        if (hasError) {
+            return;
+        }
+
+        const { data, error } = await signUp(email, password, name);
         if (error) {
-            console.error(`Error signing up user: ${error}`);
+            console.error("Error signing up:", error.message);
+            if (error.message.includes("email address is already in use")) {
+                setIsEmailInvalid(true);
+                setEmailValidationMessage("This email address is already in use.");
+                setEmailErrorVisible(true);
+            }
         } else {
-            callAPI('setup-account', { name: name, userId: data.user.id });
+            console.log("User signed up:", data);
             setShowVerifyEmailPopup(true);
         }
-    }
+    };
 
     const VerifyEmailPopup = () => {
         return (
@@ -36,49 +143,99 @@ export default function SignUp({ setIsSignIn }) {
     return (
         <>
             <div className="text-xl font-bold mb-4">Create Account</div>
-            <AuthForm
-                email={email}
-                setEmail={setEmail}
-                password={password}
-                setPass={setPassword}
-                name={name}
-                setName={setName}
-                showName={true}
-                isSignUpPage={true}
-            />
-            {/*{isInvalidName && (*/}
-            {/*    <p className="text-red-500 mt-2" style={{maxWidth: "300px"}}>*/}
-            {/*        Name must be at least one character long.*/}
-            {/*    </p>*/}
-            {/*)}*/}
-            {/*{isInvalidEmail && (*/}
-            {/*    <p className="text-red-500 mt-2" style={{maxWidth: "300px"}}>*/}
-            {/*        Invalid email format.*/}
-            {/*    </p>*/}
-            {/*)}*/}
-            {/*{isInvalidPass && (*/}
-            {/*    <p className="text-red-500 mt-2" style={{maxWidth: "300px"}}>*/}
-            {/*        Password must be at least ten characters long, contain at least one uppercase letter, one*/}
-            {/*        lowercase letter, one number, and one special character.*/}
-            {/*    </p>*/}
-            {/*)}*/}
-
+            <div className="flex flex-col space-y-4">
+                <div className="flex flex-col relative">
+                    <p className="mb-1 text-md">Full Name</p>
+                    <TextField
+                        text={name || ""}
+                        onChange={handleNameChange}
+                        placeholder="John Doe"
+                        hidden={false}
+                        isInvalid={isNameInvalid}
+                    />
+                    {isNameInvalid && (
+                        <div
+                            className="absolute right-2 top-[3.15rem] transform -translate-y-1/2 cursor-pointer"
+                            onMouseEnter={handleNameIconMouseEnter}
+                            onMouseLeave={handleNameIconMouseLeave}
+                        >
+                            <FiAlertCircle className="text-red-500" size={25} />
+                        </div>
+                    )}
+                    {nameErrorVisible && isNameInvalid && (
+                        <div className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded shadow-md z-10">
+                            Please enter your name.
+                        </div>
+                    )}
+                </div>
+                <div className="flex flex-col relative">
+                    <p className="mb-1 text-md">Email</p>
+                    <TextField
+                        text={email}
+                        onChange={handleEmailChange}
+                        placeholder="name@email.com"
+                        hidden={false}
+                        isInvalid={isEmailInvalid}
+                    />
+                    {isEmailInvalid && (
+                        <div
+                            className="absolute right-2 top-[3.15rem] transform -translate-y-1/2 cursor-pointer"
+                            onMouseEnter={handleEmailIconMouseEnter}
+                            onMouseLeave={handleEmailIconMouseLeave}
+                        >
+                            <FiAlertCircle className="text-red-500" size={25} />
+                        </div>
+                    )}
+                    {emailErrorVisible && isEmailInvalid && (
+                        <div className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded shadow-md z-10">
+                            {emailValidationMessage}
+                        </div>
+                    )}
+                </div>
+                <div className="flex flex-col relative">
+                    <p className="mb-1 text-md">Password</p>
+                    <TextField
+                        text={password}
+                        onChange={handlePasswordChange}
+                        placeholder="**********"
+                        hidden={true}
+                        isInvalid={isPasswordInvalid}
+                    />
+                    {isPasswordInvalid && (
+                        <div
+                            className="absolute right-2 top-[3.15rem] transform -translate-y-1/2 cursor-pointer"
+                            onMouseEnter={handlePasswordIconMouseEnter}
+                            onMouseLeave={handlePasswordIconMouseLeave}
+                        >
+                            <FiAlertCircle className="text-red-500" size={25} />
+                        </div>
+                    )}
+                    {passwordErrorVisible && isPasswordInvalid && (
+                        <div className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded shadow-md z-10 max-h-14 overflow-y-auto">
+                            {passwordValidationMessages.map((msg, index) => (
+                                <div key={index}>{msg}</div>
+                            ))}
+                        </div>
+                    )}
+                    {!isPasswordInvalid && passwordValidationMessages.length === 0 && (
+                        <div
+                            className="absolute right-2 top-[3.15rem] transform -translate-y-1/2 cursor-pointer text-gray-500"
+                            onMouseEnter={handlePasswordInfoMouseEnter}
+                            onMouseLeave={handlePasswordInfoMouseLeave}
+                        >
+                            <FiInfo size={25} color={'#0d87de'}/>
+                        </div>
+                    )}
+                    {passwordInfoVisible && !isPasswordInvalid && passwordValidationMessages.length === 0 && (
+                        <div className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-gray-100 border border-gray-300 text-gray-700 px-3 py-1 rounded shadow-md z-10">
+                            Password must be at least 10 characters long, include uppercase, lowercase, numbers, and special characters.
+                        </div>
+                    )}
+                </div>
+            </div>
             <div className="flex justify-between mt-6">
-                <Button
-                    text="Sign In"
-                    onClick={() => setIsSignIn(true)}
-                    style="border-[3px] border-red-800"
-                    icon="arrow-back"
-                    iconBefore
-                />
-
-                <Button
-                    text="Sign Up"
-                    onClick={() => submitSignUp()}
-                    style=""
-                    icon="arrow"
-                    filled
-                />
+                <Button text="Sign In" onClick={() => setIsSignIn(true)} style="border-[3px] border-red-800" icon="arrow-back" iconBefore />
+                <Button text="Sign Up" onClick={() => submitSignUp()} style="" icon="arrow" filled />
             </div>
             {showVerifyEmailPopup && <VerifyEmailPopup />}
         </>

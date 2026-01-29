@@ -1,4 +1,4 @@
-import ApiError from "./ApiError.ts";
+import ApiError from "./types/ApiError.ts";
 
 class InputError extends ApiError {
     public constructor(message: string) {

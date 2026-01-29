@@ -1,0 +1,90 @@
+import { createClient } from "@supabase/supabase-js";
+
+class TestMutex {
+
+    constructor(environment, testTimeout, testType) {
+        this.client = createClient(process.env.TEST_SUPABASE_URL, process.env.TEST_SUPABASE_ANON_KEY);
+
+        this.executionId = crypto.randomUUID();
+        this.environment = environment;
+        this.testType = testType
+
+        this.testTimeoutMinutes = testTimeout;
+        this.pollIntervalSeconds = 10;
+        this.maxRetryAttempts = 3600 / this.pollIntervalSeconds;
+
+        this.passed = true;
+    }
+
+    /**
+     * Try to acquire the mutex, retrying if necessary
+     * @returns {Promise<boolean>} True if mutex acquired, false otherwise
+     */
+    async acquire() {
+        console.log(`[TestMutex] Trying to acquire mutex for execution ${this.executionId} in ${this.environment}`);
+
+        let attempts = 0;
+        while (attempts < this.maxRetryAttempts) {
+            // Try to acquire the mutex
+            const { data, error } = await this.client.rpc('try_acquire_mutex', {
+                p_execution_id: this.executionId,
+                p_environment: this.environment,
+                p_duration_minutes: this.testTimeoutMinutes,
+                p_test_type: this.testType
+            });
+
+            if (error) {
+                console.error('[TestMutex] Error trying to acquire mutex:', error);
+                throw error;
+            }
+
+            if (data !== true && data !== false) {
+                console.error(`[TestMutex] Invalid value returned from try_acquire_mutex: ${data}`);
+                throw error;
+            }
+
+            if (data === true) {
+                console.log(`[TestMutex] Mutex acquired and verified for execution ${this.executionId}\n`);
+                return true;
+            }
+
+            // Mutex not available, wait and try again
+            attempts++;
+            console.log(`[TestMutex] Mutex not available, waiting ${this.pollIntervalSeconds} seconds... (attempt ${attempts}/${this.maxRetryAttempts})`);
+            await new Promise(resolve => setTimeout(resolve, this.pollIntervalSeconds * 1000));
+        }
+
+        throw new Error(`[TestMutex] Failed to acquire mutex after ${attempts} attempts\n`);
+    }
+
+    /**
+     * Flags that a test has failed
+     * Note: Failed as in the test runner ran fine (didn't crash), but a test failed
+     */
+    testFailed() {
+        this.passed = false;
+    }
+
+    /**
+     * Release the mutex
+     * @returns {Promise<boolean>} True if mutex was released, false if it wasn't found
+     */
+    async release() {
+        console.log(`[TestMutex] Releasing mutex for execution ${this.executionId}`);
+
+        const { error } = await this.client.rpc('complete_test_run', {
+            p_execution_id: this.executionId,
+            p_passed: this.passed
+        });
+
+        if (error) {
+            console.error('[TestMutex] Error releasing mutex:', error);
+            throw error;
+        }
+
+        console.log(`[TestMutex] Mutex released for execution ${this.executionId}`);
+        return true;
+    }
+}
+
+export default TestMutex;

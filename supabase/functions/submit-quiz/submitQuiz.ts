@@ -3,7 +3,8 @@ import { getCurrentTimestampTz } from "../_shared/helpers.ts";
 import {
     CourseService,
     EnrollmentService,
-    QuizAttemptService, QuizQuestionAttemptService,
+    QuizAttemptService,
+    QuizQuestionAttemptService,
     QuizQuestionService
 } from "../_shared/Service/Services.ts";
 import { CourseStatus } from "../_shared/Enum/CourseStatus.ts";
@@ -14,6 +15,10 @@ import { QuestionType } from "../_shared/Enum/QuestionType.ts";
 
 const submitQuiz = async (request: EdgeFunctionRequest) => {
 
+    /**
+     * Step 1: Get request data and the current timestamp
+     */
+
     const timestamp = getCurrentTimestampTz();
 
     request.log(`Starting submitQuiz with timestamp ${timestamp}`);
@@ -22,6 +27,11 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
     const { quizAttemptId, responses } = request.getPayload();
 
     request.log(`Request user id: ${userId} Quiz attempt id: ${quizAttemptId} Responses: ${JSON.stringify(responses)}`);
+
+
+    /**
+     * Step 2: Query course and quiz data. Validate user permissions and input
+     */
 
     const quizAttempt = await QuizAttemptService.getById(quizAttemptId);
 
@@ -47,7 +57,11 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
 
     request.log(`Responses verification passed!`);
 
-    // Mark quiz questions
+
+    /**
+     * Step 3: Build quiz question attempt objects and mark the quiz
+     */
+
     let marksAchieved = 0;
     let autoMark = true;
     const quizQuestionAttempts = quizQuestions.map((q) => {
@@ -78,15 +92,37 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
             marks_achieved: marks
         };
     });
-    if (quizQuestionAttempts instanceof Response) return quizQuestionAttempts;
+
+
+    /**
+     * Step 4: Add question attempts to the database, update question stats
+     */
+
+    request.log(`Constructed ${quizQuestionAttempts.length} question attempt objects, inserting to the database...`);
 
     await QuizQuestionAttemptService.insert(quizQuestionAttempts);
 
-    if (marksAchieved >= course.min_quiz_score) {
-        autoMark = true; // If the user gets enough marks to pass without the short answers, pass them
+    request.log(`Updating question answer statistics...`);
+
+    const questionData = {};
+    quizQuestionAttempts.filter(q => q.type !== QuestionType.SHORT_ANSWER).map((attempt) => {
+        const questionId = attempt.quiz_question_id;
+        questionData[questionId] = quizQuestions.find(q => q.id === questionId).answers[attempt.response];
+    });
+
+    await QuizQuestionService.incrementQuestionStats(questionData);
+
+
+    /**
+     * Step 5: Update quiz attempt now its marked (end time, status, etc)
+     */
+
+    if (!autoMark && marksAchieved >= course.min_quiz_score) {
+        autoMark = true;
+
+        request.log(`User achieved enough marks to pass without short answer questions!`);
     }
 
-    // Update quiz attempt
     const update = {
         end_time: timestamp,
         ...(autoMark && { pass: marksAchieved >= course.min_quiz_score }),
@@ -94,12 +130,15 @@ const submitQuiz = async (request: EdgeFunctionRequest) => {
     };
     await QuizAttemptService.updateById(quizAttemptId, update);
 
-    // Handle quiz marked or awaiting marking
+    request.log(`Updated quiz attempt`);
+
     if (autoMark) {
-        await QuizAttemptService.handleMarkedQuiz(quizAttemptId);
+        await QuizAttemptService.handleMarkedQuiz(quizAttempt.course_attempt_id, timestamp);
     } else {
         await EnrollmentService.updateStatus(userId, course.id, CourseStatus.AWAITING_MARKING);
     }
+
+    request.log(`Handled marked quiz`);
 
     return null;
 }

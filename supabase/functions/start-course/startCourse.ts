@@ -9,7 +9,7 @@ const startCourse = async (request: EdgeFunctionRequest): Promise<any> => {
 
     request.log(`Entered startCourse with userId ${userId} and courseId ${courseId}`);
 
-    await CourseAttemptService.startAttempt(courseId, userId);
+    const courseAttemptId = await CourseAttemptService.startAttempt(courseId, userId);
 
     request.log(`Successfully started course attempt`);
 
@@ -17,7 +17,7 @@ const startCourse = async (request: EdgeFunctionRequest): Promise<any> => {
 
     request.log(`Successfully updated course status to IN_PROGRESS`);
 
-    return null;
+    return courseAttemptId;
 }
 
 export default startCourse;

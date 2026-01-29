@@ -11,9 +11,8 @@ const sendCourseHelp = async (request: EdgeFunctionRequest) => {
     const user = request.getRequestUser();
 
     const course = await CourseService.getById(courseId);
-    const courseCreator = await request.getUserById(course.user_id, false);
 
-    request.log(`Queried course (${JSON.stringify(course)}) and course creator ${courseCreator.email}`);
+    request.log(`Queried course (${JSON.stringify(course)}) and course creator ${course.user_email}`);
 
     const subject = `Open LMS User Request For Course ${course.name}`;
     const body = `
@@ -30,7 +29,7 @@ const sendCourseHelp = async (request: EdgeFunctionRequest) => {
               </header>
               <section style="margin-bottom: 20px;">
                   <h2 style="font-size: 24px; color: #333333; text-align: center">User request for Course "${course.name}"</h2>
-                  <p style="font-size: 16px; color: #555;">Request info: <br> Name: ${user.user_metadata.name} <br> Email: ${user.email} <br> ID: ${user.id} <br> </p>
+                  <p style="font-size: 16px; color: #555;">Request info: <br> Name: ${user.user_metadata.display_name} <br> Email: ${user.email} <br> ID: ${user.id} <br> </p>
                   <p style="font-size: 16px; color: #555;">User request: ${feedback}</p>
               </section>
               <footer style="font-size: 12px; color: #666666; text-align: center;">
@@ -43,7 +42,7 @@ const sendCourseHelp = async (request: EdgeFunctionRequest) => {
 
     request.log(`Sending email to...`);
 
-    await sendEmail(request, courseCreator.email, subject, body);
+    await sendEmail(request, course.user_email, subject, body);
 
     request.log(`Email sent!`);
 

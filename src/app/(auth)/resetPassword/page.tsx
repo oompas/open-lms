@@ -26,7 +26,7 @@ const ResetPasswordPage = () => {
         }
     }, []);
 
-    const handleResetPassword = async (e: React.FormEvent) => {
+    const handleResetPassword = async () => {
         setMessage('');
 
         if (!newPassword) {

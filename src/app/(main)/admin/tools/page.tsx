@@ -6,15 +6,13 @@ import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import TextField from "@/components/TextField";
-import { downloadZip } from "client-zip";
 import AdminInsight from "@/app/(main)/admin/tools/AdminInsight";
 import { callAPI } from "@/helpers/supabase.ts";
 import { useAsync } from "react-async-hook";
-import { BsDownload } from "react-icons/bs";
 import { FiDownload } from "react-icons/fi";
-import { IoAdd, IoPersonAdd, IoSearch } from "react-icons/io5";
-import { IoMdAdd } from "react-icons/io";
+import { IoPersonAdd, IoSearch } from "react-icons/io5";
 import { MdAdd } from "react-icons/md";
+import Checkbox from "@/components/Checkbox.tsx";
 
 export default function Tools() {
 
@@ -33,6 +31,7 @@ export default function Tools() {
     const [userSearch, setUserSearch] = useState("");
     const [inviteEmail, setInviteEmail] = useState("");
     const [csvEmails, setCsvEmails] = useState<string[]>([]);
+    const [includeAdminsReports, setIncludeAdminsReports] = useState<boolean>(true);
 
     const getQuizzesToMark = () => {
         if (adminInsights.loading) {
@@ -135,7 +134,7 @@ export default function Tools() {
                             <th className="py-1">Course Name</th>
                             <th className="py-1">Learners Completed</th>
                             <th className="py-1">Average Completion Time</th>
-                            <th className="py-1">Average Quiz Score</th>
+                            <th className="py-1">Quiz Pass Rate</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -190,24 +189,16 @@ export default function Tools() {
 
     const downloadCourseReports = async () => {
         await callAPI('get-course-reports')
-            .then(async (response: { data: { courses: string, quizQuestions: string, courseAttempts: string, quizAttempts: string, quizQuestionAttempts: string } }) => {
+            .then(async (response: { data: string }) => {
 
-                // Since there's multiple files, create a zip file
                 const currentTime = new Date().toLocaleString().replace(/,/g, '').replace(/ /g, '_');
 
-                const courses = { name: "course_data.csv", lastModified: new Date(), input: response.data.courses };
-                const quizQuestions = { name: "quiz_question_data.csv", lastModified: new Date(), input: response.data.quizQuestions };
-                const courseAttempts = { name: "course_attempt_data.csv", lastModified: new Date(), input: response.data.courseAttempts };
-                const quizAttempts = { name: "quiz_attempt_data.csv", lastModified: new Date(), input: response.data.quizAttempts };
-                const quizQuestionAttempts = { name: "quiz_question_attempt_data.csv", lastModified: new Date(), input: response.data.quizQuestionAttempts };
+                const excelBlob = new Blob([Buffer.from(response.data, 'base64')], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
-                const blob = await downloadZip([courses, quizQuestions, courseAttempts, quizAttempts, quizQuestionAttempts]).blob();
-
-                // Download the zip file on the user's browser
                 const file = document.createElement("a");
-                file.href = URL.createObjectURL(blob);
-                file.download = `OpenLMS_Course_Reports${currentTime}.zip`;
-                document.body.appendChild(file); // Required for this to work in FireFox
+                file.href = URL.createObjectURL(excelBlob);
+                file.download = `OpenLMS_Course_Reports${currentTime}.xlsx`;
+                document.body.appendChild(file);
                 file.click();
                 file.remove();
 
@@ -217,7 +208,7 @@ export default function Tools() {
     }
 
     const downloadUserReports = async () => {
-        await callAPI('get-user-reports')
+        await callAPI('get-user-reports', { withAdmins: includeAdminsReports })
             .then((response: { data: string }) => {
 
                 const currentTime = new Date().toLocaleString().replace(/,/g, '').replace(/ /g, '_');
@@ -337,6 +328,16 @@ export default function Tools() {
                     Downloading user reports will download all user-related data, and a summary of their course progress.
                     To see all course progress data in more details, download the course reports instead
                 </div>
+                <div className="flex mt-2">
+                    <Checkbox
+                        checked={includeAdminsReports}
+                        setChecked={setIncludeAdminsReports}
+                        style="mr-2"
+                    />
+                    <div className="mt-[1px] italic font-bold">
+                        Include Admins and Developers?
+                    </div>
+                </div>
                 <div className="flex flex-row mt-4">
                     <Button text="Cancel" onClick={() => setCurrentPopup(null)} style="ml-auto"/>
                     <Button text="Download" onClick={() => downloadUserReports()} style="ml-4" filled/>
@@ -347,14 +348,10 @@ export default function Tools() {
 
     const renderPopup = () => {
         switch (currentPopup) {
-            case PopupType.InviteLearner:
-                return invitePopup;
-            case PopupType.DowloadCourseReports:
-                return downloadCourseReportsPopup;
-            case PopupType.DownloadUserReports:
-                return downloadUserReportsPopup;
-            default:
-                return null;
+            case PopupType.InviteLearner: return invitePopup;
+            case PopupType.DowloadCourseReports: return downloadCourseReportsPopup;
+            case PopupType.DownloadUserReports: return downloadUserReportsPopup;
+            default: return null;
         }
     }
 
@@ -434,7 +431,6 @@ export default function Tools() {
             <div className="h-4" />
 
             {renderPopup()}
-
         </main>
     )
 }

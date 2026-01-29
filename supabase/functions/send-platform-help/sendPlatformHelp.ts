@@ -6,7 +6,7 @@ const sendPlatformHelp = async (request: EdgeFunctionRequest) => {
     const { feedback } = request.getPayload();
     const user = request.getRequestUser();
 
-    request.log(`Entering sendPlatformHelp for user ${user.id} (name: ${user.user_metadata.name}) and feedback ${feedback}`);
+    request.log(`Entering sendPlatformHelp for user ${user.id} (name: ${user.user_metadata.display_name}) and feedback ${feedback}`);
 
     const devEmail = "18rem8@queensu.ca";
 
@@ -22,8 +22,8 @@ const sendPlatformHelp = async (request: EdgeFunctionRequest) => {
                 alt="OpenLMS Logo" style="max-width: 100px;">
             </header>
             <section style="margin-bottom: 20px;">
-                <h2 style="font-size: 24px; color: #333333;">Support request from User "${user.user_metadata.name}"</h2>
-                <p style="font-size: 16px; color: #555;">User information: <br> Name: ${user.user_metadata.name} <br> Email: ${user.email} <br> Uid: ${user.id}</p>
+                <h2 style="font-size: 24px; color: #333333;">Support request from User "${user.user_metadata.display_name}"</h2>
+                <p style="font-size: 16px; color: #555;">User information: <br> Name: ${user.user_metadata.display_name} <br> Email: ${user.email} <br> Uid: ${user.id}</p>
                 <p style="font-size: 16px; color: #555;">User Response: ${feedback}</p>
             </section>
             <footer style="font-size: 12px; color: #666666; text-align: center;">

@@ -2,15 +2,14 @@ import EdgeFunctionRequest from "../_shared/EdgeFunctionRequest.ts";
 import { CourseService, QuizQuestionService } from "../_shared/Service/Services.ts";
 import { QuestionType } from "../_shared/Enum/QuestionType.ts";
 
-const getCourseDataAdmin = async (request: EdgeFunctionRequest) => {
+const getCourseDataAdmin = async (request: EdgeFunctionRequest, userId: string, courseId: number): Promise<object> => {
 
-    const { courseId } = request.getPayload();
+    request.validateAdmin("Requesting user must be an admin for course data's adminView");
 
     const [course, quizQuestions] = await Promise.all([
         CourseService.getById(courseId),
         QuizQuestionService.query('*', ['eq', 'course_id', courseId])
     ]);
-
 
     const quizQuestionData = quizQuestions.map((question) => {
         return {
@@ -35,6 +34,7 @@ const getCourseDataAdmin = async (request: EdgeFunctionRequest) => {
 
         quizData: {
             minScore: course.min_quiz_score,
+            totalMarks: course.total_quiz_marks,
             maxAttempts: course.max_quiz_attempts,
             timeLimit: course.quiz_time_limit,
             preserveOrder: course.preserve_quiz_question_order

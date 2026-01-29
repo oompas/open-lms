@@ -6,7 +6,7 @@ const inviteLearner = async (request: EdgeFunctionRequest) => {
     const { email } = request.getPayload();
     const adminId = request.getRequestUserId();
 
-    request.log(`Entering inviteLearner for admin ${adminId} send  invite to ${email}`);
+    request.log(`Entering inviteLearner for admin ${adminId} to send invite to ${email}`);
 
     const subject = "Welcome to OpenLMS";
     const body = `

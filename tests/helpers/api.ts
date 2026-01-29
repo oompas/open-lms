@@ -9,45 +9,25 @@ import { pollAccessToken } from "./auth.ts";
  * @param admin True to sign in with admin test account, false to sign in with learner test account
  */
 const callAPI = async (endpoint: string, body: object, admin: boolean): Promise<any> => {
-    try {
-        console.log(`Calling API endpoint: ${endpoint} as ${admin ? 'admin' : 'learner'} with body: ${JSON.stringify(body)}`);
-        const accessToken = await pollAccessToken(admin);
+    console.log(`\nCalling API endpoint: ${endpoint} as ${admin ? 'admin' : 'learner'} with body: ${JSON.stringify(body)}`);
+    const accessToken = await pollAccessToken(admin);
 
-        const options = {
-            body: body,
-            ...(accessToken && { headers: { 'Authorization': `Bearer ${accessToken}` } })
-        }
-        const { data, error } = await supabaseClient.functions.invoke(endpoint, options);
-
-        if (error) {
-            let errorMessage;
-
-            // Safely try to extract detailed error information
-            try {
-                if (error.response && typeof error.response.json === 'function') {
-                    const errorResponse = await error.response.json();
-                    errorMessage = JSON.stringify(errorResponse);
-                } else if (error.message) {
-                    errorMessage = error.message;
-                } else if (typeof error === 'string') {
-                    errorMessage = error;
-                } else {
-                    errorMessage = JSON.stringify(error);
-                }
-            } catch (jsonError) {
-                errorMessage = `Error parsing error response: ${error.message || JSON.stringify(error)}`;
-            }
-
-            console.log(`Error invoking function: ${errorMessage}`);
-            return { error: errorMessage };
-        }
-
-        return data;
-    } catch (error: any) {
-        const errorMessage = error.message || JSON.stringify(error);
-        console.error(`Uncaught error invoking Supabase Edge Function '${endpoint}': ${errorMessage}`);
-        return { error: errorMessage };
+    const options = {
+        body: body,
+        ...(accessToken && { headers: { 'Authorization': `Bearer ${accessToken}` } })
     }
+    const { data, error } = await supabaseClient.functions.invoke(endpoint, options);
+
+    if (error) {
+        const errorData = await error?.context?.json();
+        console.log(`Error caught: ${JSON.stringify(errorData, null, 4)}\n`);
+
+        throw new Error(JSON.stringify(errorData.error));
+    }
+
+    console.log(`Endpoint result: ${JSON.stringify(data, null, 4)}\n`);
+
+    return data;
 }
 
 export { callAPI };

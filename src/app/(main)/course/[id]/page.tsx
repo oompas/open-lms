@@ -11,7 +11,7 @@ import { CourseStatus } from "@/helpers/Enums.ts";
 
 export default function Course({ params }: { params: { id: string } }) {
 
-    const getCourseData = useAsync(() => callAPI('get-course-data', { courseId: parseInt(params.id) })
+    const getCourseData = useAsync(() => callAPI('get-course-data', { courseId: parseInt(params.id), adminView: false })
         .then((r) => {
             setCourseData(r.data);
             setStatus(r.data.status);
